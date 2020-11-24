@@ -17,20 +17,6 @@ import { DataProvider } from './DataProvider';
 
 export type BlockTag = string | number;
 
-export interface EventFilter {
-  address?: string;
-  topics?: Array<string | Array<string>>;
-}
-
-export interface Filter extends EventFilter {
-  fromBlock?: BlockTag;
-  toBlock?: BlockTag;
-}
-
-export interface FilterByBlockHash extends EventFilter {
-  blockHash?: string;
-}
-
 export interface Log {
   blockNumber: number;
   blockHash: string;
@@ -47,6 +33,69 @@ export interface Log {
   logIndex: number;
 }
 
+export interface Transaction {
+  hash?: string;
+  to?: string;
+  from?: string;
+  nonce: number;
+  gasLimit: BigNumber;
+  gasPrice: BigNumber;
+  data: string;
+  value: BigNumber;
+  chainId: number;
+  r?: string;
+  s?: string;
+  v?: number;
+}
+export interface TransactionReceipt {
+  to: string;
+  from: string;
+  contractAddress: string;
+  transactionIndex: number;
+  root?: string;
+  gasUsed: BigNumber;
+  logsBloom: string;
+  blockHash: string;
+  transactionHash: string;
+  logs: Array<Log>;
+  blockNumber: number;
+  confirmations: number;
+  cumulativeGasUsed: BigNumber;
+  byzantium: boolean;
+  status?: number;
+}
+export interface TransactionResponse extends Transaction {
+  hash: string;
+
+  // Only if a transaction has been mined
+  blockNumber?: number;
+  blockHash?: string;
+  timestamp?: number;
+
+  confirmations: number;
+
+  // Not optional (as it is in Transaction)
+  from: string;
+
+  // The raw transaction
+  raw?: string;
+
+  // This function waits until the transaction has been mined
+  wait: (confirmations?: number) => Promise<TransactionReceipt>;
+}
+export interface EventFilter {
+  address?: string;
+  topics?: Array<string | Array<string>>;
+}
+
+export interface Filter extends EventFilter {
+  fromBlock?: BlockTag;
+  toBlock?: BlockTag;
+}
+
+export interface FilterByBlockHash extends EventFilter {
+  blockHash?: string;
+}
 interface _Block {
   hash: string;
   parentHash: string;
@@ -69,59 +118,6 @@ export interface Block extends _Block {
 
 export interface BlockWithTransactions extends _Block {
   transactions: Array<TransactionResponse>;
-}
-
-export interface Transaction {
-  hash?: string;
-  to?: string;
-  from?: string;
-  nonce: number;
-  gasLimit: BigNumber;
-  gasPrice: BigNumber;
-  data: string;
-  value: BigNumber;
-  chainId: number;
-  r?: string;
-  s?: string;
-  v?: number;
-}
-
-export interface TransactionResponse extends Transaction {
-  hash: string;
-
-  // Only if a transaction has been mined
-  blockNumber?: number;
-  blockHash?: string;
-  timestamp?: number;
-
-  confirmations: number;
-
-  // Not optional (as it is in Transaction)
-  from: string;
-
-  // The raw transaction
-  raw?: string;
-
-  // This function waits until the transaction has been mined
-  wait: (confirmations?: number) => Promise<TransactionReceipt>;
-}
-
-export interface TransactionReceipt {
-  to: string;
-  from: string;
-  contractAddress: string;
-  transactionIndex: number;
-  root?: string;
-  gasUsed: BigNumber;
-  logsBloom: string;
-  blockHash: string;
-  transactionHash: string;
-  logs: Array<Log>;
-  blockNumber: number;
-  confirmations: number;
-  cumulativeGasUsed: BigNumber;
-  byzantium: boolean;
-  status?: number;
 }
 
 export type TransactionRequest = {

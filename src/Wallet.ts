@@ -256,9 +256,11 @@ export class Wallet
   get mnemonic(): Mnemonic {
     return this._mnemonic();
   }
+
   get privateKey(): string {
     return this._signingKey().privateKey;
   }
+
   get publicKey(): string {
     return this._signingKey().publicKey;
   }
@@ -267,7 +269,7 @@ export class Wallet
     return Promise.resolve(this.address);
   }
 
-  //@ts-ignore
+  // @ts-ignore
   connect(provider: Provider): Wallet {
     return new Wallet(this, provider);
   }
