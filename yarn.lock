@@ -5,9 +5,9 @@ __metadata:
   version: 4
   cacheKey: 7
 
-"@acala-network/bodhi.js@workspace:.":
+"@acala-network/bodhi@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@acala-network/bodhi.js@workspace:."
+  resolution: "@acala-network/bodhi@workspace:."
   dependencies:
     "@babel/core": ^7.12.9
     "@babel/register": ^7.12.1
