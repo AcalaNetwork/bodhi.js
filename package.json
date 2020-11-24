@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
-  "author": "Nantian <nxiiun@gmail.com>",
+  "author": "Acala Developers <hello@acala.network>",
   "license": "MIT",
   "dependencies": {
     "@open-web3/indexer": "^0.6.1",
