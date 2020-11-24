@@ -6,6 +6,7 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "dependencies": {
+    "@open-web3/dev-config": "^0.1.3",
     "@open-web3/indexer": "^0.6.1",
     "@polkadot/api": "^2.8.1",
     "ethers": "^5.0.21"

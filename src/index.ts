@@ -1,2 +1,2 @@
-export { Provider } from './Provider'
-export { Wallet } from './Wallet'
+export { Provider } from './Provider';
+export { Wallet } from './Wallet';

@@ -1,12 +1,18 @@
-
-import { Provider as AbstractProvider } from "@ethersproject/abstract-provider";
-import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import type { BytesLike } from "@ethersproject/bytes";
-import { Deferrable } from "@ethersproject/properties";
-import { ApiPromise } from "@polkadot/api";
-import { hexToU8a, isHex, isNumber, numberToHex, u8aConcat, u8aFixLength } from "@polkadot/util";
-import { encodeAddress } from "@polkadot/util-crypto";
-import eventemitter from "eventemitter3";
+import { Provider as AbstractProvider } from '@ethersproject/abstract-provider';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import type { BytesLike } from '@ethersproject/bytes';
+import { Deferrable } from '@ethersproject/properties';
+import { ApiPromise } from '@polkadot/api';
+import {
+  hexToU8a,
+  isHex,
+  isNumber,
+  numberToHex,
+  u8aConcat,
+  u8aFixLength
+} from '@polkadot/util';
+import { encodeAddress } from '@polkadot/util-crypto';
+import eventemitter from 'eventemitter3';
 import { DataProvider } from './DataProvider';
 
 export type BlockTag = string | number;
@@ -140,14 +146,12 @@ export class Provider extends eventemitter implements AbstractProvider {
 
   constructor(apiOptions: any, dataProvider: DataProvider) {
     super();
-    this.api = new ApiPromise(
-      apiOptions
-    );
+    this.api = new ApiPromise(apiOptions);
 
     this.resolveApi = this.api.isReady;
     this._isProvider = true;
 
-    this.dataProvider = dataProvider
+    this.dataProvider = dataProvider;
   }
 
   static isProvider(value: any) {
@@ -155,18 +159,16 @@ export class Provider extends eventemitter implements AbstractProvider {
   }
 
   async init() {
-    await this.api.isReady
-    await this.dataProvider.init()
+    await this.api.isReady;
+    await this.dataProvider.init();
   }
-
-
 
   async getNetwork() {
     await this.resolveApi;
 
     return {
       name: this.api.runtimeVersion.specName.toString(),
-      chainId: 10042,
+      chainId: 10042
     };
   }
 
@@ -179,7 +181,7 @@ export class Provider extends eventemitter implements AbstractProvider {
   }
 
   async getGasPrice() {
-    return BigNumber.from("1");
+    return BigNumber.from('1');
   }
 
   async getBalance(
@@ -191,7 +193,7 @@ export class Provider extends eventemitter implements AbstractProvider {
     let address = await this._resolveAddress(addressOrName);
 
     if (!address) {
-      address = await this._toAddress(addressOrName)
+      address = await this._toAddress(addressOrName);
     }
 
     const blockHash = await this._resolveBlockHash(blockTag);
@@ -212,10 +214,10 @@ export class Provider extends eventemitter implements AbstractProvider {
     const resolvedBlockTag = await blockTag;
 
     const address = await this._resolveEvmAddress(addressOrName);
-    if (resolvedBlockTag === "pending") {
+    if (resolvedBlockTag === 'pending') {
       const nonce = await this.api.query.evm.accountNonces(address);
 
-      return (nonce as any).toNumber()
+      return (nonce as any).toNumber();
     }
 
     const blockHash = await this._resolveBlockHash(blockTag);
@@ -263,51 +265,51 @@ export class Provider extends eventemitter implements AbstractProvider {
   async sendTransaction(
     signedTransaction: string | Promise<string>
   ): Promise<TransactionResponse> {
-    return this._fail("sendTransaction");
+    return this._fail('sendTransaction');
   }
 
   async call(
     transaction: Deferrable<TransactionRequest>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> {
-    const resolved = await this._resolveTransaction(transaction)
-    console.log(resolved)
-    const result = await (this.api.rpc as any).evm.call(resolved)
-    console.log(result.toHex())
+    const resolved = await this._resolveTransaction(transaction);
+    console.log(resolved);
+    const result = await (this.api.rpc as any).evm.call(resolved);
+    console.log(result.toHex());
 
-    return result.toHex()
+    return result.toHex();
   }
 
   async estimateGas(
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
+    const resolved = await this._resolveTransaction(transaction);
 
-    const resolved = await this._resolveTransaction(transaction)
-
-    const result = await (this.api.rpc as any).evm.estimateGas(resolved)
-    return result.toHex()
+    const result = await (this.api.rpc as any).evm.estimateGas(resolved);
+    return result.toHex();
   }
 
   async getBlock(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<Block> {
-    return this._fail("getBlock");
+    return this._fail('getBlock');
   }
 
   async getBlockWithTransactions(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<BlockWithTransactions> {
-    return this._fail("getBlockWithTransactions");
+    return this._fail('getBlockWithTransactions');
   }
 
   async getTransaction(transactionHash: string): Promise<TransactionResponse> {
-    return this._fail("getTransaction");
+    return this._fail('getTransaction');
   }
 
-  async getTransactionReceipt(
-    txHash: string
-  ): Promise<TransactionReceipt> {
-    return this.dataProvider.getTransactionReceipt(txHash, this._resolveBlockNumber)
+  async getTransactionReceipt(txHash: string): Promise<TransactionReceipt> {
+    return this.dataProvider.getTransactionReceipt(
+      txHash,
+      this._resolveBlockNumber
+    );
   }
 
   async resolveName(name: string | Promise<string>) {
@@ -323,11 +325,11 @@ export class Provider extends eventemitter implements AbstractProvider {
     confirmations?: number,
     timeout?: number
   ): Promise<TransactionReceipt> {
-    return this._fail("waitForTransaction");
+    return this._fail('waitForTransaction');
   }
 
   async getLogs(filter: Filter): Promise<Array<Log>> {
-    return this.dataProvider.getLogs(filter, this._resolveBlockNumber)
+    return this.dataProvider.getLogs(filter, this._resolveBlockNumber);
   }
 
   _fail(operation: string): Promise<any> {
@@ -343,16 +345,16 @@ export class Provider extends eventemitter implements AbstractProvider {
 
     const resolvedBlockHash = await blockTag;
 
-    if (resolvedBlockHash === "pending") {
-      throw new Error("Unsupport Block Pending");
+    if (resolvedBlockHash === 'pending') {
+      throw new Error('Unsupport Block Pending');
     }
 
-    if (resolvedBlockHash === "latest") {
+    if (resolvedBlockHash === 'latest') {
       const hash = await this.api.query.system.blockHash();
       return hash.toString();
     }
 
-    if (resolvedBlockHash === "earliest") {
+    if (resolvedBlockHash === 'earliest') {
       return this.api.query.system.blockHash(0);
     }
 
@@ -372,71 +374,67 @@ export class Provider extends eventemitter implements AbstractProvider {
 
     const resolvedBlockNumber = await blockTag;
 
-    if (resolvedBlockNumber === "pending") {
-      throw new Error("Unsupport Block Pending");
+    if (resolvedBlockNumber === 'pending') {
+      throw new Error('Unsupport Block Pending');
     }
 
-    if (resolvedBlockNumber === "latest") {
+    if (resolvedBlockNumber === 'latest') {
       const header = await this.api.rpc.chain.getHeader();
       return header.number.toNumber();
     }
 
-    if (resolvedBlockNumber === "earliest") {
+    if (resolvedBlockNumber === 'earliest') {
       return 0;
     }
 
     if (isNumber(resolvedBlockNumber)) {
       return resolvedBlockNumber;
     } else {
-      throw new Error("Expect blockHash to be a number or tag");
+      throw new Error('Expect blockHash to be a number or tag');
     }
   }
 
   async _resolveAddress(addressOrName: string | Promise<string>) {
     const resolved = await addressOrName;
-    const result = await this.api.query.evmAccounts.accounts(resolved)
-    return result.toString()
+    const result = await this.api.query.evmAccounts.accounts(resolved);
+    return result.toString();
   }
 
   async _toAddress(addressOrName: string | Promise<string>) {
     const resolved = await addressOrName;
     const address = encodeAddress(
-      u8aFixLength(
-        u8aConcat('evm:', hexToU8a(resolved)),
-        256,
-        true
-      )
-    )
-    return address.toString()
+      u8aFixLength(u8aConcat('evm:', hexToU8a(resolved)), 256, true)
+    );
+    return address.toString();
   }
 
   async _resolveEvmAddress(addressOrName: string | Promise<string>) {
     const resolved = await addressOrName;
     if (resolved.length === 42) {
-      return resolved
+      return resolved;
     }
-    const result = await this.api.query.evmAccounts.evmAddresses(resolved)
-    return result.toString()
+    const result = await this.api.query.evmAccounts.evmAddresses(resolved);
+    return result.toString();
   }
 
   async _resolveTransaction(transaction: Deferrable<TransactionRequest>) {
-    const tx = await transaction
+    const tx = await transaction;
     for (const key of ['gasLimit', 'value']) {
-      const typeKey = key as 'gasLimit' | 'value'
+      const typeKey = key as 'gasLimit' | 'value';
 
       if (tx[typeKey]) {
-        if ((BigNumber.isBigNumber(tx[typeKey]))) {
-          tx[typeKey] = (tx[typeKey] as BigNumber).toHexString()
+        if (BigNumber.isBigNumber(tx[typeKey])) {
+          tx[typeKey] = (tx[typeKey] as BigNumber).toHexString();
         } else if (isNumber(tx[typeKey])) {
-          tx[typeKey] = numberToHex(tx[typeKey] as number)
+          tx[typeKey] = numberToHex(tx[typeKey] as number);
         }
       }
     }
 
-    delete tx.nonce
-    delete tx.gasPrice
-    delete tx.chainId
+    delete tx.nonce;
+    delete tx.gasPrice;
+    delete tx.chainId;
 
-    return tx
+    return tx;
   }
 }
