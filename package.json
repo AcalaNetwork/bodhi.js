@@ -22,6 +22,11 @@
     "ethers": "^5.0.21"
   },
   "devDependencies": {
-    "@types/validator": "^13.1.0"
+    "@babel/core": "^7.12.9",
+    "@babel/register": "^7.12.1",
+    "@babel/runtime": "^7.12.5",
+    "@types/jest": "^26.0.15",
+    "@types/validator": "^13.1.0",
+    "ts-node": "^9.0.0"
   }
 }
