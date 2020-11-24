@@ -166,6 +166,7 @@ export class Wallet
   implements ExternallyOwnedAccount, TypedDataSigner {
   readonly address: string;
 
+  // @ts-ignore
   readonly provider: Provider;
   readonly keyringPair: KeyringPair;
 
