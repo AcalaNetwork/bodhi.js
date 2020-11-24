@@ -5,6 +5,23 @@ __metadata:
   version: 4
   cacheKey: 7
 
+"@acala-network/bodhi.js@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@acala-network/bodhi.js@workspace:."
+  dependencies:
+    "@babel/core": ^7.12.9
+    "@babel/register": ^7.12.1
+    "@babel/runtime": ^7.12.5
+    "@open-web3/dev-config": ^0.1.6
+    "@open-web3/indexer": ^0.6.1
+    "@polkadot/api": ^2.8.1
+    "@types/jest": ^26.0.15
+    "@types/validator": ^13.1.0
+    ethers: ^5.0.21
+    ts-node: ^9.0.0
+  languageName: unknown
+  linkType: soft
+
 "@babel/cli@npm:^7.12.1":
   version: 7.12.1
   resolution: "@babel/cli@npm:7.12.1"
@@ -3554,23 +3571,6 @@ __metadata:
   checksum: 31630d3560b28931010980886a0f657b37ce818ba237867cd838e89a1a0b71044fb4977aa56376616997b372bbb3f55d3bb25e5378c48c1d24a47bfb4235b60e
   languageName: node
   linkType: hard
-
-"bodhi.js@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "bodhi.js@workspace:."
-  dependencies:
-    "@babel/core": ^7.12.9
-    "@babel/register": ^7.12.1
-    "@babel/runtime": ^7.12.5
-    "@open-web3/dev-config": ^0.1.6
-    "@open-web3/indexer": ^0.6.1
-    "@polkadot/api": ^2.8.1
-    "@types/jest": ^26.0.15
-    "@types/validator": ^13.1.0
-    ethers: ^5.0.21
-    ts-node: ^9.0.0
-  languageName: unknown
-  linkType: soft
 
 "boxen@npm:^4.2.0":
   version: 4.2.0
