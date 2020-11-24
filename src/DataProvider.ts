@@ -118,9 +118,8 @@ export class DataProvider {
     const to = findExecuted ? findExecuted.args[0] : null
 
     const logs = await this.getLogs({
-      // @ts-ignore
       transactionHash,
-    }, resolveBlockNumber)
+    } as any, resolveBlockNumber)
 
     const gasUsed = BigNumber.from(result.args[0].weight)
 

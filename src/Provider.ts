@@ -3,7 +3,6 @@ import { Provider as AbstractProvider } from "@ethersproject/abstract-provider";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import type { BytesLike } from "@ethersproject/bytes";
 import { Deferrable } from "@ethersproject/properties";
-import initDB from '@open-web3/indexer/models';
 import { ApiPromise } from "@polkadot/api";
 import { hexToU8a, isHex, isNumber, numberToHex, u8aConcat, u8aFixLength } from "@polkadot/util";
 import { encodeAddress } from "@polkadot/util-crypto";
@@ -423,11 +422,13 @@ export class Provider extends eventemitter implements AbstractProvider {
   async _resolveTransaction(transaction: Deferrable<TransactionRequest>) {
     const tx = await transaction
     for (const key of ['gasLimit', 'value']) {
-      if (tx[key]) {
-        if ((BigNumber.isBigNumber(tx[key]))) {
-          tx[key] = tx[key].toHexString()
-        } else if (isNumber(tx[key])) {
-          tx[key] = numberToHex(tx[key])
+      const typeKey = key as 'gasLimit' | 'value'
+
+      if (tx[typeKey]) {
+        if ((BigNumber.isBigNumber(tx[typeKey]))) {
+          tx[typeKey] = (tx[typeKey] as BigNumber).toHexString()
+        } else if (isNumber(tx[typeKey])) {
+          tx[typeKey] = numberToHex(tx[typeKey] as number)
         }
       }
     }
