@@ -164,15 +164,18 @@ function handleTxResponse(
 export class Wallet
   extends Signer
   implements ExternallyOwnedAccount, TypedDataSigner {
+  // @ts-ignore strictPropertyInitialization
   readonly address: string;
 
   // @ts-ignore
   readonly provider: Provider;
-  readonly keyringPair: KeyringPair;
+  readonly keyringPair?: KeyringPair;
 
   // Wrapping the _signingKey and _mnemonic in a getter function prevents
   // leaking the private key in console.log; still, be careful! :)
+  // @ts-ignore strictPropertyInitialization
   readonly _signingKey: () => SigningKey;
+  // @ts-ignore strictPropertyInitialization
   readonly _mnemonic: () => Mnemonic;
 
   constructor(
@@ -454,7 +457,7 @@ export class Wallet
       this.address,
       signature
     );
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       extrinsic.signAndSend(this.keyringPair, (result: SubmittableResult) => {
         handleTxResponse(result, this.provider.api)
           .then(() => {

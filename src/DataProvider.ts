@@ -60,7 +60,7 @@ export class DataProvider {
     if (filter.topics) {
       condition.push({
         [Op.contains]: {
-          topics: [].concat(filter.topics) as string[]
+          topics: [].concat((filter as any).topics) as string[]
         }
       });
     }
@@ -96,7 +96,7 @@ export class DataProvider {
     const Extrinsic = this.db.model('Extrinsic');
     const Events = this.db.model('Events');
 
-    await new Promise((resolve) =>
+    await new Promise<void>((resolve) =>
       setTimeout(() => {
         resolve();
       }, 1000)
