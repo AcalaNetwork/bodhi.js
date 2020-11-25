@@ -269,9 +269,7 @@ export class Provider extends eventemitter implements AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> {
     const resolved = await this._resolveTransaction(transaction);
-    console.log(resolved);
     const result = await (this.api.rpc as any).evm.call(resolved);
-    console.log(result.toHex());
 
     return result.toHex();
   }
