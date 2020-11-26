@@ -45,6 +45,7 @@ import {
   serialize,
   UnsignedTransaction
 } from '@ethersproject/transactions';
+import { utils } from 'ethers';
 import { Wordlist } from '@ethersproject/wordlists';
 import { SubmittableResult } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
@@ -111,6 +112,18 @@ function dataToString(bytes: BytesLike) {
   return bytes as string;
 }
 
+function decodeMessage(reason: any, code: string) {
+  let reasonString = JSON.stringify(reason).toLowerCase();
+  let codeString = `0x${code.substr(138)}`.replace(/0+$/, '');
+
+  // If the codeString is an odd number of characters, add a trailing 0
+  if (codeString.length % 2 === 1) {
+    codeString += '0';
+  }
+
+  return `${reasonString} ${utils.toUtf8String(codeString)}`;
+}
+
 function handleTxResponse(
   result: SubmittableResult,
   api: any
@@ -122,8 +135,6 @@ function handleTxResponse(
     if (result.status.isFinalized || result.status.isInBlock) {
       const createdFailed = result.findRecord('evm', 'CreatedFailed');
       const executedFailed = result.findRecord('evm', 'ExecutedFailed');
-
-      const isEvmFailed = createdFailed || executedFailed;
 
       result.events
         .filter(({ event: { section } }: any): boolean => section === 'system')
@@ -149,8 +160,15 @@ function handleTxResponse(
 
             reject({ message, result });
           } else if (method === 'ExtrinsicSuccess') {
-            if (isEvmFailed) {
-              reject({ message: 'revert', result });
+            const failed = createdFailed || executedFailed;
+            if (failed) {
+              reject({
+                message: decodeMessage(
+                  failed.event.data[1].toJSON(),
+                  failed.event.data[2].toJSON() as string
+                ),
+                result
+              });
             }
             resolve({ result });
           }
@@ -409,14 +427,12 @@ export class Wallet
       // @TODO create contract
       if (!tx.to) {
         extrinsic = this.provider.api.tx.evm.create(
-          tx.from,
           tx.data,
           toBN(tx.value) || '0',
           toBN(tx.gasLimit)
         );
       } else {
         extrinsic = this.provider.api.tx.evm.call(
-          tx.from,
           tx.to,
           tx.data,
           toBN(tx.value) || '0',
@@ -466,7 +482,7 @@ export class Wallet
             resolve();
           })
           .catch(({ message, result }) => {
-            if (message === 'evmAccounts.EthAddressHasMapped') {
+            if (message === 'evmAccounts.AccountIdHasMapped') {
               resolve();
             }
             reject(message);
