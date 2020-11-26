@@ -113,7 +113,7 @@ function dataToString(bytes: BytesLike) {
 }
 
 function decodeMessage(reason: any, code: string) {
-  let reasonString = JSON.stringify(reason).toLowerCase();
+  const reasonString = JSON.stringify(reason).toLowerCase();
   let codeString = `0x${code.substr(138)}`.replace(/0+$/, '');
 
   // If the codeString is an odd number of characters, add a trailing 0
