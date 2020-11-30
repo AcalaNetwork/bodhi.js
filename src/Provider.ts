@@ -210,19 +210,24 @@ export class Provider extends eventemitter implements AbstractProvider {
     const resolvedBlockTag = await blockTag;
 
     const address = await this._resolveEvmAddress(addressOrName);
-    if (resolvedBlockTag === 'pending') {
-      const nonce = await this.api.query.evm.accountNonces(address);
 
-      return (nonce as any).toNumber();
+    let account: any;
+
+    if (resolvedBlockTag === 'pending') {
+      account = await this.api.query.evm.accounts(address);
+    } else {
+      const blockHash = await this._resolveBlockHash(blockTag);
+
+      account = blockHash
+        ? await this.api.query.evm.accounts.at(blockHash, address)
+        : await this.api.query.evm.accounts(address);
     }
 
-    const blockHash = await this._resolveBlockHash(blockTag);
-
-    const nonce = blockHash
-      ? await this.api.query.evm.accountNonces.at(blockHash, address)
-      : await this.api.query.evm.accountNonces(address);
-
-    return (nonce as any).toNumber();
+    if (!(account as any).isNone) {
+      return (account as any).unwrap().nonce.toNumber() as number;
+    } else {
+      return 0;
+    }
   }
 
   async getCode(
