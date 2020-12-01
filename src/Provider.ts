@@ -2,6 +2,7 @@ import { Provider as AbstractProvider } from '@ethersproject/abstract-provider';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import type { BytesLike } from '@ethersproject/bytes';
 import { Deferrable } from '@ethersproject/properties';
+import Scanner from '@open-web3/scanner';
 import { ApiPromise } from '@polkadot/api';
 import {
   hexToU8a,
@@ -64,6 +65,7 @@ export interface TransactionReceipt {
   byzantium: boolean;
   status?: number;
 }
+
 export interface TransactionResponse extends Transaction {
   hash: string;
 
@@ -138,9 +140,10 @@ export class Provider extends eventemitter implements AbstractProvider {
   readonly api: ApiPromise;
   readonly resolveApi: Promise<ApiPromise>;
   readonly _isProvider: boolean;
-  readonly dataProvider: DataProvider;
+  readonly dataProvider?: DataProvider;
+  readonly scanner: Scanner;
 
-  constructor(apiOptions: any, dataProvider: DataProvider) {
+  constructor(apiOptions: any, dataProvider?: DataProvider) {
     super();
     this.api = new ApiPromise(apiOptions);
 
@@ -148,6 +151,11 @@ export class Provider extends eventemitter implements AbstractProvider {
     this._isProvider = true;
 
     this.dataProvider = dataProvider;
+    this.scanner = new Scanner({
+      wsProvider: apiOptions.provider,
+      types: apiOptions.types,
+      typesAlias: apiOptions.typesAlias
+    });
   }
 
   static isProvider(value: any) {
@@ -156,7 +164,7 @@ export class Provider extends eventemitter implements AbstractProvider {
 
   async init() {
     await this.api.isReady;
-    await this.dataProvider.init();
+    this.dataProvider && (await this.dataProvider.init());
   }
 
   async getNetwork() {
@@ -305,6 +313,7 @@ export class Provider extends eventemitter implements AbstractProvider {
   }
 
   async getTransactionReceipt(txHash: string): Promise<TransactionReceipt> {
+    if (!this.dataProvider) return this._fail('getTransactionReceipt');
     return this.dataProvider.getTransactionReceipt(
       txHash,
       this._resolveBlockNumber
@@ -327,7 +336,89 @@ export class Provider extends eventemitter implements AbstractProvider {
     return this._fail('waitForTransaction');
   }
 
+  async _resolveTransactionReceipt(
+    transactionHash: string,
+    blockHash: string,
+    from: string
+  ): Promise<TransactionReceipt> {
+    const detail = await this.scanner.getBlockDetail({
+      blockHash: blockHash
+    });
+
+    const blockNumber = detail.number;
+    const extrinsic = detail.extrinsics.find(
+      ({ hash }) => hash === transactionHash
+    );
+    const transactionIndex = extrinsic.index;
+
+    const events = detail.events.filter(
+      ({ phaseIndex }) => phaseIndex === transactionIndex
+    );
+
+    const findCreated = events.find(
+      (x: any) =>
+        x.section.toUpperCase() === 'EVM' &&
+        x.method.toUpperCase() === 'CREATED'
+    );
+    const findExecuted = events.find(
+      (x: any) =>
+        x.section.toUpperCase() === 'EVM' &&
+        x.method.toUpperCase() === 'EXECUTED'
+    );
+    const result = events.find(
+      (x: any) =>
+        x.section.toUpperCase() === 'SYSTEM' &&
+        x.method.toUpperCase() === 'EXTRINSICSUCCESS'
+    );
+
+    const status = findCreated || findExecuted ? 1 : 0;
+
+    const contractAddress = findCreated ? findCreated.args[0] : null;
+
+    const to = findExecuted ? findExecuted.args[0] : null;
+
+    const logs = events
+      .filter((e) => {
+        return (
+          e.method.toUpperCase() === 'LOG' && e.section.toUpperCase() === 'EVM'
+        );
+      })
+      .map((log, index) => {
+        return {
+          transactionHash,
+          blockNumber,
+          blockHash,
+          transactionIndex,
+          removed: false,
+          address: log.args[0].address,
+          data: log.args[0].data,
+          topics: log.args[0].topics,
+          logIndex: index
+        };
+      });
+
+    const gasUsed = BigNumber.from(result.args[0].weight);
+
+    return {
+      to,
+      from,
+      contractAddress,
+      transactionIndex,
+      gasUsed,
+      logsBloom: '0x',
+      blockHash,
+      transactionHash,
+      logs,
+      blockNumber,
+      confirmations: 4,
+      cumulativeGasUsed: gasUsed,
+      byzantium: false,
+      status
+    };
+  }
+
   async getLogs(filter: Filter): Promise<Array<Log>> {
+    if (!this.dataProvider) return this._fail('getLogs');
     return this.dataProvider.getLogs(filter, this._resolveBlockNumber);
   }
 

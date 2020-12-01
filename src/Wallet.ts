@@ -418,7 +418,7 @@ export class Wallet
   }
 
   // Populates all fields in a transaction, signs it and sends it to the network
-  sendTransaction(
+  async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
     this._checkProvider('sendTransaction');
@@ -455,7 +455,11 @@ export class Wallet
                 value: BigNumber.from(100),
                 chainId: 1024,
                 wait: (confirmations?: number): Promise<TransactionReceipt> => {
-                  return Promise.resolve({} as any);
+                  return this.provider._resolveTransactionReceipt(
+                    extrinsic.hash.toHex(),
+                    result.status.asInBlock.toHex(),
+                    tx.from
+                  );
                 }
               });
             })

@@ -14,6 +14,7 @@ __metadata:
     "@babel/runtime": ^7.12.5
     "@open-web3/dev-config": ^0.1.6
     "@open-web3/indexer": ^0.6.1
+    "@open-web3/scanner": ^0.7.0-beta.5
     "@polkadot/api": ^2.8.1
     "@types/jest": ^26.0.15
     "@types/validator": ^13.1.0
@@ -2346,6 +2347,16 @@ __metadata:
     "@polkadot/api": ^2.5.1
     "@polkadot/metadata": ^2.5.1
   checksum: b46252827a794bd4ddc7332b89d33c557aa2b80aad8a2a65438c98402c643e13f2e92da46688984878af36cd87672916d23a9ee0d0627771e9c970c332a7e135
+  languageName: node
+  linkType: hard
+
+"@open-web3/scanner@npm:^0.7.0-beta.5":
+  version: 0.7.0-beta.5
+  resolution: "@open-web3/scanner@npm:0.7.0-beta.5"
+  peerDependencies:
+    "@polkadot/api": ^2.8.1
+    "@polkadot/metadata": ^2.8.1
+  checksum: 0d60eee566e62fced910cad3e00df7209445917c79e8343e205e4a7fc548d6f15bd448c72cd0e3d78be034349d57efcd12f30d5d407df1ff95a6c7ccecddb253
   languageName: node
   linkType: hard
 
