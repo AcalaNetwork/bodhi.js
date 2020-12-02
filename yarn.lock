@@ -12,7 +12,7 @@ __metadata:
     "@babel/core": ^7.12.9
     "@babel/register": ^7.12.1
     "@babel/runtime": ^7.12.5
-    "@open-web3/dev-config": ^0.1.6
+    "@open-web3/dev-config": ^0.1.10
     "@open-web3/indexer": ^0.6.1
     "@open-web3/scanner": ^0.7.0-beta.5
     "@polkadot/api": ^2.8.1
@@ -2231,9 +2231,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-web3/dev-config@npm:^0.1.6":
-  version: 0.1.6
-  resolution: "@open-web3/dev-config@npm:0.1.6"
+"@open-web3/dev-config@npm:^0.1.10":
+  version: 0.1.10
+  resolution: "@open-web3/dev-config@npm:0.1.10"
   dependencies:
     "@babel/cli": ^7.12.1
     "@babel/core": ^7.12.3
@@ -2321,7 +2321,7 @@ __metadata:
     polkadot-exec-typedoc: scripts/polkadot-exec-typedoc.cjs
     polkadot-exec-vuepress: scripts/polkadot-exec-vuepress.cjs
     polkadot-exec-webpack: scripts/polkadot-exec-webpack.cjs
-  checksum: fe6bb69f8035eb41a8f9b3bca5b1b50c22bbd1008cc8e9c1c3a407d0abd124ec6e24f1a4fd63390de02c49738f9bc0f93b88ae647df9b5282b903ff05e4185f3
+  checksum: 90f03ba91c5a3e2b9b489345b949e27de2e4b7e066cc12d86a8f2366c2fec921165363b2c638fe5dbeb64ea64ce7dae20e3b75b0befe99d409d247e7d9700b95
   languageName: node
   linkType: hard
 
