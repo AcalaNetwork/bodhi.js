@@ -45,7 +45,6 @@ import {
   serialize,
   UnsignedTransaction
 } from '@ethersproject/transactions';
-import { utils } from 'ethers';
 import { Wordlist } from '@ethersproject/wordlists';
 import { SubmittableResult } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
@@ -54,6 +53,7 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import {
   bufferToU8a,
   hexToBn,
+  hexToString,
   isBuffer,
   isHex,
   isU8a,
@@ -121,7 +121,7 @@ function decodeMessage(reason: any, code: string) {
     codeString += '0';
   }
 
-  return `${reasonString} ${utils.toUtf8String(codeString)}`;
+  return `${reasonString} ${hexToString(codeString)}`;
 }
 
 function handleTxResponse(

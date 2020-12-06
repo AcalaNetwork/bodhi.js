@@ -291,7 +291,6 @@ export class Provider extends eventemitter implements AbstractProvider {
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
     const resolved = await this._resolveTransaction(transaction);
-
     const result = await (this.api.rpc as any).evm.estimateGas(resolved);
     return result.toHex();
   }
