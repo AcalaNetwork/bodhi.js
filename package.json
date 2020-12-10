@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@open-web3/dev-config": "^0.1.10",
-    "@open-web3/indexer": "^0.8.2-2",
-    "@open-web3/scanner": "^0.8.2-2",
+    "@open-web3/indexer": "^0.8.2-3",
+    "@open-web3/scanner": "^0.8.2-3",
     "@polkadot/api": "^2.10.1",
     "ethers": "^5.0.21"
   },
