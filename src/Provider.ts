@@ -154,7 +154,10 @@ export class Provider extends eventemitter implements AbstractProvider {
     this.scanner = new Scanner({
       wsProvider: apiOptions.provider,
       types: apiOptions.types,
-      typesAlias: apiOptions.typesAlias
+      typesAlias: apiOptions.typesAlias,
+      typesSpec: apiOptions.typesSpec,
+      typesChain: apiOptions.typesChain,
+      typesBundle: apiOptions.typesBundle
     });
   }
 
