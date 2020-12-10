@@ -2216,7 +2216,7 @@ __metadata:
     winston: ^3.2.1
   peerDependencies:
     "@polkadot/api": ^2.10.1
-  checksum: 70ce914d62b063cb63f8d62eefadab8cd5f4fc6226fb0f158e364f2aabdf5b2d39044f61700e7efbc2f9236d082ff4a9d1c15417d29548e76a24a9d7d8be2f46
+  checksum: 9647093498d4979ff428e28316ce2e0d5e75ddeda7db443d0920bbe4372dfc3276194313bed4a27222d17fa49dafcffe55e139576a71d670e531b165677cad44
   languageName: node
   linkType: hard
 
@@ -2226,7 +2226,7 @@ __metadata:
   peerDependencies:
     "@polkadot/api": ^2.10.1
     "@polkadot/metadata": ^2.10.1
-  checksum: 04f1c63ecfbc1beee7854e43b3f05ce2c92c10bd786a3371a55bc209a6648e99ab1f7d84c49ef2d0f1cb2296229119148aedbdf5c5a268acf80131cd6ec56c15
+  checksum: cc7533ddca204bd420aaed84d51fabac130ee04d15d3b5e7c91289210772154200f32b55df27024f7c22cc154860e69db82f1cbae0366f1e386c2d661db73f6a
   languageName: node
   linkType: hard
 
