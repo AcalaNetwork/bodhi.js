@@ -198,7 +198,8 @@ export class Wallet
 
   constructor(
     privateKey: BytesLike | ExternallyOwnedAccount,
-    provider?: Provider
+    provider: Provider,
+    keyringPair?: KeyringPair
   ) {
     logger.checkNew(new.target, Wallet);
 
@@ -261,7 +262,11 @@ export class Wallet
 
     // polkadot
     const keyring = new Keyring();
-    defineReadOnly(this, 'keyringPair', keyring.createFromUri(this.privateKey));
+    defineReadOnly(
+      this,
+      'keyringPair',
+      keyringPair || keyring.createFromUri(this.privateKey)
+    );
 
     /* istanbul ignore if */
     if (provider && !Provider.isProvider(provider)) {
