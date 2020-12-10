@@ -198,7 +198,7 @@ export class Wallet
 
   constructor(
     privateKey: BytesLike | ExternallyOwnedAccount,
-    provider: Provider,
+    provider?: Provider,
     keyringPair?: KeyringPair
   ) {
     logger.checkNew(new.target, Wallet);
