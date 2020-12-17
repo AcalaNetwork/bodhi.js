@@ -446,32 +446,38 @@ export class Wallet
       }
 
       return new Promise((resolve, reject) => {
-        extrinsic.signAndSend(this.keyringPair, (result: SubmittableResult) => {
-          handleTxResponse(result, this.provider.api)
-            .then(() => {
-              resolve({
-                hash: extrinsic.hash.toHex(),
-                from: tx.from,
-                confirmations: 10,
-                nonce: toBN(tx.nonce).toNumber(),
-                gasLimit: BigNumber.from(6000000),
-                gasPrice: BigNumber.from(100),
-                data: dataToString(tx.data),
-                value: BigNumber.from(100),
-                chainId: 1024,
-                wait: (confirmations?: number): Promise<TransactionReceipt> => {
-                  return this.provider._resolveTransactionReceipt(
-                    extrinsic.hash.toHex(),
-                    result.status.asInBlock.toHex(),
-                    tx.from
-                  );
-                }
+        extrinsic
+          .signAndSend(this.keyringPair, (result: SubmittableResult) => {
+            handleTxResponse(result, this.provider.api)
+              .then(() => {
+                resolve({
+                  hash: extrinsic.hash.toHex(),
+                  from: tx.from,
+                  confirmations: 10,
+                  nonce: toBN(tx.nonce).toNumber(),
+                  gasLimit: BigNumber.from(6000000),
+                  gasPrice: BigNumber.from(100),
+                  data: dataToString(tx.data),
+                  value: BigNumber.from(100),
+                  chainId: 1024,
+                  wait: (
+                    confirmations?: number
+                  ): Promise<TransactionReceipt> => {
+                    return this.provider._resolveTransactionReceipt(
+                      extrinsic.hash.toHex(),
+                      result.status.asInBlock.toHex(),
+                      tx.from
+                    );
+                  }
+                });
+              })
+              .catch(({ message, result }) => {
+                reject(message);
               });
-            })
-            .catch(({ message, result }) => {
-              reject(message);
-            });
-        });
+          })
+          .catch((error) => {
+            reject(error && error.message);
+          });
       });
     });
   }
@@ -485,18 +491,22 @@ export class Wallet
       signature
     );
     return new Promise<void>((resolve, reject) => {
-      extrinsic.signAndSend(this.keyringPair, (result: SubmittableResult) => {
-        handleTxResponse(result, this.provider.api)
-          .then(() => {
-            resolve();
-          })
-          .catch(({ message, result }) => {
-            if (message === 'evmAccounts.AccountIdHasMapped') {
+      extrinsic
+        .signAndSend(this.keyringPair, (result: SubmittableResult) => {
+          handleTxResponse(result, this.provider.api)
+            .then(() => {
               resolve();
-            }
-            reject(message);
-          });
-      });
+            })
+            .catch(({ message, result }) => {
+              if (message === 'evmAccounts.AccountIdHasMapped') {
+                resolve();
+              }
+              reject(message);
+            });
+        })
+        .catch((error) => {
+          reject(error && error.message);
+        });
     });
   }
 }

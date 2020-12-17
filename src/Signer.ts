@@ -440,9 +440,8 @@ export class Wallet
       }
 
       return new Promise((resolve, reject) => {
-        extrinsic.signAndSend(
-          this.signerAddress,
-          (result: SubmittableResult) => {
+        extrinsic
+          .signAndSend(this.signerAddress, (result: SubmittableResult) => {
             handleTxResponse(result, this.provider.api)
               .then(() => {
                 resolve({
@@ -469,8 +468,10 @@ export class Wallet
               .catch(({ message, result }) => {
                 reject(message);
               });
-          }
-        );
+          })
+          .catch((error) => {
+            reject(error && error.message);
+          });
       });
     });
   }
@@ -485,18 +486,22 @@ export class Wallet
       signature
     );
     return new Promise<void>((resolve, reject) => {
-      extrinsic.signAndSend(this.signerAddress, (result: SubmittableResult) => {
-        handleTxResponse(result, this.provider.api)
-          .then(() => {
-            resolve();
-          })
-          .catch(({ message, result }) => {
-            if (message === 'evmAccounts.AccountIdHasMapped') {
+      extrinsic
+        .signAndSend(this.signerAddress, (result: SubmittableResult) => {
+          handleTxResponse(result, this.provider.api)
+            .then(() => {
               resolve();
-            }
-            reject(message);
-          });
-      });
+            })
+            .catch(({ message, result }) => {
+              if (message === 'evmAccounts.AccountIdHasMapped') {
+                resolve();
+              }
+              reject(message);
+            });
+        })
+        .catch((error) => {
+          reject(error && error.message);
+        });
     });
   }
 }
