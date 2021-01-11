@@ -430,7 +430,9 @@ export class Provider extends eventemitter implements AbstractProvider {
     });
   }
 
-  async _resolveBlockHash(blockTag?: BlockTag | Promise<BlockTag>) {
+  async _resolveBlockHash(
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<string> {
     await this.resolveApi;
 
     if (!blockTag) return undefined;
@@ -447,7 +449,8 @@ export class Provider extends eventemitter implements AbstractProvider {
     }
 
     if (resolvedBlockHash === 'earliest') {
-      return this.api.query.system.blockHash(0);
+      const hash = this.api.query.system.blockHash(0);
+      return hash.toString();
     }
 
     if (isHex(resolvedBlockHash)) {
