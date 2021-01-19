@@ -15,6 +15,7 @@ import {
 import { encodeAddress } from '@polkadot/util-crypto';
 import eventemitter from 'eventemitter3';
 import { DataProvider } from './DataProvider';
+import { options } from '@acala-network/api';
 
 export type BlockTag = string | number;
 
@@ -145,7 +146,7 @@ export class Provider extends eventemitter implements AbstractProvider {
 
   constructor(apiOptions: any, dataProvider?: DataProvider) {
     super();
-    this.api = new ApiPromise(apiOptions);
+    this.api = new ApiPromise(options(apiOptions));
 
     this.resolveApi = this.api.isReady;
     this._isProvider = true;
