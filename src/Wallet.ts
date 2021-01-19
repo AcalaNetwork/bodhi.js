@@ -8,35 +8,18 @@ import {
 import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import {
-  arrayify,
   Bytes,
   BytesLike,
-  concat,
-  hexDataSlice,
   isHexString,
   joinSignature,
   SignatureLike
 } from '@ethersproject/bytes';
 import { hashMessage, _TypedDataEncoder } from '@ethersproject/hash';
-import {
-  defaultPath,
-  entropyToMnemonic,
-  HDNode,
-  Mnemonic
-} from '@ethersproject/hdnode';
-import {
-  decryptJsonWallet,
-  decryptJsonWalletSync,
-  encryptKeystore,
-  ProgressCallback
-} from '@ethersproject/json-wallets';
-import { keccak256 } from '@ethersproject/keccak256';
+import { defaultPath, HDNode, Mnemonic } from '@ethersproject/hdnode';
+import { encryptKeystore, ProgressCallback } from '@ethersproject/json-wallets';
 import { Logger } from '@ethersproject/logger';
 import { Deferrable, defineReadOnly } from '@ethersproject/properties';
-import { randomBytes } from '@ethersproject/random';
-import { SigningKey } from '@ethersproject/signing-key';
 import { computeAddress, recoverAddress } from '@ethersproject/transactions';
-import { Wordlist } from '@ethersproject/wordlists';
 import { SubmittableResult } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { Keyring } from '@polkadot/keyring';
@@ -47,6 +30,7 @@ import {
   TransactionRequest,
   TransactionResponse
 } from './Provider';
+import { WalletSigningKey } from './SigningKey';
 import { dataToString, handleTxResponse, toBN } from './utils';
 
 const logger = new Logger('bodhi/0.0.1');
@@ -63,7 +47,11 @@ function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
 
   return mnemonic && mnemonic.phrase;
 }
-
+interface WalletOption {
+  provider?: Provider;
+  keyringPair?: KeyringPair;
+  privateKey?: BytesLike | ExternallyOwnedAccount | WalletSigningKey;
+}
 export class Wallet
   extends Signer
   implements ExternallyOwnedAccount, TypedDataSigner {
@@ -72,26 +60,26 @@ export class Wallet
 
   // @ts-ignore
   readonly provider: Provider;
-  readonly keyringPair?: KeyringPair;
+  readonly keyringPair: KeyringPair;
 
   // Wrapping the _signingKey and _mnemonic in a getter function prevents
   // leaking the private key in console.log; still, be careful! :)
   // @ts-ignore strictPropertyInitialization
-  readonly _signingKey: () => SigningKey;
+  readonly _signingKey?: () => WalletSigningKey;
   // @ts-ignore strictPropertyInitialization
   readonly _mnemonic: () => Mnemonic;
 
   constructor(
-    privateKey: BytesLike | ExternallyOwnedAccount,
-    provider?: Provider,
-    keyringPair?: KeyringPair
+    provider: Provider,
+    keyringPair: KeyringPair,
+    privateKey?: BytesLike | ExternallyOwnedAccount | WalletSigningKey
   ) {
     logger.checkNew(new.target, Wallet);
 
     super();
 
     if (isAccount(privateKey)) {
-      const signingKey = new SigningKey(privateKey.privateKey);
+      const signingKey = new WalletSigningKey(privateKey.privateKey);
       defineReadOnly(this, '_signingKey', () => signingKey);
       defineReadOnly(this, 'address', computeAddress(this.publicKey));
 
@@ -127,7 +115,7 @@ export class Wallet
         defineReadOnly(this, '_mnemonic', (): Mnemonic => null);
       }
     } else {
-      if (SigningKey.isSigningKey(privateKey)) {
+      if (WalletSigningKey.isSigningKey(privateKey)) {
         /* istanbul ignore if */
         if (privateKey.curve !== 'secp256k1') {
           logger.throwArgumentError(
@@ -138,7 +126,7 @@ export class Wallet
         }
         defineReadOnly(this, '_signingKey', () => privateKey);
       } else {
-        const signingKey = new SigningKey(privateKey);
+        const signingKey = new WalletSigningKey(privateKey);
         defineReadOnly(this, '_signingKey', () => signingKey);
       }
       defineReadOnly(this, '_mnemonic', (): Mnemonic => null);
@@ -179,7 +167,7 @@ export class Wallet
 
   // @ts-ignore
   connect(provider: Provider): Wallet {
-    return new Wallet(this, provider);
+    return new Wallet(provider, this.keyringPair, this.privateKey);
   }
 
   signTransaction(transaction: TransactionRequest): Promise<string> {
@@ -193,7 +181,13 @@ export class Wallet
   }
 
   async signMessage(message: Bytes | string): Promise<string> {
-    return joinSignature(this._signingKey().signDigest(hashMessage(message)));
+    return joinSignature(
+      await this._signingKey().signRaw({
+        address: '',
+        data: hashMessage(message),
+        type: 'bytes'
+      })
+    );
   }
 
   async _signTypedData(
@@ -221,9 +215,11 @@ export class Wallet
     );
 
     return joinSignature(
-      this._signingKey().signDigest(
-        _TypedDataEncoder.hash(populated.domain, types, populated.value)
-      )
+      await this._signingKey().signRaw({
+        address: '',
+        data: _TypedDataEncoder.hash(populated.domain, types, populated.value),
+        type: 'bytes'
+      })
     );
   }
 
@@ -246,55 +242,6 @@ export class Wallet
     }
 
     return encryptKeystore(this, password, options, progressCallback);
-  }
-
-  /**
-   *  Static methods to create Wallet instances.
-   */
-  static createRandom(options?: any): Wallet {
-    let entropy: Uint8Array = randomBytes(16);
-
-    if (!options) {
-      options = {};
-    }
-
-    if (options.extraEntropy) {
-      entropy = arrayify(
-        hexDataSlice(keccak256(concat([entropy, options.extraEntropy])), 0, 16)
-      );
-    }
-
-    const mnemonic = entropyToMnemonic(entropy, options.locale);
-    return Wallet.fromMnemonic(mnemonic, options.path, options.locale);
-  }
-
-  static fromEncryptedJson(
-    json: string,
-    password: Bytes | string,
-    progressCallback?: ProgressCallback
-  ): Promise<Wallet> {
-    return decryptJsonWallet(json, password, progressCallback).then(
-      (account) => {
-        return new Wallet(account);
-      }
-    );
-  }
-
-  static fromEncryptedJsonSync(json: string, password: Bytes | string): Wallet {
-    return new Wallet(decryptJsonWalletSync(json, password));
-  }
-
-  static fromMnemonic(
-    mnemonic: string,
-    path?: string,
-    wordlist?: Wordlist
-  ): Wallet {
-    if (!path) {
-      path = defaultPath;
-    }
-    return new Wallet(
-      HDNode.fromMnemonic(mnemonic, null, wordlist).derivePath(path)
-    );
   }
 
   // Populates all fields in a transaction, signs it and sends it to the network
@@ -330,12 +277,12 @@ export class Wallet
                 resolve({
                   hash: extrinsic.hash.toHex(),
                   from: tx.from,
-                  confirmations: 10,
+                  confirmations: 0,
                   nonce: toBN(tx.nonce).toNumber(),
-                  gasLimit: BigNumber.from(6000000),
-                  gasPrice: BigNumber.from(100),
+                  gasLimit: BigNumber.from(tx.gasLimit || '0'),
+                  gasPrice: BigNumber.from(0),
                   data: dataToString(tx.data),
-                  value: BigNumber.from(100),
+                  value: BigNumber.from(tx.value || '0'),
                   chainId: 1024,
                   wait: (
                     confirmations?: number
@@ -359,7 +306,25 @@ export class Wallet
     });
   }
 
-  async claimEvmAccounts() {
+  async isConnented(evmAddress?: string): Promise<boolean> {
+    const _evmAddress = await this.getAddress();
+
+    if (!_evmAddress) return false;
+
+    if (!evmAddress) return true;
+
+    if (_evmAddress === evmAddress) return true;
+
+    return logger.throwError(
+      'An evm account already exists to bind to this account'
+    );
+  }
+
+  async connectEvmAccount(signingKey: WalletSigningKey) {
+    const isConnented = await this.isConnented();
+
+    if (isConnented) return this;
+
     const data =
       'acala evm:' + Buffer.from(this.keyringPair.publicKey).toString('hex');
     const signature = await this.signMessage(data);
@@ -384,6 +349,8 @@ export class Wallet
         .catch((error) => {
           reject(error && error.message);
         });
+    }).then(() => {
+      return new Wallet(this.provider, this.keyringPair, signingKey);
     });
   }
 }

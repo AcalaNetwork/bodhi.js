@@ -19,42 +19,26 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { u8aToHex } from '@polkadot/util';
 import { decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { Provider, TransactionReceipt } from './Provider';
+import { SigningKey as EvmSigningKey } from './SigningKey';
 import { dataToString, handleTxResponse, toBN } from './utils';
 
 const logger = new Logger('bodhi/0.0.1');
-interface SignRawOption {
-  address: string;
-  data: string;
-}
-
-interface EvmSigner {
-  signRaw(options: SignRawOption): Promise<{ signature: string }>;
-}
-
-export async function getEvmSigner(): Promise<EvmSigner> {
-  if (!(window as any).injectedWeb3) {
-    return logger.throwError('expect polkadot extensions');
-  }
-
-  const injectedWeb3 = (window as any).injectedWeb3;
-
-  const injected = await injectedWeb3['polkadot-js'].enable();
-
-  return injected.signer;
-}
 
 export class ExtensionSigner extends Signer implements TypedDataSigner {
   // @ts-ignore
   readonly provider: Provider;
-  readonly evmSigner: EvmSigner;
-  _evmAddress: string | null;
+  readonly evmSigningKey: EvmSigningKey;
   _substrateAddress: string;
 
-  constructor(provider: Provider, address: string, evmSigner?: EvmSigner) {
+  constructor(
+    provider: Provider,
+    address: string,
+    evmSigningKey?: EvmSigningKey
+  ) {
     super();
 
     defineReadOnly(this, 'provider', provider);
-    defineReadOnly(this, 'evmSigner', evmSigner);
+    defineReadOnly(this, 'evmSigningKey', evmSigningKey);
 
     if (typeof address === 'string' && isEthereumAddress(address)) {
       logger.throwError('expect substrate address');
@@ -79,24 +63,28 @@ export class ExtensionSigner extends Signer implements TypedDataSigner {
     );
   }
 
-  async isBinded(): Promise<boolean> {
-    const evmAddress = await this.getAddress();
-    const substrateAddress = await this.getSubstrateAddress();
-    return !!evmAddress && !!substrateAddress;
+  async isConnented(evmAddress?: string): Promise<boolean> {
+    const _evmAddress = await this.getAddress();
+
+    if (!_evmAddress) return false;
+
+    if (!evmAddress) return true;
+
+    if (_evmAddress === evmAddress) return true;
+
+    return logger.throwError(
+      'An evm account already exists to bind to this account'
+    );
   }
 
   async getAddress(): Promise<string> {
-    if (this._evmAddress) {
-      return this._evmAddress;
-    } else {
-      const address = await this.provider.api.query.evmAccounts.evmAddresses(
-        this._substrateAddress
-      );
-      if (!address.isEmpty) {
-        const evmAddress = getAddress(address.toString());
-        defineReadOnly(this, '_evmAddress', evmAddress);
-        return evmAddress;
-      }
+    const address = await this.provider.api.query.evmAccounts.evmAddresses(
+      this._substrateAddress
+    );
+
+    if (!address.isEmpty) {
+      const evmAddress = getAddress(address.toString());
+      return evmAddress;
     }
 
     return '';
@@ -106,17 +94,10 @@ export class ExtensionSigner extends Signer implements TypedDataSigner {
     return Promise.resolve(this._substrateAddress);
   }
 
-  async bindAccount(evmAddress: string) {
-    const _evmAddress = await this.getAddress();
+  async connectEvmAccount(evmAddress: string) {
+    const isConnented = await this.isConnented(evmAddress);
 
-    if (_evmAddress && _evmAddress !== evmAddress) {
-      logger.throwError(
-        'An evm account already exists to bind to this account'
-      );
-      return;
-    } else if (_evmAddress && _evmAddress === evmAddress) {
-      return;
-    }
+    if (isConnented) return;
 
     const publicKey = decodeAddress(this._substrateAddress);
     const data = 'acala evm:' + Buffer.from(publicKey).toString('hex');
@@ -192,12 +173,12 @@ export class ExtensionSigner extends Signer implements TypedDataSigner {
               resolve({
                 hash: extrinsic.hash.toHex(),
                 from: tx.from,
-                confirmations: 10,
+                confirmations: 0,
                 nonce: toBN(tx.nonce).toNumber(),
-                gasLimit: BigNumber.from(6000000),
-                gasPrice: BigNumber.from(100),
+                gasLimit: BigNumber.from(tx.gasLimit || '0'),
+                gasPrice: BigNumber.from(0),
                 data: dataToString(tx.data),
-                value: BigNumber.from(100),
+                value: BigNumber.from(tx.value || '0'),
                 chainId: 1024,
                 wait: (confirmations?: number): Promise<TransactionReceipt> => {
                   return this.provider._resolveTransactionReceipt(
@@ -227,7 +208,7 @@ export class ExtensionSigner extends Signer implements TypedDataSigner {
     evmAddress: string,
     message: Bytes | string
   ): Promise<string> {
-    if (!this.evmSigner) {
+    if (!this.evmSigningKey) {
       return logger.throwError('Expect evmSigner to be defined');
     } else {
       const messagePrefix = '\x19Ethereum Signed Message:\n';
@@ -242,12 +223,13 @@ export class ExtensionSigner extends Signer implements TypedDataSigner {
         ])
       );
 
-      const result = await this.evmSigner.signRaw({
+      const result = await this.evmSigningKey.signRaw({
         address: evmAddress,
-        data: msg
+        data: msg,
+        type: 'bytes'
       });
 
-      return joinSignature(result.signature);
+      return joinSignature(result);
     }
   }
 
