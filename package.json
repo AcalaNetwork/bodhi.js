@@ -20,6 +20,7 @@
     "@open-web3/dev-config": "^0.1.10",
     "@open-web3/indexer": "^0.8.2-5",
     "@open-web3/scanner": "^0.8.2-5",
+    "@types/chai": "^4.2.14",
     "ethers": "^5.0.21"
   },
   "devDependencies": {

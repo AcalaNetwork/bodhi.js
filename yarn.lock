@@ -42,6 +42,7 @@ __metadata:
     "@open-web3/dev-config": ^0.1.10
     "@open-web3/indexer": ^0.8.2-5
     "@open-web3/scanner": ^0.8.2-5
+    "@types/chai": ^4.2.14
     "@types/jest": ^26.0.15
     "@types/validator": ^13.1.0
     ethers: ^5.0.21
@@ -2965,6 +2966,13 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 0f6cbfb3d12f6b5cce62922c57b4704583307961e9d09ae07e1aab2a41f815e27417bd022c8f48bba545c2bb27ee23e1035ca53500b2081e037e749ec27b88b8
+  languageName: node
+  linkType: hard
+
+"@types/chai@npm:^4.2.14":
+  version: 4.2.14
+  resolution: "@types/chai@npm:4.2.14"
+  checksum: d226f4549a3144924b55ed5f6bdc60aed22d8c50fb87a28bc7619864d960caf46ba5e6372926cf23aea003778d339a7eb9a9e64e5c9241e22c1df537631d0264
   languageName: node
   linkType: hard
 
