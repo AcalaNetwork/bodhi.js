@@ -32,19 +32,10 @@ import {
 } from '@ethersproject/json-wallets';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Logger } from '@ethersproject/logger';
-import {
-  Deferrable,
-  defineReadOnly,
-  resolveProperties
-} from '@ethersproject/properties';
+import { Deferrable, defineReadOnly } from '@ethersproject/properties';
 import { randomBytes } from '@ethersproject/random';
 import { SigningKey } from '@ethersproject/signing-key';
-import {
-  computeAddress,
-  recoverAddress,
-  serialize,
-  UnsignedTransaction
-} from '@ethersproject/transactions';
+import { computeAddress, recoverAddress } from '@ethersproject/transactions';
 import { Wordlist } from '@ethersproject/wordlists';
 import { SubmittableResult } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
