@@ -319,7 +319,7 @@ export class Wallet
           tx.data,
           toBN(tx.value) || '0',
           toBN(tx.gasLimit),
-          0xffffffff.
+          0xffffffff
         );
       } else {
         extrinsic = this.provider.api.tx.evm.call(
