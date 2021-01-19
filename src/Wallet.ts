@@ -47,11 +47,6 @@ function hasMnemonic(value: any): value is { mnemonic: Mnemonic } {
 
   return mnemonic && mnemonic.phrase;
 }
-interface WalletOption {
-  provider?: Provider;
-  keyringPair?: KeyringPair;
-  privateKey?: BytesLike | ExternallyOwnedAccount | WalletSigningKey;
-}
 export class Wallet
   extends Signer
   implements ExternallyOwnedAccount, TypedDataSigner {

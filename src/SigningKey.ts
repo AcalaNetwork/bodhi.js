@@ -1,8 +1,8 @@
 import { BytesLike, SignatureLike } from '@ethersproject/bytes';
 import { SigningKey as EthersSigningKey } from '@ethersproject/signing-key';
+import { computeAddress } from '@ethersproject/transactions';
 import { Signer as InjectedSigner } from '@polkadot/api/types';
 import type { SignerPayloadRaw } from '@polkadot/types/types';
-import { computeAddress, recoverAddress } from '@ethersproject/transactions';
 
 export abstract class SigningKey {
   abstract signRaw(options: SignerPayloadRaw): Promise<SignatureLike>;
