@@ -128,13 +128,7 @@ export class Wallet
       defineReadOnly(this, 'address', computeAddress(this.publicKey));
     }
 
-    // polkadot
-    const keyring = new Keyring();
-    defineReadOnly(
-      this,
-      'keyringPair',
-      keyringPair || keyring.createFromUri(this.privateKey)
-    );
+    defineReadOnly(this, 'keyringPair', keyringPair);
 
     /* istanbul ignore if */
     if (provider && !Provider.isProvider(provider)) {
