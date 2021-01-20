@@ -306,7 +306,9 @@ export class Wallet
       this.keyringPair.address
     );
 
-    const _evmAddress = !_address.isEmpty ? getAddress(_address.toString()) : '';
+    const _evmAddress = !_address.isEmpty
+      ? getAddress(_address.toString())
+      : '';
 
     if (!_evmAddress) return false;
 
