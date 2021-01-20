@@ -22,7 +22,6 @@ import { Deferrable, defineReadOnly } from '@ethersproject/properties';
 import { computeAddress, recoverAddress } from '@ethersproject/transactions';
 import { SubmittableResult } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { Keyring } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import {
   Provider,
