@@ -302,7 +302,11 @@ export class Wallet
   }
 
   async isConnented(evmAddress?: string): Promise<boolean> {
-    const _evmAddress = await this.getAddress();
+    const _address = await this.provider.api.query.evmAccounts.evmAddresses(
+      this.keyringPair.address
+    );
+
+    let _evmAddress = !_address.isEmpty ? getAddress(_address.toString()) : '';
 
     if (!_evmAddress) return false;
 
