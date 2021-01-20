@@ -315,10 +315,10 @@ export class Wallet
     );
   }
 
-  async connectEvmAccount(signingKey: WalletSigningKey) {
+  async claimEvmAccount() {
     const isConnented = await this.isConnented();
 
-    if (isConnented) return this;
+    if (isConnented) return;
 
     const data =
       'acala evm:' + Buffer.from(this.keyringPair.publicKey).toString('hex');
@@ -344,8 +344,6 @@ export class Wallet
         .catch((error) => {
           reject(error && error.message);
         });
-    }).then(() => {
-      return new Wallet(this.provider, this.keyringPair, signingKey);
     });
   }
 }
