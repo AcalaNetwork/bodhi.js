@@ -144,9 +144,11 @@ export class Provider extends eventemitter implements AbstractProvider {
   readonly dataProvider?: DataProvider;
   readonly scanner: Scanner;
 
-  constructor(apiOptions: any, dataProvider?: DataProvider) {
+  constructor(_apiOptions: any, dataProvider?: DataProvider) {
     super();
-    this.api = new ApiPromise(options(apiOptions));
+    const apiOptions: any = options(_apiOptions);
+
+    this.api = new ApiPromise(apiOptions);
 
     this.resolveApi = this.api.isReady;
     this._isProvider = true;
