@@ -1,33 +1,34 @@
-import { BigNumber } from '@ethersproject/bignumber';
-import initDB from '@open-web3/indexer/models';
-import { Op, Sequelize } from 'sequelize';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   BlockTag,
-  Filter,
   FilterByBlockHash,
   Log,
   TransactionReceipt
-} from './Provider';
+} from '@ethersproject/abstract-provider';
+import { BigNumber } from '@ethersproject/bignumber';
+import initDB from '@open-web3/indexer/models';
+import { Op, Sequelize } from 'sequelize';
 
 export class DataProvider {
   constructor(public db: Sequelize) {}
 
-  async init() {
+  async init(): Promise<void> {
     await this.db.authenticate();
     initDB(this.db);
   }
 
   async getLogs(
-    filter: Filter,
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    filter: any,
     resolveBlockNumber: (
       blockTag?: BlockTag | Promise<BlockTag>
     ) => Promise<number | undefined>
   ): Promise<Array<Log>> {
     const condition = [];
 
-    if ((filter as any).transactionHash) {
+    if (filter.transactionHash) {
       condition.push({
-        transactionHash: (filter as any).transactionHash
+        transactionHash: filter.transactionHash
       });
     }
 
@@ -60,13 +61,13 @@ export class DataProvider {
     if (filter.topics) {
       condition.push({
         [Op.contains]: {
-          topics: [].concat((filter as any).topics) as string[]
+          topics: [].concat(filter.topics) as string[]
         }
       });
     }
     const model = this.db.model('EvmLogs');
 
-    const data = await model.findAll({
+    const data = (await model.findAll({
       attributes: [
         'blockNumber',
         'blockHash',
@@ -82,9 +83,9 @@ export class DataProvider {
         [Op.and]: condition
       },
       raw: true
-    });
+    })) as any;
 
-    return data as any;
+    return data;
   }
 
   async getTransactionReceipt(
@@ -126,20 +127,20 @@ export class DataProvider {
         blockHash: blockHash
       },
       raw: true
-    })) as any;
+    })) as any[];
 
     const findCreated = events.find(
-      (x: any) =>
+      (x) =>
         x.section.toUpperCase() === 'EVM' &&
         x.method.toUpperCase() === 'CREATED'
     );
     const findExecuted = events.find(
-      (x: any) =>
+      (x) =>
         x.section.toUpperCase() === 'EVM' &&
         x.method.toUpperCase() === 'EXECUTED'
     );
     const result = events.find(
-      (x: any) =>
+      (x) =>
         x.section.toUpperCase() === 'SYSTEM' &&
         x.method.toUpperCase() === 'EXTRINSICSUCCESS'
     );
@@ -153,7 +154,7 @@ export class DataProvider {
     const logs = await this.getLogs(
       {
         transactionHash
-      } as any,
+      },
       resolveBlockNumber
     );
 

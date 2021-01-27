@@ -17,6 +17,8 @@ module.exports = {
     project: ['./tsconfig.json']
   },
   rules: {
-    ...base.rules
+    ...base.rules,
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
   }
 };

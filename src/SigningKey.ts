@@ -1,58 +1,92 @@
-import { BytesLike, SignatureLike } from '@ethersproject/bytes';
-import { SigningKey as EthersSigningKey } from '@ethersproject/signing-key';
-import { computeAddress } from '@ethersproject/transactions';
-import { Signer as InjectedSigner } from '@polkadot/api/types';
-import type { SignerPayloadRaw } from '@polkadot/types/types';
+import { Signer } from '@polkadot/api/types';
 
-export abstract class SigningKey {
-  abstract signRaw(options: SignerPayloadRaw): Promise<SignatureLike>;
-}
+export type SigningKey = Signer;
 
-export class WalletSigningKey extends SigningKey implements SigningKey {
-  readonly #signingKey: EthersSigningKey;
-  readonly _isWalletSigningKey: boolean;
-  readonly curve: string;
+// export class AccountSigner {
+//   readonly #keyringPair: KeyringPair;
 
-  get privateKey(): string {
-    return this.#signingKey.privateKey;
-  }
+//   readonly #registry: Registry;
 
-  get publicKey(): string {
-    return this.#signingKey.publicKey;
-  }
+//   readonly #signDelay: number;
 
-  get address(): string {
-    return computeAddress(this.publicKey);
-  }
+//   constructor(registry: Registry, keyringPair: KeyringPair, signDelay = 0) {
+//     this.#keyringPair = keyringPair;
+//     this.#registry = registry;
+//     this.#signDelay = signDelay;
+//   }
 
-  constructor(privateKey?: BytesLike) {
-    super();
+//   public async signPayload(payload: SignerPayloadJSON): Promise<SignerResult> {
+//     assert(
+//       payload.address === this.#keyringPair.address,
+//       'Signer does not have the keyringPair'
+//     );
 
-    this._isWalletSigningKey = true;
-    this.#signingKey = new EthersSigningKey(privateKey);
-    this.curve = this.#signingKey.curve;
-  }
+//     return new Promise((resolve): void => {
+//       setTimeout((): void => {
+//         const signed = this.#registry
+//           .createType('ExtrinsicPayload', payload, { version: payload.version })
+//           .sign(this.#keyringPair);
 
-  async signRaw(payload: SignerPayloadRaw): Promise<SignatureLike> {
-    return this.#signingKey.signDigest(payload.data);
-  }
+//         resolve({
+//           id: ++id,
+//           ...signed
+//         });
+//       }, this.#signDelay);
+//     });
+//   }
 
-  static isSigningKey(value: any): value is WalletSigningKey {
-    return !!(value && value._isWalletSigningKey);
-  }
-}
-export class InjectedSigningKey extends SigningKey implements SigningKey {
-  readonly #injectedSigner: InjectedSigner;
-  readonly _isSigningKey: boolean;
+//   public async signRaw({
+//     address,
+//     data
+//   }: SignerPayloadRaw): Promise<SignerResult> {
+//     assert(
+//       address === this.#keyringPair.address,
+//       'Signer does not have the keyringPair'
+//     );
 
-  constructor(injectedSigner: InjectedSigner) {
-    super();
-    this.#injectedSigner = injectedSigner;
-    this._isSigningKey = true;
-  }
+//     return new Promise((resolve): void => {
+//       setTimeout((): void => {
+//         const signature = u8aToHex(this.#keyringPair.sign(hexToU8a(data)));
 
-  async signRaw(payload: SignerPayloadRaw): Promise<SignatureLike> {
-    const result = await this.#injectedSigner.signRaw(payload);
-    return result.signature;
-  }
-}
+//         resolve({
+//           id: ++id,
+//           signature
+//         });
+//       }, this.#signDelay);
+//     });
+//   }
+// }
+
+// export class WalletSigningKey extends SigningKey implements SigningKey {
+//   readonly #signingKey: EthersSigningKey;
+//   readonly _isWalletSigningKey: boolean;
+//   readonly curve: string;
+
+//   get privateKey(): string {
+//     return this.#signingKey.privateKey;
+//   }
+
+//   get publicKey(): string {
+//     return this.#signingKey.publicKey;
+//   }
+
+//   get address(): string {
+//     return computeAddress(this.publicKey);
+//   }
+
+//   constructor(privateKey?: BytesLike) {
+//     super();
+
+//     this._isWalletSigningKey = true;
+//     this.#signingKey = new EthersSigningKey(privateKey);
+//     this.curve = this.#signingKey.curve;
+//   }
+
+//   async signRaw(payload: SignerPayloadRaw): Promise<SignatureLike> {
+//     return this.#signingKey.signDigest(payload.data);
+//   }
+
+//   static isSigningKey(value: any): value is WalletSigningKey {
+//     return !!(value && value._isWalletSigningKey);
+//   }
+// }

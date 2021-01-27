@@ -1,4 +1,3 @@
-export { ExtensionSigner } from './ExtensionSigner';
+export { Signer } from './Signer';
 export { Provider } from './Provider';
 export * from './SigningKey';
-export { Wallet } from './Wallet';

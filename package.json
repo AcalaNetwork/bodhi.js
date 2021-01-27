@@ -5,6 +5,10 @@
   "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
+  "resolutions": {
+    "@polkadot/types": "^3.3.2",
+    "@polkadot/api": "^3.3.2"
+  },
   "scripts": {
     "build": "polkadot-dev-build-ts",
     "build:release": "polkadot-ci-ghact-build",
@@ -21,6 +25,7 @@
     "@open-web3/indexer": "^0.8.2-5",
     "@open-web3/scanner": "^0.8.2-5",
     "@types/chai": "^4.2.14",
+    "blakejs": "^1.1.0",
     "ethers": "^5.0.21"
   },
   "devDependencies": {

@@ -1,9 +1,28 @@
-import { Provider as AbstractProvider } from '@ethersproject/abstract-provider';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { options } from '@acala-network/api';
+import type {
+  Block,
+  BlockTag,
+  BlockWithTransactions,
+  EventType,
+  Filter,
+  Listener,
+  Log,
+  Provider as AbstractProvider,
+  TransactionReceipt,
+  TransactionRequest,
+  TransactionResponse
+} from '@ethersproject/abstract-provider';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import type { BytesLike } from '@ethersproject/bytes';
+import { Logger } from '@ethersproject/logger';
+import type { Network } from '@ethersproject/networks';
 import { Deferrable } from '@ethersproject/properties';
 import Scanner from '@open-web3/scanner';
 import { ApiPromise } from '@polkadot/api';
+import { ApiOptions } from '@polkadot/api/types';
+import { EvmAccountInfo } from '@acala-network/types/interfaces';
+import { Option } from '@polkadot/types';
+import type { WsProvider } from '@polkadot/rpc-provider';
 import {
   hexToU8a,
   isHex,
@@ -13,140 +32,18 @@ import {
   u8aFixLength
 } from '@polkadot/util';
 import { encodeAddress } from '@polkadot/util-crypto';
-import eventemitter from 'eventemitter3';
 import { DataProvider } from './DataProvider';
-import { options } from '@acala-network/api';
 
-export type BlockTag = string | number;
-
-export interface Log {
-  blockNumber: number;
-  blockHash: string;
-  transactionIndex: number;
-
-  removed: boolean;
-
-  address: string;
-  data: string;
-
-  topics: Array<string>;
-
-  transactionHash: string;
-  logIndex: number;
-}
-
-export interface Transaction {
-  hash?: string;
-  to?: string;
-  from?: string;
-  nonce: number;
-  gasLimit: BigNumber;
-  gasPrice: BigNumber;
-  data: string;
-  value: BigNumber;
-  chainId: number;
-  r?: string;
-  s?: string;
-  v?: number;
-}
-export interface TransactionReceipt {
-  to: string;
-  from: string;
-  contractAddress: string;
-  transactionIndex: number;
-  root?: string;
-  gasUsed: BigNumber;
-  logsBloom: string;
-  blockHash: string;
-  transactionHash: string;
-  logs: Array<Log>;
-  blockNumber: number;
-  confirmations: number;
-  cumulativeGasUsed: BigNumber;
-  byzantium: boolean;
-  status?: number;
-}
-
-export interface TransactionResponse extends Transaction {
-  hash: string;
-
-  // Only if a transaction has been mined
-  blockNumber?: number;
-  blockHash?: string;
-  timestamp?: number;
-
-  confirmations: number;
-
-  // Not optional (as it is in Transaction)
-  from: string;
-
-  // The raw transaction
-  raw?: string;
-
-  // This function waits until the transaction has been mined
-  wait: (confirmations?: number) => Promise<TransactionReceipt>;
-}
-export interface EventFilter {
-  address?: string;
-  topics?: Array<string | Array<string>>;
-}
-
-export interface Filter extends EventFilter {
-  fromBlock?: BlockTag;
-  toBlock?: BlockTag;
-}
-
-export interface FilterByBlockHash extends EventFilter {
-  blockHash?: string;
-}
-interface _Block {
-  hash: string;
-  parentHash: string;
-  number: number;
-
-  timestamp: number;
-  nonce: string;
-  difficulty: number;
-
-  gasLimit: BigNumber;
-  gasUsed: BigNumber;
-
-  miner: string;
-  extraData: string;
-}
-
-export interface Block extends _Block {
-  transactions: Array<string>;
-}
-
-export interface BlockWithTransactions extends _Block {
-  transactions: Array<TransactionResponse>;
-}
-
-export type TransactionRequest = {
-  to?: string;
-  from?: string;
-  nonce?: BigNumberish;
-
-  gasLimit?: BigNumberish;
-  gasPrice?: BigNumberish;
-
-  data?: BytesLike;
-  value?: BigNumberish;
-  chainId?: number;
-};
-
-// @ts-ignore EventType
-export class Provider extends eventemitter implements AbstractProvider {
+const logger = new Logger('bodhi-provider/0.0.1');
+export class Provider implements AbstractProvider {
   readonly api: ApiPromise;
   readonly resolveApi: Promise<ApiPromise>;
   readonly _isProvider: boolean;
   readonly dataProvider?: DataProvider;
   readonly scanner: Scanner;
 
-  constructor(_apiOptions: any, dataProvider?: DataProvider) {
-    super();
-    const apiOptions: any = options(_apiOptions);
+  constructor(_apiOptions: ApiOptions, dataProvider?: DataProvider) {
+    const apiOptions = options(_apiOptions);
 
     this.api = new ApiPromise(apiOptions);
 
@@ -155,7 +52,7 @@ export class Provider extends eventemitter implements AbstractProvider {
 
     this.dataProvider = dataProvider;
     this.scanner = new Scanner({
-      wsProvider: apiOptions.provider,
+      wsProvider: apiOptions.provider as WsProvider,
       types: apiOptions.types,
       typesAlias: apiOptions.typesAlias,
       typesSpec: apiOptions.typesSpec,
@@ -164,16 +61,17 @@ export class Provider extends eventemitter implements AbstractProvider {
     });
   }
 
-  static isProvider(value: any) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+  static isProvider(value: any): boolean {
     return !!(value && value._isProvider);
   }
 
-  async init() {
+  async init(): Promise<void> {
     await this.api.isReady;
     this.dataProvider && (await this.dataProvider.init());
   }
 
-  async getNetwork() {
+  async getNetwork(): Promise<Network> {
     await this.resolveApi;
 
     return {
@@ -182,7 +80,7 @@ export class Provider extends eventemitter implements AbstractProvider {
     };
   }
 
-  async getBlockNumber() {
+  async getBlockNumber(): Promise<number> {
     await this.resolveApi;
 
     const r = await this.api.rpc.chain.getHeader();
@@ -190,14 +88,14 @@ export class Provider extends eventemitter implements AbstractProvider {
     return r.number.toNumber();
   }
 
-  async getGasPrice() {
+  async getGasPrice(): Promise<BigNumber> {
     return BigNumber.from('1');
   }
 
   async getBalance(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
-  ) {
+  ): Promise<BigNumber> {
     await this.resolveApi;
 
     let address = await this._resolveAddress(addressOrName);
@@ -218,27 +116,32 @@ export class Provider extends eventemitter implements AbstractProvider {
   async getTransactionCount(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
-  ) {
+  ): Promise<number> {
     await this.resolveApi;
 
     const resolvedBlockTag = await blockTag;
 
     const address = await this._resolveEvmAddress(addressOrName);
 
-    let account: any;
+    let account: Option<EvmAccountInfo>;
 
     if (resolvedBlockTag === 'pending') {
-      account = await this.api.query.evm.accounts(address);
+      account = await this.api.query.evm.accounts<Option<EvmAccountInfo>>(
+        address
+      );
     } else {
       const blockHash = await this._resolveBlockHash(blockTag);
 
       account = blockHash
-        ? await this.api.query.evm.accounts.at(blockHash, address)
-        : await this.api.query.evm.accounts(address);
+        ? await this.api.query.evm.accounts.at<Option<EvmAccountInfo>>(
+            blockHash,
+            address
+          )
+        : await this.api.query.evm.accounts<Option<EvmAccountInfo>>(address);
     }
 
-    if (!(account as any).isNone) {
-      return (account as any).unwrap().nonce.toNumber() as number;
+    if (!account.isNone) {
+      return account.unwrap().nonce.toNumber();
     } else {
       return 0;
     }
@@ -247,7 +150,7 @@ export class Provider extends eventemitter implements AbstractProvider {
   async getCode(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
-  ) {
+  ): Promise<string> {
     await this.resolveApi;
 
     const address = await this._resolveEvmAddress(addressOrName);
@@ -264,7 +167,7 @@ export class Provider extends eventemitter implements AbstractProvider {
     addressOrName: string | Promise<string>,
     position: BigNumberish | Promise<BigNumberish>,
     blockTag?: BlockTag | Promise<BlockTag>
-  ) {
+  ): Promise<string> {
     await this.resolveApi;
 
     const address = await this._resolveEvmAddress(addressOrName);
@@ -288,6 +191,7 @@ export class Provider extends eventemitter implements AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> {
     const resolved = await this._resolveTransaction(transaction);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (this.api.rpc as any).evm.call(resolved);
 
     return result.toHex();
@@ -297,6 +201,7 @@ export class Provider extends eventemitter implements AbstractProvider {
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
     const resolved = await this._resolveTransaction(transaction);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (this.api.rpc as any).evm.estimateGas(resolved);
     return result.toHex();
   }
@@ -325,11 +230,11 @@ export class Provider extends eventemitter implements AbstractProvider {
     );
   }
 
-  async resolveName(name: string | Promise<string>) {
+  async resolveName(name: string | Promise<string>): Promise<string> {
     return name;
   }
 
-  async lookupAddress(address: string | Promise<string>) {
+  async lookupAddress(address: string | Promise<string>): Promise<string> {
     return address;
   }
 
@@ -339,6 +244,55 @@ export class Provider extends eventemitter implements AbstractProvider {
     timeout?: number
   ): Promise<TransactionReceipt> {
     return this._fail('waitForTransaction');
+  }
+
+  async getLogs(filter: Filter): Promise<Array<Log>> {
+    if (!this.dataProvider) return this._fail('getLogs');
+    return this.dataProvider.getLogs(filter, this._resolveBlockNumber);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _fail(operation: string): Promise<any> {
+    return Promise.resolve().then(() => {
+      logger.throwError(`Unsupport ${operation}`);
+    });
+  }
+
+  on(eventName: EventType, listener: Listener): Provider {
+    return logger.throwError('Unsupport Event');
+  }
+
+  once(eventName: EventType, listener: Listener): Provider {
+    return logger.throwError('Unsupport Event');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  emit(eventName: EventType, ...args: Array<any>): boolean {
+    return logger.throwError('Unsupport Event');
+  }
+
+  listenerCount(eventName?: EventType): number {
+    return logger.throwError('Unsupport Event');
+  }
+
+  listeners(eventName?: EventType): Array<Listener> {
+    return logger.throwError('Unsupport Event');
+  }
+
+  off(eventName: EventType, listener?: Listener): Provider {
+    return logger.throwError('Unsupport Event');
+  }
+
+  removeAllListeners(eventName?: EventType): Provider {
+    return logger.throwError('Unsupport Event');
+  }
+
+  addListener(eventName: EventType, listener: Listener): Provider {
+    return this.on(eventName, listener);
+  }
+
+  removeListener(eventName: EventType, listener: Listener): Provider {
+    return this.off(eventName, listener);
   }
 
   async _resolveTransactionReceipt(
@@ -361,17 +315,19 @@ export class Provider extends eventemitter implements AbstractProvider {
     );
 
     const findCreated = events.find(
-      (x: any) =>
+      (x) =>
         x.section.toUpperCase() === 'EVM' &&
         x.method.toUpperCase() === 'CREATED'
     );
+
     const findExecuted = events.find(
-      (x: any) =>
+      (x) =>
         x.section.toUpperCase() === 'EVM' &&
         x.method.toUpperCase() === 'EXECUTED'
     );
+
     const result = events.find(
-      (x: any) =>
+      (x) =>
         x.section.toUpperCase() === 'SYSTEM' &&
         x.method.toUpperCase() === 'EXTRINSICSUCCESS'
     );
@@ -422,17 +378,6 @@ export class Provider extends eventemitter implements AbstractProvider {
     };
   }
 
-  async getLogs(filter: Filter): Promise<Array<Log>> {
-    if (!this.dataProvider) return this._fail('getLogs');
-    return this.dataProvider.getLogs(filter, this._resolveBlockNumber);
-  }
-
-  _fail(operation: string): Promise<any> {
-    return Promise.resolve().then(() => {
-      console.log(`Unsupport ${operation}`);
-    });
-  }
-
   async _resolveBlockHash(
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> {
@@ -465,7 +410,9 @@ export class Provider extends eventemitter implements AbstractProvider {
     return hash.toString();
   }
 
-  async _resolveBlockNumber(blockTag?: BlockTag | Promise<BlockTag>) {
+  async _resolveBlockNumber(
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<number> {
     await this.resolveApi;
 
     if (!blockTag) return undefined;
@@ -492,13 +439,15 @@ export class Provider extends eventemitter implements AbstractProvider {
     }
   }
 
-  async _resolveAddress(addressOrName: string | Promise<string>) {
+  async _resolveAddress(
+    addressOrName: string | Promise<string>
+  ): Promise<string> {
     const resolved = await addressOrName;
     const result = await this.api.query.evmAccounts.accounts(resolved);
     return result.toString();
   }
 
-  async _toAddress(addressOrName: string | Promise<string>) {
+  async _toAddress(addressOrName: string | Promise<string>): Promise<string> {
     const resolved = await addressOrName;
     const address = encodeAddress(
       u8aFixLength(u8aConcat('evm:', hexToU8a(resolved)), 256, true)
@@ -506,7 +455,9 @@ export class Provider extends eventemitter implements AbstractProvider {
     return address.toString();
   }
 
-  async _resolveEvmAddress(addressOrName: string | Promise<string>) {
+  async _resolveEvmAddress(
+    addressOrName: string | Promise<string>
+  ): Promise<string> {
     const resolved = await addressOrName;
     if (resolved.length === 42) {
       return resolved;
@@ -515,7 +466,9 @@ export class Provider extends eventemitter implements AbstractProvider {
     return result.toString();
   }
 
-  async _resolveTransaction(transaction: Deferrable<TransactionRequest>) {
+  async _resolveTransaction(
+    transaction: Deferrable<TransactionRequest>
+  ): Promise<Deferrable<TransactionRequest>> {
     const tx = await transaction;
     for (const key of ['gasLimit', 'value']) {
       const typeKey = key as 'gasLimit' | 'value';

@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { providers } from 'ethers';
 
-export function supportEmit(Assertion: Chai.AssertionStatic) {
+export function supportEmit(Assertion: Chai.AssertionStatic): void {
   const filterLogsWithTopics = (
     logs: providers.Log[],
     topic: any,
