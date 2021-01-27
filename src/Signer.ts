@@ -81,6 +81,16 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   }
 
   async getAddress(): Promise<string> {
+    const address = this.queryEvmAddress();
+    if (!address) {
+      return address;
+    } else {
+      // default address
+      return this.computeDefaultEvmAddress();
+    }
+  }
+
+  async queryEvmAddress(): Promise<string> {
     const address = await this.provider.api.query.evmAccounts.evmAddresses(
       this._substrateAddress
     );
@@ -90,7 +100,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
       return evmAddress;
     }
 
-    return logger.throwError('Cannot get the evm address');
+    return '';
   }
 
   computeDefaultEvmAddress(): string {
@@ -246,7 +256,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   }
 
   async signMessage(message: Bytes | string): Promise<string> {
-    const evmAddress = await this.getAddress();
+    const evmAddress = await this.queryEvmAddress();
     return this._signMessage(evmAddress, message);
   }
 
@@ -254,6 +264,9 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     evmAddress: string,
     message: Bytes | string
   ): Promise<string> {
+    if (!evmAddress) {
+      return logger.throwError('No binding evm address');
+    }
     const messagePrefix = '\x19Ethereum Signed Message:\n';
     if (typeof message === 'string') {
       message = toUtf8Bytes(message);
