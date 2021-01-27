@@ -64,14 +64,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   }
 
   async isClaimed(evmAddress?: string): Promise<boolean> {
-    let rpcEvmAddress: string;
-    try {
-      rpcEvmAddress = await this.getAddress();
-    } catch {
-      return false;
-    }
+    const rpcEvmAddress = await this.queryEvmAddress();
 
-    if (!evmAddress || rpcEvmAddress === evmAddress) {
+    if (!rpcEvmAddress) return false;
+    if (!evmAddress) return true;
+    if (rpcEvmAddress === evmAddress) {
       return true;
     }
 
