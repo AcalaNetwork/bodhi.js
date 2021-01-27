@@ -1,6 +1,7 @@
+/* eslint-disable prefer-promise-reject-errors */
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { BytesLike } from '@ethersproject/bytes';
-import { SubmittableResult } from '@polkadot/api';
+import { SubmittableResult, ApiPromise } from '@polkadot/api';
 import {
   bufferToU8a,
   hexToBn,
@@ -13,7 +14,8 @@ import {
 } from '@polkadot/util';
 import BN from 'bn.js';
 
-export function decodeMessage(reason: any, code: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
+export function decodeMessage(reason: any, code: string): string {
   const reasonString = JSON.stringify(reason).toLowerCase();
   let codeString = `0x${code.substr(138)}`.replace(/0+$/, '');
 
@@ -27,7 +29,7 @@ export function decodeMessage(reason: any, code: string) {
 
 export function handleTxResponse(
   result: SubmittableResult,
-  api: any
+  api: ApiPromise
 ): Promise<{
   result: SubmittableResult;
   message?: string;
@@ -38,13 +40,16 @@ export function handleTxResponse(
       const executedFailed = result.findRecord('evm', 'ExecutedFailed');
 
       result.events
-        .filter(({ event: { section } }: any): boolean => section === 'system')
-        .forEach((event: any): void => {
+        .filter(({ event: { section } }): boolean => section === 'system')
+        .forEach((event): void => {
           const {
             event: { data, method }
           } = event;
+
           if (method === 'ExtrinsicFailed') {
-            const [dispatchError] = data;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const [dispatchError] = data as any[];
+
             let message = dispatchError.type;
 
             if (dispatchError.isModule) {
@@ -80,7 +85,7 @@ export function handleTxResponse(
   });
 }
 
-export function toBN(bigNumberis: BigNumberish) {
+export function toBN(bigNumberis: BigNumberish): BN {
   if (isU8a(bigNumberis)) {
     return u8aToBn(bigNumberis);
   }
@@ -92,10 +97,11 @@ export function toBN(bigNumberis: BigNumberish) {
     return hexToBn(bigNumberis.toHexString());
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new BN(bigNumberis as any);
 }
 
-export function dataToString(bytes: BytesLike) {
+export function dataToString(bytes: BytesLike): string {
   if (isBuffer(bytes)) {
     return u8aToHex(bufferToU8a(bytes));
   }

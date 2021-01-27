@@ -1,11 +1,6 @@
+import { u8aConcat, u8aToHex } from '@polkadot/util';
+import { blake2AsU8a, decodeAddress } from '@polkadot/util-crypto';
 import { Provider } from '..';
-import { addressToEvm, evmToAddress } from '@polkadot/util-crypto';
-import { u8aToHex, u8aConcat, hexToU8a } from '@polkadot/util';
-import {
-  decodeAddress,
-  encodeAddress,
-  blake2AsU8a
-} from '@polkadot/util-crypto';
 
 describe('bodhi', () => {
   it('should export the Provider', () => {

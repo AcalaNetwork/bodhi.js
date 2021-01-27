@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
 import {
   TransactionRequest,
@@ -111,7 +112,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     return this._substrateAddress;
   }
 
-  async claimEvmAccount(evmAddress: string) {
+  async claimEvmAccount(evmAddress: string): Promise<void> {
     const isConnented = await this.isClaimed(evmAddress);
 
     if (isConnented) return;
@@ -143,7 +144,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     });
   }
 
-  async claimDefaultAccount() {
+  async claimDefaultAccount(): Promise<void> {
     const extrinsic = this.provider.api.tx.evmAccounts.claimDefaultAccount();
 
     await new Promise<void>((resolve, reject) => {
@@ -277,6 +278,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   async _signTypedData(
     domain: TypedDataDomain,
     types: Record<string, Array<TypedDataField>>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: Record<string, any>
   ): Promise<string> {
     return logger.throwError(
