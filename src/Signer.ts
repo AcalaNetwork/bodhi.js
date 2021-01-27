@@ -134,9 +134,14 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
       evmAddress,
       signature
     );
+
+    await extrinsic.signAsync(this._substrateAddress, {
+      signer: this.signingKey
+    });
+
     await new Promise<void>((resolve, reject) => {
       extrinsic
-        .signAndSend(this._substrateAddress, (result: SubmittableResult) => {
+        .send((result: SubmittableResult) => {
           handleTxResponse(result, this.provider.api)
             .then(() => {
               resolve();
@@ -157,9 +162,13 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   async claimDefaultAccount(): Promise<void> {
     const extrinsic = this.provider.api.tx.evmAccounts.claimDefaultAccount();
 
+    await extrinsic.signAsync(this._substrateAddress, {
+      signer: this.signingKey
+    });
+
     await new Promise<void>((resolve, reject) => {
       extrinsic
-        .signAndSend(this._substrateAddress, (result: SubmittableResult) => {
+        .send((result: SubmittableResult) => {
           handleTxResponse(result, this.provider.api)
             .then(() => {
               resolve();
@@ -223,7 +232,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
 
     return new Promise((resolve, reject) => {
       extrinsic
-        .signAndSend(signerAddress, (result: SubmittableResult) => {
+        .send((result: SubmittableResult) => {
           handleTxResponse(result, this.provider.api)
             .then(() => {
               resolve({
