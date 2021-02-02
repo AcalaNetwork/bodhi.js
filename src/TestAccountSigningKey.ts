@@ -41,7 +41,9 @@ export class AccountSigningKey implements SigningKey {
     });
   }
 
-  public addKeyringPair(keyringPair: KeyringPair): void {
-    this.#keyringPairs = this.#keyringPairs.concat(keyringPair);
+  public addKeyringPair(
+    ...keyringPairs: (KeyringPair | ConcatArray<KeyringPair>)[]
+  ): void {
+    this.#keyringPairs = this.#keyringPairs.concat(...keyringPairs);
   }
 }
