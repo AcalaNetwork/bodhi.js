@@ -78,8 +78,8 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   }
 
   async getAddress(): Promise<string> {
-    const address = this.queryEvmAddress();
-    if (!address) {
+    const address = await this.queryEvmAddress();
+    if (address) {
       return address;
     } else {
       // default address
