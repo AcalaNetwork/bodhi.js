@@ -41,6 +41,8 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     defineReadOnly(this, 'provider', provider);
     defineReadOnly(this, 'signingKey', signingKey);
 
+    this.provider.api.setSigner(signingKey);
+
     if (typeof address === 'string' && isEthereumAddress(address)) {
       logger.throwError('expect substrate address');
     } else {
@@ -132,9 +134,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
       signature
     );
 
-    await extrinsic.signAsync(this._substrateAddress, {
-      signer: this.signingKey
-    });
+    await extrinsic.signAsync(this._substrateAddress);
 
     await new Promise<void>((resolve, reject) => {
       extrinsic
@@ -159,9 +159,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   async claimDefaultAccount(): Promise<void> {
     const extrinsic = this.provider.api.tx.evmAccounts.claimDefaultAccount();
 
-    await extrinsic.signAsync(this._substrateAddress, {
-      signer: this.signingKey
-    });
+    await extrinsic.signAsync(this._substrateAddress);
 
     await new Promise<void>((resolve, reject) => {
       extrinsic
@@ -223,9 +221,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
       );
     }
 
-    await extrinsic.signAsync(signerAddress, {
-      signer: this.signingKey
-    });
+    await extrinsic.signAsync(signerAddress);
 
     return new Promise((resolve, reject) => {
       extrinsic

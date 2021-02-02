@@ -46,7 +46,7 @@ export class Provider implements AbstractProvider {
     const apiOptions = options(_apiOptions);
 
     this.api = new ApiPromise(apiOptions);
-
+    
     this.resolveApi = this.api.isReady;
     this._isProvider = true;
 
