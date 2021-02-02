@@ -1,12 +1,10 @@
+import type { KeyringPair } from '@polkadot/keyring/types';
+import type { Registry } from '@polkadot/types/types';
 import type {
   SigningKey,
   SigningKeyResult,
   SigningPayloadJSON
 } from './SigningKey';
-import type { KeyringOptions, KeyringPair } from '@polkadot/keyring/types';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
-
-import type { Registry } from '@polkadot/types/types';
 
 let id = 0;
 
@@ -14,10 +12,8 @@ export class TestAccountSigningKey implements SigningKey {
   #keyringPairs: KeyringPair[];
   readonly #registry: Registry;
 
-  constructor(registry: Registry, options?: KeyringOptions, isDerived = true) {
-    const keypairMap = createTestPairs(options, isDerived);
-
-    this.#keyringPairs = Object.values(keypairMap);
+  constructor(registry: Registry) {
+    this.#keyringPairs = [];
     this.#registry = registry;
   }
 
