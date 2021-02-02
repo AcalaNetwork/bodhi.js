@@ -10,7 +10,7 @@ import type { Registry } from '@polkadot/types/types';
 
 let id = 0;
 
-export class AccountSigningKey implements SigningKey {
+export class TestAccountSigningKey implements SigningKey {
   #keyringPairs: KeyringPair[];
   readonly #registry: Registry;
 

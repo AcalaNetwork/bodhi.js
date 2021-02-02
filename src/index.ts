@@ -1,3 +1,4 @@
-export { Signer } from './Signer';
-export { Provider } from './Provider';
+export * from './Signer';
+export * from './Provider';
 export * from './SigningKey';
+export * from './TestAccountSigningKey';
