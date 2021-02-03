@@ -68,18 +68,22 @@ wallet.claimEvmAccounts()
 ```javascript
 import { deployContract } from "ethereum-waffle";
 import ERC20Abi from "../build/ERC20Abi.json";
-import { Wallet } from "@acala-network/bodhi";
-import { WsProvider, options } from "@acala-network/api";
-import { Provider } from "@acala-network/bodhi";
+import { TestAccountSigningKey, Provider, Signer } from "@acala-network/bodhi";
+import { WsProvider } from "@polkadot/api";
+import { createTestPairs } from "@polkadot/keyring/testingPairs";
 
-const evmprovider = new Provider(
-  options({
-    provider: new WsProvider("ws://localhost:9944")
-  })
-);
+const provider = new Provider({
+  provider: new WsProvider("ws://127.0.0.1:9944"),
+});
 
-const master = new Wallet("0xaa397267eaee48b2262a973fdcab384a758f39a3ad8708025cfb675bb9effc20", evmprovider)
+const testPairs = createTestPairs();
 
-const tokenInstance = await deployContract(master, ERC20Abi);
+const signingKey = new TestAccountSigningKey(provider.api.registry);
+
+signingKey.addKeyringPair(Object.values(testPairs));
+
+const wallet = new Signer(provider, testPairs.alice.address, signingKey)
+
+const tokenInstance = await deployContract(master, ERC20Abi, [1000]);
 ```
 
