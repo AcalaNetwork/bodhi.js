@@ -6,8 +6,8 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "resolutions": {
-    "@polkadot/types": "^3.3.2",
-    "@polkadot/api": "^3.3.2"
+    "@polkadot/types": "^4.0.3",
+    "@polkadot/api": "^4.0.3"
   },
   "scripts": {
     "build": "polkadot-dev-build-ts",
@@ -20,10 +20,10 @@
     "test:watch": "polkadot-dev-run-test --watch"
   },
   "dependencies": {
-    "@acala-network/api": "^0.6.2-15",
+    "@acala-network/api": "^0.7.1",
     "@open-web3/dev-config": "^0.1.10",
-    "@open-web3/indexer": "^0.8.2-5",
-    "@open-web3/scanner": "^0.8.2-5",
+    "@open-web3/indexer": "^0.9.1",
+    "@open-web3/scanner": "^0.9.1",
     "@types/chai": "^4.2.14",
     "blakejs": "^1.1.0",
     "ethers": "^5.0.21"
