@@ -40,8 +40,8 @@ __metadata:
     "@babel/register": ^7.12.1
     "@babel/runtime": ^7.12.5
     "@open-web3/dev-config": ^0.1.10
-    "@open-web3/indexer": ^0.9.1
-    "@open-web3/scanner": ^0.9.1
+    "@open-web3/indexer": ^0.9.2-0
+    "@open-web3/scanner": ^0.9.2-0
     "@types/chai": ^4.2.14
     "@types/jest": ^26.0.15
     "@types/validator": ^13.1.0
@@ -2556,18 +2556,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-web3/indexer@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "@open-web3/indexer@npm:0.9.1"
+"@open-web3/indexer@npm:^0.9.2-0":
+  version: 0.9.2-0
+  resolution: "@open-web3/indexer@npm:0.9.2-0"
   dependencies:
-    "@open-web3/scanner": ^0.9.1
+    "@open-web3/scanner": ^0.9.2-0
     pg: ^8.4.2
     rxjs: ^6.6.6
     sequelize: ^6.3.5
     winston: ^3.2.1
   peerDependencies:
-    "@polkadot/api": ^4.0.3
-  checksum: e370637f1c8170ccdbf34bfbf1e1b83362bf5c4bc5151b2c665bc984aca38fc78f6df8b69b42cec66fce1513cbf742eb4a390eca7d1c7a125506d8d2fa651436
+    "@polkadot/api": ^4.2.1
+  checksum: 2ac2be6c9a36b8101100ad3b768d567d1490b486095922c65a5aae84d2ac702c73af094a366df4ef98d5ce448fdccdf0f85b3157cc90565a57e5d616e8ac4731
   languageName: node
   linkType: hard
 
@@ -2602,12 +2602,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-web3/scanner@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "@open-web3/scanner@npm:0.9.1"
+"@open-web3/scanner@npm:^0.9.2-0":
+  version: 0.9.2-0
+  resolution: "@open-web3/scanner@npm:0.9.2-0"
   peerDependencies:
-    "@polkadot/api": ^4.0.3
-  checksum: e6a99b1ae285267d29368ae585ae7426ab94e2174edc5ee0aa215ba29c2815d13d04c7140fc36d1b292ec3d36b01e06620f79fd89ff1c985fa8d483b8e2fa1bb
+    "@polkadot/api": ^4.2.1
+  checksum: 949c896412359f8f191480d4114eb2ace2bc7709c08bb892dfb69aad22b716a4f36baaed3550bd14749461514849cc01af16d325949e60dee8f48d875830df8a
   languageName: node
   linkType: hard
 
