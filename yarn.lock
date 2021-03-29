@@ -2611,7 +2611,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api-derive@npm:4.2.1":
+"@polkadot/api-derive@npm:^4.2.1":
   version: 4.2.1
   resolution: "@polkadot/api-derive@npm:4.2.1"
   dependencies:
@@ -2624,22 +2624,6 @@ __metadata:
     "@polkadot/x-rxjs": ^6.0.5
     bn.js: ^4.11.9
   checksum: 051e90ed8c6c90d802c3d8cb91d26b556c0943c3bb4b6ac29403f3bb698886cf39ec7e8eaf534dff713c12215ec0c785f82fd9396c289666a4f0eec84ae25d61
-  languageName: node
-  linkType: hard
-
-"@polkadot/api-derive@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "@polkadot/api-derive@npm:4.0.3"
-  dependencies:
-    "@babel/runtime": ^7.13.9
-    "@polkadot/api": 4.0.3
-    "@polkadot/rpc-core": 4.0.3
-    "@polkadot/types": 4.0.3
-    "@polkadot/util": ^6.0.5
-    "@polkadot/util-crypto": ^6.0.5
-    "@polkadot/x-rxjs": ^6.0.5
-    bn.js: ^4.11.9
-  checksum: e2c667579bd29d9987b859a1a918958b67a251d5842f75b562dce6e0df5102eafb3bdecf56f77771288d963cf4aff654f1c71bc9cc7cc17eba854700c8130bcf
   languageName: node
   linkType: hard
 
@@ -2715,20 +2699,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/rpc-core@npm:4.0.3, @polkadot/rpc-core@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "@polkadot/rpc-core@npm:4.0.3"
-  dependencies:
-    "@babel/runtime": ^7.13.9
-    "@polkadot/metadata": 4.0.3
-    "@polkadot/rpc-provider": 4.0.3
-    "@polkadot/types": 4.0.3
-    "@polkadot/util": ^6.0.5
-    "@polkadot/x-rxjs": ^6.0.5
-  checksum: d50b3de3f0579565210ad791b107fc4c244b091abe19b265a920aefe554cd583892b0ca5c1ba2d1c85dd6be4d74e23d2ce0991c2afdb48d1b8a7054c43b1c447
-  languageName: node
-  linkType: hard
-
 "@polkadot/rpc-core@npm:4.2.1":
   version: 4.2.1
   resolution: "@polkadot/rpc-core@npm:4.2.1"
@@ -2740,6 +2710,20 @@ __metadata:
     "@polkadot/util": ^6.0.5
     "@polkadot/x-rxjs": ^6.0.5
   checksum: 0f99b428c568be169c4867454f2bacc16496bc6e16944ef8d8679271027aed7494fc7e33734f019d20a259a32ecac80968da6c96ca39b9076b381fc322574fef
+  languageName: node
+  linkType: hard
+
+"@polkadot/rpc-core@npm:^4.0.3":
+  version: 4.0.3
+  resolution: "@polkadot/rpc-core@npm:4.0.3"
+  dependencies:
+    "@babel/runtime": ^7.13.9
+    "@polkadot/metadata": 4.0.3
+    "@polkadot/rpc-provider": 4.0.3
+    "@polkadot/types": 4.0.3
+    "@polkadot/util": ^6.0.5
+    "@polkadot/x-rxjs": ^6.0.5
+  checksum: d50b3de3f0579565210ad791b107fc4c244b091abe19b265a920aefe554cd583892b0ca5c1ba2d1c85dd6be4d74e23d2ce0991c2afdb48d1b8a7054c43b1c447
   languageName: node
   linkType: hard
 
