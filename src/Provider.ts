@@ -43,9 +43,9 @@ export class Provider implements AbstractProvider {
   readonly scanner: Scanner;
 
   /**
-   * 
-   * @param _apiOptions 
-   * @param dataProvider 
+   *
+   * @param _apiOptions
+   * @param dataProvider
    */
   constructor(_apiOptions: ApiOptions, dataProvider?: DataProvider) {
     const apiOptions = options(_apiOptions);
@@ -77,7 +77,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * 
+   *
    * @returns A promise resolving to the name and chain ID of the connected chain.
    */
   async getNetwork(): Promise<Network> {
@@ -90,7 +90,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * 
+   *
    * @returns A promise resolving to the block number of the head block.
    */
   async getBlockNumber(): Promise<number> {
@@ -195,9 +195,9 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * 
+   *
    * @param addressOrName The address to retrieve the storage from
-   * @param position 
+   * @param position
    * @param blockTag The block to retrieve the storage from, defaults to head
    * @returns The storage data as a hash
    */
@@ -230,9 +230,9 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * 
+   *
    * @param transaction The transaction to call
-   * @param blockTag 
+   * @param blockTag
    * @returns The call result as a hash
    */
   async call(
@@ -247,7 +247,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * 
+   *
    * @param transaction The transaction to estimate the gas of
    * @returns The estimated gas used by this transaction
    */
@@ -261,7 +261,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * 
+   *
    * @param blockHashOrBlockTag The hash or tag of the block to retrieve
    * @returns A promise resolving to the retrieved block
    */
@@ -272,7 +272,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * 
+   *
    * @param blockHashOrBlockTag The hash or tag of the block to retrieve
    * @returns A promise resolving to the retrieved block with transactions
    */
