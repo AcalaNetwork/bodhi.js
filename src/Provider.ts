@@ -77,7 +77,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
+   * Get the network the provider is connected to.
    * @returns A promise resolving to the name and chain ID of the connected chain.
    */
   async getNetwork(): Promise<Network> {
@@ -90,7 +90,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
+   * Get the block number of the chain's head.
    * @returns A promise resolving to the block number of the head block.
    */
   async getBlockNumber(): Promise<number> {
@@ -106,7 +106,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * Retrieve an account's balance by address or name.
+   * Get an account's balance by address or name.
    * @param addressOrName The address or name of the account
    * @param blockTag The block to get the balance of, defaults to the head
    * @returns A promise resolving to the account's balance
@@ -133,7 +133,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * Retrieve the transaction count of an account at a specified block.
+   * Get the transaction count of an account at a specified block.
    * @param addressOrName The address or name of the account
    * @param blockTag The block to get the transaction count of, defaults to the head block
    * @returns A promise resolving to the account's transaction count
@@ -195,7 +195,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
+   * Get the storage from a block.
    * @param addressOrName The address to retrieve the storage from
    * @param position
    * @param blockTag The block to retrieve the storage from, defaults to head
@@ -228,7 +228,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
+   * Submit a transaction to be executed on chain.
    * @param transaction The transaction to call
    * @param blockTag
    * @returns The call result as a hash
@@ -245,7 +245,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
+   * Estimate gas for a transaction.
    * @param transaction The transaction to estimate the gas of
    * @returns The estimated gas used by this transaction
    */
@@ -311,9 +311,9 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
-   * @param filter
-   * @returns A promise that resolves to an array of
+   * Get an array of filtered logs from the chain's head.
+   * @param filter The filter to apply to the logs
+   * @returns A promise that resolves to an array of filtered logs
    */
   async getLogs(filter: Filter): Promise<Array<Log>> {
     if (!this.dataProvider) return this._fail('getLogs');

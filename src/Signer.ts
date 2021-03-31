@@ -86,7 +86,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   }
 
   /**
-   *
+   * Get the signer's EVM address, and claim an EVM address if it has not claimed one.
    * @returns A promise resolving to the EVM address of the signer's substrate
    * address
    */
@@ -101,7 +101,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   }
 
   /**
-   *
+   * Get the signers EVM address if it has claimed one.
    * @returns A promise resolving to the EVM address of the signer's substrate
    * address or an empty string if the EVM address isn't claimed
    */
