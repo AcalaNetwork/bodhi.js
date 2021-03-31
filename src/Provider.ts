@@ -219,9 +219,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   * Submit a transaction to be included on chain.
-   * @param signedTransaction The signed transaction to send
-   * @returns A promise resolving to the resulting transaction's response.
+   * Unimplemented
    */
   async sendTransaction(
     signedTransaction: string | Promise<string>
@@ -261,9 +259,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
-   * @param blockHashOrBlockTag The hash or tag of the block to retrieve
-   * @returns A promise resolving to the retrieved block
+   * Unimplemented, will always fail.
    */
   async getBlock(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
@@ -272,9 +268,7 @@ export class Provider implements AbstractProvider {
   }
 
   /**
-   *
-   * @param blockHashOrBlockTag The hash or tag of the block to retrieve
-   * @returns A promise resolving to the retrieved block with transactions
+   * Unimplemented, will always fail.
    */
   async getBlockWithTransactions(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
@@ -282,6 +276,9 @@ export class Provider implements AbstractProvider {
     return this._fail('getBlockWithTransactions');
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async getTransaction(transactionHash: string): Promise<TransactionResponse> {
     return this._fail('getTransaction');
   }
@@ -302,6 +299,9 @@ export class Provider implements AbstractProvider {
     return address;
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async waitForTransaction(
     transactionHash: string,
     confirmations?: number,
@@ -310,6 +310,11 @@ export class Provider implements AbstractProvider {
     return this._fail('waitForTransaction');
   }
 
+  /**
+   *
+   * @param filter
+   * @returns A promise that resolves to an array of
+   */
   async getLogs(filter: Filter): Promise<Array<Log>> {
     if (!this.dataProvider) return this._fail('getLogs');
     return this.dataProvider.getLogs(filter, this._resolveBlockNumber);
