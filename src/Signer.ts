@@ -65,6 +65,12 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   *
+   * @param evmAddress The EVM address to check
+   * @returns A promise that resolves to true if the EVM address is claimed
+   * or false if the address is not claimed
+   */
   async isClaimed(evmAddress?: string): Promise<boolean> {
     const rpcEvmAddress = await this.queryEvmAddress();
 
@@ -79,6 +85,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   * Get the signer's EVM address, and claim an EVM address if it has not claimed one.
+   * @returns A promise resolving to the EVM address of the signer's substrate
+   * address
+   */
   async getAddress(): Promise<string> {
     const address = await this.queryEvmAddress();
     if (address) {
@@ -89,6 +100,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     }
   }
 
+  /**
+   * Get the signers EVM address if it has claimed one.
+   * @returns A promise resolving to the EVM address of the signer's substrate
+   * address or an empty string if the EVM address isn't claimed
+   */
   async queryEvmAddress(): Promise<string> {
     const address = await this.provider.api.query.evmAccounts.evmAddresses(
       this._substrateAddress
@@ -102,6 +118,10 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     return '';
   }
 
+  /**
+   *
+   * @returns The default EVM address generated for the signer's substrate address
+   */
   computeDefaultEvmAddress(): string {
     const address = this._substrateAddress;
     const publicKey = decodeAddress(address);
@@ -117,6 +137,10 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   *
+   * @returns The substrate account stored in this Signer
+   */
   async getSubstrateAddress(): Promise<string> {
     return this._substrateAddress;
   }
@@ -156,6 +180,9 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     });
   }
 
+  /**
+   * Claims a default EVM address for this signer's substrate address
+   */
   async claimDefaultAccount(): Promise<void> {
     const extrinsic = this.provider.api.tx.evmAccounts.claimDefaultAccount();
 
@@ -193,6 +220,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   *
+   * @param transaction
+   * @returns A promise that resolves to the transaction's response
+   */
   async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
@@ -257,6 +289,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     });
   }
 
+  /**
+   *
+   * @param message The message to sign
+   * @returns A promise that resolves to the signed hash of the message
+   */
   async signMessage(message: Bytes | string): Promise<string> {
     const evmAddress = await this.queryEvmAddress();
     return this._signMessage(evmAddress, message);

@@ -42,6 +42,11 @@ export class Provider implements AbstractProvider {
   readonly dataProvider?: DataProvider;
   readonly scanner: Scanner;
 
+  /**
+   *
+   * @param _apiOptions
+   * @param dataProvider
+   */
   constructor(_apiOptions: ApiOptions, dataProvider?: DataProvider) {
     const apiOptions = options(_apiOptions);
 
@@ -71,6 +76,10 @@ export class Provider implements AbstractProvider {
     this.dataProvider && (await this.dataProvider.init());
   }
 
+  /**
+   * Get the network the provider is connected to.
+   * @returns A promise resolving to the name and chain ID of the connected chain.
+   */
   async getNetwork(): Promise<Network> {
     await this.resolveApi;
 
@@ -80,6 +89,10 @@ export class Provider implements AbstractProvider {
     };
   }
 
+  /**
+   * Get the block number of the chain's head.
+   * @returns A promise resolving to the block number of the head block.
+   */
   async getBlockNumber(): Promise<number> {
     await this.resolveApi;
 
@@ -92,6 +105,12 @@ export class Provider implements AbstractProvider {
     return BigNumber.from('1');
   }
 
+  /**
+   * Get an account's balance by address or name.
+   * @param addressOrName The address or name of the account
+   * @param blockTag The block to get the balance of, defaults to the head
+   * @returns A promise resolving to the account's balance
+   */
   async getBalance(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -113,6 +132,12 @@ export class Provider implements AbstractProvider {
     return BigNumber.from(accountInfo.data.free.toBn().toString());
   }
 
+  /**
+   * Get the transaction count of an account at a specified block.
+   * @param addressOrName The address or name of the account
+   * @param blockTag The block to get the transaction count of, defaults to the head block
+   * @returns A promise resolving to the account's transaction count
+   */
   async getTransactionCount(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -147,6 +172,12 @@ export class Provider implements AbstractProvider {
     }
   }
 
+  /**
+   * Get the code hash at a given address
+   * @param addressOrName The address of the code
+   * @param blockTag The block to look up the address, defaults to latest
+   * @returns A promise resolving in the code hash
+   */
   async getCode(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -163,6 +194,13 @@ export class Provider implements AbstractProvider {
     return code.toHex();
   }
 
+  /**
+   * Get the storage from a block.
+   * @param addressOrName The address to retrieve the storage from
+   * @param position
+   * @param blockTag The block to retrieve the storage from, defaults to head
+   * @returns The storage data as a hash
+   */
   async getStorageAt(
     addressOrName: string | Promise<string>,
     position: BigNumberish | Promise<BigNumberish>,
@@ -180,12 +218,21 @@ export class Provider implements AbstractProvider {
     return code.toHex();
   }
 
+  /**
+   * Unimplemented
+   */
   async sendTransaction(
     signedTransaction: string | Promise<string>
   ): Promise<TransactionResponse> {
     return this._fail('sendTransaction');
   }
 
+  /**
+   * Submit a transaction to be executed on chain.
+   * @param transaction The transaction to call
+   * @param blockTag
+   * @returns The call result as a hash
+   */
   async call(
     transaction: Deferrable<TransactionRequest>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -197,6 +244,11 @@ export class Provider implements AbstractProvider {
     return result.toHex();
   }
 
+  /**
+   * Estimate gas for a transaction.
+   * @param transaction The transaction to estimate the gas of
+   * @returns The estimated gas used by this transaction
+   */
   async estimateGas(
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
@@ -206,18 +258,27 @@ export class Provider implements AbstractProvider {
     return result.toHex();
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async getBlock(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<Block> {
     return this._fail('getBlock');
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async getBlockWithTransactions(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<BlockWithTransactions> {
     return this._fail('getBlockWithTransactions');
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async getTransaction(transactionHash: string): Promise<TransactionResponse> {
     return this._fail('getTransaction');
   }
@@ -238,6 +299,9 @@ export class Provider implements AbstractProvider {
     return address;
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async waitForTransaction(
     transactionHash: string,
     confirmations?: number,
@@ -246,6 +310,11 @@ export class Provider implements AbstractProvider {
     return this._fail('waitForTransaction');
   }
 
+  /**
+   * Get an array of filtered logs from the chain's head.
+   * @param filter The filter to apply to the logs
+   * @returns A promise that resolves to an array of filtered logs
+   */
   async getLogs(filter: Filter): Promise<Array<Log>> {
     if (!this.dataProvider) return this._fail('getLogs');
     return this.dataProvider.getLogs(filter, this._resolveBlockNumber);

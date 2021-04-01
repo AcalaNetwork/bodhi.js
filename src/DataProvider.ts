@@ -17,6 +17,13 @@ export class DataProvider {
     initDB(this.db);
   }
 
+  /**
+   *
+   * @param filter The filter to apply to the logs
+   * @param resolveBlockNumber The block to retrieve the logs from, defaults
+   * to the head
+   * @returns A promise that resolves to an array of filtered logs
+   */
   async getLogs(
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     filter: any,
@@ -88,6 +95,12 @@ export class DataProvider {
     return data;
   }
 
+  /**
+   * Get the transaction receipt for a transaction.
+   * @param txHash The transaction hash to get the receipt for
+   * @param resolveBlockNumber The block the transaction was resolved
+   * @returns A promise resolving to the transaction's receipt
+   */
   async getTransactionReceipt(
     txHash: string,
     resolveBlockNumber: (
