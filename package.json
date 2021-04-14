@@ -21,7 +21,7 @@
     "test:watch": "polkadot-dev-run-test --watch"
   },
   "dependencies": {
-    "@acala-network/api": "^0.7.2-4",
+    "@acala-network/api": "^0.7.2-10",
     "@open-web3/dev-config": "^0.1.10",
     "@open-web3/indexer": "^0.9.2-0",
     "@open-web3/scanner": "^0.9.2-0",

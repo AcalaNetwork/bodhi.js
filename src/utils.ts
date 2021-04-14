@@ -85,7 +85,7 @@ export function handleTxResponse(
   });
 }
 
-export function toBN(bigNumberis: BigNumberish): BN {
+export function toBN(bigNumberis: BigNumberish = 0): BN {
   if (isU8a(bigNumberis)) {
     return u8aToBn(bigNumberis);
   }

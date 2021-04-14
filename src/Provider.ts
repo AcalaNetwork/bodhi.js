@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { options } from '@acala-network/api';
+import { EvmAccountInfo } from '@acala-network/types/interfaces';
 import type {
   Block,
   BlockTag,
@@ -20,9 +21,8 @@ import { Deferrable } from '@ethersproject/properties';
 import Scanner from '@open-web3/scanner';
 import { ApiPromise } from '@polkadot/api';
 import { ApiOptions } from '@polkadot/api/types';
-import { EvmAccountInfo } from '@acala-network/types/interfaces';
-import { Option } from '@polkadot/types';
 import type { WsProvider } from '@polkadot/rpc-provider';
+import { Option } from '@polkadot/types';
 import {
   hexToU8a,
   isHex,
@@ -32,7 +32,9 @@ import {
   u8aFixLength
 } from '@polkadot/util';
 import { encodeAddress } from '@polkadot/util-crypto';
+import type BN from 'bn.js';
 import { DataProvider } from './DataProvider';
+import { toBN } from './utils';
 
 const logger = new Logger('bodhi-provider/0.0.1');
 export class Provider implements AbstractProvider {
@@ -102,7 +104,8 @@ export class Provider implements AbstractProvider {
   }
 
   async getGasPrice(): Promise<BigNumber> {
-    return BigNumber.from('1');
+    // return logger.throwError(`Unsupport getGasPrice`);
+    return BigNumber.from(0);
   }
 
   /**
@@ -252,10 +255,48 @@ export class Provider implements AbstractProvider {
   async estimateGas(
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
+    const resources = await this.estimateResources(transaction);
+    return resources.gas.add(resources.storage);
+  }
+
+  /**
+   * Estimate resources for a transaction.
+   * @param transaction The transaction to estimate the resources of
+   * @returns The estimated resources used by this transaction
+   */
+  async estimateResources(
+    transaction: Deferrable<TransactionRequest>
+  ): Promise<{
+    gas: BigNumber;
+    storage: BigNumber;
+    weightFee: BigNumber;
+  }> {
     const resolved = await this._resolveTransaction(transaction);
+
+    const from = await resolved.from;
+    const value = await resolved.value;
+    const to = await resolved.to;
+    const data = await resolved.data;
+
+    if (!from) {
+      return logger.throwError('From cannot be undefined');
+    }
+    
+    let extrinsic = !to
+      ? this.api.tx.evm.create(data, toBN(value), '0', 10000)
+      : this.api.tx.evm.call(to, data, toBN(value), '0', 10000);
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await (this.api.rpc as any).evm.estimateGas(resolved);
-    return result.toHex();
+    const result = await (this.api.rpc as any).evm.estimateResources(
+      resolved.from,
+      extrinsic.toHex()
+    );
+
+    return {
+      gas: BigNumber.from((result.gas as BN).toString()),
+      storage: BigNumber.from((result.storage as BN).toString()),
+      weightFee: BigNumber.from((result.weightFee as BN).toString())
+    };
   }
 
   /**
@@ -377,6 +418,11 @@ export class Provider implements AbstractProvider {
     const extrinsic = detail.extrinsics.find(
       ({ hash }) => hash === transactionHash
     );
+
+    if (!extrinsic) {
+      return logger.throwError(`Transaction hash not found`);
+    }
+
     const transactionIndex = extrinsic.index;
 
     const events = detail.events.filter(
@@ -400,6 +446,10 @@ export class Provider implements AbstractProvider {
         x.section.toUpperCase() === 'SYSTEM' &&
         x.method.toUpperCase() === 'EXTRINSICSUCCESS'
     );
+
+    if (!result) {
+      return logger.throwError(`Can't find event`);
+    }
 
     const status = findCreated || findExecuted ? 1 : 0;
 
@@ -452,7 +502,9 @@ export class Provider implements AbstractProvider {
   ): Promise<string> {
     await this.resolveApi;
 
-    if (!blockTag) return undefined;
+    if (!blockTag) {
+      return logger.throwError(`Blocktag cannot be undefined`);
+    }
 
     const resolvedBlockHash = await blockTag;
 
@@ -484,7 +536,9 @@ export class Provider implements AbstractProvider {
   ): Promise<number> {
     await this.resolveApi;
 
-    if (!blockTag) return undefined;
+    if (!blockTag) {
+      return logger.throwError(`Blocktag cannot be undefined`);
+    }
 
     const resolvedBlockNumber = await blockTag;
 
