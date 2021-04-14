@@ -281,7 +281,7 @@ export class Provider implements AbstractProvider {
     if (!from) {
       return logger.throwError('From cannot be undefined');
     }
-    
+
     let extrinsic = !to
       ? this.api.tx.evm.create(data, toBN(value), '0', 10000)
       : this.api.tx.evm.call(to, data, toBN(value), '0', 10000);
