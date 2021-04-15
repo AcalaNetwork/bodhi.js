@@ -33,7 +33,7 @@ import {
 } from '@polkadot/util';
 import { encodeAddress } from '@polkadot/util-crypto';
 import type BN from 'bn.js';
-import { DataProvider } from './DataProvider';
+import { AbstractDataProvider } from './DataProvider';
 import { toBN } from './utils';
 
 const logger = new Logger('bodhi-provider/0.0.1');
@@ -41,7 +41,7 @@ export class Provider implements AbstractProvider {
   readonly api: ApiPromise;
   readonly resolveApi: Promise<ApiPromise>;
   readonly _isProvider: boolean;
-  readonly dataProvider?: DataProvider;
+  readonly dataProvider?: AbstractDataProvider;
   readonly scanner: Scanner;
 
   /**
@@ -49,7 +49,7 @@ export class Provider implements AbstractProvider {
    * @param _apiOptions
    * @param dataProvider
    */
-  constructor(_apiOptions: ApiOptions, dataProvider?: DataProvider) {
+  constructor(_apiOptions: ApiOptions, dataProvider?: AbstractDataProvider) {
     const apiOptions = options(_apiOptions);
 
     this.api = new ApiPromise(apiOptions);
