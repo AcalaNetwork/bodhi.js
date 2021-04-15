@@ -1,9 +1,9 @@
-import { WsProvider } from "@polkadot/api";
+import { WsProvider } from '@polkadot/api';
 import { ApiOptions } from '@polkadot/api/types';
-import { createTestPairs } from "@polkadot/keyring/testingPairs";
-import { Provider } from "./Provider";
-import { Signer } from "./Signer";
-import { TestAccountSigningKey } from "./TestAccountSigningKey";
+import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { Provider } from './Provider';
+import { Signer } from './Signer';
+import { TestAccountSigningKey } from './TestAccountSigningKey';
 
 export class TestProvider extends Provider {
   constructor(_apiOptions?: ApiOptions) {
@@ -11,9 +11,9 @@ export class TestProvider extends Provider {
   }
 
   async getWallets(): Promise<Signer[]> {
-    const {alice, alice_stash, bob, bob_stash } = createTestPairs();
+    const { alice, aliceStash, bob, bobStash } = createTestPairs();
 
-    const pairs = [alice, alice_stash, bob, bob_stash];
+    const pairs = [alice, aliceStash, bob, bobStash];
 
     const signingKey = new TestAccountSigningKey(this.api.registry);
 
@@ -21,7 +21,7 @@ export class TestProvider extends Provider {
 
     await this.api.isReady;
 
-    let wallets: Signer[] = [];
+    const wallets: Signer[] = [];
 
     for (const pair of pairs) {
       const wallet = new Signer(this, pair.address, signingKey);
