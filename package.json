@@ -6,9 +6,9 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "resolutions": {
-    "@polkadot/types": "^4.2.1",
-    "@polkadot/api": "^4.2.1",
-    "@polkadot/api-derive": "^4.2.1"
+    "@polkadot/types": "^4.5.1",
+    "@polkadot/api": "^4.5.1",
+    "@polkadot/api-derive": "^4.5.1"
   },
   "scripts": {
     "build": "polkadot-dev-build-ts",
