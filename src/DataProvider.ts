@@ -6,7 +6,7 @@ import type {
 } from '@ethersproject/abstract-provider';
 
 export abstract class AbstractDataProvider {
-  async init(): Promise<void> {}
+  abstract init(): Promise<void>;
 
   /**
    *
