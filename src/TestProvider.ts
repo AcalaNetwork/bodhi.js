@@ -11,9 +11,10 @@ export class TestProvider extends Provider {
   }
 
   async getWallets(): Promise<Signer[]> {
-    const { alice, aliceStash, bob, bobStash } = createTestPairs();
+    /* eslint-disable camelcase */
+    const { alice, alice_stash, bob, bob_stash } = createTestPairs();
 
-    const pairs = [alice, aliceStash, bob, bobStash];
+    const pairs = [alice, alice_stash, bob, bob_stash];
 
     const signingKey = new TestAccountSigningKey(this.api.registry);
 
