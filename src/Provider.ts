@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { options } from '@acala-network/api';
+import { EvmAccountInfo } from '@acala-network/types/interfaces';
 import type {
   Block,
   BlockTag,
@@ -20,9 +21,8 @@ import { Deferrable } from '@ethersproject/properties';
 import Scanner from '@open-web3/scanner';
 import { ApiPromise } from '@polkadot/api';
 import { ApiOptions } from '@polkadot/api/types';
-import { EvmAccountInfo } from '@acala-network/types/interfaces';
-import { Option } from '@polkadot/types';
 import type { WsProvider } from '@polkadot/rpc-provider';
+import { Option } from '@polkadot/types';
 import {
   hexToU8a,
   isHex,
@@ -32,7 +32,9 @@ import {
   u8aFixLength
 } from '@polkadot/util';
 import { encodeAddress } from '@polkadot/util-crypto';
+import type BN from 'bn.js';
 import { DataProvider } from './DataProvider';
+import { toBN } from './utils';
 
 const logger = new Logger('bodhi-provider/0.0.1');
 export class Provider implements AbstractProvider {
@@ -42,6 +44,11 @@ export class Provider implements AbstractProvider {
   readonly dataProvider?: DataProvider;
   readonly scanner: Scanner;
 
+  /**
+   *
+   * @param _apiOptions
+   * @param dataProvider
+   */
   constructor(_apiOptions: ApiOptions, dataProvider?: DataProvider) {
     const apiOptions = options(_apiOptions);
 
@@ -71,6 +78,10 @@ export class Provider implements AbstractProvider {
     this.dataProvider && (await this.dataProvider.init());
   }
 
+  /**
+   * Get the network the provider is connected to.
+   * @returns A promise resolving to the name and chain ID of the connected chain.
+   */
   async getNetwork(): Promise<Network> {
     await this.resolveApi;
 
@@ -80,6 +91,10 @@ export class Provider implements AbstractProvider {
     };
   }
 
+  /**
+   * Get the block number of the chain's head.
+   * @returns A promise resolving to the block number of the head block.
+   */
   async getBlockNumber(): Promise<number> {
     await this.resolveApi;
 
@@ -89,9 +104,16 @@ export class Provider implements AbstractProvider {
   }
 
   async getGasPrice(): Promise<BigNumber> {
-    return BigNumber.from('1');
+    // return logger.throwError(`Unsupport getGasPrice`);
+    return BigNumber.from(0);
   }
 
+  /**
+   * Get an account's balance by address or name.
+   * @param addressOrName The address or name of the account
+   * @param blockTag The block to get the balance of, defaults to the head
+   * @returns A promise resolving to the account's balance
+   */
   async getBalance(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -113,6 +135,12 @@ export class Provider implements AbstractProvider {
     return BigNumber.from(accountInfo.data.free.toBn().toString());
   }
 
+  /**
+   * Get the transaction count of an account at a specified block.
+   * @param addressOrName The address or name of the account
+   * @param blockTag The block to get the transaction count of, defaults to the head block
+   * @returns A promise resolving to the account's transaction count
+   */
   async getTransactionCount(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -147,6 +175,12 @@ export class Provider implements AbstractProvider {
     }
   }
 
+  /**
+   * Get the code hash at a given address
+   * @param addressOrName The address of the code
+   * @param blockTag The block to look up the address, defaults to latest
+   * @returns A promise resolving in the code hash
+   */
   async getCode(
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -163,6 +197,13 @@ export class Provider implements AbstractProvider {
     return code.toHex();
   }
 
+  /**
+   * Get the storage from a block.
+   * @param addressOrName The address to retrieve the storage from
+   * @param position
+   * @param blockTag The block to retrieve the storage from, defaults to head
+   * @returns The storage data as a hash
+   */
   async getStorageAt(
     addressOrName: string | Promise<string>,
     position: BigNumberish | Promise<BigNumberish>,
@@ -180,12 +221,21 @@ export class Provider implements AbstractProvider {
     return code.toHex();
   }
 
+  /**
+   * Unimplemented
+   */
   async sendTransaction(
     signedTransaction: string | Promise<string>
   ): Promise<TransactionResponse> {
     return this._fail('sendTransaction');
   }
 
+  /**
+   * Submit a transaction to be executed on chain.
+   * @param transaction The transaction to call
+   * @param blockTag
+   * @returns The call result as a hash
+   */
   async call(
     transaction: Deferrable<TransactionRequest>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -197,27 +247,79 @@ export class Provider implements AbstractProvider {
     return result.toHex();
   }
 
+  /**
+   * Estimate gas for a transaction.
+   * @param transaction The transaction to estimate the gas of
+   * @returns The estimated gas used by this transaction
+   */
   async estimateGas(
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
-    const resolved = await this._resolveTransaction(transaction);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await (this.api.rpc as any).evm.estimateGas(resolved);
-    return result.toHex();
+    const resources = await this.estimateResources(transaction);
+    return resources.gas.add(resources.storage);
   }
 
+  /**
+   * Estimate resources for a transaction.
+   * @param transaction The transaction to estimate the resources of
+   * @returns The estimated resources used by this transaction
+   */
+  async estimateResources(
+    transaction: Deferrable<TransactionRequest>
+  ): Promise<{
+    gas: BigNumber;
+    storage: BigNumber;
+    weightFee: BigNumber;
+  }> {
+    const resolved = await this._resolveTransaction(transaction);
+
+    const from = await resolved.from;
+    const value = await resolved.value;
+    const to = await resolved.to;
+    const data = await resolved.data;
+
+    if (!from) {
+      return logger.throwError('From cannot be undefined');
+    }
+
+    const extrinsic = !to
+      ? this.api.tx.evm.create(data, toBN(value), '0', 10000)
+      : this.api.tx.evm.call(to, data, toBN(value), '0', 10000);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = await (this.api.rpc as any).evm.estimateResources(
+      resolved.from,
+      extrinsic.toHex()
+    );
+
+    return {
+      gas: BigNumber.from((result.gas as BN).toString()),
+      storage: BigNumber.from((result.storage as BN).toString()),
+      weightFee: BigNumber.from((result.weightFee as BN).toString())
+    };
+  }
+
+  /**
+   * Unimplemented, will always fail.
+   */
   async getBlock(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<Block> {
     return this._fail('getBlock');
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async getBlockWithTransactions(
     blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<BlockWithTransactions> {
     return this._fail('getBlockWithTransactions');
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async getTransaction(transactionHash: string): Promise<TransactionResponse> {
     return this._fail('getTransaction');
   }
@@ -238,6 +340,9 @@ export class Provider implements AbstractProvider {
     return address;
   }
 
+  /**
+   * Unimplemented, will always fail.
+   */
   async waitForTransaction(
     transactionHash: string,
     confirmations?: number,
@@ -246,6 +351,11 @@ export class Provider implements AbstractProvider {
     return this._fail('waitForTransaction');
   }
 
+  /**
+   * Get an array of filtered logs from the chain's head.
+   * @param filter The filter to apply to the logs
+   * @returns A promise that resolves to an array of filtered logs
+   */
   async getLogs(filter: Filter): Promise<Array<Log>> {
     if (!this.dataProvider) return this._fail('getLogs');
     return this.dataProvider.getLogs(filter, this._resolveBlockNumber);
@@ -308,6 +418,11 @@ export class Provider implements AbstractProvider {
     const extrinsic = detail.extrinsics.find(
       ({ hash }) => hash === transactionHash
     );
+
+    if (!extrinsic) {
+      return logger.throwError(`Transaction hash not found`);
+    }
+
     const transactionIndex = extrinsic.index;
 
     const events = detail.events.filter(
@@ -331,6 +446,10 @@ export class Provider implements AbstractProvider {
         x.section.toUpperCase() === 'SYSTEM' &&
         x.method.toUpperCase() === 'EXTRINSICSUCCESS'
     );
+
+    if (!result) {
+      return logger.throwError(`Can't find event`);
+    }
 
     const status = findCreated || findExecuted ? 1 : 0;
 
@@ -383,7 +502,9 @@ export class Provider implements AbstractProvider {
   ): Promise<string> {
     await this.resolveApi;
 
-    if (!blockTag) return undefined;
+    if (!blockTag) {
+      return logger.throwError(`Blocktag cannot be undefined`);
+    }
 
     const resolvedBlockHash = await blockTag;
 
@@ -415,7 +536,9 @@ export class Provider implements AbstractProvider {
   ): Promise<number> {
     await this.resolveApi;
 
-    if (!blockTag) return undefined;
+    if (!blockTag) {
+      return logger.throwError(`Blocktag cannot be undefined`);
+    }
 
     const resolvedBlockNumber = await blockTag;
 

@@ -31,8 +31,11 @@ import { dataToString, handleTxResponse, toBN } from './utils';
 const logger = new Logger('bodhi/0.0.1');
 
 export class Signer extends Abstractsigner implements TypedDataSigner {
+  // @ts-ignore
   readonly provider: Provider;
+  // @ts-ignore
   readonly signingKey: SigningKey;
+  // @ts-ignore
   readonly _substrateAddress: string;
 
   constructor(provider: Provider, address: string, signingKey: SigningKey) {
@@ -41,6 +44,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     defineReadOnly(this, 'provider', provider);
     defineReadOnly(this, 'signingKey', signingKey);
 
+    // @ts-ignore
     this.provider.api.setSigner(signingKey);
 
     if (typeof address === 'string' && isEthereumAddress(address)) {
@@ -65,6 +69,12 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   *
+   * @param evmAddress The EVM address to check
+   * @returns A promise that resolves to true if the EVM address is claimed
+   * or false if the address is not claimed
+   */
   async isClaimed(evmAddress?: string): Promise<boolean> {
     const rpcEvmAddress = await this.queryEvmAddress();
 
@@ -79,6 +89,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   * Get the signer's EVM address, and claim an EVM address if it has not claimed one.
+   * @returns A promise resolving to the EVM address of the signer's substrate
+   * address
+   */
   async getAddress(): Promise<string> {
     const address = await this.queryEvmAddress();
     if (address) {
@@ -89,6 +104,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     }
   }
 
+  /**
+   * Get the signers EVM address if it has claimed one.
+   * @returns A promise resolving to the EVM address of the signer's substrate
+   * address or an empty string if the EVM address isn't claimed
+   */
   async queryEvmAddress(): Promise<string> {
     const address = await this.provider.api.query.evmAccounts.evmAddresses(
       this._substrateAddress
@@ -102,6 +122,10 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     return '';
   }
 
+  /**
+   *
+   * @returns The default EVM address generated for the signer's substrate address
+   */
   computeDefaultEvmAddress(): string {
     const address = this._substrateAddress;
     const publicKey = decodeAddress(address);
@@ -117,6 +141,10 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   *
+   * @returns The substrate account stored in this Signer
+   */
   async getSubstrateAddress(): Promise<string> {
     return this._substrateAddress;
   }
@@ -156,6 +184,9 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     });
   }
 
+  /**
+   * Claims a default EVM address for this signer's substrate address
+   */
   async claimDefaultAccount(): Promise<void> {
     const extrinsic = this.provider.api.tx.evmAccounts.claimDefaultAccount();
 
@@ -193,13 +224,63 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     );
   }
 
+  /**
+   *
+   * @param transaction
+   * @returns A promise that resolves to the transaction's response
+   */
   async sendTransaction(
-    transaction: Deferrable<TransactionRequest>
+    _transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
     this._checkProvider('sendTransaction');
 
     const signerAddress = await this.getSubstrateAddress();
+    const evmAddress = await this.getAddress();
+
+    // estimateResources requires the from parameter.
+    // However, when creating the contract, there is no from parameter in the tx
+    const transaction = {
+      from: evmAddress,
+      ..._transaction
+    };
+
+    const resources = await this.provider.estimateResources(transaction);
+
+    let gasLimit: BigNumber;
+    let storageLimit: BigNumber;
+
+    let totalLimit = await transaction.gasLimit;
+
+    if (totalLimit === null || totalLimit === undefined) {
+      gasLimit = resources.gas;
+      storageLimit = resources.storage;
+      totalLimit = resources.gas.add(resources.storage);
+    } else {
+      const estimateTotalLimit = resources.gas.add(resources.storage);
+      gasLimit = BigNumber.from(totalLimit)
+        .mul(resources.gas)
+        .div(estimateTotalLimit)
+        .add(1);
+      storageLimit = BigNumber.from(totalLimit)
+        .mul(resources.storage)
+        .div(estimateTotalLimit)
+        .add(1);
+    }
+
+    transaction.gasLimit = totalLimit;
+
     const tx = await this.populateTransaction(transaction);
+
+    const data = tx.data;
+    const from = tx.from;
+
+    if (!data) {
+      return logger.throwError('Request data not found');
+    }
+
+    if (!from) {
+      return logger.throwError('Request from not found');
+    }
 
     let extrinsic: SubmittableExtrinsic<'promise'>;
 
@@ -207,17 +288,17 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     if (!tx.to) {
       extrinsic = this.provider.api.tx.evm.create(
         tx.data,
-        toBN(tx.value) || '0',
-        toBN(tx.gasLimit),
-        0xffffffff
+        toBN(tx.value),
+        toBN(gasLimit),
+        toBN(storageLimit)
       );
     } else {
       extrinsic = this.provider.api.tx.evm.call(
         tx.to,
         tx.data,
-        toBN(tx.value) || '0',
-        toBN(tx.gasLimit),
-        0xffffffff
+        toBN(tx.value),
+        toBN(gasLimit),
+        toBN(storageLimit)
       );
     }
 
@@ -230,19 +311,19 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
             .then(() => {
               resolve({
                 hash: extrinsic.hash.toHex(),
-                from: tx.from,
+                from: from || '',
                 confirmations: 0,
                 nonce: toBN(tx.nonce).toNumber(),
                 gasLimit: BigNumber.from(tx.gasLimit || '0'),
                 gasPrice: BigNumber.from(0),
-                data: dataToString(tx.data),
+                data: dataToString(data),
                 value: BigNumber.from(tx.value || '0'),
                 chainId: 1024,
                 wait: (confirmations?: number): Promise<TransactionReceipt> => {
                   return this.provider._resolveTransactionReceipt(
                     extrinsic.hash.toHex(),
                     result.status.asInBlock.toHex(),
-                    tx.from
+                    from
                   );
                 }
               });
@@ -257,6 +338,11 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     });
   }
 
+  /**
+   *
+   * @param message The message to sign
+   * @returns A promise that resolves to the signed hash of the message
+   */
   async signMessage(message: Bytes | string): Promise<string> {
     const evmAddress = await this.queryEvmAddress();
     return this._signMessage(evmAddress, message);
@@ -280,6 +366,10 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
         message
       ])
     );
+
+    if (!this.signingKey.signRaw) {
+      return logger.throwError('Need to implement signRaw method');
+    }
 
     const result = await this.signingKey.signRaw({
       address: evmAddress,
