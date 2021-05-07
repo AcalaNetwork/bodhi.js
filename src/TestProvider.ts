@@ -7,7 +7,9 @@ import { TestAccountSigningKey } from './TestAccountSigningKey';
 
 export class TestProvider extends Provider {
   constructor(_apiOptions?: ApiOptions) {
-    super({ provider: new WsProvider('ws://127.0.0.1:9944'), ..._apiOptions });
+    const provider =
+      _apiOptions?.provider || new WsProvider('ws://127.0.0.1:9944');
+    super({ provider, ..._apiOptions });
   }
 
   async getWallets(): Promise<Signer[]> {
