@@ -15,19 +15,19 @@
     "test:watch": "polkadot-dev-run-test --watch"
   },
   "peerDependencies": {
-    "@acala-network/api": "^0.7.4-7"
+    "@acala-network/api": "^0.7.4-8"
   },
   "dependencies": {
-    "@open-web3/scanner": "^0.9.4-2",
+    "@open-web3/scanner": "^0.9.4-3",
     "blakejs": "^1.1.0",
     "ethers": "^5.0.21",
     "typescript": "^4.2.4"
   },
   "devDependencies": {
-    "@acala-network/api": "^0.7.4-7",
-    "@babel/core": "^7.12.9",
-    "@babel/register": "^7.12.1",
-    "@babel/runtime": "^7.12.5",
+    "@acala-network/api": "^0.7.4-8",
+    "@babel/core": "^7.14.0",
+    "@babel/register": "^7.13.16",
+    "@babel/runtime": "^7.14.0",
     "@open-web3/dev-config": "^0.1.13",
     "@types/chai": "^4.2.14",
     "@types/jest": "^26.0.15",
