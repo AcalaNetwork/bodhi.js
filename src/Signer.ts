@@ -320,9 +320,12 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
                 value: BigNumber.from(tx.value || '0'),
                 chainId: 1024,
                 wait: (confirmations?: number): Promise<TransactionReceipt> => {
+                  const hex = result.status.isInBlock
+                    ? result.status.asInBlock.toHex()
+                    : result.status.asFinalized.toHex();
                   return this.provider._resolveTransactionReceipt(
                     extrinsic.hash.toHex(),
-                    result.status.asInBlock.toHex(),
+                    hex,
                     from
                   );
                 }
