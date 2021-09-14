@@ -12,7 +12,8 @@ import type {
   Provider as AbstractProvider,
   TransactionReceipt,
   TransactionRequest,
-  TransactionResponse
+  TransactionResponse,
+  FeeData
 } from '@ethersproject/abstract-provider';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Logger } from '@ethersproject/logger';
@@ -106,6 +107,14 @@ export class Provider implements AbstractProvider {
   async getGasPrice(): Promise<BigNumber> {
     // return logger.throwError(`Unsupport getGasPrice`);
     return BigNumber.from(0);
+  }
+
+  async getFeeData(): Promise<FeeData> {
+    return {
+      maxFeePerGas: null,
+      maxPriorityFeePerGas: null,
+      gasPrice: null
+    };
   }
 
   /**
@@ -374,14 +383,6 @@ export class Provider implements AbstractProvider {
     });
   }
 
-  on(eventName: EventType, listener: Listener): Provider {
-    return logger.throwError('Unsupport Event');
-  }
-
-  once(eventName: EventType, listener: Listener): Provider {
-    return logger.throwError('Unsupport Event');
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   emit(eventName: EventType, ...args: Array<any>): boolean {
     return logger.throwError('Unsupport Event');
@@ -395,19 +396,27 @@ export class Provider implements AbstractProvider {
     return logger.throwError('Unsupport Event');
   }
 
-  off(eventName: EventType, listener?: Listener): Provider {
+  off(eventName: EventType, listener?: Listener): AbstractProvider {
     return logger.throwError('Unsupport Event');
   }
 
-  removeAllListeners(eventName?: EventType): Provider {
+  on(eventName: EventType, listener: Listener): AbstractProvider {
     return logger.throwError('Unsupport Event');
   }
 
-  addListener(eventName: EventType, listener: Listener): Provider {
+  once(eventName: EventType, listener: Listener): AbstractProvider {
+    return logger.throwError('Unsupport Event');
+  }
+
+  removeAllListeners(eventName?: EventType): AbstractProvider {
+    return logger.throwError('Unsupport Event');
+  }
+
+  addListener(eventName: EventType, listener: Listener): AbstractProvider {
     return this.on(eventName, listener);
   }
 
-  removeListener(eventName: EventType, listener: Listener): Provider {
+  removeListener(eventName: EventType, listener: Listener): AbstractProvider {
     return this.off(eventName, listener);
   }
 
@@ -499,7 +508,9 @@ export class Provider implements AbstractProvider {
       confirmations: 4,
       cumulativeGasUsed: gasUsed,
       byzantium: false,
-      status
+      status,
+      effectiveGasPrice: BigNumber.from('1'),
+      type: 0
     };
   }
 
