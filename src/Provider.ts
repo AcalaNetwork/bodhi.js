@@ -111,9 +111,9 @@ export class Provider implements AbstractProvider {
 
   async getFeeData(): Promise<FeeData> {
     return {
-      maxFeePerGas: null,
-      maxPriorityFeePerGas: null,
-      gasPrice: null
+      maxFeePerGas: BigNumber.from(1),
+      maxPriorityFeePerGas: BigNumber.from(1),
+      gasPrice: BigNumber.from(1)
     };
   }
 
