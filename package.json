@@ -15,7 +15,7 @@
     "test:watch": "polkadot-dev-run-test --watch"
   },
   "peerDependencies": {
-    "@acala-network/api": "^2.0.2-2"
+    "@acala-network/api": "^2.3.2-1"
   },
   "dependencies": {
     "@open-web3/scanner": "^0.9.4-19",
@@ -24,7 +24,7 @@
     "typescript": "^4.2.4"
   },
   "devDependencies": {
-    "@acala-network/api": "^2.0.2-2",
+    "@acala-network/api": "^2.3.2-1",
     "@babel/core": "^7.14.3",
     "@babel/register": "^7.13.16",
     "@babel/runtime": "^7.14.0",
