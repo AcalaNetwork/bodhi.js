@@ -530,12 +530,12 @@ export class Provider implements AbstractProvider {
     }
 
     if (resolvedBlockHash === 'latest') {
-      const hash = await this.api.query.system.blockHash();
+      const hash = await this.api.rpc.chain.getBlockHash();
       return hash.toString();
     }
 
     if (resolvedBlockHash === 'earliest') {
-      const hash = this.api.query.system.blockHash(0);
+      const hash = this.api.rpc.chain.getBlockHash(0);
       return hash.toString();
     }
 
