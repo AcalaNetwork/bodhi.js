@@ -516,11 +516,11 @@ export class Provider implements AbstractProvider {
 
   async _resolveBlockHash(
     blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     await this.resolveApi;
 
     if (!blockTag) {
-      return logger.throwError(`Blocktag cannot be undefined`);
+      return undefined;
     }
 
     const resolvedBlockHash = await blockTag;
@@ -550,11 +550,11 @@ export class Provider implements AbstractProvider {
 
   async _resolveBlockNumber(
     blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<number> {
+  ): Promise<number | undefined> {
     await this.resolveApi;
 
     if (!blockTag) {
-      return logger.throwError(`Blocktag cannot be undefined`);
+      return undefined;
     }
 
     const resolvedBlockNumber = await blockTag;
