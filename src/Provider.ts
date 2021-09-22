@@ -519,7 +519,7 @@ export class Provider implements AbstractProvider {
   ): Promise<string | undefined> {
     await this.resolveApi;
 
-    if (!blockTag) {
+    if (blockTag === null || blockTag === undefined) {
       return undefined;
     }
 
@@ -553,7 +553,7 @@ export class Provider implements AbstractProvider {
   ): Promise<number | undefined> {
     await this.resolveApi;
 
-    if (!blockTag) {
+    if (blockTag === null || blockTag === undefined) {
       return undefined;
     }
 
