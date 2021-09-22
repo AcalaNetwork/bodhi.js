@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { options } from '@acala-network/api';
 import { EvmAccountInfo } from '@acala-network/types/interfaces';
+
 import type {
   Block,
   BlockTag,
@@ -88,7 +89,7 @@ export class Provider implements AbstractProvider {
 
     return {
       name: this.api.runtimeVersion.specName.toString(),
-      chainId: 10042
+      chainId: (this.api.consts.evm.chainId as any).toNumber()
     };
   }
 
