@@ -106,8 +106,7 @@ export class Provider implements AbstractProvider {
   }
 
   async getGasPrice(): Promise<BigNumber> {
-    // return logger.throwError(`Unsupport getGasPrice`);
-    return BigNumber.from(0);
+    return BigNumber.from(1);
   }
 
   async getFeeData(): Promise<FeeData> {
