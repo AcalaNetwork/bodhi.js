@@ -156,9 +156,33 @@ export class Provider implements AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<number> {
-    const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
+    const resolveBlockTag = await blockTag;
+    const address = await this._resolveEvmAddress(addressOrName);
+    const blockHash = await this._resolveBlockHash(blockTag);
 
-    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    let substrateNonce: number;
+    if (resolveBlockTag === 'pending') {
+      const count = await this.api.rpc.system.accountNextIndex(address);
+      substrateNonce = count.toNumber();
+    } else {
+      const info = blockHash
+        ? await this.api.query.system.account.at(blockHash, address)
+        : await this.api.query.system.account(address);
+
+      substrateNonce = info.nonce.toNumber();
+    }
+
+    if (substrateNonce === 0) {
+      const evmAccountInfo = await this.queryAccountInfo(
+        addressOrName,
+        blockTag
+      );
+      return !evmAccountInfo.isNone
+        ? evmAccountInfo.unwrap().nonce.toNumber()
+        : 0;
+    } else {
+      return substrateNonce;
+    }
   }
 
   /**
@@ -626,14 +650,7 @@ export class Provider implements AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> {
-    const resolvedBlockTag = await blockTag;
-
     const address = await this._resolveEvmAddress(addressOrName);
-
-    if (resolvedBlockTag === 'pending') {
-      return this.api.query.evm.accounts<Option<EvmAccountInfo>>(address);
-    }
-
     const blockHash = await this._resolveBlockHash(blockTag);
 
     const accountInfo = blockHash
