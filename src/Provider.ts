@@ -325,6 +325,7 @@ export class Provider implements AbstractProvider {
       storage: BigNumber.from((result.storage as BN).toString()),
       weightFee: BigNumber.from((result.weightFee as BN).toString()),
       storageDepositPerByte: BigNumber.from(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ((this.api.consts.evm.storageDepositPerByte as any) as BN).toString()
       )
     };
@@ -677,6 +678,7 @@ export class Provider implements AbstractProvider {
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
     if (accountInfo.isNone) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return this.api.createType('Option<EvmContractInfo>' as any, null) as any;
     }
 
