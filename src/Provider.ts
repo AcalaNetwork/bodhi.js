@@ -162,7 +162,9 @@ export class Provider implements AbstractProvider {
 
     let substrateNonce: number;
     if (resolveBlockTag === 'pending') {
-      const count = await this.api.rpc.system.accountNextIndex(substrateAddress);
+      const count = await this.api.rpc.system.accountNextIndex(
+        substrateAddress
+      );
       substrateNonce = count.toNumber();
     } else {
       const info = blockHash
