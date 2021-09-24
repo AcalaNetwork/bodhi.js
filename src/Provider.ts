@@ -280,8 +280,10 @@ export class Provider implements AbstractProvider {
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
     const resources = await this.estimateResources(transaction);
-    const storageDepositPerByte = this.api.consts.evm.storageDepositPerByte
-    return resources.gas.add(resources.storage.mul(storageDepositPerByte as any));
+
+    return resources.gas.add(
+      resources.storage.mul(resources.storageDepositPerByte)
+    );
   }
 
   /**
@@ -295,6 +297,7 @@ export class Provider implements AbstractProvider {
     gas: BigNumber;
     storage: BigNumber;
     weightFee: BigNumber;
+    storageDepositPerByte: BigNumber;
   }> {
     const resolved = await this._resolveTransaction(transaction);
 
@@ -320,7 +323,10 @@ export class Provider implements AbstractProvider {
     return {
       gas: BigNumber.from((result.gas as BN).toString()),
       storage: BigNumber.from((result.storage as BN).toString()),
-      weightFee: BigNumber.from((result.weightFee as BN).toString())
+      weightFee: BigNumber.from((result.weightFee as BN).toString()),
+      storageDepositPerByte: BigNumber.from(
+        ((this.api.consts.evm.storageDepositPerByte as any) as BN).toString()
+      )
     };
   }
 
