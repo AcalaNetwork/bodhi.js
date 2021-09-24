@@ -280,7 +280,8 @@ export class Provider implements AbstractProvider {
     transaction: Deferrable<TransactionRequest>
   ): Promise<BigNumber> {
     const resources = await this.estimateResources(transaction);
-    return resources.gas.add(resources.storage);
+    const storageDepositPerByte = this.api.consts.evm.storageDepositPerByte
+    return resources.gas.add(resources.storage.mul(storageDepositPerByte as any));
   }
 
   /**
