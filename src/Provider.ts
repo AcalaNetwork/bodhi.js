@@ -89,7 +89,7 @@ export class Provider implements AbstractProvider {
 
     return {
       name: this.api.runtimeVersion.specName.toString(),
-      chainId: (this.api.consts.evm.chainId as any).toNumber()
+      chainId: +this.api.consts.evm.chainId.toString()
     };
   }
 
