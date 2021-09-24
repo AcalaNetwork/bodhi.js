@@ -516,12 +516,12 @@ export class Provider implements AbstractProvider {
 
     if (resolvedBlockHash === 'latest') {
       const hash = await this.api.rpc.chain.getBlockHash();
-      return hash.toString();
+      return hash.toHex();
     }
 
     if (resolvedBlockHash === 'earliest') {
-      const hash = this.api.rpc.chain.getBlockHash(0);
-      return hash.toString();
+      const hash = this.api.genesisHash;
+      return hash.toHex();
     }
 
     if (isHex(resolvedBlockHash)) {
@@ -530,7 +530,7 @@ export class Provider implements AbstractProvider {
 
     const hash = await this.api.query.system.blockHash(resolvedBlockHash);
 
-    return hash.toString();
+    return hash.toHex();
   }
 
   async _resolveBlockNumber(
