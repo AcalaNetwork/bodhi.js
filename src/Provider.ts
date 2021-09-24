@@ -19,6 +19,7 @@ import type {
   TransactionResponse
 } from '@ethersproject/abstract-provider';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import { isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
 import type { Network } from '@ethersproject/networks';
 import { Deferrable } from '@ethersproject/properties';
@@ -499,39 +500,47 @@ export class Provider implements AbstractProvider {
     };
   }
 
-  async _resolveBlockHash(
+  _resolveBlockHash = async (
     blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<string | undefined> {
+  ): Promise<string> => {
     await this.resolveApi;
+    blockTag = await blockTag;
 
-    if (blockTag === null || blockTag === undefined) {
-      return undefined;
+    if (blockTag === undefined) {
+      blockTag = 'latest';
     }
 
-    const resolvedBlockHash = await blockTag;
+    switch (blockTag) {
+      case 'pending': {
+        const hash = await this.api.rpc.chain.getBlockHash();
+        return hash.toHex();
+      }
+      case 'latest': {
+        const hash = await this.api.rpc.chain.getFinalizedHead();
+        return hash.toHex();
+      }
+      case 'earliest': {
+        const hash = this.api.genesisHash;
+        return hash.toHex();
+      }
+      default: {
+        if (!isHexString(blockTag)) {
+          throw new Error('blocktag should be a hex string');
+        }
 
-    if (resolvedBlockHash === 'pending') {
-      throw new Error('Unsupport Block Pending');
+        // block hash
+        if (typeof blockTag === 'string' && isHexString(blockTag, 32)) {
+          return blockTag;
+        }
+
+        const blockNumber = BigNumber.from(blockTag).toNumber();
+
+        const hash = await this.api.rpc.chain.getBlockHash(blockNumber);
+
+        return hash.toHex();
+      }
     }
-
-    if (resolvedBlockHash === 'latest') {
-      const hash = await this.api.rpc.chain.getBlockHash();
-      return hash.toHex();
-    }
-
-    if (resolvedBlockHash === 'earliest') {
-      const hash = this.api.genesisHash;
-      return hash.toHex();
-    }
-
-    if (isHex(resolvedBlockHash)) {
-      return resolvedBlockHash;
-    }
-
-    const hash = await this.api.query.system.blockHash(resolvedBlockHash);
-
-    return hash.toHex();
-  }
+  };
 
   async _resolveBlockNumber(
     blockTag?: BlockTag | Promise<BlockTag>
