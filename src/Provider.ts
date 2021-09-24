@@ -30,7 +30,6 @@ import type { WsProvider } from '@polkadot/rpc-provider';
 import { Option } from '@polkadot/types';
 import {
   hexToU8a,
-  isHex,
   isNumber,
   numberToHex,
   u8aConcat,
