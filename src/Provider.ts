@@ -618,7 +618,14 @@ export class Provider implements AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> {
+    const resolvedBlockTag = await blockTag;
+
     const address = await this._resolveEvmAddress(addressOrName);
+
+    if (resolvedBlockTag === 'pending') {
+      return this.api.query.evm.accounts<Option<EvmAccountInfo>>(address);
+    }
+
     const blockHash = await this._resolveBlockHash(blockTag);
 
     const accountInfo = blockHash
