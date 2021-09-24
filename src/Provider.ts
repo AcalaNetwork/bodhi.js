@@ -1,20 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { options } from '@acala-network/api';
-import { EvmAccountInfo } from '@acala-network/types/interfaces';
-
+import type {
+  EvmAccountInfo,
+  EvmContractInfo
+} from '@acala-network/types/interfaces';
 import type {
   Block,
   BlockTag,
   BlockWithTransactions,
   EventType,
+  FeeData,
   Filter,
   Listener,
   Log,
   Provider as AbstractProvider,
   TransactionReceipt,
   TransactionRequest,
-  TransactionResponse,
-  FeeData
+  TransactionResponse
 } from '@ethersproject/abstract-provider';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Logger } from '@ethersproject/logger';
@@ -154,34 +156,9 @@ export class Provider implements AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<number> {
-    await this.resolveApi;
+    const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
-    const resolvedBlockTag = await blockTag;
-
-    const address = await this._resolveEvmAddress(addressOrName);
-
-    let account: Option<EvmAccountInfo>;
-
-    if (resolvedBlockTag === 'pending') {
-      account = await this.api.query.evm.accounts<Option<EvmAccountInfo>>(
-        address
-      );
-    } else {
-      const blockHash = await this._resolveBlockHash(blockTag);
-
-      account = blockHash
-        ? await this.api.query.evm.accounts.at<Option<EvmAccountInfo>>(
-            blockHash,
-            address
-          )
-        : await this.api.query.evm.accounts<Option<EvmAccountInfo>>(address);
-    }
-
-    if (!account.isNone) {
-      return account.unwrap().nonce.toNumber();
-    } else {
-      return 0;
-    }
+    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
   }
 
   /**
@@ -199,9 +176,17 @@ export class Provider implements AbstractProvider {
     const address = await this._resolveEvmAddress(addressOrName);
     const blockHash = await this._resolveBlockHash(blockTag);
 
+    const contractInfo = await this.queryContractInfo(address, blockHash);
+
+    if (contractInfo.isNone) {
+      return '0x';
+    }
+
+    const codeHash = contractInfo.unwrap().codeHash;
+
     const code = blockHash
-      ? await this.api.query.evm.accountCodes.at(blockHash, address)
-      : await this.api.query.evm.accountCodes(address);
+      ? await this.api.query.evm.codes.at(blockHash, codeHash)
+      : await this.api.query.evm.codes(codeHash);
 
     return code.toHex();
   }
@@ -627,5 +612,35 @@ export class Provider implements AbstractProvider {
     delete tx.chainId;
 
     return tx;
+  }
+
+  async queryAccountInfo(
+    addressOrName: string | Promise<string>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<Option<EvmAccountInfo>> {
+    const address = await this._resolveEvmAddress(addressOrName);
+    const blockHash = await this._resolveBlockHash(blockTag);
+
+    const accountInfo = blockHash
+      ? await this.api.query.evm.accounts.at<Option<EvmAccountInfo>>(
+          blockHash,
+          address
+        )
+      : await this.api.query.evm.accounts<Option<EvmAccountInfo>>(address);
+
+    return accountInfo;
+  }
+
+  async queryContractInfo(
+    addressOrName: string | Promise<string>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<Option<EvmContractInfo>> {
+    const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
+
+    if (accountInfo.isNone) {
+      return this.api.createType('Option<EvmContractInfo>' as any, null) as any;
+    }
+
+    return accountInfo.unwrap().contractInfo;
   }
 }
