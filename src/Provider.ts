@@ -156,35 +156,9 @@ export class Provider implements AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<number> {
-    const resolveBlockTag = await blockTag;
-    const substrateAddress = await this._resolveAddress(addressOrName);
-    const blockHash = await this._resolveBlockHash(blockTag);
+    const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
-    let substrateNonce: number;
-    if (resolveBlockTag === 'pending') {
-      const count = await this.api.rpc.system.accountNextIndex(
-        substrateAddress
-      );
-      substrateNonce = count.toNumber();
-    } else {
-      const info = blockHash
-        ? await this.api.query.system.account.at(blockHash, substrateAddress)
-        : await this.api.query.system.account(substrateAddress);
-
-      substrateNonce = info.nonce.toNumber();
-    }
-
-    if (substrateNonce === 0) {
-      const evmAccountInfo = await this.queryAccountInfo(
-        addressOrName,
-        blockTag
-      );
-      return !evmAccountInfo.isNone
-        ? evmAccountInfo.unwrap().nonce.toNumber()
-        : 0;
-    } else {
-      return substrateNonce;
-    }
+    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
   }
 
   /**
