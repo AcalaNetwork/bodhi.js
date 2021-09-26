@@ -235,7 +235,11 @@ export class Provider implements AbstractProvider {
     const blockHash = await this._resolveBlockHash(blockTag);
 
     const code = blockHash
-      ? await this.api.query.evm.accountStorages.at(blockHash, address, position)
+      ? await this.api.query.evm.accountStorages.at(
+          blockHash,
+          address,
+          position
+        )
       : await this.api.query.evm.accountStorages(address, position);
 
     return code.toHex();
