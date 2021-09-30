@@ -1,5 +1,6 @@
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { Registry } from '@polkadot/types/types';
+import { addressEq } from '@polkadot/util-crypto';
 import type {
   SigningKey,
   SigningKeyResult,
@@ -20,8 +21,8 @@ export class TestAccountSigningKey implements SigningKey {
   public async signPayload(
     payload: SigningPayloadJSON
   ): Promise<SigningKeyResult> {
-    const findKeyringPair = this.#keyringPairs.find(
-      (pair) => pair.address === payload.address
+    const findKeyringPair = this.#keyringPairs.find((pair) =>
+      addressEq(pair.address, payload.address)
     );
 
     if (!findKeyringPair) {
