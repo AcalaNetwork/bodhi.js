@@ -650,7 +650,10 @@ export class Provider implements AbstractProvider {
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
     if (accountInfo.isNone) {
-      return this.api.createType('Option<EvmContractInfo>' as any, null) as any;
+      return this.api.createType(
+        'Option<EvmContractInfo>' as any,
+        null
+      ) as Option<EvmContractInfo>;
     }
 
     return accountInfo.unwrap().contractInfo;
