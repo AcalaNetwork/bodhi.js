@@ -27,6 +27,12 @@ export function decodeMessage(reason: any, code: string): string {
   return `${reasonString} ${hexToString(codeString)}`;
 }
 
+function makeError<T>(message: string, props: T): Error {
+  const err = new Error(message);
+  Object.assign(err, props);
+  return err;
+}
+
 export function handleTxResponse(
   result: SubmittableResult,
   api: ApiPromise
@@ -64,17 +70,19 @@ export function handleTxResponse(
               }
             }
 
-            reject({ message, result });
+            reject(makeError(message, { result }));
           } else if (method === 'ExtrinsicSuccess') {
             const failed = createdFailed || executedFailed;
             if (failed) {
-              reject({
-                message: decodeMessage(
-                  failed.event.data[1].toJSON(),
-                  failed.event.data[2].toJSON() as string
-                ),
-                result
-              });
+              reject(
+                makeError(
+                  decodeMessage(
+                    failed.event.data[2].toJSON(),
+                    failed.event.data[3].toJSON() as string
+                  ),
+                  { result }
+                )
+              );
             }
             resolve({ result });
           }

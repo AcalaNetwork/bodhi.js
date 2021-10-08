@@ -171,16 +171,14 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
             .then(() => {
               resolve();
             })
-            .catch(({ message, result }) => {
-              if (message === 'evmAccounts.AccountIdHasMapped') {
+            .catch((err) => {
+              if (err.message === 'evmAccounts.AccountIdHasMapped') {
                 resolve();
               }
-              reject(message);
+              reject(err);
             });
         })
-        .catch((error) => {
-          reject(error && error.message);
-        });
+        .catch(reject);
     });
   }
 
@@ -199,15 +197,15 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
             .then(() => {
               resolve();
             })
-            .catch(({ message, result }) => {
-              if (message === 'evmAccounts.AccountIdHasMapped') {
+            .catch((err) => {
+              if (err.message === 'evmAccounts.AccountIdHasMapped') {
                 resolve();
               }
-              reject(message);
+              reject(err);
             });
         })
         .catch((error) => {
-          reject(error && error.message);
+          reject(error);
         });
     });
   }
@@ -331,13 +329,9 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
                 }
               });
             })
-            .catch(({ message, result }) => {
-              reject(message);
-            });
+            .catch(reject);
         })
-        .catch((error) => {
-          reject(error && error.message);
-        });
+        .catch(reject);
     });
   }
 
