@@ -51,6 +51,7 @@ specifiers:
   pino-pretty: ~7.0.1
   ts-jest: ~27.0.5
   ts-node: ~10.2.1
+  tslib: ~2.3.1
   typescript: ~4.4.3
   ws: ~8.2.2
 
@@ -77,7 +78,7 @@ dependencies:
   '@polkadot/util-crypto': 7.4.1
   '@rush-temp/bodhi': file:projects/bodhi.tgz_72f572ba52495252809c56cbfd0ee332
   '@rush-temp/eth-rpc-adaptor': file:projects/eth-rpc-adaptor.tgz
-  '@rush-temp/evm-subql': file:projects/evm-subql.tgz_@polkadot+api@5.9.1
+  '@rush-temp/evm-subql': file:projects/evm-subql.tgz
   '@rushstack/eslint-config': 2.4.2_eslint@7.32.0+typescript@4.4.3
   '@subql/cli': 0.12.0_typescript@4.4.3
   '@subql/types': 0.8.4_@polkadot+api@5.9.1
@@ -105,6 +106,7 @@ dependencies:
   pino-pretty: 7.0.1
   ts-jest: 27.0.5_c167855b7a039eaaa2a6b38847c1969c
   ts-node: 10.2.1_8304ecd715830f7c190b4d1dea90b100
+  tslib: 2.3.1
   typescript: 4.4.3
   ws: 8.2.3
 
@@ -7158,18 +7160,19 @@ packages:
       - utf-8-validate
     dev: false
 
-  file:projects/evm-subql.tgz_@polkadot+api@5.9.1:
-    resolution: {integrity: sha512-4786PyxYLnfT9ob5rZHyE6+sKozAhGvqZQTPtk2dEteUGf8JF8ZptUCWWIfWnRzb09t9erktnGZ0glz+0rhN/w==, tarball: file:projects/evm-subql.tgz}
-    id: file:projects/evm-subql.tgz
+  file:projects/evm-subql.tgz:
+    resolution: {integrity: sha512-eO66p0bsagQHK8B+mzd89NlaQmUxhcBdwa8jMtF47QL+2zY6k45l26c5H4eKmCjSsXvntdlbBVp5H1sz3tgCFA==, tarball: file:projects/evm-subql.tgz}
     name: '@rush-temp/evm-subql'
     version: 0.0.0
     dependencies:
+      '@polkadot/api': 5.9.1
       '@polkadot/types': 5.9.1
       '@subql/cli': 0.12.0_typescript@4.4.3
       '@subql/types': 0.8.4_@polkadot+api@5.9.1
+      pino: 7.0.0-rc.9
+      tslib: 2.3.1
       typescript: 4.4.3
     transitivePeerDependencies:
-      - '@polkadot/api'
       - '@swc/core'
       - debug
       - esbuild

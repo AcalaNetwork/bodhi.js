@@ -54,16 +54,10 @@ function readPackage(packageJson, context) {
   
   for(const dep of Object.keys(fixedDeps)) {
     if(packageJson.dependencies[dep]) {
-      // context.log('Fixed up dependencies for ' + packageJson.name);
+      context.log('Fixed up dependencies for ' + packageJson.name);
       packageJson.dependencies[dep] = fixedDeps[dep]
     }
   }
-
-  if(packageJson.name === '@acala-network/eth-rpc-adaptor') {
-    packageJson.name && context.log(packageJson.name);
-
-  }
-
 
   // // The karma types have a missing dependency on typings from the log4js package.
   // if (packageJson.name && packageJson.name.startsWith && packageJson.name.startsWith('@polkadot/')) {
