@@ -9,12 +9,11 @@
   },
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
-    "build-ts": "yarn tsc",
-    "build": "yarn run build-ts",
-    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet",
+    "build": "heft build --clean",
+    "lint": "tsc --noEmit && eslint \"**/*.ts\"",
+    "test": "jest --forceExit --coverage --verbose",
     "start": "ts-node src/index",
-    "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty",
-    "test": "jest --forceExit --coverage --verbose"
+    "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
   },
   "dependencies": {
     "@polkadot/api": "~5.9.0",
@@ -42,17 +41,18 @@
     "@types/body-parser": "~1.19.1",
     "@types/connect": "~3.4.35",
     "@types/cors": "~2.8.12",
-    "@types/jest": "~27.0.1",
     "@types/node": "~16.10.1",
     "@types/node-ipc": "~9.1.5",
     "@types/ws": "~8.2.0",
     "@rushstack/eslint-config": "~2.4.2",
     "eslint": "~7.32.0",
-    "jest": "~27.2.5",
     "nodemon": "~2.0.12",
     "pino-pretty": "~7.0.1",
-    "ts-jest": "~27.0.5",
     "ts-node": "~10.2.1",
-    "typescript": "~4.4.3"
+    "typescript": "~4.4.3",
+    "@types/jest": "~27.0.1",
+    "jest": "~27.2.5",
+    "ts-jest": "~27.0.5",
+    "@rushstack/heft": "~0.41.6"
   }
 }

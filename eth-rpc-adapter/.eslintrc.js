@@ -3,5 +3,9 @@ require('@rushstack/eslint-config/patch/modern-module-resolution');
 
 module.exports = {
   extends: ['@rushstack/eslint-config/profile/node-trusted-tool'], // <---- put your profile string here
-  parserOptions: { tsconfigRootDir: __dirname }
+  parserOptions: { tsconfigRootDir: __dirname },
+  rules: {
+    eqeqeq: 'warn',
+    '@typescript-eslint/no-use-before-define': 'warn'
+  }
 };

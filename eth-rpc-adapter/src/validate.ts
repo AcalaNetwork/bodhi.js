@@ -4,6 +4,61 @@ export type Schema = {
   type: 'address' | 'block' | 'transaction' | 'blockHash' | 'flag' | 'position' | 'transactionData';
 }[];
 
+export const validateHexNumber = (value: string) => {
+  validateHexString(value);
+  if (value.length > 18) {
+    throw new Error('hex number > 64 bits');
+  }
+};
+
+export const validateAddress = (data: any) => {
+  if (typeof data !== 'string') {
+    throw new Error(`invalid evm address, expected type String`);
+  }
+
+  validateHexString(data, 40);
+};
+
+export const validateBlock = (data: any) => {
+  if (typeof data !== 'string') {
+    throw new Error(`invalid block tag, expected type String`);
+  }
+
+  if (!['latest', 'earliest', 'pending'].includes(data)) {
+    validateHexNumber(data);
+  }
+};
+
+export const validateTransaction = (data: any) => {
+  // @TODO
+};
+
+export const validateBlockHash = (data: any) => {
+  if (typeof data !== 'string') {
+    throw new Error(`invalid block hash, expected type String`);
+  }
+
+  validateHexString(data, 64);
+};
+
+export const validateFlag = (data: any) => {
+  if (typeof data !== 'boolean') {
+    throw new Error(`expect a bool value`);
+  }
+};
+
+export const validatePosition = (data: any) => {
+  if (typeof data !== 'string') {
+    throw new Error(`invalid position, expected type String`);
+  }
+};
+
+export const validateTransactionData = (data: any) => {
+  if (typeof data !== 'string') {
+    throw new Error(`invalid transaction data, expected type String`);
+  }
+};
+
 export const validate = (schema: Schema, data: unknown[]) => {
   const maxArg = schema.length;
 
@@ -77,58 +132,3 @@ export function validateHexString(value: string, length?: number): void {
     throw new Error(`hex string has length ${value.length - 2} but want ${length}`);
   }
 }
-
-export const validateHexNumber = (value: string) => {
-  validateHexString(value);
-  if (value.length > 18) {
-    throw new Error('hex number > 64 bits');
-  }
-};
-
-export const validateAddress = (data: any) => {
-  if (typeof data !== 'string') {
-    throw new Error(`invalid evm address, expected type String`);
-  }
-
-  validateHexString(data, 40);
-};
-
-export const validateBlock = (data: any) => {
-  if (typeof data !== 'string') {
-    throw new Error(`invalid block tag, expected type String`);
-  }
-
-  if (!['latest', 'earliest', 'pending'].includes(data)) {
-    validateHexNumber(data);
-  }
-};
-
-export const validateTransaction = (data: any) => {
-  // @TODO
-};
-
-export const validateBlockHash = (data: any) => {
-  if (typeof data !== 'string') {
-    throw new Error(`invalid block hash, expected type String`);
-  }
-
-  validateHexString(data, 64);
-};
-
-export const validateFlag = (data: any) => {
-  if (typeof data !== 'boolean') {
-    throw new Error(`expect a bool value`);
-  }
-};
-
-export const validatePosition = (data: any) => {
-  if (typeof data !== 'string') {
-    throw new Error(`invalid position, expected type String`);
-  }
-};
-
-export const validateTransactionData = (data: any) => {
-  if (typeof data !== 'string') {
-    throw new Error(`invalid transaction data, expected type String`);
-  }
-};

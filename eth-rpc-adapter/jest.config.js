@@ -11,6 +11,6 @@ module.exports = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest'
   },
-  testPathIgnorePatterns: ['/dist'],
+  testPathIgnorePatterns: ['/dist', '/lib'],
   transformIgnorePatterns: ['@polkadot+util-crypto.*/node_modules/@polkadot/util-crypto']
 };

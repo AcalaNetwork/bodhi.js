@@ -74,9 +74,9 @@ export function supportEmit(Assertion: Chai.AssertionStatic): void {
 
   const tryAssertArgsArraysEqual = (context: any, expectedArgs: any[], logs: any[]) => {
     if (logs.length === 1) return assertArgsArraysEqual(context, expectedArgs, logs[0]);
-    for (const index in logs) {
+    for (const log of logs) {
       try {
-        assertArgsArraysEqual(context, expectedArgs, logs[index]);
+        assertArgsArraysEqual(context, expectedArgs, log);
         return;
       } catch (_a) {}
     }

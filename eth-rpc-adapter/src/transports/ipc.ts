@@ -28,6 +28,7 @@ export default class IPCServerTransport extends ServerTransport {
       ipc.server.on('message', (data, socket) => {
         const req = JSON.parse(data);
 
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.ipcRouterHandler(req, (result: string) => {
           ipc.server.emit(socket, 'message', result);
         });
