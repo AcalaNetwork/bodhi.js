@@ -1,0 +1,49 @@
+{
+  "name": "@acala-network/bodhi",
+  "version": "1.0.4-0",
+  "main": "index.js",
+  "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
+  "author": "Acala Developers <hello@acala.network>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "yarn tsc",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@open-web3/scanner": "^0.9.4-19",
+    "blakejs": "^1.1.0",
+    "ethers": "^5.4.6",
+    "@polkadot/api": "5.9.1",
+    "@polkadot/keyring": "7.4.1",
+    "@polkadot/util": "7.4.1",
+    "@polkadot/util-crypto": "7.4.1",
+    "@polkadot/api-derive": "5.9.1",
+    "@polkadot/types": "5.9.1",
+    "@polkadot/rpc-core": "5.9.1",
+    "@polkadot/types-known": "5.9.1",
+    "@polkadot/rpc-provider": "5.9.1",
+    "@ethersproject/bignumber": "^5.4.2",
+    "@ethersproject/bytes": "^5.4.0",
+    "@ethersproject/abstract-provider": "~5.4.1",
+    "@ethersproject/properties": "~5.4.1",
+    "@ethersproject/transactions": "~5.4.0",
+    "@ethersproject/logger": "~5.4.1",
+    "@ethersproject/networks": "~5.4.2",
+    "bn.js": "~5.2.0",
+    "@types/bn.js": "~5.1.0",
+    "@ethersproject/abstract-signer": "~5.4.1",
+    "@ethersproject/address": "~5.4.0",
+    "@ethersproject/strings": "~5.4.0",
+    "@acala-network/types": "~2.3.1",
+    "ts-jest": "~27.0.5",
+    "jest": "~27.2.5"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.3",
+    "@acala-network/api": "^2.3.2-1",
+    "@types/chai": "^4.2.14",
+    "@types/jest": "^26.0.15",
+    "@types/validator": "^13.1.0",
+    "ts-node": "^9.0.0"
+  }
+}
