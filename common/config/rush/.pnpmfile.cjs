@@ -18,10 +18,29 @@ module.exports = {
   }
 };
 
-function omit(key, obj) {
-  const { [key]: omitted, ...rest } = obj;
-  return rest;
+const polkadotDeps = {
+  "@polkadot/api": "5.9.1",
+  "@polkadot/keyring": "7.4.1",
+  "@polkadot/util": "7.4.1",
+  "@polkadot/util-crypto": "7.4.1",
+  "@polkadot/api-derive": "5.9.1",
+  "@polkadot/types": "5.9.1",
+  "@polkadot/rpc-core": "5.9.1",
+  "@polkadot/types-known": "5.9.1",
+  "@polkadot/rpc-provider": "5.9.1",
 }
+
+const fixedDeps = {
+  ...polkadotDeps,
+  "bn.js": "5.1.0",
+  "@types/bn.js": "5.1.0",
+} 
+
+const projects = [
+  "@acala-network/eth-rpc-adaptor",
+  "@acala-network/evm-subql",
+  "@acala-network/bodhi"
+]
 
 /**
  * This hook is invoked during installation before a package's dependencies
@@ -32,26 +51,19 @@ function omit(key, obj) {
  * The return value is the updated object.
  */
 function readPackage(packageJson, context) {
-  const fixedDeps = {
-    "@polkadot/api": "5.9.1",
-    "@polkadot/keyring": "7.4.1",
-    "@polkadot/util": "7.4.1",
-    "@polkadot/util-crypto": "7.4.1",
-    "@polkadot/api-derive": "5.9.1",
-    "@polkadot/types": "5.9.1",
-    "@polkadot/rpc-core": "5.9.1",
-    "@polkadot/types-known": "5.9.1",
-    "@polkadot/rpc-provider": "5.9.1",
-    "bn.js": "5.1.0",
-    "@types/bn.js": "5.1.0",
-  } 
-
+  
   for(const dep of Object.keys(fixedDeps)) {
     if(packageJson.dependencies[dep]) {
-      context.log('Fixed up dependencies for ' + packageJson.name);
+      // context.log('Fixed up dependencies for ' + packageJson.name);
       packageJson.dependencies[dep] = fixedDeps[dep]
     }
   }
+
+  if(packageJson.name === '@acala-network/eth-rpc-adaptor') {
+    packageJson.name && context.log(packageJson.name);
+
+  }
+
 
   // // The karma types have a missing dependency on typings from the log4js package.
   // if (packageJson.name && packageJson.name.startsWith && packageJson.name.startsWith('@polkadot/')) {

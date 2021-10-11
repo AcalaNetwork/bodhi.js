@@ -19,16 +19,11 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@polkadot/api": "^4.6.2",
-    "@subql/cli": "^0.12.0",
-    "@subql/types": "^0.8.4",
-    "typescript": "^4.1.3"
+    "@subql/cli": "~0.12.0",
+    "@subql/types": "~0.8.4",
+    "typescript": "~4.4.3"
   },
   "dependencies": {
-    "@acala-network/api": "^2.2.1",
-    "@types/bn.js": "~5.1.0",
-    "tslib": "~2.3.1",
-    "@polkadot/types": "~5.9.1",
-    "pino": "~6.13.3"
+    "@polkadot/types": "~5.9.0"
   }
 }

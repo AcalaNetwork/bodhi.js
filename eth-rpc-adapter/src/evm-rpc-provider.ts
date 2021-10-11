@@ -146,7 +146,7 @@ export class EvmRpcProvider {
       number: headerExtended.number.toNumber(),
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
-      timestamp: Number(now.toBigInt()),
+      timestamp: now.toNumber(),
       nonce: deafultNonce.toHex(),
       mixHash: deafultMixHash.toHex(),
       difficulty: ZERO,
