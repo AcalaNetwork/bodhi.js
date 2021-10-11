@@ -29,6 +29,7 @@ specifiers:
   '@subql/types': ~0.8.4
   '@types/bn.js': 5.1.0
   '@types/body-parser': ~1.19.1
+  '@types/chai': ~4.2.14
   '@types/connect': ~3.4.35
   '@types/cors': ~2.8.12
   '@types/jest': ~27.0.1
@@ -82,6 +83,7 @@ dependencies:
   '@subql/types': 0.8.4_@polkadot+api@5.9.1
   '@types/bn.js': 5.1.0
   '@types/body-parser': 1.19.1
+  '@types/chai': 4.2.22
   '@types/connect': 3.4.35
   '@types/cors': 2.8.12
   '@types/jest': 27.0.2
@@ -1782,6 +1784,10 @@ packages:
     dependencies:
       '@types/connect': 3.4.35
       '@types/node': 16.10.3
+    dev: false
+
+  /@types/chai/4.2.22:
+    resolution: {integrity: sha512-tFfcE+DSTzWAgifkjik9AySNqIyNoYwmR+uecPwwD/XRNfvOjmC/FjCxpiUGDkDVDphPfCUecSQVFw+lN3M3kQ==}
     dev: false
 
   /@types/connect/3.4.35:
@@ -7049,7 +7055,7 @@ packages:
     dev: false
 
   file:projects/bodhi.tgz_72f572ba52495252809c56cbfd0ee332:
-    resolution: {integrity: sha512-PMaifmBN9dmebWr5kKnetrd2SMaz78BR0UgSKOK694cCFPicU37lrHKIwf6OBzJ8BNt4WW/51dIHyUuZhZWbyg==, tarball: file:projects/bodhi.tgz}
+    resolution: {integrity: sha512-xezX7bi9PZaiQecZhjrtppdZAA4+HNJWXZ9PId5Gt59vMu8CrsBiaVCBAb3v1B8LzQuGPoBHVCnCQU8WRG9mlQ==, tarball: file:projects/bodhi.tgz}
     id: file:projects/bodhi.tgz
     name: '@rush-temp/bodhi'
     version: 0.0.0
@@ -7075,6 +7081,7 @@ packages:
       '@polkadot/util-crypto': 7.4.1
       '@rushstack/eslint-config': 2.4.2_eslint@7.32.0+typescript@4.4.3
       '@types/bn.js': 5.1.0
+      '@types/chai': 4.2.22
       '@types/jest': 27.0.2
       blakejs: 1.1.1
       bn.js: 5.1.0
