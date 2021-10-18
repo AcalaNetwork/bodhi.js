@@ -30,7 +30,7 @@ for **mac users**, for unknown reason(s) the above command will fail, so we have
 docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
 ```
 
-- install and run a subquery node
+- install and run a subquery node (note: currently there will be some runtime error, we might need to update the schema.graphql for it to fully work)
 ```
 npm install -g @subql/node
 
@@ -40,8 +40,6 @@ export DB_DATABASE=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
 npx subql-node -f . --local --batch-size 200 --subquery-name=acala-evm --debug
-
-# this will start the subquery node, but then it will stop running since subquery only indexes finalized blocks, and our local node doesn't have finalized block. 
 ```
 
 - install and run the Query service
