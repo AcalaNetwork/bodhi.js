@@ -287,8 +287,8 @@ export class Provider implements AbstractProvider {
     }
 
     const extrinsic = !to
-      ? this.api.tx.evm.create(data, toBN(value), '0', 1_000_000_000)
-      : this.api.tx.evm.call(to, data, toBN(value), '0', 1_000_000_000);
+      ? this.api.tx.evm.create(data, toBN(value), 0, 0)
+      : this.api.tx.evm.call(to, data, toBN(value), 0, 0);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (this.api.rpc as any).evm.estimateResources(
