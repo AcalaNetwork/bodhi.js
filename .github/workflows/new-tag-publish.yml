@@ -1,0 +1,30 @@
+name: Publish on New Tag
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-publish:
+    if: "! startsWith(github.event.head_commit.message, '[CI Skip]')"
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build and publish
+        run: |
+          cd bodhi
+          yarn build
+          yarn publish --access public --verbose
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
