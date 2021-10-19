@@ -38,7 +38,7 @@ import {
 import { encodeAddress } from '@polkadot/util-crypto';
 import type BN from 'bn.js';
 import { AbstractDataProvider } from './DataProvider';
-import { toBN } from './utils';
+import { toBN, U32MAX, U64MAX } from './utils';
 
 const logger = new Logger('bodhi-provider/0.0.1');
 export class Provider implements AbstractProvider {
@@ -290,15 +290,15 @@ export class Provider implements AbstractProvider {
       ? this.api.tx.evm.create(
           data,
           toBN(value),
-          BigNumber.from('0xffff_ffff_ffff_ffff'.replace('_', '')), // gas_limit u64::max
-          BigNumber.from('0xffff_ffff'.replace('_', '')) // storage_limit u32::max
+          U64MAX, // gas_limit u64::max
+          U32MAX // storage_limit u32::max
         )
       : this.api.tx.evm.call(
           to,
           data,
           toBN(value),
-          BigNumber.from('0xffff_ffff_ffff_ffff'.replace('_', '')), // gas_limit u64::max
-          BigNumber.from('0xffff_ffff'.replace('_', '')) // storage_limit u32::max
+          U64MAX, // gas_limit u64::max
+          U32MAX // storage_limit u32::max
         );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
