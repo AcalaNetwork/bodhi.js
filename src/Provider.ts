@@ -290,15 +290,15 @@ export class Provider implements AbstractProvider {
       ? this.api.tx.evm.create(
           data,
           toBN(value),
-          U64MAX, // gas_limit u64::max
-          U32MAX // storage_limit u32::max
+          U64MAX.toString(), // gas_limit u64::max
+          U32MAX.toString() // storage_limit u32::max
         )
       : this.api.tx.evm.call(
           to,
           data,
           toBN(value),
-          U64MAX, // gas_limit u64::max
-          U32MAX // storage_limit u32::max
+          U64MAX.toString(), // gas_limit u64::max
+          U32MAX.toString() // storage_limit u32::max
         );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
