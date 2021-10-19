@@ -38,7 +38,7 @@ import {
 import { encodeAddress } from '@polkadot/util-crypto';
 import type BN from 'bn.js';
 import { AbstractDataProvider } from './DataProvider';
-import { toBN } from './utils';
+import { toBN, U32MAX, U64MAX } from './utils';
 
 const logger = new Logger('bodhi-provider/0.0.1');
 export class Provider implements AbstractProvider {
@@ -287,8 +287,19 @@ export class Provider implements AbstractProvider {
     }
 
     const extrinsic = !to
-      ? this.api.tx.evm.create(data, toBN(value), '0', 1_000_000_000)
-      : this.api.tx.evm.call(to, data, toBN(value), '0', 1_000_000_000);
+      ? this.api.tx.evm.create(
+          data,
+          toBN(value),
+          U64MAX.toString(), // gas_limit u64::max
+          U32MAX.toString() // storage_limit u32::max
+        )
+      : this.api.tx.evm.call(
+          to,
+          data,
+          toBN(value),
+          U64MAX.toString(), // gas_limit u64::max
+          U32MAX.toString() // storage_limit u32::max
+        );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (this.api.rpc as any).evm.estimateResources(

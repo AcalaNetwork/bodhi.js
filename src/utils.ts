@@ -14,6 +14,9 @@ import {
 } from '@polkadot/util';
 import BN from 'bn.js';
 
+export const U32MAX = BigNumber.from('0xffffffff');
+export const U64MAX = BigNumber.from('0xffffffffffffffff');
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function decodeMessage(reason: any, code: string): string {
   const reasonString = JSON.stringify(reason).toLowerCase();
