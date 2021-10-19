@@ -287,8 +287,19 @@ export class Provider implements AbstractProvider {
     }
 
     const extrinsic = !to
-      ? this.api.tx.evm.create(data, toBN(value), 0, 0)
-      : this.api.tx.evm.call(to, data, toBN(value), 0, 0);
+      ? this.api.tx.evm.create(
+          data,
+          toBN(value),
+          BigNumber.from('0xffff_ffff_ffff_ffff'.replace('_', '')), // gas_limit u64::max
+          BigNumber.from('0xffff_ffff'.replace('_', '')) // storage_limit u32::max
+        )
+      : this.api.tx.evm.call(
+          to,
+          data,
+          toBN(value),
+          BigNumber.from('0xffff_ffff_ffff_ffff'.replace('_', '')), // gas_limit u64::max
+          BigNumber.from('0xffff_ffff'.replace('_', '')) // storage_limit u32::max
+        );
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await (this.api.rpc as any).evm.estimateResources(
