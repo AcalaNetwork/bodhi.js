@@ -1,0 +1,30 @@
+type Log @entity {
+  id: ID!
+  blockNumber: BigInt!
+  blockHash: String!
+  transactionIndex: BigInt!
+  removed: Boolean!
+  address: String!
+  data: String
+  topics: [String]!
+  transactionHash: String!
+  logIndex: BigInt!
+  receipt: TransactionReceipt
+}
+
+type TransactionReceipt @entity {
+  id: ID!
+  to: String!
+  from: String!
+  contractAddress: String
+  transactionIndex: BigInt!
+  gasUsed: BigInt!
+  logsBloom: String!
+  blockHash: String!
+  transactionHash: String!
+  logs: [Log] @derivedFrom(field: "receipt")
+  blockNumber: BigInt!
+  cumulativeGasUsed: BigInt!
+  type: BigInt!
+  status: BigInt!
+}

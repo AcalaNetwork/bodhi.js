@@ -1,0 +1,32 @@
+{
+  "name": "@acala-network/evm-subql",
+  "version": "0.0.1",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "prepack": "rm -rf dist && npm build",
+    "test": "jest",
+    "codegen": "./node_modules/.bin/subql codegen"
+  },
+  "homepage": "https://github.com/subquery/subql-starter",
+  "repository": "github:subquery/subql-starter",
+  "files": [
+    "dist",
+    "schema.graphql",
+    "project.yaml"
+  ],
+  "author": "Acala Developers <hello@acala.network>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@subql/cli": "~0.12.0",
+    "@subql/types": "~0.8.4",
+    "typescript": "~4.4.3",
+    "tslib": "~2.3.1",
+    "@polkadot/api": "~5.9.0",
+    "pino": "~7.0.0-rc.3"
+  },
+  "dependencies": {
+    "@polkadot/types": "~5.9.0"
+  }
+}
