@@ -35,8 +35,12 @@ For example
 ```
 git commit -m "bump version to v2.0.8-beta"
 git tag v2.0.8-beta
+
+# push code, this won't trigger CI
+# if this creates a pull request, make sure to merge it before push tag
 git push
 
-# push the tag (this will trigger CI auto release)
+# push the tag, this will trigger CI auto release
+# do this after the code is actually merged
 git push origin v2.0.8-beta
 ```
