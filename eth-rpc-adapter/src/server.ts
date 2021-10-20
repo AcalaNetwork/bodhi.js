@@ -38,7 +38,9 @@ export async function start() {
   HTTPTransport.start();
   WebSocketTransport.start();
 
-  console.log(`Starting Server, HTTP: ${HTTP_PORT}, WS: ${WS_PORT}`);
+  console.log('starting server ...');
 
   await provider.isReady();
+
+  console.log(`server started -- listening to: HTTP ${HTTP_PORT}, WS: ${WS_PORT}`);
 }

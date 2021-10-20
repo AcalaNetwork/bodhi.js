@@ -17,9 +17,16 @@ rush update
 rush build
 ```
 
-- run any scripts defined in `package.json`
+- run a script defined in project's `package.json`
 ```
+cd <project>
 rushx <script-name>
+```
+
+- add pacakge
+```
+rush add -p <package> --all             # for all projects
+cd <project> && rush add -p <package>   # for this project only
 ```
 
 ## Documentation

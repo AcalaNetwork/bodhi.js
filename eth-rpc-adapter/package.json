@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "resolutions": {
-    "@polkadot/api": "~5.9.0",
-    "@polkadot/api-derive": "~5.9.0"
-  },
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
     "build": "heft build --clean",
@@ -16,18 +12,18 @@
     "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
   },
   "dependencies": {
-    "@polkadot/api": "~5.9.0",
-    "@polkadot/api-derive": "~5.9.0",
-    "@polkadot/types": "~5.9.0",
-    "@polkadot/util-crypto": "~5.9.0",
-    "@polkadot/util": "~5.9.0",
+    "@polkadot/api": "~6.4.2",
+    "@polkadot/api-derive": "~6.4.2",
+    "@polkadot/types": "~6.4.2",
+    "@polkadot/util-crypto": "^7.5.1",
+    "@polkadot/util": "^7.5.1",
     "ethers": "~5.4.0",
     "@ethersproject/bignumber": "~5.4.0",
     "@ethersproject/bytes": "~5.4.0",
     "@ethersproject/abstract-provider": "~5.4.0",
     "@ethersproject/properties": "~5.4.0",
     "@ethersproject/transactions": "~5.4.0",
-    "@acala-network/api": "~2.3.2-1",
+    "@acala-network/api": "~3.0.1",
     "body-parser": "~1.19.0",
     "connect": "~3.7.0",
     "cors": "~2.8.5",
@@ -35,7 +31,7 @@
     "node-ipc": "~10.1.0",
     "pino": "~7.0.0-rc.3",
     "ws": "~8.2.2",
-    "@acala-network/types": "~2.3.1"
+    "@acala-network/types": "~3.0.1"
   },
   "devDependencies": {
     "@types/body-parser": "~1.19.1",
