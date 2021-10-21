@@ -1,6 +1,6 @@
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
-import { EvmRpcProvider } from './evm-rpc-provider';
+import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { hexlifyRpcResult } from './utils';
 import { MethodNotFound } from './errors';
 import { validate } from './validate';

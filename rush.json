@@ -106,7 +106,7 @@
      *
      * This option is experimental. The default value is false.
      */
-    // "useWorkspaces": true
+    "useWorkspaces": true
   },
 
   /**
@@ -450,7 +450,14 @@
     {
       "packageName": "@acala-network/bodhi",
       "projectFolder": "bodhi",
-      "reviewCategory": "production"
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@acala-network/eth-providers",
+      "projectFolder": "eth-providers",
+      "reviewCategory": "production",
+      "shouldPublish": true
     }
   ]
 }

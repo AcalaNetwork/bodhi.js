@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -b",
+    "build:watch": "tsc -b",
     "prepack": "rm -rf dist && npm build",
     "test": "jest",
     "codegen": "./node_modules/.bin/subql codegen"

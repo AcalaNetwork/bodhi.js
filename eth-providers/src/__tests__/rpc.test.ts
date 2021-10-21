@@ -1,8 +1,8 @@
-import { EvmRpcProvider } from '../evm-rpc-provider';
+import { EvmRpcProvider } from '../rpc-provider';
 
 const endpoint = 'wss://mandala6.laminar.codes/';
 
-const provider = new EvmRpcProvider(endpoint);
+const provider = EvmRpcProvider.from(endpoint);
 
 describe('rpc test', () => {
   beforeAll(async () => {
