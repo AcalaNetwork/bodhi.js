@@ -8,6 +8,7 @@ importers:
   ../../bodhi:
     specifiers:
       '@acala-network/api': ~3.0.1
+      '@acala-network/eth-providers': workspace:*
       '@acala-network/types': ~3.0.1
       '@ethersproject/abstract-provider': ~5.4.0
       '@ethersproject/abstract-signer': ~5.4.0
@@ -40,6 +41,7 @@ importers:
       ts-node: ~10.2.1
       typescript: ~4.4.3
     dependencies:
+      '@acala-network/eth-providers': link:../eth-providers
       '@acala-network/types': 3.0.1
       '@ethersproject/abstract-provider': 5.4.1
       '@ethersproject/abstract-signer': 5.4.1

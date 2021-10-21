@@ -1,5 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider';
-import { BaseProvider } from './base-provider';
+import { BaseProvider, BlockTag } from './base-provider';
 import { createApi } from './chain-api';
 import { throwNotImplemented } from './utils';
 
@@ -12,6 +12,10 @@ export class EvmRpcProvider extends BaseProvider {
 
   sendTransaction = (signedTransaction: string | Promise<string>): Promise<TransactionResponse> =>
     throwNotImplemented('sendTransaction');
+
+  getTransactionCount = (addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>) => {
+    return this.getSubstrateNonce(addressOrName, blockTag);
+  };
 
   static from(endpoint: string | string[]) {
     return new EvmRpcProvider(endpoint);

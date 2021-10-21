@@ -1,11 +1,11 @@
+import { SignerProvider } from '@acala-network/eth-providers';
 import { WsProvider } from '@polkadot/api';
 import { ApiOptions } from '@polkadot/api/types';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
-import { Provider } from './Provider';
 import { Signer } from './Signer';
 import { TestAccountSigningKey } from './TestAccountSigningKey';
 
-export class TestProvider extends Provider {
+export class TestProvider extends SignerProvider {
   constructor(_apiOptions?: ApiOptions) {
     const provider = _apiOptions?.provider || new WsProvider('ws://127.0.0.1:9944');
     super({ provider, ..._apiOptions });

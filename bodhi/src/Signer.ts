@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { SignerProvider } from '@acala-network/eth-providers';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
 import {
@@ -17,7 +18,6 @@ import { SubmittableResult } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
-import { Provider } from './Provider';
 import { SigningKey } from './SigningKey';
 import { dataToString, handleTxResponse, toBN } from './utils';
 
@@ -25,13 +25,13 @@ const logger = new Logger('bodhi/0.0.1');
 
 export class Signer extends Abstractsigner implements TypedDataSigner {
   // @ts-ignore
-  readonly provider: Provider;
+  readonly provider: SignerProvider;
   // @ts-ignore
   readonly signingKey: SigningKey;
   // @ts-ignore
   readonly _substrateAddress: string;
 
-  constructor(provider: Provider, address: string, signingKey: SigningKey) {
+  constructor(provider: SignerProvider, address: string, signingKey: SigningKey) {
     super();
 
     defineReadOnly(this, 'provider', provider);
@@ -52,7 +52,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     }
   }
 
-  connect(provider: Provider): Signer {
+  connect(provider: SignerProvider): Signer {
     return logger.throwError('cannot alter JSON-RPC Signer connection', Logger.errors.UNSUPPORTED_OPERATION, {
       operation: 'connect'
     });
@@ -287,7 +287,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
                   const hex = result.status.isInBlock
                     ? result.status.asInBlock.toHex()
                     : result.status.asFinalized.toHex();
-                  return this.provider._resolveTransactionReceipt(extrinsic.hash.toHex(), hex, from);
+                  return this.provider.getTransactionReceiptAtBlock(extrinsic.hash.toHex(), hex);
                 }
               });
             })

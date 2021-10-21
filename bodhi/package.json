@@ -12,6 +12,7 @@
     "test": "jest --forceExit --coverage --verbose"
   },
   "dependencies": {
+    "@acala-network/eth-providers": "workspace:*",
     "@polkadot/api": "~6.4.2",
     "@polkadot/rpc-provider": "~6.4.2",
     "@polkadot/types": "~6.4.2",

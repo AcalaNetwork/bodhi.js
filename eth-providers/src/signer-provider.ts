@@ -12,6 +12,7 @@ export class SignerProvider extends BaseProvider {
     this.setApi(api);
   }
 
+  // This method will be implemented in the signer
   sendTransaction = (signedTransaction: string | Promise<string>): Promise<TransactionResponse> =>
     throwNotImplemented('sendTransaction');
 
