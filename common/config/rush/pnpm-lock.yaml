@@ -92,7 +92,9 @@ importers:
       '@polkadot/util-crypto': ^7.5.1
       '@rushstack/eslint-config': ~2.4.2
       '@rushstack/heft': ~0.41.6
+      '@types/bn.js': ~5.1.0
       '@types/jest': ~27.0.1
+      bn.js: 4.12.0
       eslint: ~7.32.0
       ethers: ~5.4.0
       jest: ~27.2.5
@@ -113,10 +115,12 @@ importers:
       '@polkadot/types': 6.4.2
       '@polkadot/util': 7.5.1
       '@polkadot/util-crypto': 7.5.1
+      bn.js: 4.12.0
       ethers: 5.4.7
     devDependencies:
       '@rushstack/eslint-config': 2.4.3_eslint@7.32.0+typescript@4.4.4
       '@rushstack/heft': 0.41.7
+      '@types/bn.js': 5.1.0
       '@types/jest': 27.0.2
       eslint: 7.32.0
       jest: 27.2.5

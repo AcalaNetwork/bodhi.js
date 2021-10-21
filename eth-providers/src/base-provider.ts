@@ -8,7 +8,8 @@ import {
   Provider,
   TransactionReceipt,
   TransactionRequest,
-  TransactionResponse
+  TransactionResponse,
+  FeeData
 } from '@ethersproject/abstract-provider';
 import { hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -20,9 +21,18 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import type { Option } from '@polkadot/types';
 import type { AccountId } from '@polkadot/types/interfaces';
 import { BigNumber, BigNumberish } from 'ethers';
-import { BIGNUMBER_ZERO, EMPTY_STRING, ZERO } from './consts';
+import {
+  BIGNUMBER_ZERO,
+  EMPTY_STRING,
+  ZERO,
+  GAS_PRICE,
+  MAX_PRIORITY_FEE_PER_GAS,
+  MAX_FEE_PER_GAS,
+  U64MAX,
+  U32MAX
+} from './consts';
 import { logger, throwNotImplemented, convertNativeToken, evmAddressToSubstrateAddress } from './utils';
-
+import type BN from 'bn.js';
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 
 // https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-provider/src.ts/index.ts#L61
@@ -294,11 +304,11 @@ export abstract class BaseProvider extends AbstractProvider {
     return data.toHex();
   };
 
-  async getStorageAt(
+  getStorageAt = async (
     addressOrName: string | Promise<string>,
     position: BigNumberish | Promise<BigNumberish>,
     blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<string> {
+  ): Promise<string> => {
     await this.getNetwork();
 
     const { address, resolvedPosition, blockHash } = await resolveProperties({
@@ -310,6 +320,70 @@ export abstract class BaseProvider extends AbstractProvider {
     const code = await this.api.query.evm.accountStorages.at(blockHash, address, position);
 
     return code.toHex();
+  };
+
+  getGasPrice = async (): Promise<BigNumber> => {
+    return GAS_PRICE;
+  };
+
+  getFeeData = async (): Promise<FeeData> => {
+    return {
+      maxFeePerGas: MAX_FEE_PER_GAS,
+      maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+      gasPrice: GAS_PRICE
+    };
+  };
+
+  /**
+   * Estimate gas for a transaction.
+   * @param transaction The transaction to estimate the gas of
+   * @returns The estimated gas used by this transaction
+   */
+  async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
+    const resources = await this.estimateResources(transaction);
+    return resources.gas.add(resources.storage);
+  }
+
+  /**
+   * Estimate resources for a transaction.
+   * @param transaction The transaction to estimate the resources of
+   * @returns The estimated resources used by this transaction
+   */
+  async estimateResources(transaction: Deferrable<TransactionRequest>): Promise<{
+    gas: BigNumber;
+    storage: BigNumber;
+    weightFee: BigNumber;
+  }> {
+    const ethTx = await this._getTransactionRequest(transaction);
+
+    if (!ethTx.from) {
+      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
+    }
+
+    const { from, to, data, value } = ethTx;
+
+    const extrinsic = !to
+      ? this.api.tx.evm.create(
+          data,
+          value.toBigInt(),
+          U64MAX.toBigInt(), // gas_limit u64::max
+          U32MAX.toBigInt() // storage_limit u32::max
+        )
+      : this.api.tx.evm.call(
+          to,
+          data,
+          value.toBigInt(),
+          U64MAX.toBigInt(), // gas_limit u64::max
+          U32MAX.toBigInt() // storage_limit u32::max
+        );
+
+    const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
+
+    return {
+      gas: BigNumber.from((result.gas as BN).toString()),
+      storage: BigNumber.from((result.storage as BN).toString()),
+      weightFee: BigNumber.from((result.weightFee as BN).toString())
+    };
   }
 
   querySubstrateAddress = async (
@@ -496,9 +570,6 @@ export abstract class BaseProvider extends AbstractProvider {
    * TODO
    */
 
-  // Latest State
-  getGasPrice = (): Promise<BigNumber> => throwNotImplemented('getGasPrice');
-
   // Queries
   getTransaction = (transactionHash: string): Promise<TransactionResponse> => throwNotImplemented('getTransaction');
   getTransactionReceipt = (transactionHash: string): Promise<TransactionReceipt> =>
@@ -510,9 +581,6 @@ export abstract class BaseProvider extends AbstractProvider {
   // ENS
   resolveName = (name: string | Promise<string>): Promise<string> => throwNotImplemented('resolveName');
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
-
-  // Execution
-  estimateGas = (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => throwNotImplemented('estimateGas');
 
   waitForTransaction = (
     transactionHash: string,
