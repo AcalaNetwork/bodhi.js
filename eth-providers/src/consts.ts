@@ -7,6 +7,7 @@ export const EMPTY_STRING = '';
 export const BIGNUMBER_ZERO = BigNumber.from(ZERO);
 
 export const GAS_PRICE = BIGNUMBER_ONE;
+export const EFFECTIVE_GAS_PRICE = BIGNUMBER_ONE;
 export const MAX_FEE_PER_GAS = BIGNUMBER_ONE;
 export const MAX_PRIORITY_FEE_PER_GAS = BIGNUMBER_ONE;
 export const U32MAX = BigNumber.from('0xffffffff');

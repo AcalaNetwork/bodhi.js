@@ -19,7 +19,7 @@ import { accessListify, parse, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import type { Option } from '@polkadot/types';
-import type { AccountId } from '@polkadot/types/interfaces';
+import type { AccountId, EvmLog, DispatchInfo } from '@polkadot/types/interfaces';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
   BIGNUMBER_ZERO,
@@ -29,10 +29,12 @@ import {
   MAX_PRIORITY_FEE_PER_GAS,
   MAX_FEE_PER_GAS,
   U64MAX,
-  U32MAX
+  U32MAX,
+  EFFECTIVE_GAS_PRICE
 } from './consts';
 import { logger, throwNotImplemented, convertNativeToken, evmAddressToSubstrateAddress } from './utils';
 import type BN from 'bn.js';
+
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 
 // https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-provider/src.ts/index.ts#L61
@@ -168,11 +170,13 @@ export abstract class BaseProvider extends AbstractProvider {
       fullTx: full
     });
 
+    const apiAt = await this.api.at(blockHash);
+
     const [block, header, validators, now] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.rpc.chain.getHeader(blockHash),
-      this.api.query.session ? this.api.query.session.validators.at(blockHash) : ([] as any),
-      this.api.query.timestamp.now.at(blockHash)
+      this.api.query.session ? apiAt.query.session.validators() : ([] as any),
+      apiAt.query.timestamp.now()
       // this.api.query.system.events.at(blockHash),
     ]);
 
@@ -230,6 +234,24 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getTransactionCount = async (
+    addressOrName: string | Promise<string>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<number> => {
+    return this.getEvmTransactionCount(addressOrName, blockTag);
+  };
+
+  getEvmTransactionCount = async (
+    addressOrName: string | Promise<string>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<number> => {
+    await this.getNetwork();
+
+    const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
+
+    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+  };
+
+  getSubstrateNonce = async (
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<number> => {
@@ -558,6 +580,114 @@ export abstract class BaseProvider extends AbstractProvider {
     });
 
     return await resolveProperties(tx);
+  };
+
+  // @TODO Testing
+  getTransactionReceiptAtBlock = async (txHash: string, blockHash: string): Promise<TransactionReceipt> => {
+    txHash = txHash.toLowerCase();
+    blockHash = blockHash.toLowerCase();
+
+    const apiAt = await this.api.at(blockHash);
+
+    const [block, header, validators, now, blockEvents] = await Promise.all([
+      this.api.rpc.chain.getBlock(blockHash),
+      this.api.rpc.chain.getHeader(blockHash),
+      this.api.query.session ? apiAt.query.session.validators() : ([] as any),
+      apiAt.query.timestamp.now(),
+      apiAt.query.system.events()
+    ]);
+
+    const blockNumber = header.number.toNumber();
+
+    const { extrinsic, extrinsicIndex } =
+      block.block.extrinsics
+        .map((extrinsic, index) => {
+          return {
+            extrinsic,
+            extrinsicIndex: index
+          };
+        })
+        .find(({ extrinsic }) => extrinsic.toHex().toLowerCase() === txHash.toLowerCase()) || {};
+
+    if (!extrinsic || !extrinsicIndex) {
+      return logger.throwError(`Transaction hash not found`);
+    }
+
+    const evmEvents = blockEvents.filter(
+      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+    );
+
+    const createdEvents = evmEvents.find(
+      ({ event }) => event.section.toUpperCase() === 'EVM' && event.method.toUpperCase() === 'CREATED'
+    );
+
+    const executedEvents = evmEvents.find(
+      ({ event }) => event.section.toUpperCase() === 'EVM' && event.method.toUpperCase() === 'EXECUTED'
+    );
+
+    const result = evmEvents.find(
+      ({ event }) => event.section.toUpperCase() === 'SYSTEM' && event.method.toUpperCase() === 'EXTRINSICSUCCESS'
+    );
+
+    if (!result) {
+      return logger.throwError(`Can't find event`);
+    }
+
+    const status = createdEvents || executedEvents ? 1 : 0;
+
+    const contractAddress = createdEvents ? createdEvents.event.data[1] : null;
+
+    const to = executedEvents ? executedEvents.event.data[1] : null;
+    const from = createdEvents
+      ? createdEvents.event.data[0].toString()
+      : executedEvents
+      ? executedEvents.event.data[0].toString()
+      : null;
+
+    const logs = evmEvents
+      .filter(({ event }) => {
+        return event.method.toUpperCase() === 'LOG' && event.section.toUpperCase() === 'EVM';
+      })
+      .map((log, index) => {
+        const evmLog = log.event.data[0] as EvmLog;
+
+        return {
+          transactionHash: txHash,
+          blockNumber,
+          blockHash: blockHash,
+          transactionIndex: extrinsicIndex,
+          removed: false,
+          address: evmLog.address.toJSON() as any,
+          data: evmLog.data.toJSON() as any,
+          topics: evmLog.topics.toJSON() as any,
+          logIndex: index
+        };
+      });
+
+    const gasUsed = BigNumber.from((result.event.data[0] as DispatchInfo).weight.toBigInt());
+
+    return {
+      // @ts-ignore
+      to: to?.toString(),
+      // @ts-ignore
+      from: from?.toString(),
+      // @ts-ignore
+      contractAddress: contractAddress?.toString(),
+      transactionIndex: extrinsicIndex,
+      gasUsed,
+      logsBloom: '0x',
+      blockHash,
+      transactionHash: txHash,
+      logs,
+      blockNumber,
+      // @TODO
+      confirmations: 4,
+      cumulativeGasUsed: gasUsed,
+      byzantium: false,
+      status,
+      effectiveGasPrice: EFFECTIVE_GAS_PRICE,
+      type: 0
+    };
   };
 
   static isProvider(value: any): value is Provider {
