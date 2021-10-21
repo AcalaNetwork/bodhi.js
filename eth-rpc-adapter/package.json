@@ -1,17 +1,19 @@
 {
   "name": "@acala-network/eth-rpc-adaptor",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
     "build": "heft build --clean",
+    "build:watch": "heft build",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "jest --forceExit --coverage --verbose",
     "start": "ts-node src/index",
     "dev": "nodemon --watch \"src/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
   },
   "dependencies": {
+    "@acala-network/eth-providers": "workspace:*",
     "@polkadot/api": "~6.4.2",
     "@polkadot/api-derive": "~6.4.2",
     "@polkadot/types": "~6.4.2",
@@ -31,7 +33,8 @@
     "node-ipc": "~10.1.0",
     "pino": "~7.0.0-rc.3",
     "ws": "~8.2.2",
-    "@acala-network/types": "~3.0.1"
+    "@acala-network/types": "~3.0.1",
+    "@ethersproject/logger": "~5.4.0"
   },
   "devDependencies": {
     "@types/body-parser": "~1.19.1",

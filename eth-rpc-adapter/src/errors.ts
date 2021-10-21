@@ -40,9 +40,3 @@ export class InvalidParams extends JSONRPCError {
     super(message, -32602, data);
   }
 }
-
-export class UnsupportedParams extends JSONRPCError {
-  constructor(message: string, data?: any) {
-    super(message, -32602, data);
-  }
-}
