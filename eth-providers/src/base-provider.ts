@@ -21,17 +21,7 @@ import type { Option } from '@polkadot/types';
 import type { AccountId } from '@polkadot/types/interfaces';
 import { BigNumber, BigNumberish } from 'ethers';
 import { BIGNUMBER_ZERO, EMPTY_STRING, ZERO } from './consts';
-import { convertNativeToken, evmAddressToSubstrateAddress } from './utils';
-import { version } from './_version';
-
-const logger = new Logger(version);
-
-const throwNotImplemented = (method: string): never => {
-  return logger.throwError(`${method} not implemented`, Logger.errors.NOT_IMPLEMENTED, {
-    method,
-    provider: 'base-provider'
-  });
-};
+import { logger, throwNotImplemented, convertNativeToken, evmAddressToSubstrateAddress } from './utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 
@@ -467,6 +457,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return !!(value && value._isProvider);
   }
 
+  abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
   /**
    * TODO
    */
@@ -490,8 +481,6 @@ export abstract class BaseProvider extends AbstractProvider {
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
 
   // Execution
-  sendTransaction = (signedTransaction: string | Promise<string>): Promise<TransactionResponse> =>
-    throwNotImplemented('sendTransaction');
   estimateGas = (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => throwNotImplemented('estimateGas');
 
   waitForTransaction = (
