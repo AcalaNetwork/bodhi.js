@@ -71,6 +71,8 @@ export interface CallRequest {
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
 
+  _network: Network | null = null;
+
   setApi = (api: ApiPromise) => {
     defineReadOnly(this, '_api', api);
   };
@@ -95,17 +97,34 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.api.registry.chainDecimals[0] || 10;
   }
 
-  isReady = async () => {
-    try {
-      await this.api.isReadyOrError;
-    } catch (e) {
-      await this.api.disconnect();
-      throw e;
+  isReady = async (): Promise<Network> => {
+    if (this._network === null) {
+      try {
+        await this.api.isReadyOrError;
+
+        const network = {
+          name: this.api.runtimeVersion.specName.toString(),
+          chainId: await this.chainId()
+        };
+
+        this._network = network;
+      } catch (e) {
+        await this.api.disconnect();
+        throw e;
+      }
     }
+
+    return this._network;
   };
 
   disconnect = async () => {
     await this.api.disconnect();
+  };
+
+  getNetwork = async (): Promise<Network> => {
+    const network = await this.isReady();
+
+    return network;
   };
 
   netVersion = async (): Promise<string> => {
@@ -117,6 +136,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getBlockNumber = async (): Promise<number> => {
+    await this.getNetwork();
+
     const blockHash = await this._getBlockTag('latest');
     const header = await this.api.rpc.chain.getHeader(blockHash);
     return header.number.toNumber();
@@ -126,6 +147,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag: BlockTag | string | Promise<BlockTag | string>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock> => {
+    await this.getNetwork();
     // @TODO
     if (full) {
       return logger.throwError('getBlock full param not implemented', Logger.errors.UNSUPPORTED_OPERATION);
@@ -181,6 +203,8 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<BigNumber> => {
+    await this.getNetwork();
+
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockTag(blockTag)
@@ -199,6 +223,8 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<number> => {
+    await this.getNetwork();
+
     const resolvedBlockTag = await blockTag;
 
     if (resolvedBlockTag === 'pending') {
@@ -215,6 +241,8 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
+    await this.getNetwork();
+
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockTag(blockTag)
@@ -239,6 +267,8 @@ export abstract class BaseProvider extends AbstractProvider {
     transaction: Deferrable<TransactionRequest>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
+    await this.getNetwork();
+
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
       blockHash: this._getBlockTag(blockTag)
@@ -269,7 +299,8 @@ export abstract class BaseProvider extends AbstractProvider {
     position: BigNumberish | Promise<BigNumberish>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> {
-    // await this.getNetwork();
+    await this.getNetwork();
+
     const { address, resolvedPosition, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockTag(blockTag),
@@ -323,6 +354,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   sendRawTransaction = async (rawTx: string): Promise<string> => {
+    await this.getNetwork();
+
     const ethTx = parse(rawTx);
 
     if (!ethTx.from) {
@@ -458,12 +491,10 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
+
   /**
    * TODO
    */
-
-  // Network
-  getNetwork = (): Promise<Network> => throwNotImplemented('getNetwork');
 
   // Latest State
   getGasPrice = (): Promise<BigNumber> => throwNotImplemented('getGasPrice');
