@@ -53,6 +53,7 @@ export interface _Block {
   miner: string;
   extraData: string;
 
+  // eslint-disable-next-line @rushstack/no-new-null
   baseFeePerGas?: null | BigNumber;
 }
 
@@ -83,9 +84,9 @@ export interface CallRequest {
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
 
-  _network: Network | null = null;
+  _network?: Network;
 
-  setApi = (api: ApiPromise) => {
+  setApi = (api: ApiPromise): void => {
     defineReadOnly(this, '_api', api);
   };
 
@@ -97,20 +98,20 @@ export abstract class BaseProvider extends AbstractProvider {
     return this._api;
   }
 
-  get genesisHash() {
+  get genesisHash(): string {
     return this.api.genesisHash.toHex();
   }
 
-  get isConnected() {
+  get isConnected(): boolean {
     return this.api.isConnected;
   }
 
-  get chainDecimal() {
+  get chainDecimal(): number {
     return this.api.registry.chainDecimals[0] || 10;
   }
 
   isReady = async (): Promise<Network> => {
-    if (this._network === null) {
+    if (!this._network) {
       try {
         await this.api.isReadyOrError;
 
@@ -129,7 +130,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return this._network;
   };
 
-  disconnect = async () => {
+  disconnect = async (): Promise<void> => {
     await this.api.disconnect();
   };
 
@@ -207,10 +208,12 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getBlockWithTransactions(blockTag: BlockTag | string | Promise<BlockTag | string>): Promise<BlockWithTransactions> {
+  getBlockWithTransactions = async (
+    blockTag: BlockTag | string | Promise<BlockTag | string>
+  ): Promise<BlockWithTransactions> => {
     // @TODO implementing full
     return this.getBlock(blockTag, true) as any;
-  }
+  };
 
   // @TODO free
   getBalance = async (
@@ -333,7 +336,8 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<string> => {
     await this.getNetwork();
 
-    const { address, resolvedPosition, blockHash } = await resolveProperties({
+    // @TODO resolvedPosition
+    const { address, blockHash, resolvedPosition } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockTag(blockTag),
       resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))
@@ -361,21 +365,23 @@ export abstract class BaseProvider extends AbstractProvider {
    * @param transaction The transaction to estimate the gas of
    * @returns The estimated gas used by this transaction
    */
-  async estimateGas(transaction: Deferrable<TransactionRequest>): Promise<BigNumber> {
+  estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     const resources = await this.estimateResources(transaction);
     return resources.gas.add(resources.storage);
-  }
+  };
 
   /**
    * Estimate resources for a transaction.
    * @param transaction The transaction to estimate the resources of
    * @returns The estimated resources used by this transaction
    */
-  async estimateResources(transaction: Deferrable<TransactionRequest>): Promise<{
+  estimateResources = async (
+    transaction: Deferrable<TransactionRequest>
+  ): Promise<{
     gas: BigNumber;
     storage: BigNumber;
     weightFee: BigNumber;
-  }> {
+  }> => {
     const ethTx = await this._getTransactionRequest(transaction);
 
     if (!ethTx.from) {
@@ -406,12 +412,12 @@ export abstract class BaseProvider extends AbstractProvider {
       storage: BigNumber.from((result.storage as BN).toString()),
       weightFee: BigNumber.from((result.weightFee as BN).toString())
     };
-  }
+  };
 
   querySubstrateAddress = async (
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<string | null> => {
+  ): Promise<string | undefined> => {
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockTag(blockTag)
@@ -419,7 +425,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAccount = await this.api.query.evmAccounts.accounts.at<Option<AccountId>>(blockHash, address);
 
-    return substrateAccount.isEmpty ? null : substrateAccount.toString();
+    return substrateAccount.isEmpty ? undefined : substrateAccount.toString();
   };
 
   queryAccountInfo = async (
@@ -557,24 +563,24 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx: any = {};
 
     ['from', 'to'].forEach((key) => {
-      if (values[key] == null) {
+      if (values[key] === null || values[key] === undefined) {
         return;
       }
       tx[key] = Promise.resolve(values[key]).then((v) => (v ? this._getAddress(v) : null));
     });
 
     ['gasLimit', 'gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas', 'value'].forEach((key) => {
-      if (values[key] == null) {
+      if (values[key] === null || values[key] === undefined) {
         return;
       }
       tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v) : null));
     });
 
     ['type'].forEach((key) => {
-      if (values[key] == null) {
+      if (values[key] === null || values[key] === undefined) {
         return;
       }
-      tx[key] = Promise.resolve(values[key]).then((v) => (v != null ? v : null));
+      tx[key] = Promise.resolve(values[key]).then((v) => (v !== null || v !== undefined ? v : null));
     });
 
     if (values.accessList) {
@@ -582,7 +588,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     ['data'].forEach((key) => {
-      if (values[key] == null) {
+      if (values[key] === null || values[key] === undefined) {
         return;
       }
       tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v) : null));
@@ -598,11 +604,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const apiAt = await this.api.at(blockHash);
 
-    const [block, header, validators, now, blockEvents] = await Promise.all([
+    const [block, header, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.rpc.chain.getHeader(blockHash),
-      this.api.query.session ? apiAt.query.session.validators() : ([] as any),
-      apiAt.query.timestamp.now(),
       apiAt.query.system.events()
     ]);
 

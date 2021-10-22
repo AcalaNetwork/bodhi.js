@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish } from 'ethers';
+import { BigNumber } from 'ethers';
 
 export const ZERO = 0;
 export const BIGNUMBER_ONE = BigNumber.from(1);

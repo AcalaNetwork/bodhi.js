@@ -13,11 +13,14 @@ export class EvmRpcProvider extends BaseProvider {
   sendTransaction = (signedTransaction: string | Promise<string>): Promise<TransactionResponse> =>
     throwNotImplemented('sendTransaction');
 
-  getTransactionCount = (addressOrName: string | Promise<string>, blockTag?: BlockTag | Promise<BlockTag>) => {
+  getTransactionCount = (
+    addressOrName: string | Promise<string>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<number> => {
     return this.getSubstrateNonce(addressOrName, blockTag);
   };
 
-  static from(endpoint: string | string[]) {
+  static from(endpoint: string | string[]): EvmRpcProvider {
     return new EvmRpcProvider(endpoint);
   }
 }

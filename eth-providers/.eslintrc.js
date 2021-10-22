@@ -6,6 +6,9 @@ module.exports = {
   parserOptions: { tsconfigRootDir: __dirname },
   rules: {
     eqeqeq: 'warn',
+    '@typescript-eslint/explicit-member-accessibility': 'off',
+    '@rushstack/typedef-var': 'off',
+    '@typescript-eslint/naming-convention': 'off',
     '@typescript-eslint/no-use-before-define': 'warn'
   }
 };
