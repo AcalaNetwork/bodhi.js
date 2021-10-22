@@ -387,14 +387,14 @@ export abstract class BaseProvider extends AbstractProvider {
     const extrinsic = !to
       ? this.api.tx.evm.create(
           data,
-          value.toBigInt(),
+          value?.toBigInt(),
           U64MAX.toBigInt(), // gas_limit u64::max
           U32MAX.toBigInt() // storage_limit u32::max
         )
       : this.api.tx.evm.call(
           to,
           data,
-          value.toBigInt(),
+          value?.toBigInt(),
           U64MAX.toBigInt(), // gas_limit u64::max
           U32MAX.toBigInt() // storage_limit u32::max
         );
@@ -426,12 +426,21 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> => {
+    // pending tag
+    const resolvedBlockTag = await blockTag;
+    if (resolvedBlockTag === 'pending') {
+      const address = await this._getAddress(addressOrName);
+      return this.api.query.evm.accounts<Option<EvmAccountInfo>>(address);
+    }
+
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockTag(blockTag)
     });
 
-    const accountInfo = this.api.query.evm.accounts.at<Option<EvmAccountInfo>>(blockHash, address);
+    const apiAt = await this.api.at(blockHash);
+
+    const accountInfo = await apiAt.query.evm.accounts<Option<EvmAccountInfo>>(address);
 
     return accountInfo;
   };
@@ -542,7 +551,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return addressOrName;
   };
 
-  _getTransactionRequest = async (transaction: Deferrable<TransactionRequest>): Promise<Transaction> => {
+  _getTransactionRequest = async (transaction: Deferrable<TransactionRequest>): Promise<Partial<Transaction>> => {
     const values: any = await transaction;
 
     const tx: any = {};
@@ -607,10 +616,13 @@ export abstract class BaseProvider extends AbstractProvider {
             extrinsicIndex: index
           };
         })
-        .find(({ extrinsic }) => extrinsic.toHex().toLowerCase() === txHash.toLowerCase()) || {};
+        .find(({ extrinsic }) => extrinsic.hash.toHex() === txHash) || {};
 
     if (!extrinsic || !extrinsicIndex) {
-      return logger.throwError(`Transaction hash not found`);
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, {
+        hash: txHash,
+        blockHash
+      });
     }
 
     const evmEvents = blockEvents.filter(
