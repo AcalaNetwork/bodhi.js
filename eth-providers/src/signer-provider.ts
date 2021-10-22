@@ -16,7 +16,7 @@ export class SignerProvider extends BaseProvider {
   sendTransaction = (signedTransaction: string | Promise<string>): Promise<TransactionResponse> =>
     throwNotImplemented('sendTransaction');
 
-  static from(apiOptions: ApiOptions) {
+  static from(apiOptions: ApiOptions): SignerProvider {
     return new SignerProvider(apiOptions);
   }
 }

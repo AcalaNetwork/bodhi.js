@@ -10,3 +10,4 @@ coverage/*
 /src/types/
 # config files
 knexfile.js
+**/__tests__

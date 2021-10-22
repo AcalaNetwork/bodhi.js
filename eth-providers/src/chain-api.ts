@@ -31,7 +31,7 @@ const TYPES = {
   }
 };
 
-export const createApi = (endpoints: string | string[], apiOptions?: ApiOptions) => {
+export const createApi = (endpoints: string | string[], apiOptions?: ApiOptions): ApiPromise => {
   const wsProvider = new WsProvider(endpoints);
 
   return new ApiPromise(
