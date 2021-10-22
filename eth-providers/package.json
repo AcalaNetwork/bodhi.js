@@ -8,7 +8,7 @@
     "build": "heft build --clean",
     "build:watch": "heft build",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
-    "test": "jest"
+    "test": "jest --forceExit --coverage --verbose"
   },
   "dependencies": {
     "@polkadot/api": "~6.4.2",

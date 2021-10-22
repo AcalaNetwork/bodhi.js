@@ -18,7 +18,7 @@ import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/pr
 import { accessListify, parse, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
-import type { Option } from '@polkadot/types';
+import type { Option, Vec } from '@polkadot/types';
 import type { AccountId, EvmLog, DispatchInfo } from '@polkadot/types/interfaces';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
@@ -348,6 +348,34 @@ export abstract class BaseProvider extends AbstractProvider {
     return code.toHex();
   };
 
+  // @TODO
+  resolveName = async (name: string | Promise<string>): Promise<string> => {
+    name = await name;
+
+    return name;
+    // If it is already an address, nothing to resolve
+    // try {
+    //   return Promise.resolve(this.formatter.address(name));
+    // } catch (error) {
+    //   // If is is a hexstring, the address is bad (See #694)
+    //   if (isHexString(name)) {
+    //     throw error;
+    //   }
+    // }
+
+    // if (typeof name !== 'string') {
+    //   logger.throwArgumentError('invalid ENS name', 'name', name);
+    // }
+
+    // // Get the addr from the resovler
+    // const resolver = await this.getResolver(name);
+    // if (!resolver) {
+    //   return null;
+    // }
+
+    // return await resolver.getAddress();
+  };
+
   getGasPrice = async (): Promise<BigNumber> => {
     return GAS_PRICE;
   };
@@ -660,25 +688,28 @@ export abstract class BaseProvider extends AbstractProvider {
       ? executedEvents.event.data[0].toString()
       : null;
 
-    const logs = evmEvents
-      .filter(({ event }) => {
-        return event.method.toUpperCase() === 'LOG' && event.section.toUpperCase() === 'EVM';
-      })
-      .map((log, index) => {
-        const evmLog = log.event.data[0] as EvmLog;
+    const targetEvent = evmEvents.find(({ event }) => {
+      return (
+        event.section.toUpperCase() === 'EVM' &&
+        ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.method)
+      );
+    });
 
+    const logs = ((targetEvent?.event.data[targetEvent.event.data.length - 1] as Vec<EvmLog>) || []).map(
+      (log, index) => {
         return {
           transactionHash: txHash,
           blockNumber,
           blockHash: blockHash,
           transactionIndex: extrinsicIndex,
           removed: false,
-          address: evmLog.address.toJSON() as any,
-          data: evmLog.data.toJSON() as any,
-          topics: evmLog.topics.toJSON() as any,
+          address: log.address.toJSON() as any,
+          data: log.data.toJSON() as any,
+          topics: log.topics.toJSON() as any,
           logIndex: index
         };
-      });
+      }
+    );
 
     const gasUsed = BigNumber.from((result.event.data[0] as DispatchInfo).weight.toBigInt());
 
@@ -725,7 +756,6 @@ export abstract class BaseProvider extends AbstractProvider {
   getLogs = (filter: Filter): Promise<Array<Log>> => throwNotImplemented('getLogs');
 
   // ENS
-  resolveName = (name: string | Promise<string>): Promise<string> => throwNotImplemented('resolveName');
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
 
   waitForTransaction = (
