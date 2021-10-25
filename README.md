@@ -34,9 +34,20 @@ cd <project> && rush add -p <package>   # for this project only
 - Most of the api of `bodhi.js` is compatible with [ethers.js](https://docs.ethers.io/v5/single-page/).
 
 ## Release Workflow
-Currently only [bodhi](./bodhi) package will be auto released.
+### manual
+```
+## first let rush determine what projects were changed
+rush change --bulk --message "version x.x.x" --bump-type "patch"
 
-In order to trigger a auto release, we need to tag the commit with 'v*', any other commit won't trigger the auto publish. Also, remember to update the `version` filed in `package.json`, otherwise publishing will fail.
+## build
+rush build
+
+## publish
+rush publish -p --set-access-level public -n <paste_npm_token_here>
+```
+
+### CI (WIP)
+In order to trigger a auto release, we need to tag the commit with 'v*', any other commit won't trigger the auto publish. Also, remember to update the `version` fields in `package.json`, otherwise publishing will fail.
 
 For example
 ```

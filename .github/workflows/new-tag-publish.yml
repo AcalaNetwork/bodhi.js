@@ -21,12 +21,13 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
+      - name: detect changed packages
+        run: node common/scripts/install-run-rush.js change --bulk --message "bump version" --bump-type "patch"
+
       - name: build all packages
         run: node common/scripts/install-run-rush.js build
 
-      - name: publish bodhi
-        run: |
-          cd bodhi
-          yarn publish --access public --verbose
+      - name: publish changed packages
+        run: rush publish -p --set-access-level public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
