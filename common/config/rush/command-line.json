@@ -34,6 +34,12 @@
       // Enable "watch mode"
       "watchForChanges": true
     },
+    {
+      "commandKind": "bulk",
+      "name": "build",
+      "summary": "Build all projects that haven't been built, or have changed since they were last built",
+      "allowWarningsInSuccessfulBuild": true
+    },
     // {
     //   /**
     //    * (Required) Determines the type of custom command.
