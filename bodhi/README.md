@@ -2,7 +2,7 @@
 
 bodhi.js SDK implements a web3 provider to allow existing Ethereum dApp to be able to interact with [Acala EVM](https://github.com/AcalaNetwork/Acala/tree/master/modules/evm).
 
-**If you are using mandala tc6, then you should use @acala-network/bodhi@0.2.x, @acala-network/api@0.7.1, @polkadot/api@4.2.1.**
+**If you are using mandala tc6, then you should use @acala-network/bodhi@0.2.x, @acala-network/api@0.7.1, @polkadot/api@4.2.1.** 
 
 ## Getting Started
 
