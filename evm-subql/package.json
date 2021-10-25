@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc -b",
+    "build": "yarn codegen && tsc -b",
     "build:watch": "tsc -b",
     "prepack": "rm -rf dist && npm build",
     "test": "jest",

@@ -21,10 +21,12 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
-      - name: build and publish
+      - name: build all packages
+        run: node common/scripts/install-run-rush.js build
+
+      - name: publish bodhi
         run: |
           cd bodhi
-          yarn build
           yarn publish --access public --verbose
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
