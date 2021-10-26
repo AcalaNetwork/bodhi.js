@@ -81,6 +81,7 @@ importers:
       '@acala-network/api': ~3.0.1
       '@acala-network/types': ~3.0.1
       '@ethersproject/abstract-provider': ~5.4.0
+      '@ethersproject/address': ~5.4.0
       '@ethersproject/bignumber': ~5.4.0
       '@ethersproject/bytes': ~5.4.0
       '@ethersproject/logger': ~5.4.0
@@ -106,6 +107,7 @@ importers:
       '@acala-network/api': 3.0.1_@polkadot+types@6.4.2
       '@acala-network/types': 3.0.1
       '@ethersproject/abstract-provider': 5.4.1
+      '@ethersproject/address': 5.4.0
       '@ethersproject/bignumber': 5.4.2
       '@ethersproject/bytes': 5.4.0
       '@ethersproject/logger': 5.4.1
