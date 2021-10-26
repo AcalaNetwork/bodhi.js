@@ -22,6 +22,5 @@
     "allowJs": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules/*", "**/e2e/*", "**/__tests__/*", "**/*.(test|spec).ts"]
+  "exclude": ["node_modules/*", "**/e2e/*", "**/*.(test|spec).ts"]
 }

@@ -1,6 +1,7 @@
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   EventType,
+  FeeData,
   Filter,
   Listener,
   Log,
@@ -8,8 +9,7 @@ import {
   Provider,
   TransactionReceipt,
   TransactionRequest,
-  TransactionResponse,
-  FeeData
+  TransactionResponse
 } from '@ethersproject/abstract-provider';
 import { hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -19,21 +19,21 @@ import { accessListify, parse, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import type { Option, Vec } from '@polkadot/types';
-import type { AccountId, EvmLog, DispatchInfo } from '@polkadot/types/interfaces';
+import type { AccountId, DispatchInfo, EvmLog } from '@polkadot/types/interfaces';
+import type BN from 'bn.js';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
   BIGNUMBER_ZERO,
+  EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
-  ZERO,
   GAS_PRICE,
-  MAX_PRIORITY_FEE_PER_GAS,
   MAX_FEE_PER_GAS,
-  U64MAX,
+  MAX_PRIORITY_FEE_PER_GAS,
   U32MAX,
-  EFFECTIVE_GAS_PRICE
+  U64MAX,
+  ZERO
 } from './consts';
-import { logger, throwNotImplemented, convertNativeToken, evmAddressToSubstrateAddress } from './utils';
-import type BN from 'bn.js';
+import { computeDefaultSubstrateAddress, convertNativeToken, logger, throwNotImplemented } from './utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 
@@ -178,7 +178,7 @@ export abstract class BaseProvider extends AbstractProvider {
       this.api.rpc.chain.getHeader(blockHash),
       this.api.query.session ? apiAt.query.session.validators() : ([] as any),
       apiAt.query.timestamp.now()
-      // this.api.query.system.events.at(blockHash),
+      // apiAt.query.system.events(),
     ]);
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
@@ -227,11 +227,13 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockTag(blockTag)
     });
 
-    const substrateAddress = await this.querySubstrateAddress(address, blockHash);
+    const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
     if (!substrateAddress) return BIGNUMBER_ZERO;
 
-    const accountInfo = await this.api.query.system.account.at(blockHash, substrateAddress);
+    const apiAt = await this.api.at(blockHash);
+
+    const accountInfo = await apiAt.query.system.account(substrateAddress);
 
     return convertNativeToken(BigNumber.from(accountInfo.data.free.toBigInt()), this.chainDecimal);
   };
@@ -260,16 +262,22 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<number> => {
     await this.getNetwork();
 
+    const address = await this._getAddress(addressOrName);
     const resolvedBlockTag = await blockTag;
 
+    const substrateAddress = await this.getSubstrateAddress(address);
+
     if (resolvedBlockTag === 'pending') {
-      const idx = await this.api.rpc.system.accountNextIndex(evmAddressToSubstrateAddress(await addressOrName));
+      const idx = await this.api.rpc.system.accountNextIndex(substrateAddress);
       return idx.toNumber();
     }
 
-    const accountInfo = await this.queryAccountInfo(addressOrName, resolvedBlockTag);
+    const blockHash = await this._getBlockTag(blockTag);
 
-    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    const apiAt = await this.api.at(blockHash);
+    const accountInfo = await apiAt.query.system.account(substrateAddress);
+
+    return accountInfo.nonce.toNumber();
   };
 
   getCode = async (
@@ -291,9 +299,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const codeHash = contractInfo.unwrap().codeHash;
 
-    const code = blockHash
-      ? await this.api.query.evm.codes.at(blockHash, codeHash)
-      : await this.api.query.evm.codes(codeHash);
+    const api = await (blockHash ? this.api.at(blockHash) : this.api);
+
+    const code = await api.query.evm.codes(codeHash);
 
     return code.toHex();
   };
@@ -343,7 +351,9 @@ export abstract class BaseProvider extends AbstractProvider {
       resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))
     });
 
-    const code = await this.api.query.evm.accountStorages.at(blockHash, address, position);
+    const apiAt = await this.api.at(blockHash);
+
+    const code = await apiAt.query.evm.accountStorages(address, position);
 
     return code.toHex();
   };
@@ -442,18 +452,20 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  querySubstrateAddress = async (
+  getSubstrateAddress = async (
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<string | undefined> => {
+  ): Promise<string> => {
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockTag(blockTag)
     });
 
-    const substrateAccount = await this.api.query.evmAccounts.accounts.at<Option<AccountId>>(blockHash, address);
+    const apiAt = await this.api.at(blockHash);
 
-    return substrateAccount.isEmpty ? undefined : substrateAccount.toString();
+    const substrateAccount = await apiAt.query.evmAccounts.accounts<Option<AccountId>>(address);
+
+    return substrateAccount.isEmpty ? computeDefaultSubstrateAddress(address) : substrateAccount.toString();
   };
 
   queryAccountInfo = async (
@@ -513,7 +525,7 @@ export abstract class BaseProvider extends AbstractProvider {
       validUntil
     );
 
-    const subAddr = evmAddressToSubstrateAddress(ethTx.from);
+    const subAddr = await this.getSubstrateAddress(ethTx.from);
 
     const sig = joinSignature({ r: ethTx.r!, s: ethTx.s, v: ethTx.v });
 
