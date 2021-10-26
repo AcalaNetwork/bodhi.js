@@ -3,9 +3,6 @@ import { hexToU8a, stringToU8a, u8aConcat, u8aEq, u8aFixLength, u8aToHex } from 
 import { blake2AsU8a, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import type { HexString } from '@polkadot/util/types';
 import { logger } from './logger';
-export const evmAddressToSubstrateAddress = (address: string): string => {
-  return encodeAddress(u8aConcat(stringToU8a('evm:'), hexToU8a(address), new Uint8Array(8).fill(0)));
-};
 
 export const isSubstrateAddress = (address: HexString | string | Uint8Array) => {
   try {
