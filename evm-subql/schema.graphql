@@ -14,7 +14,7 @@ type Log @entity {
 
 type TransactionReceipt @entity {
   id: ID!
-  to: String!
+  to: String
   from: String!
   contractAddress: String
   transactionIndex: BigInt!
@@ -25,6 +25,6 @@ type TransactionReceipt @entity {
   logs: [Log] @derivedFrom(field: "receipt")
   blockNumber: BigInt!
   cumulativeGasUsed: BigInt!
-  type: BigInt!
+  type: BigInt
   status: BigInt!
 }

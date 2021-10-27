@@ -8,7 +8,9 @@
     "build:watch": "tsc -b",
     "prepack": "rm -rf dist && npm build",
     "test": "jest",
-    "codegen": "./node_modules/.bin/subql codegen"
+    "codegen": "./node_modules/.bin/subql codegen",
+    "index": "subql-node -f . --local --batch-size 200 --subquery-name=acala-evm --debug",
+    "query": "subql-query --name acala-evm --playground --debug"
   },
   "homepage": "https://github.com/subquery/subql-starter",
   "repository": "github:subquery/subql-starter",
@@ -20,15 +22,17 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@subql/cli": "~0.12.0",
-    "@subql/types": "~0.8.4",
-    "typescript": "~4.4.3",
-    "tslib": "~2.3.1",
-    "@polkadot/api": "~6.4.2",
-    "pino": "~7.0.0-rc.3"
+    "@subql/cli": "^0.14.0",
+    "@subql/node": "^0.23.1",
+    "@subql/types": "^0.9.0",
+    "@subql/query": "^0.7.3",
+    "pino": "~7.0.0-rc.3",
+    "tslib": "^2.3.1",
+    "typescript": "~4.4.3"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
+    "@polkadot/api": "~6.4.2",
     "@polkadot/types": "~6.4.2"
   }
 }
