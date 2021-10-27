@@ -1,7 +1,5 @@
 # @acala-network/evm-subql
-Acala EVM Subquery 
-
-**NOTE**: this doc is BETA
+Subquery services that index and query Acala EVM+ transactions.
 
 ## Run
 ### prepare
@@ -16,36 +14,33 @@ yarn
 
 - generate Typescript from the GraphQL schema, and build code. [more details](https://doc.subquery.network/quickstart/understanding-helloworld/#yarn-codegen)
 ```
-yarn codegen
 yarn build
 ```
 
-### run
+### run all services with docker
 for **linux users**, simply do `docker-compose up`, that's all. 
 
-for **mac users**, for unknown reason(s) the above command will fail, so we have to run each service separately locally:
+for **mac users**, docker will need some different config, please checkout [this branch](https://github.com/AcalaNetwork/eth-rpc-adaptor/tree/mac-docker-settings/evm-subql) for running docker with mac.
 
-- run a postgres service and listen to port 5432
+### run each service seperately
+- 1) run a postgres service and listen to port 5432
 ```
 docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
 ```
 
-- install and run a subquery node (note: currently there will be some runtime error, we might need to update the schema.graphql for it to fully work)
+- 2) run a subquery indexer (note: currently there is still some runtime error, which is under investigation)
 ```
-npm install -g @subql/node
-
 export DB_USER=postgres
 export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
-npx subql-node -f . --local --batch-size 200 --subquery-name=acala-evm --debug
+
+yarn index
 ```
 
-- install and run the Query service
+- 3) run the Query service (WIP)
 ```
-npm install -g @subql/query
-
 export DB_HOST=localhost
-npx subql-query --name acala-evm --playground --debug
+yarn query
 ```
