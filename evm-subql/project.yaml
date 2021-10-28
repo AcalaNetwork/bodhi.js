@@ -3,7 +3,7 @@ description: ''
 repository: ''
 schema: ./schema.graphql
 network:
-  endpoint: ws://localhost:9944
+  endpoint: ws://host.docker.internal:9944
   types:
     EvmAccountInfo:
       nonce: 'Index'
