@@ -214,6 +214,7 @@ importers:
 
   ../../evm-subql:
     specifiers:
+      '@acala-network/eth-providers': workspace:*
       '@polkadot/api': ~6.4.2
       '@polkadot/types': ~6.4.2
       '@subql/cli': ~0.12.0
@@ -222,6 +223,7 @@ importers:
       tslib: ~2.3.1
       typescript: ~4.4.3
     dependencies:
+      '@acala-network/eth-providers': link:../eth-providers
       '@polkadot/types': 6.4.2
     devDependencies:
       '@polkadot/api': 6.4.2

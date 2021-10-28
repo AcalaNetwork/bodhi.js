@@ -28,6 +28,7 @@
     "pino": "~7.0.0-rc.3"
   },
   "dependencies": {
+    "@acala-network/eth-providers": "workspace:*",
     "@polkadot/types": "~6.4.2"
   }
 }
