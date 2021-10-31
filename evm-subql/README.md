@@ -20,7 +20,7 @@ yarn build
 ### run all services with docker
 for **linux users**, simply do `docker-compose up`, that's all. 
 
-for **mac users**, use a macOS specfic docker compose with `docker-compose -f macos-docker-compose-yml up`.
+for **mac users**, use a macOS specfic docker compose with `docker-compose -f macos-docker-compose.yml up`.
 
 ### run each service seperately
 - 1) run a postgres service and listen to port 5432
