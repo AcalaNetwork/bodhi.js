@@ -45,7 +45,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
       removed: evmLog.removed,
       address: evmLog.address,
       data: evmLog.data,
-      topics: evmLog.topics,,
+      topics: evmLog.topics,
       logIndex: idx,
       receiptId,
       ...transactionInfo
