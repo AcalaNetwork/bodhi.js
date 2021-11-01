@@ -14,7 +14,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
       id: `${receiptId}-${idx}`,
       transactionHash: event.extrinsic.extrinsic.hash.toHex(),
       blockNumber: block.block.header.number.toNumber(),
-      blockHash: block.block.hash,
+      blockHash: block.block.hash.toHex(),
       transactionIndex: txIdx,
       removed: false,
       address: evmLog.address.toString().toLowerCase(),
@@ -114,7 +114,6 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   transactionReceipt.gasUsed = BigInt(0); // @Todo
   transactionReceipt.cumulativeGasUsed = BigInt(0); // @Todo
 
-  logs.forEach((evmLog, idx) => createLog(transactionReceipt.id, idx, evmLog));
-
   await transactionReceipt.save();
+  logs.forEach((evmLog, idx) => createLog(transactionReceipt.id, idx, evmLog));
 }
