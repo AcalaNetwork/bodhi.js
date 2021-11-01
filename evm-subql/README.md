@@ -1,5 +1,5 @@
 # @acala-network/evm-subql
-Subquery services that index and query Acala EVM+ transactions.
+Subquery services that index and query Acala EVM+ transactions and logs.
 
 ## Run
 ### prepare

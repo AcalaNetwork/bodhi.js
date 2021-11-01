@@ -1,4 +1,4 @@
-import { getPartialTransactionReceipt } from '@acala-network/eth-providers';
+import { getPartialTransactionReceipt } from '@acala-network/eth-providers/lib/utils/getPartialTransactionReceipt';
 import { SubstrateEvent } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
 
@@ -12,7 +12,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   const transactionInfo = {
     transactionHash: event.extrinsic.extrinsic.hash.toHex(),
     blockNumber: block.block.header.number.toNumber(),
-    blockHash: block.block.hash,
+    blockHash: block.block.hash.toHex(),
     transactionIndex: txIdx
   };
 
