@@ -20,7 +20,7 @@ yarn build
 ### run all services with docker
 for **linux users**, simply do `docker-compose up`, that's all. 
 
-for **mac users**, docker will need some different config, please checkout [this branch](https://github.com/AcalaNetwork/eth-rpc-adaptor/tree/mac-docker-settings/evm-subql) for running docker with mac.
+for **mac users**, use a macOS specfic docker compose with `docker-compose -f macos-docker-compose.yml up`.
 
 ### run each service seperately
 - 0) install subql lib globally (recommended by the [official doc](https://doc.subquery.network/install/install/#install-subql-cli))
