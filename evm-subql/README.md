@@ -17,7 +17,7 @@ yarn build
 This includes a Mandala node within Docker.
 
 ```
-docker-compose down && docker volume prune      # clean docker colume (optional)
+docker-compose down && docker volume prune      # clean docker volume (optional)
 
 docker-compose up                               # linux users
 docker-compose -f macos-docker-compose.yml up   # mac users
