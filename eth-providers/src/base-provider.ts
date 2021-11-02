@@ -11,6 +11,7 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
+import { getAddress } from '@ethersproject/address';
 import { hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
@@ -35,6 +36,7 @@ import {
 } from './consts';
 import {
   computeDefaultSubstrateAddress,
+  computeDefaultEvmAddress,
   convertNativeToken,
   logger,
   throwNotImplemented,
@@ -192,6 +194,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const deafultNonce = this.api.registry.createType('u64', 0);
     const deafultMixHash = this.api.registry.createType('u256', 0);
 
+    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : EMPTY_STRING;
+
     return {
       hash: headerExtended.hash.toHex(),
       parentHash: headerExtended.parentHash.toHex(),
@@ -205,8 +209,8 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: BIGNUMBER_ZERO,
       gasUsed: BIGNUMBER_ZERO,
 
-      miner: headerExtended.author?.toString() || EMPTY_STRING, // @TODO Converted to ETH address
-      author: headerExtended.author?.toString() || EMPTY_STRING, // @TODO Converted to ETH address
+      miner: author,
+      author: author,
       extraData: EMPTY_STRING,
 
       baseFeePerGas: BIGNUMBER_ZERO,
@@ -472,6 +476,23 @@ export abstract class BaseProvider extends AbstractProvider {
     const substrateAccount = await apiAt.query.evmAccounts.accounts<Option<AccountId>>(address);
 
     return substrateAccount.isEmpty ? computeDefaultSubstrateAddress(address) : substrateAccount.toString();
+  };
+
+  getEvmAddress = async (
+    substrateAddress: string | Promise<string>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<string> => {
+    substrateAddress = await substrateAddress;
+
+    const { blockHash } = await resolveProperties({
+      blockHash: this._getBlockTag(blockTag)
+    });
+
+    const apiAt = await this.api.at(blockHash);
+
+    const evmAddress = await apiAt.query.evmAccounts.evmAddresses(substrateAddress);
+
+    return getAddress(evmAddress.isEmpty ? computeDefaultEvmAddress(substrateAddress) : evmAddress.toString());
   };
 
   queryAccountInfo = async (
