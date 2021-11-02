@@ -1,6 +1,6 @@
 import type { EvmLog, H160 } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { BigNumber } from 'ethers';
+import { BigNumber } from '@ethersproject/bignumber';
 import { BIGNUMBER_ZERO, EFFECTIVE_GAS_PRICE } from '../consts';
 import { getPartialLogs, PartialLog } from './getPartialLogs';
 import { logger } from './logger';
