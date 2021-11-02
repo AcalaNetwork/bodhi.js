@@ -46,7 +46,7 @@ rush build
 rush publish -p --set-access-level public -n <paste_npm_token_here>
 ```
 
-### CI (WIP)
+### CI (deprecated, rush has some different workflow)
 In order to trigger a auto release, we need to tag the commit with 'v*', any other commit won't trigger the auto publish. Also, remember to update the `version` fields in `package.json`, otherwise publishing will fail.
 
 For example

@@ -1,6 +1,6 @@
 import { EvmRpcProvider } from '../rpc-provider';
 
-const endpoint = 'wss://mandala6.laminar.codes/';
+const endpoint = 'wss://mandala6.laminar.codes/'; // FIXME: wait for a usable testnet
 
 describe('EvmRpcProvider', () => {
   it('connect chain', async () => {
@@ -20,7 +20,7 @@ describe('EvmRpcProvider', () => {
   });
 
   it('getBlockTag', async () => {
-    const provider = EvmRpcProvider.from('wss://mandala6.laminar.codes/');
+    const provider = EvmRpcProvider.from(endpoint);
     await provider.isReady();
     const blockHash = await provider._getBlockTag('0x123');
 

@@ -1,0 +1,88 @@
+name: Build And Test All Packages
+on: push
+
+jobs:
+  test-bodhi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build
+
+      - name: test
+        run: cd bodhi && yarn test
+        env:
+          NPM_TOKEN: doesnt-matter
+
+  test-eth-provider:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build
+
+      - name: test
+        run: cd eth-providers && yarn test
+
+  test-eth-rpc-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build
+
+      - name: test
+        run: cd eth-rpc-adapter && yarn test
+
+  test-evm-subql:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build
+
+      - name: install and build (evm-subql specific)
+        run: cd evm-subql && yarn && yarn build
+
+      - name: test
+        run: cd evm-subql && yarn test
