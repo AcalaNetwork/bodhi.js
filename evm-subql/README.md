@@ -2,8 +2,7 @@
 Subquery services that index and query Acala EVM+ transactions.
 
 ## Run
-### prepare
-- first make sure to run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944. Make sure to feed some EVM transactions to it, for example we can use [these evm examples](https://github.com/AcalaNetwork/evm-examples).
+### Prepare
 
 - install project dependencies
 ```
@@ -17,12 +16,16 @@ yarn
 yarn build
 ```
 
-### run all services with docker
+### Run all services with docker
+This includes a Mandala node within Docker.
+
 for **linux users**, simply do `docker-compose up`, that's all. 
 
 for **mac users**, use a macOS specfic docker compose with `docker-compose -f macos-docker-compose.yml up`.
 
-### run each service seperately
+### Run each service seperately
+- Make sure to run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 and make sure to feed some EVM transactions to it, for example we can use [these evm examples](https://github.com/AcalaNetwork/evm-examples).
+
 - 0) install subql lib globally (recommended by the [official doc](https://doc.subquery.network/install/install/#install-subql-cli))
 ```
 npm i -g @subql/node @subql/query

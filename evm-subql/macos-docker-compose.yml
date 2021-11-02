@@ -1,6 +1,22 @@
 version: '3'
 
 services:
+  mandala-node:
+    image: acala/mandala-node:dc8d634b
+    ports:
+      - 9944:9944
+    command:
+      - --dev
+      - -lruntime=debug
+      - -levm=debug
+      - --ws-port=9944
+      - --ws-external=true
+      - --rpc-port=9933
+      - --rpc-external=true
+      - --rpc-cors=all
+      - --rpc-methods=unsafe
+      - --tmp
+
   postgres:
     image: postgres:12-alpine
     ports:
@@ -27,7 +43,7 @@ services:
       - ./:/app
     command:
       - -f=/app
-      - --network-endpoint=ws://host.docker.internal:9944
+      - --network-endpoint=ws://mandala-node:9944
       - --subquery-name=acala-evm
       - --log-level=debug
 
