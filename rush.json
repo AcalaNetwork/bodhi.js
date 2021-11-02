@@ -443,11 +443,6 @@
       "reviewCategory": "production"
     },
     {
-      "packageName": "@acala-network/evm-subql",
-      "projectFolder": "evm-subql",
-      "reviewCategory": "production"
-    },
-    {
       "packageName": "@acala-network/bodhi",
       "projectFolder": "bodhi",
       "reviewCategory": "production",

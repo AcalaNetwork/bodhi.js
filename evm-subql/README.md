@@ -1,14 +1,11 @@
 # @acala-network/evm-subql
-Subquery services that index and query Acala EVM+ transactions.
+Subquery services that index and query Acala EVM+ transactions and logs.
 
 ## Run
-### Prepare
-
+### prepare
 - install project dependencies
 ```
 yarn
-
-# `rush update` will cause tslib import problem, probably because it is using symlink and has some imcompatibility.
 ```
 
 - generate Typescript from the GraphQL schema, and build code. [more details](https://doc.subquery.network/quickstart/understanding-helloworld/#yarn-codegen)
@@ -16,27 +13,33 @@ yarn
 yarn build
 ```
 
-### Run all services with docker
+### run all services with docker
 This includes a Mandala node within Docker.
 
-for **linux users**, simply do `docker-compose up`, that's all. 
+```
+docker-compose down && docker volume prune      # clean docker colume (optional)
 
-for **mac users**, use a macOS specfic docker compose with `docker-compose -f macos-docker-compose.yml up`.
+docker-compose up                               # linux users
+docker-compose -f macos-docker-compose.yml up   # mac users
+```
 
-### Run each service seperately
-- Make sure to run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 and make sure to feed some EVM transactions to it, for example we can use [these evm examples](https://github.com/AcalaNetwork/evm-examples).
+Make sure to feed some EVM transactions to acala node, for example we can use [these evm examples](https://github.com/AcalaNetwork/evm-examples).
 
-- 0) install subql lib globally (recommended by the [official doc](https://doc.subquery.network/install/install/#install-subql-cli))
+### run each service seperately
+- first install subql globally (recommended by the [official doc](https://doc.subquery.network/install/install/#install-subql-cli))
 ```
 npm i -g @subql/node @subql/query
 ```
 
-- 1) run a postgres service and listen to port 5432 (in terminal 1)
+- run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 (in terminal 1), and feed EVM data to it
+
+
+- run a postgres service and listen to port 5432 (in terminal 2)
 ```
 docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
 ```
 
-- 2) run a subquery indexer (in terminal 2)
+- run a subquery indexer (in terminal 3)
 ```
 export DB_USER=postgres
 export DB_PASS=postgres
@@ -47,7 +50,7 @@ export DB_PORT=5432
 yarn index
 ```
 
-- 3) run the Query service (in terminal 3)
+- run the Query service (in terminal 4)
 ```
 export DB_USER=postgres
 export DB_PASS=postgres
@@ -94,3 +97,6 @@ query {
   }
 }
 ```
+
+## Notes
+- Other packages in `bodhi.js` use `rush` to manage, but we use `yarn` for this one. Since `rush update` will cause tslib import problem, because `rush` uses symlink so pacakges point to outside, but `subql/node`'s NodeVM doesn't allow import from outside. 

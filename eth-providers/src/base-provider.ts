@@ -33,7 +33,13 @@ import {
   U64MAX,
   ZERO
 } from './consts';
-import { computeDefaultSubstrateAddress, convertNativeToken, logger, throwNotImplemented } from './utils';
+import {
+  computeDefaultSubstrateAddress,
+  convertNativeToken,
+  logger,
+  throwNotImplemented,
+  getPartialTransactionReceipt
+} from './utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 
@@ -669,84 +675,37 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    const evmEvents = blockEvents.filter(
+    const events = blockEvents.filter(
       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
-    const createdEvents = evmEvents.find(
-      ({ event }) => event.section.toUpperCase() === 'EVM' && event.method.toUpperCase() === 'CREATED'
-    );
-
-    const executedEvents = evmEvents.find(
-      ({ event }) => event.section.toUpperCase() === 'EVM' && event.method.toUpperCase() === 'EXECUTED'
-    );
-
-    const result = evmEvents.find(
-      ({ event }) => event.section.toUpperCase() === 'SYSTEM' && event.method.toUpperCase() === 'EXTRINSICSUCCESS'
-    );
-
-    if (!result) {
-      return logger.throwError(`Can't find event`);
-    }
-
-    const status = createdEvents || executedEvents ? 1 : 0;
-
-    const contractAddress = createdEvents ? createdEvents.event.data[1] : null;
-
-    const to = executedEvents ? executedEvents.event.data[1] : null;
-    const from = createdEvents
-      ? createdEvents.event.data[0].toString()
-      : executedEvents
-      ? executedEvents.event.data[0].toString()
-      : null;
-
-    const targetEvent = evmEvents.find(({ event }) => {
+    const evmEvent = events.find(({ event }) => {
       return (
         event.section.toUpperCase() === 'EVM' &&
         ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.method)
       );
     });
 
-    const logs = ((targetEvent?.event.data[targetEvent.event.data.length - 1] as Vec<EvmLog>) || []).map(
-      (log, index) => {
-        return {
-          transactionHash: txHash,
-          blockNumber,
-          blockHash: blockHash,
-          transactionIndex: extrinsicIndex,
-          removed: false,
-          address: log.address.toJSON() as any,
-          data: log.data.toJSON() as any,
-          topics: log.topics.toJSON() as any,
-          logIndex: index
-        };
-      }
-    );
+    if (!evmEvent) {
+      return logger.throwError(`evm event not found`, Logger.errors.UNKNOWN_ERROR, {
+        hash: txHash,
+        blockHash
+      });
+    }
 
-    const gasUsed = BigNumber.from((result.event.data[0] as DispatchInfo).weight.toBigInt());
+    const transactionInfo = { transactionIndex: extrinsicIndex, blockHash, transactionHash: txHash, blockNumber };
+    const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
+    // to and contractAddress may be undefined
     return {
-      // @ts-ignore
-      to: to?.toString(),
-      // @ts-ignore
-      from: from?.toString(),
-      // @ts-ignore
-      contractAddress: contractAddress?.toString(),
-      transactionIndex: extrinsicIndex,
-      gasUsed,
-      logsBloom: '0x',
-      blockHash,
-      transactionHash: txHash,
-      logs,
-      blockNumber,
-      // @TODO
-      confirmations: 4,
-      cumulativeGasUsed: gasUsed,
-      byzantium: false,
-      status,
-      effectiveGasPrice: EFFECTIVE_GAS_PRICE,
-      type: 0
-    };
+      confirmations: 1,
+      ...transactionInfo,
+      ...partialTransactionReceipt,
+      logs: partialTransactionReceipt.logs.map((log) => ({
+        ...transactionInfo,
+        ...log
+      }))
+    } as any;
   };
 
   static isProvider(value: any): value is Provider {
