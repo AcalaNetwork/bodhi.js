@@ -1,4 +1,4 @@
-import { getPartialTransactionReceipt } from '@acala-network/eth-providers/lib/utils/getPartialTransactionReceipt';
+import { getPartialTransactionReceipt } from '@acala-network/eth-providers/src/utils/getPartialTransactionReceipt';
 import { SubstrateEvent } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
 
