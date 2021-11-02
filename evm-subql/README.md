@@ -13,6 +13,12 @@ yarn
 yarn build
 ```
 
+- build `eth-provider` package if haven't done it
+```
+rush update
+rush build
+```
+
 ### run all services with docker
 This includes a Mandala node within Docker.
 
