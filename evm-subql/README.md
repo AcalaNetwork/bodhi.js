@@ -3,6 +3,13 @@ Subquery services that index and query Acala EVM+ transactions and logs.
 
 ## Run
 ### prepare
+
+- build `eth-provider` package if haven't done it
+```
+rush update
+rush build
+```
+
 - install project dependencies
 ```
 yarn
@@ -11,12 +18,6 @@ yarn
 - generate Typescript from the GraphQL schema, and build code. [more details](https://doc.subquery.network/quickstart/understanding-helloworld/#yarn-codegen)
 ```
 yarn build
-```
-
-- build `eth-provider` package if haven't done it
-```
-rush update
-rush build
 ```
 
 ### run all services with docker
