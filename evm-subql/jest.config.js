@@ -11,11 +11,6 @@ module.exports = {
   transform: {
     '^.+\\.(t|j)s$': 'ts-jest'
   },
-  testPathIgnorePatterns: [
-    '/dist',
-    '/lib',
-    'evm-rpc-provider.test.ts',
-    'rpc.test.ts' // TODO: remove these two after we have available WS endpoint
-  ],
+  testPathIgnorePatterns: ['/dist', '/lib'],
   transformIgnorePatterns: ['@polkadot+util-crypto.*/node_modules/@polkadot/util-crypto']
 };

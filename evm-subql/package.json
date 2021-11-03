@@ -7,7 +7,7 @@
     "build": "yarn codegen && tsc -b",
     "build:watch": "tsc -b",
     "prepack": "rm -rf dist && npm build",
-    "test": "jest",
+    "test": "jest --forceExit --coverage --verbose",
     "codegen": "./node_modules/.bin/subql codegen",
     "index": "subql-node -f . --local --batch-size 200 --subquery-name=acala-evm --debug",
     "query": "PORT=3001 subql-query --name acala-evm --playground --indexer=http://localhost:3000 --debug"
@@ -26,7 +26,10 @@
     "@rushstack/heft": "^0.42.0",
     "@subql/cli": "~0.12.0",
     "@subql/types": "~0.8.4",
+    "@types/jest": "^27.0.2",
+    "jest": "^27.3.1",
     "pino": "~7.0.0-rc.3",
+    "ts-jest": "^27.0.7",
     "tslib": "~2.3.1",
     "typescript": "~4.4.3"
   },

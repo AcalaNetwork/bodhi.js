@@ -1,6 +1,6 @@
 import { EvmRpcProvider } from '../rpc-provider';
 
-const endpoint = 'wss://mandala6.laminar.codes/';
+const endpoint = 'wss://mandala6.laminar.codes/'; // FIXME: wait for a usable testnet
 
 const provider = EvmRpcProvider.from(endpoint);
 
