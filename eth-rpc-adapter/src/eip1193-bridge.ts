@@ -149,9 +149,11 @@ class Eip1193BridgeImpl {
    * Returns the current gas price in wei.
    * @returns GAS PRICE - a hex code of an integer representing the current gas price in wei.
    */
-  // async eth_gasPrice(params: any[]): Promise<any> {
-
-  // }
+  async eth_gasPrice(params: any[]): Promise<string> {
+    validate([], params);
+    const gasPrice = await this.#provider.getGasPrice();
+    return gasPrice.toHexString();
+  }
 
   // async eth_accounts(params: any[]): Promise<any> {
 
