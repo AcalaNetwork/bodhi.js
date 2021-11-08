@@ -14,8 +14,10 @@ module.exports = {
   testPathIgnorePatterns: [
     '/dist',
     '/lib',
+    // TODO: remove these after we have available WS endpoint or test with local node
+    'queries.test.ts',
     'evm-rpc-provider.test.ts',
-    'rpc.test.ts' // TODO: remove these two after we have available WS endpoint
+    'rpc.test.ts'
   ],
   transformIgnorePatterns: ['@polkadot+util-crypto.*/node_modules/@polkadot/util-crypto']
 };

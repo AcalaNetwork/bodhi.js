@@ -25,6 +25,7 @@ import type BN from 'bn.js';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
   BIGNUMBER_ZERO,
+  BIGNUMBER_ONE,
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
   GAS_PRICE,
@@ -40,7 +41,8 @@ import {
   convertNativeToken,
   logger,
   throwNotImplemented,
-  getPartialTransactionReceipt
+  getPartialTransactionReceipt,
+  getTxReceiptByHash
 } from './utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
@@ -741,8 +743,38 @@ export abstract class BaseProvider extends AbstractProvider {
 
   // Queries
   getTransaction = (transactionHash: string): Promise<TransactionResponse> => throwNotImplemented('getTransaction');
-  getTransactionReceipt = (transactionHash: string): Promise<TransactionReceipt> =>
-    throwNotImplemented('getTransactionReceipt');
+  getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> => {
+    const tx = await getTxReceiptByHash(transactionHash);
+
+    if (!tx) {
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+    }
+
+    // TODO: correct values of these?
+    const confirmations = 0;
+    const effectiveGasPrice = BIGNUMBER_ONE;
+    const byzantium: false = false;
+    const defaultAddress = '0x';
+
+    return {
+      to: tx.to || defaultAddress,
+      from: tx.from,
+      contractAddress: tx.contractAddress || defaultAddress,
+      transactionIndex: tx.transactionIndex,
+      gasUsed: tx.gasUsed,
+      logsBloom: tx.logsBloom,
+      blockHash: tx.blockHash,
+      transactionHash: tx.transactionHash,
+      logs: tx.logs.nodes as Log[],
+      blockNumber: tx.blockNumber,
+      cumulativeGasUsed: tx.cumulativeGasUsed,
+      type: tx.type,
+      status: tx.status,
+      confirmations,
+      effectiveGasPrice,
+      byzantium
+    };
+  };
 
   // Bloom-filter Queries
   getLogs = (filter: Filter): Promise<Array<Log>> => throwNotImplemented('getLogs');
