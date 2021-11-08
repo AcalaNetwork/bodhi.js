@@ -5,7 +5,7 @@
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
-    "build": "heft build --clean",
+    "build": "yarn gql:typegen && heft build --clean",
     "build:watch": "heft build",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "jest --forceExit --coverage --verbose",
