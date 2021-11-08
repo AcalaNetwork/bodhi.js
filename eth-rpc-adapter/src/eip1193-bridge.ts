@@ -1,4 +1,5 @@
 import { hexValue } from '@ethersproject/bytes';
+import { TransactionReceipt } from '@ethersproject/abstract-provider';
 import EventEmitter from 'events';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { hexlifyRpcResult } from './utils';
@@ -218,9 +219,10 @@ class Eip1193BridgeImpl {
 
   // }
 
-  // async eth_getTransactionReceipt(params: any[]): Promise<any> {
-
-  // }
+  async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
+    validate([{ type: 'blockHash' }], params);
+    return this.#provider.getTransactionReceipt(params[0]);
+  }
 
   // async eth_sign(params: any[]): Promise<any> {
 

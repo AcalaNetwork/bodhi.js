@@ -1,0 +1,6 @@
+overwrite: true
+schema: 'http://localhost:3001'
+generates:
+  src/utils/gqlTypes.ts:
+    plugins:
+      - 'typescript'
