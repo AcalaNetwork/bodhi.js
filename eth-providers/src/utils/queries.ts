@@ -1,5 +1,6 @@
+import { Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
-import { TransactionReceipt, Query } from './gqlTypes';
+import { TransactionReceipt, Query, LogFilter } from './gqlTypes';
 export * from './gqlTypes';
 
 const URL = 'http://localhost:3001';
@@ -11,6 +12,20 @@ const queryGraphql = (query: string): Promise<Query> =>
       ${query}
     `
   );
+
+const LOGS_NODES = `
+  nodes {
+    blockNumber,
+    blockHash,
+    transactionIndex,
+    removed,
+    address,
+    data,
+    topics,
+    transactionHash,
+    logIndex,
+  }
+`;
 
 const TX_RECEIPT_NODES = `
   nodes {
@@ -28,17 +43,7 @@ const TX_RECEIPT_NODES = `
     type
     status
     logs {
-      nodes {
-        blockNumber,
-        blockHash,
-        transactionIndex,
-        removed,
-        address,
-        data,
-        topics,
-        transactionHash,
-        logIndex,
-      }
+      ${LOGS_NODES}
     }
   }
 `;
@@ -69,4 +74,59 @@ export const getTxReceiptByHash = async (hash: string): Promise<TransactionRecei
   `);
 
   return res.transactionReceipts!.nodes[0] || null;
+};
+
+export const getLogsQueryFilter = (filter: Filter): string => {
+  const { fromBlock, toBlock, address, topics } = filter;
+  if (!fromBlock && !toBlock && !address && !topics) return '';
+
+  const addressFilter =
+    address &&
+    `address: {
+    in: ${JSON.stringify(Array.isArray(address) ? address : [address])}
+  }`;
+
+  // #TODO: parse string fromBlock and toBlock in base provider
+  const fromBlockFilter = fromBlock ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
+  const toBlockFilter = toBlock ? `lessThanOrEqualTo: "${toBlock}"` : '';
+  const blockNumberFilter =
+    (fromBlock || toBlock) &&
+    `blockNumber: {
+    ${fromBlockFilter}
+    ${toBlockFilter}
+  }`;
+
+  const queryFilter = `(filter: {
+    ${addressFilter || ''}
+    ${blockNumberFilter || ''}
+  })`;
+
+  return queryFilter;
+};
+
+export const getAllLogs = async (): Promise<Log[]> => {
+  const res = await queryGraphql(`
+    query {
+      logs {
+        ${LOGS_NODES}
+      }
+    }
+  `);
+
+  return res.logs!.nodes as Log[];
+};
+
+export const getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
+  const queryFilter = getLogsQueryFilter(filter);
+  console.log('!!!!!!!!!!!!!!', queryFilter);
+
+  const res = await queryGraphql(`
+    query {
+      logs${queryFilter} {
+        ${LOGS_NODES}
+      }
+    }
+  `);
+
+  return res.logs!.nodes as Log[];
 };

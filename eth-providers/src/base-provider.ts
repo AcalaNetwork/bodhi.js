@@ -42,7 +42,8 @@ import {
   logger,
   throwNotImplemented,
   getPartialTransactionReceipt,
-  getTxReceiptByHash
+  getTxReceiptByHash,
+  getFilteredLogs
 } from './utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
@@ -777,7 +778,11 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   // Bloom-filter Queries
-  getLogs = (filter: Filter): Promise<Array<Log>> => throwNotImplemented('getLogs');
+  getLogs = async (filter: Filter): Promise<Array<Log>> => {
+    const filteredLogs = await getFilteredLogs(filter);
+
+    return filteredLogs;
+  };
 
   // ENS
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');

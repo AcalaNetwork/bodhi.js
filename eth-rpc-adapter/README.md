@@ -10,7 +10,7 @@ A node service that allows existing Ethereum dApp to be able to interact with [A
 for example:
 ```
 ENDPOINT_URL=ws://localhost:9944  # default WS port that acala node exposes
-PORT=8545                         # default http port that hardhat looks for
+HTTP_PORT=8545                    # default http port that hardhat looks for
 ```
 
 - install dependencies

@@ -1,7 +1,7 @@
 import { InvalidParams } from './errors';
 
 export type Schema = {
-  type: 'address' | 'block' | 'transaction' | 'blockHash' | 'flag' | 'position' | 'transactionData';
+  type: 'address' | 'block' | 'transaction' | 'blockHash' | 'flag' | 'position' | 'transactionData' | 'object';
 }[];
 
 export const validateHexNumber = (value: string) => {
@@ -59,6 +59,12 @@ export const validateTransactionData = (data: any) => {
   }
 };
 
+export const validateObject = (data: any) => {
+  if (data.constructor !== Object) {
+    throw new Error(`invalid args, expected Object`);
+  }
+};
+
 export const validate = (schema: Schema, data: unknown[]) => {
   const maxArg = schema.length;
 
@@ -99,6 +105,10 @@ export const validate = (schema: Schema, data: unknown[]) => {
         }
         case 'transactionData': {
           validateTransactionData(data[i]);
+          break;
+        }
+        case 'object': {
+          validateObject(data[i]);
           break;
         }
         default:

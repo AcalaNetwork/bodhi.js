@@ -1,5 +1,5 @@
-import { getTxReceiptByHash, getAllTxReceipts } from '../utils';
-import { TransactionReceipt } from '../utils/gqlTypes';
+import { Log } from '@ethersproject/abstract-provider';
+import { getTxReceiptByHash, getAllTxReceipts, getFilteredLogs, getAllLogs } from '../utils';
 
 describe('getTxReceiptByHash', () => {
   it('returns correct result when hash exist', async () => {
@@ -25,5 +25,91 @@ describe('getTxReceiptByHash', () => {
     const res = await getTxReceiptByHash('0x000');
 
     expect(res).toEqual(null);
+  });
+});
+
+describe('getFilteredLogs', () => {
+  const logsEq = (a: Log[], b: Log[]): boolean =>
+    a.length === b.length &&
+    a.every(({ transactionHash: t0, logIndex: l0 }) =>
+      b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && l0 === l1)
+    );
+
+  describe('when no filter', () => {
+    it('returns all logs', async () => {
+      const allLogs = await getAllLogs();
+      const filteredLogs = await getFilteredLogs({});
+
+      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+    });
+  });
+
+  describe('filter by address', () => {
+    it('returns correct logs', async () => {
+      const allLogs = await getAllLogs();
+      const log1 = allLogs[0];
+      const log2 = allLogs[allLogs.length - 1];
+      const log3 = allLogs[Math.floor(allLogs.length / 2)];
+      let filteredLogs;
+      let expectedLogs;
+
+      /* ---------- single address ---------- */
+      filteredLogs = await getFilteredLogs({ address: log1.address });
+      expectedLogs = allLogs.filter((l) => l.address === log1.address);
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ address: log2.address });
+      expectedLogs = allLogs.filter((l) => l.address === log2.address);
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ address: log3.address });
+      expectedLogs = allLogs.filter((l) => l.address === log3.address);
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+
+      /* ---------- multiple address ---------- */
+      // TODO: interestingly, current Filter type says address can only be string
+      // can support string[] filter if we needed in the future
+    });
+  });
+
+  describe('filter by block number', () => {
+    it('returns correct logs', async () => {
+      const BIG_NUMBER = 88888888;
+      const allLogs = await getAllLogs();
+      let filteredLogs;
+      let expectedLogs;
+
+      /* ---------- should return all logs ---------- */
+      filteredLogs = await getFilteredLogs({ fromBlock: 0 });
+      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ toBlock: BIG_NUMBER });
+      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ fromBlock: 0, toBlock: BIG_NUMBER });
+      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+
+      /* ---------- should return no logs ---------- */
+      filteredLogs = await getFilteredLogs({ fromBlock: 99999 });
+      expect(filteredLogs).toEqual([]);
+
+      filteredLogs = await getFilteredLogs({ toBlock: -1 });
+      expect(filteredLogs).toEqual([]);
+
+      /* ---------- should return partial logs ---------- */
+      const from = 16;
+      const to = 6000;
+      filteredLogs = await getFilteredLogs({ fromBlock: from });
+      expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ toBlock: to });
+      expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ fromBlock: from, toBlock: to });
+      expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+    });
   });
 });
