@@ -208,7 +208,7 @@ export abstract class BaseProvider extends AbstractProvider {
       nonce: deafultNonce.toHex(),
       mixHash: deafultMixHash.toHex(),
       difficulty: ZERO,
-      gasLimit: BIGNUMBER_ZERO,
+      gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
       gasUsed: BIGNUMBER_ZERO,
 
       miner: author,
@@ -417,7 +417,7 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     const resources = await this.estimateResources(transaction);
-    return resources.gas.add(resources.storage);
+    return resources.gas;
   };
 
   /**
