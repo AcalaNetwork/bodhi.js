@@ -29,22 +29,23 @@ services:
   subquery-node:
     image: onfinality/subql-node:latest
     depends_on:
-      - 'postgres'
+      - postgres
+      - mandala-node
+    ports:
+      - 3000:3000
     restart: always
-    network_mode: host
     environment:
       DB_USER: postgres
       DB_PASS: postgres
       DB_DATABASE: postgres
-      DB_HOST: localhost
+      DB_HOST: postgres
       DB_PORT: 5432
     volumes:
       - ./:/app
     command:
       - -f=/app
-      - --local
+      - --network-endpoint=ws://mandala-node:9944
       - --subquery-name=acala-evm
-      - --local
       - --log-level=debug
 
   graphql-engine:
@@ -52,21 +53,20 @@ services:
     ports:
       - 3001:3001
     depends_on:
-      - 'postgres'
-      - 'subquery-node'
+      - postgres
+      - subquery-node
     restart: always
-    network_mode: host
     environment:
       DB_USER: postgres
       DB_PASS: postgres
       DB_DATABASE: postgres
-      DB_HOST: localhost
+      DB_HOST: postgres
       DB_PORT: 5432
       PORT: 3001
     command:
       - --name=acala-evm
       - --playground
-      - --indexer=http://localhost:3000
+      - --indexer=http://subquery-node:3000
 
 volumes:
   postgres:

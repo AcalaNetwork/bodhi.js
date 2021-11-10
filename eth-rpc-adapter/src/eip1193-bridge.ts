@@ -211,8 +211,8 @@ class Eip1193BridgeImpl {
    */
   async eth_estimateGas(params: any[]): Promise<string> {
     validate([{ type: 'transaction' }], params);
-    // @TODO
-    return '0x11ffff';
+    const val = await this.#provider.estimateGas(params[0]);
+    return val.toHexString();
   }
 
   // async eth_getTransactionByHash(params: any[]): Promise<any> {
@@ -221,7 +221,7 @@ class Eip1193BridgeImpl {
 
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
     validate([{ type: 'blockHash' }], params);
-    return this.#provider.getTransactionReceipt(params[0]);
+    return hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
   }
 
   // async eth_sign(params: any[]): Promise<any> {
