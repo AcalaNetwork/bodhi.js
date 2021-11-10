@@ -1,4 +1,4 @@
-import { Filter, Log } from '@ethersproject/abstract-provider';
+import { BlockTag, Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
 import { TransactionReceipt, Query, LogFilter } from './gqlTypes';
 export * from './gqlTypes';
@@ -76,29 +76,36 @@ export const getTxReceiptByHash = async (hash: string): Promise<TransactionRecei
   return res.transactionReceipts!.nodes[0] || null;
 };
 
-export const getLogsQueryFilter = (filter: Filter): string => {
-  const { fromBlock, toBlock, address, topics } = filter;
-  if (!fromBlock && !toBlock && !address && !topics) return '';
+const isDefined = (x: any): boolean => x !== undefined && x !== null;
+const isAnyDefined = (arr: any[]): boolean => arr.some((a) => isDefined(a));
 
-  const addressFilter =
-    address &&
-    `address: {
-    in: ${JSON.stringify(Array.isArray(address) ? address : [address])}
-  }`;
+const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTag | undefined): string => {
+  const fromBlockFilter = isDefined(fromBlock) ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
+  const toBlockFilter = isDefined(toBlock) ? `lessThanOrEqualTo: "${toBlock}"` : '';
 
-  // #TODO: parse string fromBlock and toBlock in base provider
-  const fromBlockFilter = fromBlock ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
-  const toBlockFilter = toBlock ? `lessThanOrEqualTo: "${toBlock}"` : '';
-  const blockNumberFilter =
-    (fromBlock || toBlock) &&
-    `blockNumber: {
+  return !!fromBlockFilter || !!toBlockFilter
+    ? `blockNumber: {
     ${fromBlockFilter}
     ${toBlockFilter}
-  }`;
+  }`
+    : '';
+};
+
+const _getAddressFilter = (address: string | undefined): string =>
+  address ? `address: { in: ${JSON.stringify(Array.isArray(address) ? address : [address])}}` : '';
+
+export const getLogsQueryFilter = (filter: Filter): string => {
+  const { fromBlock, toBlock, address, topics } = filter;
+  if (!isAnyDefined([fromBlock, toBlock, address, topics])) {
+    return '';
+  }
+
+  const addressFilter = _getAddressFilter(address);
+  const blockNumberFilter = _getBlockNumberFilter(fromBlock, toBlock);
 
   const queryFilter = `(filter: {
-    ${addressFilter || ''}
-    ${blockNumberFilter || ''}
+    ${addressFilter}
+    ${blockNumberFilter}
   })`;
 
   return queryFilter;

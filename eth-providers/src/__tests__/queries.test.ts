@@ -23,18 +23,17 @@ describe('getTxReceiptByHash', () => {
 
   it('returns null when hash not found', async () => {
     const res = await getTxReceiptByHash('0x000');
-
     expect(res).toEqual(null);
   });
 });
 
-describe('getFilteredLogs', () => {
-  const logsEq = (a: Log[], b: Log[]): boolean =>
-    a.length === b.length &&
-    a.every(({ transactionHash: t0, logIndex: l0 }) =>
-      b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && l0 === l1)
-    );
+export const logsEq = (a: Log[], b: Log[]): boolean =>
+  a.length === b.length &&
+  a.every(({ transactionHash: t0, logIndex: l0 }) =>
+    b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && l0 === l1)
+  );
 
+describe('getFilteredLogs', () => {
   describe('when no filter', () => {
     it('returns all logs', async () => {
       const allLogs = await getAllLogs();
@@ -96,7 +95,7 @@ describe('getFilteredLogs', () => {
       filteredLogs = await getFilteredLogs({ toBlock: -1 });
       expect(filteredLogs).toEqual([]);
 
-      /* ---------- should return partial logs ---------- */
+      /* ---------- should return some logs ---------- */
       const from = 16;
       const to = 6000;
       filteredLogs = await getFilteredLogs({ fromBlock: from });

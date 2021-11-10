@@ -622,6 +622,28 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
+  _getBlockNumber = async (blockTag: BlockTag): Promise<number> => {
+    switch (blockTag) {
+      case 'pending': {
+        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      case 'latest': {
+        const header = await this.api.rpc.chain.getHeader();
+        return header.number.toNumber();
+      }
+      case 'earliest': {
+        return 0;
+      }
+      default: {
+        if (typeof blockTag !== 'number') {
+          return logger.throwArgumentError("blocktag should be number | 'latest' | 'earliest'", 'blockTag', blockTag);
+        }
+
+        return blockTag;
+      }
+    }
+  };
+
   _getAddress = async (addressOrName: string | Promise<string>): Promise<string> => {
     addressOrName = await addressOrName;
     return addressOrName;
@@ -752,9 +774,8 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     // TODO: correct values of these?
-    const confirmations = 0;
-    const effectiveGasPrice = BIGNUMBER_ONE;
-    const byzantium: false = false;
+    const confirmations = 1;
+    const byzantium = false;
     const defaultAddress = '0x';
 
     return {
@@ -771,15 +792,28 @@ export abstract class BaseProvider extends AbstractProvider {
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
       status: tx.status,
+      effectiveGasPrice: EFFECTIVE_GAS_PRICE,
       confirmations,
-      effectiveGasPrice,
       byzantium
     };
   };
 
   // Bloom-filter Queries
-  getLogs = async (filter: Filter): Promise<Array<Log>> => {
-    const filteredLogs = await getFilteredLogs(filter);
+  getLogs = async (filter: Filter): Promise<Log[]> => {
+    const { fromBlock, toBlock } = filter;
+    const _filter = { ...filter };
+
+    if (fromBlock) {
+      const fromBlockNumber = await this._getBlockNumber(fromBlock);
+      _filter.fromBlock = fromBlockNumber;
+    }
+    if (toBlock) {
+      const toBlockNumber = await this._getBlockNumber(toBlock);
+      console.log(toBlock, toBlockNumber);
+      _filter.toBlock = toBlockNumber;
+    }
+
+    const filteredLogs = await getFilteredLogs(_filter as Filter);
 
     return filteredLogs;
   };
