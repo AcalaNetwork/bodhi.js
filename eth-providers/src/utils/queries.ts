@@ -94,6 +94,17 @@ const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTa
 const _getAddressFilter = (address: string | undefined): string =>
   address ? `address: { in: ${JSON.stringify(Array.isArray(address) ? address : [address])}}` : '';
 
+const _getTopicsFilter = (topics: Array<string | Array<string> | null> | undefined): string => {
+  // NOTE: if needed in the future, we can implement actual nested topic filter.
+  // Now we just flat all topics
+  const allTopics = topics?.length! > 0 ? topics!.flat() : [];
+  return `
+    topics: {
+      contains: ${JSON.stringify(allTopics)}
+    }
+  `;
+};
+
 export const getLogsQueryFilter = (filter: Filter): string => {
   const { fromBlock, toBlock, address, topics } = filter;
   if (!isAnyDefined([fromBlock, toBlock, address, topics])) {
@@ -102,10 +113,12 @@ export const getLogsQueryFilter = (filter: Filter): string => {
 
   const addressFilter = _getAddressFilter(address);
   const blockNumberFilter = _getBlockNumberFilter(fromBlock, toBlock);
+  const topicsFilter = _getTopicsFilter(topics);
 
   const queryFilter = `(filter: {
     ${addressFilter}
     ${blockNumberFilter}
+    ${topicsFilter}
   })`;
 
   return queryFilter;

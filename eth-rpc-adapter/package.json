@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "jest --forceExit --coverage --verbose",
     "start": "ts-node src/index",
-    "dev": "nodemon --watch \"src/**,node_modules/**\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
+    "dev": "nodemon --watch \"src/**,node_modules/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",

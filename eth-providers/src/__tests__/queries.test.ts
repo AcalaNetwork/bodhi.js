@@ -111,4 +111,36 @@ describe('getFilteredLogs', () => {
       expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
     });
   });
+
+  describe('filter by topics', () => {
+    it('returns correct logs', async () => {
+      const allLogs = await getAllLogs();
+      const log1 = allLogs[0];
+      const log2 = allLogs[allLogs.length - 1];
+      const log3 = allLogs[Math.floor(allLogs.length / 2)];
+      let filteredLogs;
+      let expectedLogs;
+
+      /* ---------- should return all logs ---------- */
+      filteredLogs = await getFilteredLogs({ topics: [] });
+      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+
+      /* ---------- should return no logs ---------- */
+      filteredLogs = await getFilteredLogs({ topics: ['XXX'] });
+      expect(filteredLogs).toEqual([]);
+
+      /* ---------- should return some logs ---------- */
+      filteredLogs = await getFilteredLogs({ topics: log1.topics });
+      expectedLogs = allLogs.filter((l) => l.topics.every((t) => log1.topics.includes(t)));
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ topics: log2.topics });
+      expectedLogs = allLogs.filter((l) => l.topics.every((t) => log2.topics.includes(t)));
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+
+      filteredLogs = await getFilteredLogs({ topics: log3.topics });
+      expectedLogs = allLogs.filter((l) => l.topics.every((t) => log3.topics.includes(t)));
+      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+    });
+  });
 });
