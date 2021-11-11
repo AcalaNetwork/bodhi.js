@@ -12,8 +12,10 @@ module.exports = {
     '^.+\\.(t|j)s$': 'ts-jest'
   },
   testPathIgnorePatterns: [
+    '/dist',
+    '/lib',
     // TODO: remove these when testing locally, or after we have a public testnet WS endpoint
-    'queries.test.ts'
+    'endpoint.test.ts'
   ],
   transformIgnorePatterns: ['@polkadot+util-crypto.*/node_modules/@polkadot/util-crypto']
 };
