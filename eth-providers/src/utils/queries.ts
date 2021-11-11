@@ -138,7 +138,6 @@ export const getAllLogs = async (): Promise<Log[]> => {
 
 export const getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
   const queryFilter = getLogsQueryFilter(filter);
-  console.log('!!!!!!!!!!!!!!', queryFilter);
 
   const res = await queryGraphql(`
     query {

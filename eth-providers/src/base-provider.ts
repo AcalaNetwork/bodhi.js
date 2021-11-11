@@ -809,7 +809,6 @@ export abstract class BaseProvider extends AbstractProvider {
     }
     if (toBlock) {
       const toBlockNumber = await this._getBlockNumber(toBlock);
-      console.log(toBlock, toBlockNumber);
       _filter.toBlock = toBlockNumber;
     }
 
