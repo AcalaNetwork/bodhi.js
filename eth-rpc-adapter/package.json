@@ -34,7 +34,8 @@
     "pino": "~7.0.0-rc.3",
     "ws": "~8.2.2",
     "@acala-network/types": "~3.0.1",
-    "@ethersproject/logger": "~5.4.0"
+    "@ethersproject/logger": "~5.4.0",
+    "axios": "~0.24.0"
   },
   "devDependencies": {
     "@types/chai": "~4.2.14",
