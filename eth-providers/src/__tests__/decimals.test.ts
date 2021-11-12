@@ -1,10 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { convertNativeToken } from '../utils';
+import { expect } from 'chai';
 
 describe('decimals', () => {
   it('convertNativeToken', async () => {
     const value = BigNumber.from('300000000');
     const covertedToken = convertNativeToken(value, 12);
-    expect(covertedToken.toString()).toBe('300000000000000');
+    expect(covertedToken.toString()).to.equal('300000000000000');
   });
 });

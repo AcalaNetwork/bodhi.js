@@ -1,36 +1,37 @@
 import { EvmRpcProvider } from '../rpc-provider';
+import { expect } from 'chai';
 
 const endpoint = 'wss://mandala6.laminar.codes/'; // FIXME: wait for a usable testnet
 
 const provider = EvmRpcProvider.from(endpoint);
 
 describe('rpc test', () => {
-  beforeAll(async () => {
+  before(async () => {
     await provider.isReady();
   });
 
-  afterAll(async () => {
+  after(async () => {
     await provider.disconnect();
   });
 
   it('chainId', async () => {
     const result = await provider.chainId();
-    expect(result).toBeDefined();
+    expect(result).to.be.true;
   });
 
   it('getTransactionCount', async () => {
     const result = await provider.getTransactionCount('0x33f9440ff970496a09e391f3773a66f1e98eb13c', 'latest');
-    expect(result).toBeDefined();
+    expect(result).to.not.be.undefined;
   });
 
   it('getCode', async () => {
     const result1 = await provider.getCode('0x1000000000000000000000000000000000000802');
 
-    expect(result1).toBe('0x');
+    expect(result1).to.equal('0x');
 
     const result2 = await provider.getCode('0x0000000000000000000000000000000000000802');
 
-    expect(result2.length > 2).toBeTruthy;
+    expect(result2.length > 2).to.be.true;
   });
 
   it('call', async () => {
@@ -40,12 +41,12 @@ describe('rpc test', () => {
       to: '0xbffb25b73c6a0581a28988ce34c9f240d525b152'
     });
 
-    expect(result).toBeDefined();
+    expect(result).to.not.be.undefined;
   });
 
   it.only('getBalance', async () => {
     const result = await provider.getBalance('0x33f9440ff970496a09e391f3773a66f1e98eb13c');
 
-    expect(result.toString()).toBe('0');
+    expect(result.toString()).to.equal('0');
   });
 });

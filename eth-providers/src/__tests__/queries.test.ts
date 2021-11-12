@@ -1,5 +1,6 @@
 import { Log } from '@ethersproject/abstract-provider';
 import { getTxReceiptByHash, getAllTxReceipts, getFilteredLogs, getAllLogs } from '../utils';
+import { expect } from 'chai';
 
 describe('getTxReceiptByHash', () => {
   it('returns correct result when hash exist', async () => {
@@ -8,22 +9,22 @@ describe('getTxReceiptByHash', () => {
     // test first one
     let txR = allTxReceipts[0];
     let res = await getTxReceiptByHash(txR.transactionHash);
-    expect(res).toEqual(txR);
+    expect(res).to.equal(txR);
 
     // test last one
     txR = allTxReceipts[allTxReceipts.length - 1];
     res = await getTxReceiptByHash(txR.transactionHash);
-    expect(res).toEqual(txR);
+    expect(res).to.equal(txR);
 
     // test middle one
     txR = allTxReceipts[Math.floor(allTxReceipts.length / 2)];
     res = await getTxReceiptByHash(txR.transactionHash);
-    expect(res).toEqual(txR);
+    expect(res).to.equal(txR);
   });
 
   it('returns null when hash not found', async () => {
     const res = await getTxReceiptByHash('0x000');
-    expect(res).toEqual(null);
+    expect(res).to.equal(null);
   });
 });
 
@@ -39,7 +40,7 @@ describe('getFilteredLogs', () => {
       const allLogs = await getAllLogs();
       const filteredLogs = await getFilteredLogs({});
 
-      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+      expect(logsEq(filteredLogs, allLogs)).to.equal(true);
     });
   });
 
@@ -55,15 +56,15 @@ describe('getFilteredLogs', () => {
       /* ---------- single address ---------- */
       filteredLogs = await getFilteredLogs({ address: log1.address });
       expectedLogs = allLogs.filter((l) => l.address === log1.address);
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ address: log2.address });
       expectedLogs = allLogs.filter((l) => l.address === log2.address);
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ address: log3.address });
       expectedLogs = allLogs.filter((l) => l.address === log3.address);
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
 
       /* ---------- multiple address ---------- */
       // TODO: interestingly, current Filter type says address can only be string
@@ -80,35 +81,35 @@ describe('getFilteredLogs', () => {
 
       /* ---------- should return all logs ---------- */
       filteredLogs = await getFilteredLogs({ fromBlock: 0 });
-      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+      expect(logsEq(filteredLogs, allLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ toBlock: BIG_NUMBER });
-      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+      expect(logsEq(filteredLogs, allLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ fromBlock: 0, toBlock: BIG_NUMBER });
-      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+      expect(logsEq(filteredLogs, allLogs)).to.equal(true);
 
       /* ---------- should return no logs ---------- */
       filteredLogs = await getFilteredLogs({ fromBlock: 99999 });
-      expect(filteredLogs).toEqual([]);
+      expect(filteredLogs).to.equal([]);
 
       filteredLogs = await getFilteredLogs({ toBlock: -1 });
-      expect(filteredLogs).toEqual([]);
+      expect(filteredLogs).to.equal([]);
 
       /* ---------- should return some logs ---------- */
       const from = 16;
       const to = 6000;
       filteredLogs = await getFilteredLogs({ fromBlock: from });
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ toBlock: to });
       expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ fromBlock: from, toBlock: to });
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
     });
   });
 
@@ -123,24 +124,24 @@ describe('getFilteredLogs', () => {
 
       /* ---------- should return all logs ---------- */
       filteredLogs = await getFilteredLogs({ topics: [] });
-      expect(logsEq(filteredLogs, allLogs)).toBe(true);
+      expect(logsEq(filteredLogs, allLogs)).to.equal(true);
 
       /* ---------- should return no logs ---------- */
       filteredLogs = await getFilteredLogs({ topics: ['XXX'] });
-      expect(filteredLogs).toEqual([]);
+      expect(filteredLogs).to.equal([]);
 
       /* ---------- should return some logs ---------- */
       filteredLogs = await getFilteredLogs({ topics: log1.topics });
       expectedLogs = allLogs.filter((l) => l.topics.every((t) => log1.topics.includes(t)));
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ topics: log2.topics });
       expectedLogs = allLogs.filter((l) => l.topics.every((t) => log2.topics.includes(t)));
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
 
       filteredLogs = await getFilteredLogs({ topics: log3.topics });
       expectedLogs = allLogs.filter((l) => l.topics.every((t) => log3.topics.includes(t)));
-      expect(logsEq(filteredLogs, expectedLogs)).toBe(true);
+      expect(logsEq(filteredLogs, expectedLogs)).to.equal(true);
     });
   });
 });
