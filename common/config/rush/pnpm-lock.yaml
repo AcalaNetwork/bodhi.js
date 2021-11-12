@@ -236,7 +236,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.2-1
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~1.2.1
+      '@acala-network/contracts': ~1.0.23
       '@openzeppelin/contracts': ~3.4.2
       '@polkadot/api': ~6.4.2
       '@polkadot/keyring': ^7.5.1
@@ -253,7 +253,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.2
       '@acala-network/bodhi': link:../../bodhi
-      '@acala-network/contracts': 1.2.1
+      '@acala-network/contracts': 1.0.23
       '@polkadot/api': 6.4.2
       '@polkadot/keyring': 7.5.1
       '@uniswap/v2-core': 1.0.1
