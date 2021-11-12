@@ -8,6 +8,7 @@
     "build:watch": "tsc -b",
     "prepack": "rm -rf dist && npm build",
     "codegen": "./node_modules/.bin/subql codegen",
+    "test": "echo",
     "index": "subql-node -f . --local --batch-size 200 --subquery-name=acala-evm --debug",
     "query": "PORT=3001 subql-query --name acala-evm --playground --indexer=http://localhost:3000 --debug"
   },
