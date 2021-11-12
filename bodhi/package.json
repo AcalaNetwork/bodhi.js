@@ -8,6 +8,7 @@
   "scripts": {
     "build": "heft build --clean",
     "build:watch": "heft build",
+    "watch": "rush build:watch --to @acala-network/bodhi",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "mocha **/*.test.ts"
   },
