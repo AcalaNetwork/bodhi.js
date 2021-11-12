@@ -12,7 +12,7 @@ export const getPartialLog = (evmLog: EvmLog, logIndex: number): PartialLog => {
   return {
     removed: false,
     address: evmLog.address.toString().toLowerCase(),
-    data: evmLog.address.toString().toLowerCase(),
+    data: evmLog.data.toString().toLowerCase(),
     topics: evmLog.topics.toJSON() as any,
     logIndex: logIndex
   };
