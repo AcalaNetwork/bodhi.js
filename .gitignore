@@ -73,3 +73,5 @@ lib
 
 # rush temp file
 common/changes
+**/cache/solcjs
+**/examples/**/build
