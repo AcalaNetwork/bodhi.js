@@ -99,7 +99,6 @@ importers:
       '@rushstack/heft': ~0.41.6
       '@types/bn.js': ~5.1.0
       '@types/jest': ~27.0.1
-      axios: ~0.24.0
       bn.js: 4.12.0
       eslint: ~7.32.0
       ethers: ~5.4.0
@@ -124,7 +123,6 @@ importers:
       '@polkadot/types': 6.4.2
       '@polkadot/util': 7.5.1
       '@polkadot/util-crypto': 7.5.1
-      axios: 0.24.0
       bn.js: 4.12.0
       ethers: 5.4.7
       graphql: 16.0.1
@@ -166,7 +164,6 @@ importers:
       '@types/node': ~16.10.1
       '@types/node-ipc': ~9.1.5
       '@types/ws': ~8.2.0
-      axios: ~0.24.0
       body-parser: ~1.19.0
       connect: ~3.7.0
       cors: ~2.8.5
@@ -197,7 +194,6 @@ importers:
       '@polkadot/types': 6.4.2
       '@polkadot/util': 7.5.1
       '@polkadot/util-crypto': 7.5.1
-      axios: 0.24.0
       body-parser: 1.19.0
       connect: 3.7.0
       cors: 2.8.5
@@ -3176,14 +3172,6 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /axios/0.24.0:
-    resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
-    dependencies:
-      follow-redirects: 1.14.5
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
   /babel-jest/27.3.1_@babel+core@7.15.8:
     resolution: {integrity: sha512-SjIF8hh/ir0peae2D6S6ZKRhUy7q/DnpH7k/V6fT4Bgs/LXXUztOpX4G2tCgq8mLo5HA9mN6NmlFMeYtKmIsTQ==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
@@ -4650,16 +4638,6 @@ packages:
   /flatted/3.2.2:
     resolution: {integrity: sha512-JaTY/wtrcSyvXJl4IMFHPKyFur1sE9AUqc0QnhOaJ0CxHtAoIV8pYDzeEfAaNEtGkOfq4gr3LBFmdXW5mOQFnA==}
     dev: true
-
-  /follow-redirects/1.14.5:
-    resolution: {integrity: sha512-wtphSXy7d4/OR+MvIFbCVBDzZ5520qV8XfPklSN5QtxuMUJZ+b0Wnst1e1lCDocfzuCkHqj8k0FpZqO+UIaKNA==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dev: false
 
   /form-data/3.0.1:
     resolution: {integrity: sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==}
