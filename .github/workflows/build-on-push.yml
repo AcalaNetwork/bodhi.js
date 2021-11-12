@@ -102,9 +102,7 @@ jobs:
         run: node common/scripts/install-run-rush.js update
 
       - name: build
-        run: cd examples && chmod +x run.sh && ./run.sh build
-        shell: bash
+        run: node common/scripts/install-run-rush.js build
 
       - name: test
         run: echo "TODO" # some tests need some fix
-        # run: cd examples && ./run.sh test
