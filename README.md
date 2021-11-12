@@ -5,6 +5,7 @@ Packages:
 - [bodhi](./bodhi)
 - [eth-rpc-adapter](./eth-rpc-adapter)
 - [evm-subql](./evm-subql)
+- [examples](./examples)
 
 ## Getting Started
 - install all dependencies
