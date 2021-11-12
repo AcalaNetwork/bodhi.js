@@ -19,7 +19,7 @@ rush build // build all
 rush build --to @acala-network/eth-rpc-adaptor //  build all the things that @acala-network/eth-rpc-adaptor depends on, and also @acala-network/eth-rpc-adaptor itself
 ```
 
-- Run build when the file changes
+- run build when the file changes
 ```
 rush build:watch // watch all packages
 rush build:watch --to @acala-network/eth-rpc-adaptor //  watch all the things that @acala-network/eth-rpc-adaptor depends on, and also @acala-network/eth-rpc-adaptor itself
