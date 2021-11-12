@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getAllTxReceipts, getAllLogs } from '@acala-network/eth-providers/lib/utils';
 import { Log } from '@ethersproject/abstract-provider';
+import { expect } from 'chai';
 
 const RPC_URL = 'http://localhost:8545';
 const rpcGet =
@@ -30,20 +31,20 @@ describe('eth_getTransactionReceipt', () => {
     // test first one
     let txR = allTxReceipts[0];
     let res = await eth_getTransactionReceipt([txR.transactionHash]);
-    expect(res.status).toEqual(200);
-    expect(res.data.result.transactionHash).toEqual(txR.transactionHash);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
 
     // test last one
     txR = allTxReceipts[allTxReceipts.length - 1];
     res = await eth_getTransactionReceipt([txR.transactionHash]);
-    expect(res.status).toEqual(200);
-    expect(res.data.result.transactionHash).toEqual(txR.transactionHash);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
 
     // test middle one
     txR = allTxReceipts[Math.floor(allTxReceipts.length / 2)];
     res = await eth_getTransactionReceipt([txR.transactionHash]);
-    expect(res.status).toEqual(200);
-    expect(res.data.result.transactionHash).toEqual(txR.transactionHash);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
   });
 
   it('return correct error code and messge', async () => {
@@ -51,15 +52,15 @@ describe('eth_getTransactionReceipt', () => {
 
     /* ---------- invalid hex address ---------- */
     res = await eth_getTransactionReceipt(['0x000']);
-    expect(res.status).toEqual(200);
-    expect(res.data.error.code).toEqual(-32602);
-    expect(res.data.error.message).toContain('invalid argument');
+    expect(res.status).to.equal(200);
+    expect(res.data.error.code).to.equal(-32602);
+    expect(res.data.error.message).to.contain('invalid argument');
 
     /* ---------- hash not found ---------- */
     res = await eth_getTransactionReceipt(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
-    expect(res.status).toEqual(200);
-    expect(res.data.error.code).toEqual(6969);
-    expect(res.data.error.message).toContain('transaction hash not found');
+    expect(res.status).to.equal(200);
+    expect(res.data.error.code).to.equal(6969);
+    expect(res.data.error.message).to.contain('transaction hash not found');
   });
 });
 
@@ -71,8 +72,8 @@ describe('eth_getLogs', () => {
       const allLogs = await getAllLogs();
       const res = await eth_getLogs([{}]);
 
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
     });
   });
 
@@ -88,18 +89,18 @@ describe('eth_getLogs', () => {
       /* ---------- single address ---------- */
       res = await eth_getLogs([{ address: log1.address }]);
       expectedLogs = allLogs.filter((l) => l.address === log1.address);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ address: log2.address }]);
       expectedLogs = allLogs.filter((l) => l.address === log2.address);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ address: log3.address }]);
       expectedLogs = allLogs.filter((l) => l.address === log3.address);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       /* ---------- multiple address ---------- */
       // TODO: interestingly, current Filter type says address can only be string
@@ -116,43 +117,43 @@ describe('eth_getLogs', () => {
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ fromBlock: 0 }]);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       res = await eth_getLogs([{ toBlock: BIG_NUMBER }]);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       res = await eth_getLogs([{ fromBlock: 0, toBlock: BIG_NUMBER }]);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       /* ---------- should return no logs ---------- */
       res = await eth_getLogs([{ fromBlock: 99999 }]);
-      expect(res.status).toEqual(200);
-      expect(res.data.result).toEqual([]);
+      expect(res.status).to.equal(200);
+      expect(res.data.result).to.deep.equal([]);
 
       res = await eth_getLogs([{ toBlock: -1 }]);
-      expect(res.status).toEqual(200);
-      expect(res.data.result).toEqual([]);
+      expect(res.status).to.equal(200);
+      expect(res.data.result).to.deep.equal([]);
 
       /* ---------- should return partial logs ---------- */
       const from = 16;
       const to = 50;
       res = await eth_getLogs([{ fromBlock: from }]);
-      expect(res.status).toEqual(200);
+      expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ toBlock: to }]);
-      expect(res.status).toEqual(200);
+      expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expect(res.status).toEqual(200);
+      expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
     });
   });
 
@@ -164,51 +165,51 @@ describe('eth_getLogs', () => {
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ fromBlock: 'earliest' }]);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       res = await eth_getLogs([{ toBlock: 'latest' }]);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 'latest' }]);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       /* ---------- should return no logs ---------- */
       res = await eth_getLogs([{ fromBlock: 'latest', toBlock: 'earliest' }]);
-      expect(res.data.result).toEqual([]);
+      expect(res.data.result).to.deep.equal([]);
 
       res = await eth_getLogs([{ fromBlock: 'latest', toBlock: 5 }]);
-      expect(res.data.result).toEqual([]);
+      expect(res.data.result).to.deep.equal([]);
 
       res = await eth_getLogs([{ fromBlock: 8, toBlock: 'earliest' }]);
-      expect(res.data.result).toEqual([]);
+      expect(res.data.result).to.deep.equal([]);
 
       /* ---------- should return some logs ---------- */
       const from = 17;
       const to = 50;
       res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
-      expect(res.status).toEqual(200);
+      expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expect(res.status).toEqual(200);
+      expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expect(res.status).toEqual(200);
+      expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
     });
 
     it('returns correct error code and messge for invalid tag', async () => {
       const res = await eth_getLogs([{ fromBlock: 'polkadot' }]);
-      expect(res.status).toEqual(200);
-      expect(res.data.error.code).toEqual(-32602);
-      expect(res.data.error.message).toContain("blocktag should be number | 'latest' | 'earliest'");
+      expect(res.status).to.equal(200);
+      expect(res.data.error.code).to.equal(-32602);
+      expect(res.data.error.message).to.contain("blocktag should be number | 'latest' | 'earliest'");
     });
   });
 
@@ -223,28 +224,28 @@ describe('eth_getLogs', () => {
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ topics: [] }]);
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, allLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       /* ---------- should return no logs ---------- */
       res = await eth_getLogs([{ topics: ['XXX'] }]);
-      expect(res.data.result).toEqual([]);
+      expect(res.data.result).to.deep.equal([]);
 
       /* ---------- should return some logs ---------- */
       res = await eth_getLogs([{ topics: log1.topics }]);
       expectedLogs = allLogs.filter((l) => l.topics.every((t) => log1.topics.includes(t)));
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ topics: log2.topics }]);
       expectedLogs = allLogs.filter((l) => l.topics.every((t) => log2.topics.includes(t)));
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
 
       res = await eth_getLogs([{ topics: log3.topics }]);
       expectedLogs = allLogs.filter((l) => l.topics.every((t) => log3.topics.includes(t)));
-      expect(res.status).toEqual(200);
-      expect(logsEq(res.data.result, expectedLogs)).toBe(true);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
     });
   });
 });

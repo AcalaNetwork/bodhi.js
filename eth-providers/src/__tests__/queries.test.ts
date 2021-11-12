@@ -9,22 +9,22 @@ describe('getTxReceiptByHash', () => {
     // test first one
     let txR = allTxReceipts[0];
     let res = await getTxReceiptByHash(txR.transactionHash);
-    expect(res).to.equal(txR);
+    expect(res).to.deep.equal(txR);
 
     // test last one
     txR = allTxReceipts[allTxReceipts.length - 1];
     res = await getTxReceiptByHash(txR.transactionHash);
-    expect(res).to.equal(txR);
+    expect(res).to.deep.equal(txR);
 
     // test middle one
     txR = allTxReceipts[Math.floor(allTxReceipts.length / 2)];
     res = await getTxReceiptByHash(txR.transactionHash);
-    expect(res).to.equal(txR);
+    expect(res).to.deep.equal(txR);
   });
 
   it('returns null when hash not found', async () => {
     const res = await getTxReceiptByHash('0x000');
-    expect(res).to.equal(null);
+    expect(res).to.deep.equal(null);
   });
 });
 
@@ -91,10 +91,10 @@ describe('getFilteredLogs', () => {
 
       /* ---------- should return no logs ---------- */
       filteredLogs = await getFilteredLogs({ fromBlock: 99999 });
-      expect(filteredLogs).to.equal([]);
+      expect(filteredLogs).to.deep.equal([]);
 
       filteredLogs = await getFilteredLogs({ toBlock: -1 });
-      expect(filteredLogs).to.equal([]);
+      expect(filteredLogs).to.deep.equal([]);
 
       /* ---------- should return some logs ---------- */
       const from = 16;
@@ -128,7 +128,7 @@ describe('getFilteredLogs', () => {
 
       /* ---------- should return no logs ---------- */
       filteredLogs = await getFilteredLogs({ topics: ['XXX'] });
-      expect(filteredLogs).to.equal([]);
+      expect(filteredLogs).to.deep.equal([]);
 
       /* ---------- should return some logs ---------- */
       filteredLogs = await getFilteredLogs({ topics: log1.topics });
