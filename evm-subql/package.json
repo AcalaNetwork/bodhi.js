@@ -23,12 +23,12 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@polkadot/types": "~6.4.2",
-    "@rushstack/heft": "^0.42.0",
+    "@rushstack/heft": "~0.42.0",
     "@subql/cli": "~0.12.0",
     "@subql/types": "~0.8.4",
     "pino": "~7.0.0-rc.3",
     "tslib": "~2.3.1",
-    "typescript": "~4.4.3"
+    "typescript": "~4.4.4"
   },
   "dependencies": {
     "@acala-network/eth-providers": "../eth-providers",
@@ -38,14 +38,14 @@
     "@polkadot/api": "~6.4.2",
     "@polkadot/api-derive": "~6.4.2",
     "@polkadot/types": "~6.4.2",
-    "@polkadot/util-crypto": "^7.5.1",
-    "@polkadot/util": "^7.5.1",
+    "@polkadot/util-crypto": "~7.5.1",
+    "@polkadot/util": "~7.5.1",
     "@ethersproject/bignumber": "~5.4.0",
     "@ethersproject/bytes": "~5.4.0",
     "@ethersproject/abstract-provider": "~5.4.0",
     "@ethersproject/properties": "~5.4.0",
     "@ethersproject/transactions": "~5.4.0",
-    "@acala-network/api": "~3.0.1",
+    "@acala-network/api": "~3.0.2-1",
     "@acala-network/types": "~3.0.1",
     "@ethersproject/logger": "~5.4.0",
     "@ethersproject/networks": "~5.4.0",

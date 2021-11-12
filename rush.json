@@ -453,6 +453,54 @@
       "projectFolder": "eth-providers",
       "reviewCategory": "production",
       "shouldPublish": true
+    },
+    {
+      "packageName": "evm-example-dex",
+      "projectFolder": "examples/dex",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-example-erc20",
+      "projectFolder": "examples/erc20",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-example-oracle",
+      "projectFolder": "examples/oracle",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-example-state-rent",
+      "projectFolder": "examples/state-rent",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-example-arbitrager",
+      "projectFolder": "examples/arbitrager",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-example-e2e",
+      "projectFolder": "examples/e2e",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-example-scheduler",
+      "projectFolder": "examples/scheduler",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-example-uniswap",
+      "projectFolder": "examples/uniswap",
+      "reviewCategory": "tests",
+      "shouldPublish": false
     }
   ]
 }
