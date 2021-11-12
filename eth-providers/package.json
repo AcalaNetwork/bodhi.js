@@ -9,6 +9,7 @@
     "build:watch": "heft build",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "mocha **/account.test.ts **/decimals.test.ts",
+    "test:dev": "mocha **/account.test.ts **/decimals.test.ts **/queries.test.ts --watch --watch-files **/*.test.ts",
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {

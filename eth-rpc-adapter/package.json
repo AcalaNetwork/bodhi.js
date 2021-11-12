@@ -8,7 +8,8 @@
     "build": "heft build --clean",
     "build:watch": "heft build",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
-    "test": "mocha **/*.test.ts",
+    "test": "mocha **/utils.test.ts",
+    "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",
     "start": "ts-node src/index",
     "dev": "nodemon --watch \"src/**,node_modules/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
   },
@@ -34,7 +35,8 @@
     "pino": "~7.0.0-rc.3",
     "ws": "~8.2.2",
     "@acala-network/types": "~3.0.1",
-    "@ethersproject/logger": "~5.4.0"
+    "@ethersproject/logger": "~5.4.0",
+    "axios": "~0.24.0"
   },
   "devDependencies": {
     "@types/chai": "~4.2.14",
