@@ -1,0 +1,35 @@
+name: Publish
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: git config email
+        run: git config --local user.email bodhibot@users.noreply.github.com
+
+      - name: git config name
+        run: git config --local user.name Bodhibot
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js install
+
+      - name: build all packages
+        run: node common/scripts/install-run-rush.js rebuild --verbose --production
+
+      - name: publish
+        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch master --add-commit-details --set-access-level public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
