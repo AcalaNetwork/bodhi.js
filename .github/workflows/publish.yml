@@ -30,6 +30,6 @@ jobs:
         run: node common/scripts/install-run-rush.js build --verbose --to @acala-network/bodhi
 
       - name: publish
-        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch master --add-commit-details --set-access-level public
+        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch master --add-commit-details --set-access-level public -n ${{ secrets.NPM_AUTH_TOKEN }}
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
