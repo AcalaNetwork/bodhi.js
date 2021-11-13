@@ -27,7 +27,7 @@ jobs:
         run: node common/scripts/install-run-rush.js install
 
       - name: build all packages
-        run: node common/scripts/install-run-rush.js rebuild --verbose --production
+        run: node common/scripts/install-run-rush.js rebuild --verbose --to @acala-network/bodhi
 
       - name: publish
         run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch master --add-commit-details --set-access-level public
