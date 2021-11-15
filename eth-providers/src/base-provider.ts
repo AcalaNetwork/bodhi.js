@@ -638,7 +638,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  _getBlockNumber = async (blockTag: BlockTag): Promise<number> => {
+  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
     switch (blockTag) {
       case 'pending': {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
@@ -767,7 +767,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // to and contractAddress may be undefined
     return {
-      confirmations: DEFAULT_CONFIRMATIONS,
+      confirmations: (await this._getBlockNumberFromTag('latest')) - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
       logs: partialTransactionReceipt.logs.map((log) => ({
@@ -800,7 +800,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const nonce = await this.getEvmTransactionCount(tx.from, tx.blockHash);
     const extrinsic = await this._getExtrinsicByHashAtBlock(transactionHash, tx.blockHash);
 
-    const { args } = JSON.parse(extrinsic! as any).method;
+    if (!extrinsic) {
+      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+    }
+
+    const { args } = JSON.parse(extrinsic as any).method;
     const input = (args as any).input ?? '';
     const value = (args as any).value ?? 0;
 
@@ -846,7 +850,7 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: EFFECTIVE_GAS_PRICE,
-      confirmations: DEFAULT_CONFIRMATIONS,
+      confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber,
       byzantium
     };
   };
@@ -857,11 +861,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const _filter = { ...filter };
 
     if (fromBlock) {
-      const fromBlockNumber = await this._getBlockNumber(fromBlock);
+      const fromBlockNumber = await this._getBlockNumberFromTag(fromBlock);
       _filter.fromBlock = fromBlockNumber;
     }
     if (toBlock) {
-      const toBlockNumber = await this._getBlockNumber(toBlock);
+      const toBlockNumber = await this._getBlockNumberFromTag(toBlock);
       _filter.toBlock = toBlockNumber;
     }
 
