@@ -6,7 +6,7 @@ export const hexlifyRpcResult = (data: unknown): any => {
   if (typeof data === 'boolean') return data;
 
   if (BigNumber.isBigNumber(data)) {
-    return data.toHexString();
+    return hexValue(data);
   }
 
   if (Array.isArray(data)) {

@@ -153,7 +153,7 @@ class Eip1193BridgeImpl {
   async eth_gasPrice(params: any[]): Promise<string> {
     validate([], params);
     const gasPrice = await this.#provider.getGasPrice();
-    return gasPrice.toHexString();
+    return hexValue(gasPrice);
   }
 
   // async eth_accounts(params: any[]): Promise<any> {
@@ -212,7 +212,7 @@ class Eip1193BridgeImpl {
   async eth_estimateGas(params: any[]): Promise<string> {
     validate([{ type: 'transaction' }], params);
     const val = await this.#provider.estimateGas(params[0]);
-    return val.toHexString();
+    return hexValue(val);
   }
 
   // async eth_getTransactionByHash(params: any[]): Promise<any> {
