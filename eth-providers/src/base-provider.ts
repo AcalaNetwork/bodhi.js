@@ -804,7 +804,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
     }
 
-    const { args } = JSON.parse(extrinsic as any).method;
+    const { args } = extrinsic.method.toJSON();
     const input = (args as any).input ?? '';
     const value = (args as any).value ?? 0;
 
