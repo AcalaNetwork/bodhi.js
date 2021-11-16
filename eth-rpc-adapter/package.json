@@ -9,7 +9,7 @@
     "build:watch": "heft build",
     "watch": "rush build:watch --to @acala-network/eth-rpc-adaptor",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
-    "test": "mocha **/utils.test.ts",
+    "test": "mocha **/*.test.ts --ignore **/e2e/**",
     "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",
     "start": "ts-node src/index",
     "dev": "nodemon --watch \"src/**,node_modules/**\" --ext \"ts,json\" --ignore \"src/**/*.spec.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
@@ -37,7 +37,9 @@
     "ws": "~8.2.2",
     "@acala-network/types": "~3.0.1",
     "@ethersproject/logger": "~5.4.0",
-    "axios": "~0.24.0"
+    "axios": "~0.24.0",
+    "@ethersproject/abstract-signer": "~5.4.0",
+    "@ethersproject/address": "~5.4.0"
   },
   "devDependencies": {
     "@types/chai": "~4.2.22",

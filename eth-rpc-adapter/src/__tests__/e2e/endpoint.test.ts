@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { getAllTxReceipts, getAllLogs } from '@acala-network/eth-providers/lib/utils';
+import { getAllLogs, getAllTxReceipts } from '@acala-network/eth-providers/lib/utils';
 import { Log } from '@ethersproject/abstract-provider';
+import axios from 'axios';
 import { expect } from 'chai';
 
 const RPC_URL = 'http://localhost:8545';

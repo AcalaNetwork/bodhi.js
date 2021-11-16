@@ -23,5 +23,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules/*", "**/e2e/*", "**/*.(test|spec).ts", "**/__tests__"]
+  "exclude": ["node_modules/*"]
 }

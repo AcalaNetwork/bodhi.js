@@ -1,17 +1,19 @@
-import { hexValue } from '@ethersproject/bytes';
-import { TransactionReceipt, Log } from '@ethersproject/abstract-provider';
-import EventEmitter from 'events';
 import { EvmRpcProvider, TX } from '@acala-network/eth-providers';
+import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
+import { Signer } from '@ethersproject/abstract-signer';
+import { getAddress } from '@ethersproject/address';
+import { hexValue } from '@ethersproject/bytes';
+import EventEmitter from 'events';
+import { InvalidParams, MethodNotFound } from './errors';
 import { hexlifyRpcResult } from './utils';
-import { MethodNotFound } from './errors';
 import { validate } from './validate';
 
 export class Eip1193Bridge extends EventEmitter {
   readonly #impl: Eip1193BridgeImpl;
 
-  constructor(provider: EvmRpcProvider) {
+  constructor(provider: EvmRpcProvider, signer?: Signer) {
     super();
-    this.#impl = new Eip1193BridgeImpl(provider);
+    this.#impl = new Eip1193BridgeImpl(provider, signer);
   }
 
   request(request: { method: string; params?: Array<any> }): Promise<any> {
@@ -38,9 +40,11 @@ export class Eip1193Bridge extends EventEmitter {
 
 class Eip1193BridgeImpl {
   readonly #provider: EvmRpcProvider;
+  readonly #signer?: Signer;
 
-  constructor(provider: EvmRpcProvider) {
+  constructor(provider: EvmRpcProvider, signer?: Signer) {
     this.#provider = provider;
+    this.#signer = signer;
   }
 
   async web3_clientVersion(): Promise<string> {
@@ -156,9 +160,18 @@ class Eip1193BridgeImpl {
     return hexValue(gasPrice);
   }
 
+  /**
+   * Returns a list of addresses owned by client.
+   * @returns 20 Bytes - addresses owned by the client.
+   */
   async eth_accounts(params: any[]): Promise<any> {
     validate([], params);
-    return [];
+    const result = [];
+    if (this.#signer) {
+      const address = await this.#signer.getAddress();
+      result.push(address);
+    }
+    return result;
   }
 
   /**
@@ -216,23 +229,63 @@ class Eip1193BridgeImpl {
     return hexValue(val);
   }
 
+  /**
+   * Returns the information about a transaction requested by transaction hash.
+   * @param DATA, 32 Bytes - hash of a transaction
+   * @returns Transaction, A transaction object, or null when no transaction was found:
+   */
   async eth_getTransactionByHash(params: any[]): Promise<TX> {
-    validate([{ type: 'blockHash' }], params);
+    validate([{ type: 'trasactionHash' }], params);
     return hexlifyRpcResult(await this.#provider.getTransactionByHash(params[0]));
   }
 
+  /**
+   * Returns the receipt of a transaction by transaction hash. Note That the receipt is not available for pending transactions.
+   * @param DATA, 32 Bytes - hash of a transaction
+   * @returns TransactionReceipt, A transaction receipt object, or null when no receipt was found:
+   */
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
-    validate([{ type: 'blockHash' }], params);
+    validate([{ type: 'trasactionHash' }], params);
     return hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
   }
 
-  // async eth_sign(params: any[]): Promise<any> {
+  /**
+   * The sign method calculates an Ethereum specific signature with: sign(keccak256("\x19Ethereum Signed Message:\n" + len(message) + message))).
+   * By adding a prefix to the message makes the calculated signature recognisable as an Ethereum specific signature. This prevents misuse where a malicious DApp can sign arbitrary data (e.g. transaction) and use the signature to impersonate the victim.
+   * Note the address to sign with must be unlocked.
+   * @param ADDRESS, 20 Bytes - address
+   * @param MESSAGE, N Bytes - message to sign
+   * @returns Signature
+   */
+  async eth_sign(params: any[]): Promise<any> {
+    validate([{ type: 'address' }, { type: 'message' }], params);
 
-  // }
+    if (!this.#signer) {
+      throw new Error('eth_sign requires an account');
+    }
 
-  // async eth_sendTransaction(params: any[]): Promise<any> {
+    const address = await this.#signer.getAddress();
 
-  // }
+    if (address !== getAddress(params[0])) {
+      throw new InvalidParams('account mismatch or account not found', params[0]);
+    }
+
+    return this.#signer.signMessage(params[1]);
+  }
+
+  /**
+   * Creates new message call transaction or a contract creation, if the data field contains code.
+   * @param params
+   * @returns TransactionHash - the transaction hash, or the zero hash if the transaction is not yet available.
+   */
+  async eth_sendTransaction(params: any[]): Promise<any> {
+    if (!this.#signer) {
+      throw new Error('eth_sendTransaction requires an account');
+    }
+
+    const tx = await this.#signer.sendTransaction(params[0]);
+    return tx.hash;
+  }
 
   // async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
 
