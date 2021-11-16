@@ -5,7 +5,9 @@ import { expect } from 'chai';
 
 const RPC_URL = 'http://localhost:8545';
 const rpcGet =
-  (method: string) =>
+  (
+    method: string // eslint-disable-line
+  ) =>
   (params: any): any =>
     axios.get(RPC_URL, {
       data: {
@@ -247,5 +249,63 @@ describe('eth_getLogs', () => {
       expect(res.status).to.equal(200);
       expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
     });
+  });
+});
+
+describe('eth_getTransactionByHash', () => {
+  const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
+
+  it('finds correct tx when hash exist', async () => {
+    const allTxReceipts = await getAllTxReceipts();
+    const tx1 = allTxReceipts[0];
+    const tx2 = allTxReceipts[allTxReceipts.length - 1];
+    const tx3 = allTxReceipts[Math.floor(allTxReceipts.length / 2)];
+
+    // test first one
+    let res = await eth_getTransactionByHash([tx1.transactionHash]);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.hash).to.equal(tx1.transactionHash);
+
+    // test last one
+    res = await eth_getTransactionByHash([tx2.transactionHash]);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.hash).to.equal(tx2.transactionHash);
+
+    // test middle one
+    res = await eth_getTransactionByHash([tx3.transactionHash]);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.hash).to.equal(tx3.transactionHash);
+  });
+
+  it('returns correct input data', async () => {
+    const allTxReceipts = await getAllTxReceipts();
+    const tx1 = allTxReceipts.find(({ to }) => !to); // contract creation
+    const tx2 = allTxReceipts.find(({ to }) => !!to); // normal transaction
+
+    // test first one
+    let res = await eth_getTransactionByHash([tx1.transactionHash]);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.input).to.equal('');
+
+    // test last one
+    res = await eth_getTransactionByHash([tx2.transactionHash]);
+    expect(res.status).to.equal(200);
+    expect(res.data.result.input.length).to.greaterThan(0);
+  });
+
+  it('return correct error code and messge', async () => {
+    let res;
+
+    /* ---------- invalid hex address ---------- */
+    res = await eth_getTransactionByHash(['0x000']);
+    expect(res.status).to.equal(200);
+    expect(res.data.error.code).to.equal(-32602);
+    expect(res.data.error.message).to.contain('invalid argument');
+
+    /* ---------- hash not found ---------- */
+    res = await eth_getTransactionByHash(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
+    expect(res.status).to.equal(200);
+    expect(res.data.error.code).to.equal(6969);
+    expect(res.data.error.message).to.contain('transaction hash not found');
   });
 });

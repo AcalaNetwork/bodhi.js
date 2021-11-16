@@ -19,7 +19,7 @@ import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/pr
 import { accessListify, parse, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
-import type { Option, Vec } from '@polkadot/types';
+import type { GenericExtrinsic, Option, Vec } from '@polkadot/types';
 import type { AccountId, DispatchInfo, EvmLog } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish } from 'ethers';
@@ -91,6 +91,22 @@ export interface CallRequest {
   value?: BigNumberish;
   data?: string;
 }
+
+export interface TX {
+  from: string;
+  to: string | null;
+  hash: string;
+  blockHash: string;
+  nonce: number;
+  blockNumber: number;
+  transactionIndex: number;
+  value: BigNumberish;
+  gasPrice: BigNumber;
+  gas: BigNumberish;
+  input: string;
+}
+
+export const DEFAULT_CONFIRMATIONS = 1;
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
@@ -620,7 +636,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  _getBlockNumber = async (blockTag: BlockTag): Promise<number> => {
+  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
     switch (blockTag) {
       case 'pending': {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
@@ -687,6 +703,13 @@ export abstract class BaseProvider extends AbstractProvider {
     return await resolveProperties(tx);
   };
 
+  _getExtrinsicByHashAtBlock = async (txHash: string, blockHash: string): Promise<GenericExtrinsic | undefined> => {
+    const block = await this.api.rpc.chain.getBlock(blockHash.toLowerCase());
+
+    const _txHash = txHash.toLowerCase();
+    return block.block.extrinsics.find((e) => e.hash.toHex() === _txHash);
+  };
+
   // @TODO Testing
   getTransactionReceiptAtBlock = async (txHash: string, blockHash: string): Promise<TransactionReceipt> => {
     txHash = txHash.toLowerCase();
@@ -742,7 +765,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // to and contractAddress may be undefined
     return {
-      confirmations: 1,
+      confirmations: (await this._getBlockNumberFromTag('latest')) - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
       logs: partialTransactionReceipt.logs.map((log) => ({
@@ -764,6 +787,40 @@ export abstract class BaseProvider extends AbstractProvider {
 
   // Queries
   getTransaction = (transactionHash: string): Promise<TransactionResponse> => throwNotImplemented('getTransaction');
+
+  getTransactionByHash = async (transactionHash: string): Promise<TX> => {
+    const tx = await getTxReceiptByHash(transactionHash);
+
+    if (!tx) {
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+    }
+
+    const nonce = await this.getEvmTransactionCount(tx.from, tx.blockHash);
+    const extrinsic = await this._getExtrinsicByHashAtBlock(transactionHash, tx.blockHash);
+
+    if (!extrinsic) {
+      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+    }
+
+    const { args } = extrinsic.method.toJSON();
+    const input = (args as any).input ?? '';
+    const value = (args as any).value ?? 0;
+
+    return {
+      from: tx.from,
+      to: tx.to || null,
+      hash: tx.transactionHash,
+      blockHash: tx.blockHash,
+      nonce,
+      blockNumber: tx.blockNumber,
+      transactionIndex: tx.transactionIndex,
+      value,
+      gasPrice: GAS_PRICE,
+      gas: tx.gasUsed,
+      input
+    };
+  };
+
   getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> => {
     const tx = await getTxReceiptByHash(transactionHash);
 
@@ -771,8 +828,8 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
     }
 
-    // TODO: correct values of these?
-    const confirmations = 1;
+    // NOTE: these two values are not indexed yet from evm-subql
+    // we can index them if needed in the future
     const byzantium = false;
     const defaultAddress = '0x';
 
@@ -791,7 +848,7 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: EFFECTIVE_GAS_PRICE,
-      confirmations,
+      confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber,
       byzantium
     };
   };
@@ -802,11 +859,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const _filter = { ...filter };
 
     if (fromBlock) {
-      const fromBlockNumber = await this._getBlockNumber(fromBlock);
+      const fromBlockNumber = await this._getBlockNumberFromTag(fromBlock);
       _filter.fromBlock = fromBlockNumber;
     }
     if (toBlock) {
-      const toBlockNumber = await this._getBlockNumber(toBlock);
+      const toBlockNumber = await this._getBlockNumberFromTag(toBlock);
       _filter.toBlock = toBlockNumber;
     }
 
