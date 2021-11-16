@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { SignerProvider } from '@acala-network/eth-providers';
+import { handleTxResponse } from '@acala-network/eth-providers/lib';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
 import {
@@ -19,7 +20,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { SigningKey } from './SigningKey';
-import { dataToString, handleTxResponse, toBN } from './utils';
+import { dataToString, toBN } from './utils';
 
 const logger = new Logger('bodhi/0.0.1');
 
