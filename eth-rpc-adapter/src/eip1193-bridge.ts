@@ -156,9 +156,10 @@ class Eip1193BridgeImpl {
     return hexValue(gasPrice);
   }
 
-  // async eth_accounts(params: any[]): Promise<any> {
-
-  // }
+  async eth_accounts(params: any[]): Promise<any> {
+    validate([], params);
+    return [];
+  }
 
   /**
    * Returns the value from a storage position at a given address.

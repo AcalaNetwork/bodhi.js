@@ -277,22 +277,6 @@ describe('eth_getTransactionByHash', () => {
     expect(res.data.result.hash).to.equal(tx3.transactionHash);
   });
 
-  it('returns correct input data', async () => {
-    const allTxReceipts = await getAllTxReceipts();
-    const tx1 = allTxReceipts.find(({ to }) => !to); // contract creation
-    const tx2 = allTxReceipts.find(({ to }) => !!to); // normal transaction
-
-    // test first one
-    let res = await eth_getTransactionByHash([tx1.transactionHash]);
-    expect(res.status).to.equal(200);
-    expect(res.data.result.input).to.equal('');
-
-    // test last one
-    res = await eth_getTransactionByHash([tx2.transactionHash]);
-    expect(res.status).to.equal(200);
-    expect(res.data.result.input.length).to.greaterThan(0);
-  });
-
   it('return correct error code and messge', async () => {
     let res;
 
@@ -307,5 +291,15 @@ describe('eth_getTransactionByHash', () => {
     expect(res.status).to.equal(200);
     expect(res.data.error.code).to.equal(6969);
     expect(res.data.error.message).to.contain('transaction hash not found');
+  });
+});
+
+describe('eth_accounts', () => {
+  const eth_accounts = rpcGet('eth_accounts');
+
+  it('returns empty array', async () => {
+    const res = await eth_accounts([]);
+    expect(res.status).to.equal(200);
+    expect(res.data.result).to.deep.equal([]);
   });
 });
