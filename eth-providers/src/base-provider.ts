@@ -242,8 +242,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    if (!substrateAddress) return BIGNUMBER_ZERO;
-
     const apiAt = await this.api.at(blockHash);
 
     const accountInfo = await apiAt.query.system.account(substrateAddress);
