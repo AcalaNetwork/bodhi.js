@@ -19,13 +19,12 @@ import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/pr
 import { accessListify, parse, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
-import type { GenericExtrinsic, Option, Vec } from '@polkadot/types';
-import type { AccountId, DispatchInfo, EvmLog } from '@polkadot/types/interfaces';
+import type { GenericExtrinsic, Option } from '@polkadot/types';
+import type { AccountId } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
   BIGNUMBER_ZERO,
-  BIGNUMBER_ONE,
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
   GAS_PRICE,
@@ -36,14 +35,14 @@ import {
   ZERO
 } from './consts';
 import {
-  computeDefaultSubstrateAddress,
   computeDefaultEvmAddress,
+  computeDefaultSubstrateAddress,
   convertNativeToken,
-  logger,
-  throwNotImplemented,
+  getFilteredLogs,
   getPartialTransactionReceipt,
   getTxReceiptByHash,
-  getFilteredLogs
+  logger,
+  throwNotImplemented
 } from './utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;

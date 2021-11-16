@@ -1,6 +1,6 @@
 import { Log } from '@ethersproject/abstract-provider';
-import { getTxReceiptByHash, getAllTxReceipts, getFilteredLogs, getAllLogs } from '../utils';
 import { expect } from 'chai';
+import { getAllLogs, getAllTxReceipts, getFilteredLogs, getTxReceiptByHash } from '../../utils';
 
 describe('getTxReceiptByHash', () => {
   it('returns correct result when hash exist', async () => {

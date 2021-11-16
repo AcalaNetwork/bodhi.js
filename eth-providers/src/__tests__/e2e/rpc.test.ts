@@ -1,5 +1,5 @@
-import { EvmRpcProvider } from '../rpc-provider';
 import { expect } from 'chai';
+import { EvmRpcProvider } from '../../rpc-provider';
 
 const endpoint = 'wss://mandala6.laminar.codes/'; // FIXME: wait for a usable testnet
 

@@ -1,6 +1,5 @@
-import { EvmRpcProvider } from '../rpc-provider';
-import { isSubstrateAddress, isEvmAddress, computeDefaultEvmAddress, computeDefaultSubstrateAddress } from '../utils';
 import { expect } from 'chai';
+import { computeDefaultEvmAddress, computeDefaultSubstrateAddress, isEvmAddress, isSubstrateAddress } from '../utils';
 
 console.log('account test start...');
 

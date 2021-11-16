@@ -9,8 +9,8 @@
     "build:watch": "heft build",
     "watch": "rush build:watch --to @acala-network/eth-providers",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
-    "test": "mocha **/account.test.ts **/decimals.test.ts",
-    "test:dev": "mocha **/account.test.ts **/decimals.test.ts **/queries.test.ts --watch --watch-files **/*.test.ts",
+    "test": "mocha **/*.test.ts --ignore **/e2e/**",
+    "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
@@ -45,6 +45,11 @@
     "@ethersproject/address": "~5.4.0",
     "@graphql-codegen/cli": "2.2.2",
     "chai": "~4.3.4",
-    "mocha": "~9.1.3"
+    "mocha": "~9.1.3",
+    "ts-node": "~10.3.0",
+    "@polkadot/keyring": "~7.5.1",
+    "@acala-network/contracts": "~1.2.1",
+    "@ethersproject/contracts": "~5.5.0",
+    "@ethersproject/wallet": "~5.5.0"
   }
 }
