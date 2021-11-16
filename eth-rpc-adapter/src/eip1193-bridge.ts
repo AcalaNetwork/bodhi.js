@@ -6,6 +6,10 @@ import { hexlifyRpcResult } from './utils';
 import { MethodNotFound } from './errors';
 import { validate } from './validate';
 
+const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
+
+const MAX_TRIES = 15;
+
 export class Eip1193Bridge extends EventEmitter {
   readonly #impl: Eip1193BridgeImpl;
 
@@ -218,12 +222,42 @@ class Eip1193BridgeImpl {
 
   async eth_getTransactionByHash(params: any[]): Promise<TX> {
     validate([{ type: 'blockHash' }], params);
-    return hexlifyRpcResult(await this.#provider.getTransactionByHash(params[0]));
+
+    let res;
+    let tries = 0;
+    while (!res && tries++ < MAX_TRIES) {
+      try {
+        res = hexlifyRpcResult(await this.#provider.getTransactionByHash(params[0]));
+      } catch (e) {
+        console.log(`failed attemps: ${tries}`);
+        if (tries === MAX_TRIES) {
+          throw e;
+        }
+        await sleep(2000);
+      }
+    }
+
+    return res;
   }
 
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
     validate([{ type: 'blockHash' }], params);
-    return hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
+
+    let res;
+    let tries = 0;
+    while (!res && tries++ < MAX_TRIES) {
+      try {
+        res = hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
+      } catch (e) {
+        console.log(`failed attemps: ${tries}`);
+        if (tries === MAX_TRIES) {
+          throw e;
+        }
+        await sleep(2000);
+      }
+    }
+
+    return res;
   }
 
   // async eth_sign(params: any[]): Promise<any> {
