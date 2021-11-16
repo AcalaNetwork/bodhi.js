@@ -8,6 +8,10 @@ import { InvalidParams, MethodNotFound } from './errors';
 import { hexlifyRpcResult } from './utils';
 import { validate } from './validate';
 
+const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
+
+const MAX_TRIES = 15;
+
 export class Eip1193Bridge extends EventEmitter {
   readonly #impl: Eip1193BridgeImpl;
 
@@ -235,8 +239,23 @@ class Eip1193BridgeImpl {
    * @returns Transaction, A transaction object, or null when no transaction was found:
    */
   async eth_getTransactionByHash(params: any[]): Promise<TX> {
-    validate([{ type: 'trasactionHash' }], params);
-    return hexlifyRpcResult(await this.#provider.getTransactionByHash(params[0]));
+    validate([{ type: 'blockHash' }], params);
+
+    let res;
+    let tries = 0;
+    while (!res && tries++ < MAX_TRIES) {
+      try {
+        res = hexlifyRpcResult(await this.#provider.getTransactionByHash(params[0]));
+      } catch (e) {
+        console.log(`failed attemps: ${tries}`);
+        if (tries === MAX_TRIES) {
+          throw e;
+        }
+        await sleep(2000);
+      }
+    }
+
+    return res;
   }
 
   /**
@@ -245,8 +264,23 @@ class Eip1193BridgeImpl {
    * @returns TransactionReceipt, A transaction receipt object, or null when no receipt was found:
    */
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
-    validate([{ type: 'trasactionHash' }], params);
-    return hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
+    validate([{ type: 'blockHash' }], params);
+
+    let res;
+    let tries = 0;
+    while (!res && tries++ < MAX_TRIES) {
+      try {
+        res = hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
+      } catch (e) {
+        console.log(`failed attemps: ${tries}`);
+        if (tries === MAX_TRIES) {
+          throw e;
+        }
+        await sleep(2000);
+      }
+    }
+
+    return res;
   }
 
   /**
