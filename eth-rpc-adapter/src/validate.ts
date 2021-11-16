@@ -1,8 +1,24 @@
 import { InvalidParams } from './errors';
 
 export type Schema = {
-  type: 'address' | 'block' | 'transaction' | 'blockHash' | 'flag' | 'position' | 'transactionData' | 'object';
+  type:
+    | 'address'
+    | 'block'
+    | 'transaction'
+    | 'blockHash'
+    | 'trasactionHash'
+    | 'flag'
+    | 'position'
+    | 'transactionData'
+    | 'object'
+    | 'message';
 }[];
+
+export const validateString = (value: any) => {
+  if (typeof value !== 'string') {
+    throw new Error('expected type String');
+  }
+};
 
 export const validateHexNumber = (value: string) => {
   validateHexString(value);
@@ -34,6 +50,14 @@ export const validateTransaction = (data: any) => {
 };
 
 export const validateBlockHash = (data: any) => {
+  if (typeof data !== 'string') {
+    throw new Error(`invalid block hash, expected type String`);
+  }
+
+  validateHexString(data, 64);
+};
+
+export const validateTrasactionHash = (data: any) => {
   if (typeof data !== 'string') {
     throw new Error(`invalid block hash, expected type String`);
   }
@@ -95,6 +119,10 @@ export const validate = (schema: Schema, data: unknown[]) => {
           validateBlockHash(data[i]);
           break;
         }
+        case 'trasactionHash': {
+          validateTrasactionHash(data[i]);
+          break;
+        }
         case 'flag': {
           validateFlag(data[i]);
           break;
@@ -109,6 +137,10 @@ export const validate = (schema: Schema, data: unknown[]) => {
         }
         case 'object': {
           validateObject(data[i]);
+          break;
+        }
+        case 'message': {
+          validateString(data[i]);
           break;
         }
         default:
