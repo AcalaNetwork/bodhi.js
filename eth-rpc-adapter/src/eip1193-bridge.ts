@@ -1,16 +1,12 @@
-import { EvmRpcProvider, TX } from '@acala-network/eth-providers';
+import { EvmRpcProvider, TX, TXReceipt } from '@acala-network/eth-providers';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
 import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
-import { hexlifyRpcResult } from './utils';
+import { hexlifyRpcResult, sleep } from './utils';
 import { validate } from './validate';
-
-const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
-
-const MAX_TRIES = 15;
 
 export class Eip1193Bridge extends EventEmitter {
   readonly #impl: Eip1193BridgeImpl;
@@ -78,7 +74,7 @@ class Eip1193BridgeImpl {
    * Returns the currently configured chain id, a value used in replay-protected transaction signing as introduced by EIP-155.
    * @returns QUANTITY - big integer of the current chain id.
    */
-  async eth_chainId(params: any[]) {
+  async eth_chainId(params: any[]): Promise<string> {
     validate([], params);
     const chainId = await this.#provider.chainId();
     return hexValue(chainId);
@@ -233,6 +229,25 @@ class Eip1193BridgeImpl {
     return hexValue(val);
   }
 
+  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 15, interval: number = 2000): Promise<T> {
+    let res;
+    let tries = 0;
+
+    while (!res && tries++ < maxRetries) {
+      try {
+        res = await fn(...args);
+      } catch (e) {
+        console.log(`failed attemp # ${tries}/${maxRetries}`);
+        if (tries === maxRetries) {
+          throw e;
+        }
+        await sleep(interval);
+      }
+    }
+
+    return res as T;
+  }
+
   /**
    * Returns the information about a transaction requested by transaction hash.
    * @param DATA, 32 Bytes - hash of a transaction
@@ -241,21 +256,8 @@ class Eip1193BridgeImpl {
   async eth_getTransactionByHash(params: any[]): Promise<TX> {
     validate([{ type: 'blockHash' }], params);
 
-    let res;
-    let tries = 0;
-    while (!res && tries++ < MAX_TRIES) {
-      try {
-        res = hexlifyRpcResult(await this.#provider.getTransactionByHash(params[0]));
-      } catch (e) {
-        console.log(`failed attemps: ${tries}`);
-        if (tries === MAX_TRIES) {
-          throw e;
-        }
-        await sleep(2000);
-      }
-    }
-
-    return res;
+    const res = await this._runWithRetries(this.#provider.getTransactionByHash, [params[0]]);
+    return hexlifyRpcResult(res);
   }
 
   /**
@@ -266,21 +268,8 @@ class Eip1193BridgeImpl {
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
     validate([{ type: 'blockHash' }], params);
 
-    let res;
-    let tries = 0;
-    while (!res && tries++ < MAX_TRIES) {
-      try {
-        res = hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
-      } catch (e) {
-        console.log(`failed attemps: ${tries}`);
-        if (tries === MAX_TRIES) {
-          throw e;
-        }
-        await sleep(2000);
-      }
-    }
-
-    return res;
+    const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, [params[0]]);
+    return hexlifyRpcResult(res);
   }
 
   /**
