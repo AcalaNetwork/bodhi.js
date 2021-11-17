@@ -256,7 +256,7 @@ class Eip1193BridgeImpl {
   async eth_getTransactionByHash(params: any[]): Promise<TX> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this._runWithRetries(this.#provider.getTransactionByHash, [params[0]]);
+    const res = await this._runWithRetries(this.#provider.getTransactionByHash, params);
     return hexlifyRpcResult(res);
   }
 
@@ -268,7 +268,7 @@ class Eip1193BridgeImpl {
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, [params[0]]);
+    const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, params);
     return hexlifyRpcResult(res);
   }
 
