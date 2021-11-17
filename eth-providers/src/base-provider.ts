@@ -106,6 +106,25 @@ export interface TX {
   input: string;
 }
 
+export interface TXReceipt {
+  from: string;
+  to: string | null;
+  contractAddress: string | null;
+  transactionIndex: number;
+  root?: string;
+  gasUsed: BigNumber;
+  logsBloom: string;
+  blockHash: string;
+  transactionHash: string;
+  logs: Array<Log>;
+  blockNumber: number;
+  confirmations: number;
+  cumulativeGasUsed: BigNumber;
+  effectiveGasPrice: BigNumber;
+  type: number;
+  status?: number;
+}
+
 export const DEFAULT_CONFIRMATIONS = 1;
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -821,22 +840,20 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> => {
+  getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> =>
+    throwNotImplemented('getTransactionReceipt (deprecated: use getTXReceiptByHash)');
+
+  getTXReceiptByHash = async (transactionHash: string): Promise<TXReceipt> => {
     const tx = await getTxReceiptByHash(transactionHash);
 
     if (!tx) {
       return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
     }
 
-    // NOTE: these two values are not indexed yet from evm-subql
-    // we can index them if needed in the future
-    const byzantium = false;
-    const defaultAddress = '0x';
-
     return {
-      to: tx.to || defaultAddress,
+      to: tx.to || null,
       from: tx.from,
-      contractAddress: tx.contractAddress || defaultAddress,
+      contractAddress: tx.contractAddress || null,
       transactionIndex: tx.transactionIndex,
       gasUsed: tx.gasUsed,
       logsBloom: tx.logsBloom,
@@ -848,8 +865,7 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: EFFECTIVE_GAS_PRICE,
-      confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber,
-      byzantium
+      confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber
     };
   };
 

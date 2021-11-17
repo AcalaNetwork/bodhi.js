@@ -1,14 +1,10 @@
 import { hexValue } from '@ethersproject/bytes';
 import { TransactionReceipt, Log } from '@ethersproject/abstract-provider';
 import EventEmitter from 'events';
-import { EvmRpcProvider, TX } from '@acala-network/eth-providers';
-import { hexlifyRpcResult } from './utils';
+import { EvmRpcProvider, TX, TXReceipt } from '@acala-network/eth-providers';
+import { hexlifyRpcResult, sleep } from './utils';
 import { MethodNotFound } from './errors';
 import { validate } from './validate';
-
-const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
-
-const MAX_TRIES = 15;
 
 export class Eip1193Bridge extends EventEmitter {
   readonly #impl: Eip1193BridgeImpl;
@@ -220,44 +216,37 @@ class Eip1193BridgeImpl {
     return hexValue(val);
   }
 
-  async eth_getTransactionByHash(params: any[]): Promise<TX> {
-    validate([{ type: 'blockHash' }], params);
-
+  async runWithRetries<T>(fn: any, args: any[], maxRetries: number = 15, interval: number = 2000): Promise<T> {
     let res;
     let tries = 0;
-    while (!res && tries++ < MAX_TRIES) {
+
+    while (!res && tries++ < maxRetries) {
       try {
-        res = hexlifyRpcResult(await this.#provider.getTransactionByHash(params[0]));
+        res = await fn(...args);
       } catch (e) {
-        console.log(`failed attemps: ${tries}`);
-        if (tries === MAX_TRIES) {
+        console.log(`failed attemp # ${tries}/${maxRetries}`);
+        if (tries === maxRetries) {
           throw e;
         }
-        await sleep(2000);
+        await sleep(interval);
       }
     }
 
-    return res;
+    return res as T;
+  }
+
+  async eth_getTransactionByHash(params: any[]): Promise<TX> {
+    validate([{ type: 'blockHash' }], params);
+
+    const res = await this.runWithRetries<TX>(this.#provider.getTransactionByHash, [params[0]]);
+    return hexlifyRpcResult(res);
   }
 
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
     validate([{ type: 'blockHash' }], params);
 
-    let res;
-    let tries = 0;
-    while (!res && tries++ < MAX_TRIES) {
-      try {
-        res = hexlifyRpcResult(await this.#provider.getTransactionReceipt(params[0]));
-      } catch (e) {
-        console.log(`failed attemps: ${tries}`);
-        if (tries === MAX_TRIES) {
-          throw e;
-        }
-        await sleep(2000);
-      }
-    }
-
-    return res;
+    const res = await this.runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, [params[0]]);
+    return hexlifyRpcResult(res);
   }
 
   // async eth_sign(params: any[]): Promise<any> {
