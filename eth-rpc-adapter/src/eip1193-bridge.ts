@@ -256,7 +256,7 @@ class Eip1193BridgeImpl {
   async eth_getTransactionByHash(params: any[]): Promise<TX> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this._runWithRetries(this.#provider.getTransactionByHash, params);
+    const res = await this._runWithRetries<TX>(this.#provider.getTransactionByHash, params);
     return hexlifyRpcResult(res);
   }
 
