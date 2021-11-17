@@ -20,7 +20,7 @@ import { accessListify, parse, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import type { GenericExtrinsic, Option } from '@polkadot/types';
-import type { AccountId } from '@polkadot/types/interfaces';
+import type { AccountId, Header } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
@@ -834,6 +834,16 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (transactionHash: string): Promise<TX> => {
+    const sub1 = await this.api.rpc.chain.subscribeNewHeads((header: Header) =>
+      console.log('new block: ', header.number.toNumber())
+    );
+    const sub2 = await this.api.rpc.chain.subscribeFinalizedHeads((header: Header) =>
+      console.log('new finalized block: ', header.number.toNumber())
+    );
+    const sub3 = await this.api.rpc.chain.subscribeAllHeads((header: Header) =>
+      console.log('new all heads: ', header.number.toNumber())
+    );
+
     const tx = await getTxReceiptByHash(transactionHash);
 
     if (!tx) {
