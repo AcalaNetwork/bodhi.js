@@ -91,32 +91,30 @@ export interface CallRequest {
   data?: string;
 }
 
-export interface TX {
+export interface partialTX {
   from: string;
   to: string | null;
-  hash: string;
   blockHash: string;
-  nonce: number;
   blockNumber: number;
   transactionIndex: number;
+}
+
+export interface TX extends partialTX {
+  hash: string;
+  nonce: number;
   value: BigNumberish;
   gasPrice: BigNumber;
   gas: BigNumberish;
   input: string;
 }
 
-export interface TXReceipt {
-  from: string;
-  to: string | null;
+export interface TXReceipt extends partialTX {
   contractAddress: string | null;
-  transactionIndex: number;
   root?: string;
   gasUsed: BigNumber;
   logsBloom: string;
-  blockHash: string;
   transactionHash: string;
   logs: Array<Log>;
-  blockNumber: number;
   confirmations: number;
   cumulativeGasUsed: BigNumber;
   effectiveGasPrice: BigNumber;
@@ -804,7 +802,8 @@ export abstract class BaseProvider extends AbstractProvider {
    */
 
   // Queries
-  getTransaction = (transactionHash: string): Promise<TransactionResponse> => throwNotImplemented('getTransaction');
+  getTransaction = (transactionHash: string): Promise<TransactionResponse> =>
+    throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (transactionHash: string): Promise<TX> => {
     const tx = await getTxReceiptByHash(transactionHash);
@@ -840,7 +839,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> =>
-    throwNotImplemented('getTransactionReceipt (deprecated: use getTXReceiptByHash)');
+    throwNotImplemented('getTransactionReceipt (deprecated: please use getTXReceiptByHash)');
 
   getTXReceiptByHash = async (transactionHash: string): Promise<TXReceipt> => {
     const tx = await getTxReceiptByHash(transactionHash);
