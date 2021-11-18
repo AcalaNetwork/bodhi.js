@@ -229,7 +229,7 @@ class Eip1193BridgeImpl {
     return hexValue(val);
   }
 
-  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 15, interval: number = 2000): Promise<T> {
+  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 20, interval: number = 1000): Promise<T> {
     let res;
     let tries = 0;
 

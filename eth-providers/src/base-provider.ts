@@ -44,6 +44,7 @@ import {
   logger,
   throwNotImplemented
 } from './utils';
+import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -129,6 +130,30 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
 
   _network?: Network;
+  _cache?: UnfinalizedBlockCache;
+
+  subscribe = async (): Promise<void> => {
+    this._cache = new UnfinalizedBlockCache();
+
+    await this.isReady();
+
+    const sub1 = await this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      const blockNumber = header.number.toNumber();
+      const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
+      const txHashes = await this._getTxHashesAtBlock(blockHash);
+
+      this._cache!.addTxsAtBlock(blockNumber, txHashes);
+
+      console.log('new block: ', blockNumber, txHashes);
+    });
+
+    const sub2 = await this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
+      const blockNumber = header.number.toNumber();
+      const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
+      const txHashes = await this._getTxHashesAtBlock(blockHash);
+      console.log('new finalized block: ', blockNumber, txHashes);
+    });
+  };
 
   setApi = (api: ApiPromise): void => {
     defineReadOnly(this, '_api', api);
@@ -747,11 +772,22 @@ export abstract class BaseProvider extends AbstractProvider {
     return await resolveProperties(tx);
   };
 
-  _getExtrinsicByHashAtBlock = async (txHash: string, blockHash: string): Promise<GenericExtrinsic | undefined> => {
+  _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
+    const extrinsics = (await this._getExtrinsicsAtBlock(blockHash)) as GenericExtrinsic[];
+    return extrinsics.map((e) => e.hash.toHex());
+  };
+
+  _getExtrinsicsAtBlock = async (
+    blockHash: string,
+    txHash?: string
+  ): Promise<GenericExtrinsic | GenericExtrinsic[] | undefined> => {
     const block = await this.api.rpc.chain.getBlock(blockHash.toLowerCase());
+    const { extrinsics } = block.block;
+
+    if (!txHash) return extrinsics;
 
     const _txHash = txHash.toLowerCase();
-    return block.block.extrinsics.find((e) => e.hash.toHex() === _txHash);
+    return extrinsics.find((e) => e.hash.toHex() === _txHash);
   };
 
   // @TODO Testing
@@ -825,25 +861,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
   abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
 
-  /**
-   * TODO
-   */
+  _getTxReceiptFromCache = async (transactionHash: string): Promise<TransactionReceipt | null> => {
+    const targetBlockNumber = await this._cache?.getBlockNumber(transactionHash);
+    if (!targetBlockNumber) return null;
+
+    const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
+
+    return this.getTransactionReceiptAtBlock(transactionHash, targetBlockHash.toHex());
+  };
 
   // Queries
   getTransaction = (transactionHash: string): Promise<TransactionResponse> =>
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (transactionHash: string): Promise<TX> => {
-    const sub1 = await this.api.rpc.chain.subscribeNewHeads((header: Header) =>
-      console.log('new block: ', header.number.toNumber())
-    );
-    const sub2 = await this.api.rpc.chain.subscribeFinalizedHeads((header: Header) =>
-      console.log('new finalized block: ', header.number.toNumber())
-    );
-    const sub3 = await this.api.rpc.chain.subscribeAllHeads((header: Header) =>
-      console.log('new all heads: ', header.number.toNumber())
-    );
-
     const tx = await getTxReceiptByHash(transactionHash);
 
     if (!tx) {
@@ -851,13 +882,13 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const nonce = await this.getEvmTransactionCount(tx.from, tx.blockHash);
-    const extrinsic = await this._getExtrinsicByHashAtBlock(transactionHash, tx.blockHash);
+    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, transactionHash);
 
     if (!extrinsic) {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
     }
 
-    const { args } = extrinsic.method.toJSON();
+    const { args } = (extrinsic as GenericExtrinsic).method.toJSON();
     const input = (args as any).input ?? '';
     const value = (args as any).value ?? 0;
 
@@ -880,7 +911,12 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransactionReceipt (deprecated: please use getTXReceiptByHash)');
 
   getTXReceiptByHash = async (transactionHash: string): Promise<TXReceipt> => {
-    const tx = await getTxReceiptByHash(transactionHash);
+    const [txFromCache, txFromSubql] = await Promise.all([
+      this._getTxReceiptFromCache(transactionHash),
+      getTxReceiptByHash(transactionHash)
+    ]);
+
+    const tx = txFromCache || txFromSubql;
 
     if (!tx) {
       return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
@@ -895,7 +931,7 @@ export abstract class BaseProvider extends AbstractProvider {
       logsBloom: tx.logsBloom,
       blockHash: tx.blockHash,
       transactionHash: tx.transactionHash,
-      logs: tx.logs.nodes as Log[],
+      logs: Array.isArray(tx.logs) ? tx.logs : (tx.logs.nodes as Log[]),
       blockNumber: tx.blockNumber,
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
