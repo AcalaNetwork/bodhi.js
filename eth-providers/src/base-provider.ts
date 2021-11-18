@@ -591,6 +591,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const ethTx = parse(ethereumTx);
 
+    if (ethTx.type !== null) {
+      const sigType = ethTx.type === 1 ? 'eip2930' : ethTx.type === 2 ? 'eip1559' : 'unknown';
+
+      return throwNotImplemented(`only EIP-155 transactions are supported. but get ${sigType}`);
+    }
+
     if (!ethTx.from) {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
