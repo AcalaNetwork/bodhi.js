@@ -579,11 +579,11 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   sendTransactionWithSubstrateSig = async (substrateTx: string): Promise<string> => {
-    return throwNotImplemented('substrate signature is not currently supported');
+    return throwNotImplemented('substrate signature is not supported at this time');
   };
 
   sendTransactionWithEip712Sig = async (eip712Tx: string): Promise<string> => {
-    return throwNotImplemented('acalaEip712 signature is not currently supported');
+    return throwNotImplemented('acalaEip712 signature is not supported at this time');
   };
 
   sendTransactionWithEthereumSig = async (ethereumTx: string): Promise<string> => {
