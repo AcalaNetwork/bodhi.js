@@ -1,11 +1,7 @@
-import { arrayify, joinSignature } from '@ethersproject/bytes';
-import { _TypedDataEncoder } from '@ethersproject/hash';
-import { verifyTypedData, Wallet } from '@ethersproject/wallet';
-import { recoverTypedSignature, signTypedData, SignTypedDataVersion, TypedDataUtils } from '@metamask/eth-sig-util';
+import { joinSignature } from '@ethersproject/bytes';
 import { expect } from 'chai';
-import { getAddress } from '@ethersproject/address';
-import { serializeTransaction } from '../serializeTransaction';
 import { parseTransaction } from '../parseTransaction';
+import { serializeTransaction } from '../serializeTransaction';
 
 const types = {
   Transaction: [
