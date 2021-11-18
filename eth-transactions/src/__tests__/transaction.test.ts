@@ -1,4 +1,4 @@
-import { arrayify } from '@ethersproject/bytes';
+import { arrayify, joinSignature } from '@ethersproject/bytes';
 import { _TypedDataEncoder } from '@ethersproject/hash';
 import { verifyTypedData, Wallet } from '@ethersproject/wallet';
 import { recoverTypedSignature, signTypedData, SignTypedDataVersion, TypedDataUtils } from '@metamask/eth-sig-util';
@@ -58,6 +58,41 @@ describe('transaction', () => {
       },
       sig
     );
+
+    const parsedTx = parseTransaction(tx);
+
+    expect(data).deep.equal({
+      chainId: parsedTx.chainId,
+      nonce: parsedTx.nonce,
+      gasLimit: parsedTx.gasLimit.toNumber(),
+      to: parsedTx.chainId || undefined,
+      value: parsedTx.value.toNumber(),
+      data: parsedTx.data
+    });
+
+    const parsedSig = joinSignature({ r: parsedTx.r!, s: parsedTx.s, v: parsedTx.v });
+
+    expect(parsedSig).equal(sig);
+  });
+
+  it('serializeTransaction unsigned', async () => {
+    const data = {
+      chainId: 0,
+      nonce: 0,
+      gasLimit: 2100000,
+      to: undefined,
+      value: 0,
+      data: '0xcfae3217'
+    };
+
+    const tx = serializeTransaction({
+      chainId: 0,
+      nonce: 0,
+      gasLimit: 2100000,
+      to: undefined,
+      value: 0,
+      data: '0xcfae3217'
+    });
 
     const parsedTx = parseTransaction(tx);
 
