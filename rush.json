@@ -455,6 +455,12 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@acala-network/eth-transactions",
+      "projectFolder": "eth-transactions",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
       "packageName": "evm-example-dex",
       "projectFolder": "examples/dex",
       "reviewCategory": "tests",

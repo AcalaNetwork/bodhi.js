@@ -1,0 +1,28 @@
+{
+  "name": "@acala-network/eth-transactions",
+  "version": "2.1.2",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "author": "Acala Developers <hello@acala.network>",
+  "scripts": {
+    "build": "heft build --clean",
+    "build:watch": "heft build",
+    "watch": "rush build:watch --to @acala-network/eth-transactions",
+    "lint": "tsc --noEmit && eslint \"**/*.ts\"",
+    "test": "mocha **/*.test.ts --ignore **/e2e/**",
+    "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/chai": "~4.2.22",
+    "@types/mocha": "~9.0.0",
+    "@rushstack/eslint-config": "~2.4.2",
+    "@rushstack/heft": "~0.41.6",
+    "@ethersproject/address": "~5.4.0",
+    "eslint": "~7.32.0",
+    "typescript": "~4.4.4",
+    "chai": "~4.3.4",
+    "mocha": "~9.1.3",
+    "ts-node": "~10.3.0"
+  }
+}
