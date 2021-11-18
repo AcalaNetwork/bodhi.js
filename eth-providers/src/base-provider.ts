@@ -91,18 +91,35 @@ export interface CallRequest {
   data?: string;
 }
 
-export interface TX {
+export interface partialTX {
   from: string;
   to: string | null;
-  hash: string;
   blockHash: string;
-  nonce: number;
   blockNumber: number;
   transactionIndex: number;
+}
+
+export interface TX extends partialTX {
+  hash: string;
+  nonce: number;
   value: BigNumberish;
   gasPrice: BigNumber;
   gas: BigNumberish;
   input: string;
+}
+
+export interface TXReceipt extends partialTX {
+  contractAddress: string | null;
+  root?: string;
+  gasUsed: BigNumber;
+  logsBloom: string;
+  transactionHash: string;
+  logs: Array<Log>;
+  confirmations: number;
+  cumulativeGasUsed: BigNumber;
+  effectiveGasPrice: BigNumber;
+  type: number;
+  status?: number;
 }
 
 export const DEFAULT_CONFIRMATIONS = 1;
@@ -785,7 +802,8 @@ export abstract class BaseProvider extends AbstractProvider {
    */
 
   // Queries
-  getTransaction = (transactionHash: string): Promise<TransactionResponse> => throwNotImplemented('getTransaction');
+  getTransaction = (transactionHash: string): Promise<TransactionResponse> =>
+    throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (transactionHash: string): Promise<TX> => {
     const tx = await getTxReceiptByHash(transactionHash);
@@ -820,22 +838,20 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> => {
+  getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> =>
+    throwNotImplemented('getTransactionReceipt (deprecated: please use getTXReceiptByHash)');
+
+  getTXReceiptByHash = async (transactionHash: string): Promise<TXReceipt> => {
     const tx = await getTxReceiptByHash(transactionHash);
 
     if (!tx) {
       return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
     }
 
-    // NOTE: these two values are not indexed yet from evm-subql
-    // we can index them if needed in the future
-    const byzantium = false;
-    const defaultAddress = '0x';
-
     return {
-      to: tx.to || defaultAddress,
+      to: tx.to || null,
       from: tx.from,
-      contractAddress: tx.contractAddress || defaultAddress,
+      contractAddress: tx.contractAddress || null,
       transactionIndex: tx.transactionIndex,
       gasUsed: tx.gasUsed,
       logsBloom: tx.logsBloom,
@@ -847,8 +863,7 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: EFFECTIVE_GAS_PRICE,
-      confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber,
-      byzantium
+      confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber
     };
   };
 
