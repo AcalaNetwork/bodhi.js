@@ -8,7 +8,7 @@ export class EvmRpcProvider extends BaseProvider {
     super();
     const api = createApi(endpoint);
     this.setApi(api);
-    this.subscribe() as unknown as void;
+    this.startCache() as unknown as void;
   }
 
   sendTransaction = (signedTransaction: string | Promise<string>): Promise<TransactionResponse> =>

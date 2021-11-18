@@ -130,27 +130,34 @@ export abstract class BaseProvider extends AbstractProvider {
   _network?: Network;
   _cache?: UnfinalizedBlockCache;
 
-  subscribe = async (): Promise<void> => {
+  startCache = async (): Promise<any> => {
     this._cache = new UnfinalizedBlockCache();
 
     await this.isReady();
 
-    const sub1 = await this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+    const _getBlockCache = async (header: Header): Promise<[number, string[]]> => {
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
       const txHashes = await this._getTxHashesAtBlock(blockHash);
+
+      return [blockNumber, txHashes];
+    };
+
+    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      const [blockNumber, txHashes] = await _getBlockCache(header);
 
       this._cache!.addTxsAtBlock(blockNumber, txHashes);
 
       console.log('new block: ', blockNumber, txHashes);
-    });
+    }) as unknown as void;
 
-    const sub2 = await this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
-      const blockNumber = header.number.toNumber();
-      const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
-      const txHashes = await this._getTxHashesAtBlock(blockHash);
+    this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
+      const [blockNumber, txHashes] = await _getBlockCache(header);
+
+      this._cache!.updateFinalizedHead(blockNumber);
+
       console.log('new finalized block: ', blockNumber, txHashes);
-    });
+    }) as unknown as void;
   };
 
   setApi = (api: ApiPromise): void => {
