@@ -31,7 +31,7 @@ const value = {
   to: '0x0000000000000000000000000000000000000000',
   nonce: 0,
   tip: 2,
-  data: '0x1111',
+  data: '0xcfae3217',
   value: '0',
   gasLimit: 2100000,
   storageLimit: 20000,
@@ -90,6 +90,7 @@ describe('SignTypedData', () => {
     expect(ethersHash).equal('0x' + metamaskHash.toString('hex'));
     expect(ethersSig).equal(metamaskSig);
 
+    console.log(metamaskSig);
     expect(
       getAddress(
         recoverTypedSignature({
