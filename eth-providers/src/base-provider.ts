@@ -124,8 +124,6 @@ export interface TXReceipt extends partialTX {
   status?: number;
 }
 
-export const DEFAULT_CONFIRMATIONS = 1;
-
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
 
@@ -861,31 +859,37 @@ export abstract class BaseProvider extends AbstractProvider {
 
   abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
 
-  _getTxReceiptFromCache = async (transactionHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = await this._cache?.getBlockNumber(transactionHash);
+  _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
+    const targetBlockNumber = await this._cache?.getBlockNumber(txHash);
     if (!targetBlockNumber) return null;
 
     const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
 
-    return this.getTransactionReceiptAtBlock(transactionHash, targetBlockHash.toHex());
+    return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
   // Queries
-  getTransaction = (transactionHash: string): Promise<TransactionResponse> =>
+  getTransaction = (txHash: string): Promise<TransactionResponse> =>
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
-  getTransactionByHash = async (transactionHash: string): Promise<TX> => {
-    const tx = await getTxReceiptByHash(transactionHash);
+  getTransactionByHash = async (txHash: string): Promise<TX> => {
+    const [txFromCache, txFromSubql] = await Promise.all([
+      this._getTxReceiptFromCache(txHash),
+      getTxReceiptByHash(txHash)
+    ]);
+
+    const tx = txFromCache || txFromSubql;
+    // const tx = txFromCache as any;
 
     if (!tx) {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
     const nonce = await this.getEvmTransactionCount(tx.from, tx.blockHash);
-    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, transactionHash);
+    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash);
 
     if (!extrinsic) {
-      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
     const { args } = (extrinsic as GenericExtrinsic).method.toJSON();
@@ -907,19 +911,19 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> =>
+  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
     throwNotImplemented('getTransactionReceipt (deprecated: please use getTXReceiptByHash)');
 
-  getTXReceiptByHash = async (transactionHash: string): Promise<TXReceipt> => {
+  getTXReceiptByHash = async (txHash: string): Promise<TXReceipt> => {
     const [txFromCache, txFromSubql] = await Promise.all([
-      this._getTxReceiptFromCache(transactionHash),
-      getTxReceiptByHash(transactionHash)
+      this._getTxReceiptFromCache(txHash),
+      getTxReceiptByHash(txHash)
     ]);
 
     const tx = txFromCache || txFromSubql;
 
     if (!tx) {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
     return {
