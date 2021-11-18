@@ -46,6 +46,7 @@ import {
 } from './utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
+export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
 
 // https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-provider/src.ts/index.ts#L61
 export interface _Block {
@@ -564,10 +565,31 @@ export abstract class BaseProvider extends AbstractProvider {
     return accountInfo.unwrap().contractInfo;
   };
 
-  sendRawTransaction = async (rawTx: string): Promise<string> => {
+  sendRawTransaction = async (rawTx: string, signature: Signature): Promise<string> => {
+    switch (signature) {
+      case 'Substrate':
+        return this.sendTransactionWithSubstrateSig(rawTx);
+      case 'Ethereum':
+        return this.sendTransactionWithEthereumSig(rawTx);
+      case 'AcalaEip712':
+        return this.sendTransactionWithEip712Sig(rawTx);
+      default:
+        return logger.throwArgumentError('not expected signatureType ', 'signature', signature);
+    }
+  };
+
+  sendTransactionWithSubstrateSig = async (substrateTx: string): Promise<string> => {
+    return throwNotImplemented('substrate signature is not currently supported');
+  };
+
+  sendTransactionWithEip712Sig = async (eip712Tx: string): Promise<string> => {
+    return throwNotImplemented('acalaEip712 signature is not currently supported');
+  };
+
+  sendTransactionWithEthereumSig = async (ethereumTx: string): Promise<string> => {
     await this.getNetwork();
 
-    const ethTx = parse(rawTx);
+    const ethTx = parse(ethereumTx);
 
     if (!ethTx.from) {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
