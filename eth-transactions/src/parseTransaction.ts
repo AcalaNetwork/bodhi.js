@@ -49,6 +49,8 @@ function _parseEipSignature(
   }
 }
 
+export type SignatureType = 'Ethereum' | 'AcalaEip712';
+
 export function parseEip712(payload: Uint8Array): Transaction {
   const transaction = RLP.decode(payload.slice(1));
 
@@ -95,6 +97,25 @@ export function parseTransaction(rawTransaction: BytesLike): Transaction {
 
   return logger.throwError(`unsupported transaction type: ${payload[0]}`, Logger.errors.UNSUPPORTED_OPERATION, {
     operation: 'parseTransaction',
+    transactionType: payload[0]
+  });
+}
+
+export function checkSignatureType(rawTransaction: BytesLike): SignatureType {
+  const payload = arrayify(rawTransaction);
+
+  // Ethereum Transactions
+  if (payload[0] > 0x7f || payload[0] === 1 || payload[0] === 2) {
+    return 'Ethereum';
+  }
+
+  // EIP 712
+  if (payload[0] === 96) {
+    return 'AcalaEip712';
+  }
+
+  return logger.throwError(`unsupported transaction type: ${payload[0]}`, Logger.errors.UNSUPPORTED_OPERATION, {
+    operation: 'checkSignatureType',
     transactionType: payload[0]
   });
 }

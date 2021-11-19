@@ -80,6 +80,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.2-1
       '@acala-network/contracts': ~1.2.1
+      '@acala-network/eth-transactions': workspace:*
       '@acala-network/types': ~3.0.1
       '@ethersproject/abstract-provider': ~5.4.0
       '@ethersproject/address': ~5.4.0
@@ -115,6 +116,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.2_@polkadot+types@6.4.2
+      '@acala-network/eth-transactions': link:../eth-transactions
       '@acala-network/types': 3.0.2
       '@ethersproject/abstract-provider': 5.4.1
       '@ethersproject/bignumber': 5.4.2
@@ -1338,7 +1340,7 @@ packages:
       '@ethersproject/bignumber': 5.4.2
       '@ethersproject/bytes': 5.4.0
       '@ethersproject/constants': 5.5.0
-      '@ethersproject/hash': 5.4.0
+      '@ethersproject/hash': 5.5.0
       '@ethersproject/keccak256': 5.5.0
       '@ethersproject/logger': 5.4.1
       '@ethersproject/properties': 5.4.1
@@ -1651,7 +1653,7 @@ packages:
       '@ethersproject/bignumber': 5.4.2
       '@ethersproject/bytes': 5.4.0
       '@ethersproject/constants': 5.5.0
-      '@ethersproject/hash': 5.4.0
+      '@ethersproject/hash': 5.5.0
       '@ethersproject/logger': 5.4.1
       '@ethersproject/networks': 5.4.2
       '@ethersproject/properties': 5.4.1
@@ -1789,7 +1791,7 @@ packages:
       '@ethersproject/address': 5.4.0
       '@ethersproject/bignumber': 5.4.2
       '@ethersproject/bytes': 5.4.0
-      '@ethersproject/hash': 5.4.0
+      '@ethersproject/hash': 5.5.0
       '@ethersproject/hdnode': 5.4.0
       '@ethersproject/json-wallets': 5.4.0
       '@ethersproject/keccak256': 5.5.0
@@ -1841,7 +1843,7 @@ packages:
     resolution: {integrity: sha512-FemEkf6a+EBKEPxlzeVgUaVSodU7G0Na89jqKjmWMlDB0tomoU8RlEMgUvXyqtrg8N4cwpLh8nyRnm1Nay1isA==}
     dependencies:
       '@ethersproject/bytes': 5.4.0
-      '@ethersproject/hash': 5.4.0
+      '@ethersproject/hash': 5.5.0
       '@ethersproject/logger': 5.4.1
       '@ethersproject/properties': 5.4.1
       '@ethersproject/strings': 5.4.0
