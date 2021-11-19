@@ -8,12 +8,8 @@ import { Router } from './router';
 dotenv.config();
 
 export async function start() {
-  const ENDPOINT_URL = process.env.ENDPOINT_URL;
-  if (!ENDPOINT_URL) {
-    throw new Error('ENDPOINT_URL is not defined');
-  }
-
-  const HTTP_PORT = Number(process.env.HTTP_PORT || 3330);
+  const ENDPOINT_URL = process.env.ENDPOINT_URL || 'ws://0.0.0.0::9944';
+  const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
   const WS_PORT = Number(process.env.WS_PORT || 3331);
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL);
