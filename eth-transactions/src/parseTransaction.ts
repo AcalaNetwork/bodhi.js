@@ -1,6 +1,6 @@
 import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
-import { arrayify, BytesLike, hexlify, hexZeroPad } from '@ethersproject/bytes';
+import { arrayify, BytesLike, hexlify, hexZeroPad, joinSignature } from '@ethersproject/bytes';
 import { Zero } from '@ethersproject/constants';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Logger } from '@ethersproject/logger';
@@ -8,6 +8,8 @@ import * as RLP from '@ethersproject/rlp';
 import { parse, recoverAddress, Transaction, UnsignedTransaction } from '@ethersproject/transactions';
 import { logger } from './logger';
 import { serializeEip712 } from './serializeTransaction';
+import { verifyTransaction } from './verifyTransaction';
+import { transactionHash } from './transactionHash';
 
 function handleNumber(value: string): BigNumber {
   if (value === '0x') {
@@ -23,13 +25,11 @@ function handleAddress(value: string): string | null {
   return getAddress(value);
 }
 
-function _parseEipSignature(
+function _parseEip712Signature(
   tx: Transaction,
   fields: Array<string>,
   serialize: (tx: UnsignedTransaction) => string
 ): void {
-  console.log('红红火火');
-
   try {
     const recid = handleNumber(fields[0]).toNumber();
     if (recid !== 0 && recid !== 1) {
@@ -44,8 +44,17 @@ function _parseEipSignature(
   tx.s = hexZeroPad(fields[2], 32);
 
   try {
-    const digest = keccak256(serialize(tx));
-    tx.from = recoverAddress(digest, { r: tx.r, s: tx.s, recoveryParam: tx.v });
+    tx.from = verifyTransaction(
+      {
+        chainId: tx.chainId,
+        nonce: tx.nonce,
+        gasLimit: tx.gasLimit.toNumber(),
+        to: tx.to,
+        value: tx.value.toString(),
+        data: tx.data
+      },
+      joinSignature({ r: tx.r, s: tx.s, v: tx.v })
+    );
   } catch (error) {
     console.log(error);
   }
@@ -76,9 +85,16 @@ export function parseEip712(payload: Uint8Array): Transaction {
     return tx;
   }
 
-  tx.hash = keccak256(payload);
+  tx.hash = transactionHash({
+    chainId: tx.chainId,
+    nonce: tx.nonce,
+    gasLimit: tx.gasLimit.toNumber(),
+    to: tx.to,
+    value: tx.value.toString(),
+    data: tx.data
+  });
 
-  _parseEipSignature(tx, transaction.slice(6), serializeEip712);
+  _parseEip712Signature(tx, transaction.slice(6), serializeEip712);
 
   return tx;
 }

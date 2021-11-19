@@ -4,7 +4,7 @@ import { parseTransaction } from '../parseTransaction';
 import { serializeTransaction } from '../serializeTransaction';
 
 const sig =
-  '0xe9df6df3d6387a9e9357a2861ebe596925fd6f7cc7d582ba787eb08e84fa945f7caaea2f24281a1fe3e087b40ac03626ba540085b78917f58c5aff80fb4e782a1c';
+  '0xd8c6ff1a8b4fbdd8b9c4fe640933e8f61002de0ed0ef64989cc6e9168941dc677e4f06493616c4c45a7cb9b99c1a3a4281a6d088d7ebe19d4c2f823103726af81c';
 
 const data = {
   chainId: 0,
