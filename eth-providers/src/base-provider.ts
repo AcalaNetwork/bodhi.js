@@ -44,6 +44,7 @@ import {
   logger,
   throwNotImplemented
 } from './utils';
+import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
@@ -863,25 +864,30 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
-  // Queries
-  getTransaction = (txHash: string): Promise<TransactionResponse> =>
-    throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
-
-  getTransactionByHash = async (txHash: string): Promise<TX> => {
+  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
     const [txFromCache, txFromSubql] = await Promise.all([
       this._getTxReceiptFromCache(txHash),
       getTxReceiptByHash(txHash)
     ]);
 
-    const tx = txFromCache || txFromSubql;
-    // const tx = txFromCache as any;
+    return (
+      txFromCache ||
+      txFromSubql ||
+      logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash })
+    );
+  };
 
-    if (!tx) {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
-    }
+  // Queries
+  getTransaction = (txHash: string): Promise<TransactionResponse> =>
+    throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
-    const nonce = await this.getEvmTransactionCount(tx.from, tx.blockHash);
-    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash);
+  getTransactionByHash = async (txHash: string): Promise<TX> => {
+    const tx = await this._getTXReceipt(txHash);
+
+    const [nonce, extrinsic] = await Promise.all([
+      this.getEvmTransactionCount(tx.from, tx.blockHash),
+      this._getExtrinsicsAtBlock(tx.blockHash, txHash)
+    ]);
 
     if (!extrinsic) {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
@@ -910,16 +916,7 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransactionReceipt (deprecated: please use getTXReceiptByHash)');
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt> => {
-    const [txFromCache, txFromSubql] = await Promise.all([
-      this._getTxReceiptFromCache(txHash),
-      getTxReceiptByHash(txHash)
-    ]);
-
-    const tx = txFromCache || txFromSubql;
-
-    if (!tx) {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
-    }
+    const tx = await this._getTXReceipt(txHash);
 
     return {
       to: tx.to || null,
