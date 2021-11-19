@@ -15,7 +15,7 @@ export class UnfinalizedBlockCache {
     this.blockTxHashes[blockNumber] = txHashes;
   }
 
-  updateFinalizedHead(blockNumber: number): void {
+  removeTxsAtBlock(blockNumber: number): void {
     this.blockTxHashes[blockNumber]?.forEach((h) => delete this.allTxHashes[h]);
     delete this.blockTxHashes[blockNumber];
   }

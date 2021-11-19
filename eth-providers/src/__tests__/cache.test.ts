@@ -38,7 +38,7 @@ describe('UnfinalizedBlockCache', () => {
 
       for (let blockNumber = 0; blockNumber < TOTAL_BLOCKS; blockNumber++) {
         const curBlock = chain[blockNumber];
-        cache.updateFinalizedHead(blockNumber);
+        cache.removeTxsAtBlock(blockNumber);
 
         // these tx from finalized block should be removed
         for (const curTx of curBlock) {

@@ -135,28 +135,16 @@ export abstract class BaseProvider extends AbstractProvider {
 
     await this.isReady();
 
-    const _getBlockCache = async (header: Header): Promise<[number, string[]]> => {
+    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
       const txHashes = await this._getTxHashesAtBlock(blockHash);
 
-      return [blockNumber, txHashes];
-    };
-
-    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
-      const [blockNumber, txHashes] = await _getBlockCache(header);
-
       this._cache!.addTxsAtBlock(blockNumber, txHashes);
-
-      console.log('new block: ', blockNumber, txHashes);
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
-      const [blockNumber, txHashes] = await _getBlockCache(header);
-
-      this._cache!.updateFinalizedHead(blockNumber);
-
-      console.log('new finalized block: ', blockNumber, txHashes);
+      this._cache!.removeTxsAtBlock(header.number.toNumber());
     }) as unknown as void;
   };
 
