@@ -20,7 +20,7 @@ import { accessListify, parse, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import type { GenericExtrinsic, Option } from '@polkadot/types';
-import type { AccountId } from '@polkadot/types/interfaces';
+import type { AccountId, Header } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish } from 'ethers';
 import {
@@ -44,6 +44,8 @@ import {
   logger,
   throwNotImplemented
 } from './utils';
+import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
+import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -123,12 +125,29 @@ export interface TXReceipt extends partialTX {
   status?: number;
 }
 
-export const DEFAULT_CONFIRMATIONS = 1;
-
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
 
   _network?: Network;
+  _cache?: UnfinalizedBlockCache;
+
+  startCache = async (): Promise<any> => {
+    this._cache = new UnfinalizedBlockCache();
+
+    await this.isReady();
+
+    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      const blockNumber = header.number.toNumber();
+      const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
+      const txHashes = await this._getTxHashesAtBlock(blockHash);
+
+      this._cache!.addTxsAtBlock(blockNumber, txHashes);
+    }) as unknown as void;
+
+    this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
+      this._cache!.removeTxsAtBlock(header.number.toNumber());
+    }) as unknown as void;
+  };
 
   setApi = (api: ApiPromise): void => {
     defineReadOnly(this, '_api', api);
@@ -747,11 +766,22 @@ export abstract class BaseProvider extends AbstractProvider {
     return await resolveProperties(tx);
   };
 
-  _getExtrinsicByHashAtBlock = async (txHash: string, blockHash: string): Promise<GenericExtrinsic | undefined> => {
+  _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
+    const extrinsics = (await this._getExtrinsicsAtBlock(blockHash)) as GenericExtrinsic[];
+    return extrinsics.map((e) => e.hash.toHex());
+  };
+
+  _getExtrinsicsAtBlock = async (
+    blockHash: string,
+    txHash?: string
+  ): Promise<GenericExtrinsic | GenericExtrinsic[] | undefined> => {
     const block = await this.api.rpc.chain.getBlock(blockHash.toLowerCase());
+    const { extrinsics } = block.block;
+
+    if (!txHash) return extrinsics;
 
     const _txHash = txHash.toLowerCase();
-    return block.block.extrinsics.find((e) => e.hash.toHex() === _txHash);
+    return extrinsics.find((e) => e.hash.toHex() === _txHash);
   };
 
   // @TODO Testing
@@ -825,29 +855,45 @@ export abstract class BaseProvider extends AbstractProvider {
 
   abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
 
-  /**
-   * TODO
-   */
+  _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
+    const targetBlockNumber = await this._cache?.getBlockNumber(txHash);
+    if (!targetBlockNumber) return null;
+
+    const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
+
+    return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
+  };
+
+  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
+    const [txFromCache, txFromSubql] = await Promise.all([
+      this._getTxReceiptFromCache(txHash),
+      getTxReceiptByHash(txHash)
+    ]);
+
+    return (
+      txFromCache ||
+      txFromSubql ||
+      logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash })
+    );
+  };
 
   // Queries
-  getTransaction = (transactionHash: string): Promise<TransactionResponse> =>
+  getTransaction = (txHash: string): Promise<TransactionResponse> =>
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
-  getTransactionByHash = async (transactionHash: string): Promise<TX> => {
-    const tx = await getTxReceiptByHash(transactionHash);
+  getTransactionByHash = async (txHash: string): Promise<TX> => {
+    const tx = await this._getTXReceipt(txHash);
 
-    if (!tx) {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
-    }
-
-    const nonce = await this.getEvmTransactionCount(tx.from, tx.blockHash);
-    const extrinsic = await this._getExtrinsicByHashAtBlock(transactionHash, tx.blockHash);
+    const [nonce, extrinsic] = await Promise.all([
+      this.getEvmTransactionCount(tx.from, tx.blockHash),
+      this._getExtrinsicsAtBlock(tx.blockHash, txHash)
+    ]);
 
     if (!extrinsic) {
-      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
+      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const { args } = extrinsic.method.toJSON();
+    const { args } = (extrinsic as GenericExtrinsic).method.toJSON();
     const input = (args as any).input ?? '';
     const value = (args as any).value ?? 0;
 
@@ -866,15 +912,11 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getTransactionReceipt = async (transactionHash: string): Promise<TransactionReceipt> =>
+  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
     throwNotImplemented('getTransactionReceipt (deprecated: please use getTXReceiptByHash)');
 
-  getTXReceiptByHash = async (transactionHash: string): Promise<TXReceipt> => {
-    const tx = await getTxReceiptByHash(transactionHash);
-
-    if (!tx) {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { transactionHash });
-    }
+  getTXReceiptByHash = async (txHash: string): Promise<TXReceipt> => {
+    const tx = await this._getTXReceipt(txHash);
 
     return {
       to: tx.to || null,
@@ -885,7 +927,7 @@ export abstract class BaseProvider extends AbstractProvider {
       logsBloom: tx.logsBloom,
       blockHash: tx.blockHash,
       transactionHash: tx.transactionHash,
-      logs: tx.logs.nodes as Log[],
+      logs: Array.isArray(tx.logs) ? tx.logs : (tx.logs.nodes as Log[]),
       blockNumber: tx.blockNumber,
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
