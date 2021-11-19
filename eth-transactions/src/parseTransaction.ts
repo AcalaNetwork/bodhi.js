@@ -28,6 +28,8 @@ function _parseEipSignature(
   fields: Array<string>,
   serialize: (tx: UnsignedTransaction) => string
 ): void {
+  console.log('红红火火');
+
   try {
     const recid = handleNumber(fields[0]).toNumber();
     if (recid !== 0 && recid !== 1) {
@@ -54,30 +56,29 @@ export type SignatureType = 'Ethereum' | 'AcalaEip712';
 export function parseEip712(payload: Uint8Array): Transaction {
   const transaction = RLP.decode(payload.slice(1));
 
-  if (transaction.length !== 8 && transaction.length !== 11) {
-    logger.throwArgumentError('invalid component count for transaction type: 1', 'payload', hexlify(payload));
+  if (transaction.length !== 6 && transaction.length !== 9) {
+    logger.throwArgumentError('invalid component count for transaction type: 96', 'payload', hexlify(payload));
   }
 
   const tx: Transaction = {
-    type: 1,
+    type: 96,
     chainId: handleNumber(transaction[0]).toNumber(),
     nonce: handleNumber(transaction[1]).toNumber(),
-    gasPrice: handleNumber(transaction[2]),
-    gasLimit: handleNumber(transaction[3]),
+    gasLimit: handleNumber(transaction[2]),
     // @ts-ignore
-    to: handleAddress(transaction[4]),
-    value: handleNumber(transaction[5]),
-    data: transaction[6]
+    to: handleAddress(transaction[3]),
+    value: handleNumber(transaction[4]),
+    data: transaction[5]
   };
 
   // Unsigned EIP-712 Transaction
-  if (transaction.length === 8) {
+  if (transaction.length === 6) {
     return tx;
   }
 
   tx.hash = keccak256(payload);
 
-  _parseEipSignature(tx, transaction.slice(8), serializeEip712);
+  _parseEipSignature(tx, transaction.slice(6), serializeEip712);
 
   return tx;
 }
