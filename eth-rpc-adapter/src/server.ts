@@ -13,8 +13,8 @@ export async function start() {
     throw new Error('ENDPOINT_URL is not defined');
   }
 
-  const HTTP_PORT = Number(process.env.HTTP_PORT || 3330);
-  const WS_PORT = Number(process.env.WS_PORT || 3331);
+  const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
+  const WS_PORT = Number(process.env.WS_PORT || 9944);
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL);
 
