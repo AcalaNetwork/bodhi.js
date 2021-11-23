@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
 
-const endpoint = 'wss://mandala6.laminar.codes/'; // FIXME: wait for a usable testnet
+const endpoint = 'ws://127.0.0.1:9944';
 
 const provider = EvmRpcProvider.from(endpoint);
 
@@ -16,7 +16,7 @@ describe('rpc test', () => {
 
   it('chainId', async () => {
     const result = await provider.chainId();
-    expect(result).to.be.true;
+    expect(result).to.equal(595);
   });
 
   it('getTransactionCount', async () => {
@@ -44,7 +44,7 @@ describe('rpc test', () => {
     expect(result).to.not.be.undefined;
   });
 
-  it.only('getBalance', async () => {
+  it('getBalance', async () => {
     const result = await provider.getBalance('0x33f9440ff970496a09e391f3773a66f1e98eb13c');
 
     expect(result.toString()).to.equal('0');

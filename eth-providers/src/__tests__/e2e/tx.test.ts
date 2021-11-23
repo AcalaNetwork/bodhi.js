@@ -20,7 +20,7 @@ const account1Wallet = Wallet.fromMnemonic(account1.mnemonic).connect(provider a
 
 const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, account1Wallet);
 
-describe('rpc test', () => {
+describe('transaction test', () => {
   let Alice: KeyringPair;
   let oneAca: bigint;
 
@@ -39,6 +39,7 @@ describe('rpc test', () => {
     expect(computeDefaultSubstrateAddress(account1.evmAddress)).to.equal(account1.defaultSubstrateAddress);
   });
 
+  // FIXME: this one fails
   it('recieve aca', async () => {
     const queryBalance = () => acaContract.balanceOf(account1.evmAddress);
 

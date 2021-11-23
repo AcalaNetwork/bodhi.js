@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
 
-const endpoint = 'wss://mandala6.laminar.codes/'; // FIXME: wait for a usable testnet
+const endpoint = 'ws://127.0.0.1:9944';
 
 describe('EvmRpcProvider', () => {
   it('connect chain', async () => {
