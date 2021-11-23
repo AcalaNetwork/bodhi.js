@@ -591,12 +591,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const signatureType = checkSignatureType(rawTx);
     const ethTx = parseTransaction(rawTx);
 
-    if (ethTx.type !== null || ethTx.type !== 0) {
-      const sigType = ethTx.type === 1 ? 'eip2930' : ethTx.type === 2 ? 'eip1559' : 'unknown';
-
-      return throwNotImplemented(`only EIP-155 transactions are supported. but get ${sigType}`);
-    }
-
     if (!ethTx.from) {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
@@ -865,7 +859,7 @@ export abstract class BaseProvider extends AbstractProvider {
   getTransactionByHash = async (txHash: string): Promise<TX> => {
     const tx = await this._getTXReceipt(txHash);
 
-    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash)
+    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash);
 
     if (!extrinsic) {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
