@@ -154,8 +154,8 @@ describe('Schedule', () => {
     expect((await provider.getBalance(recurringPayment.address)).toString()).to.equal('0');
     expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
     if (!process.argv.includes('--with-ethereum-compatibility')) {
-      expect((await provider.getBalance(transferTo)).toString()).to.equal('49999970797782360000000');
-      expect((await erc20.balanceOf(transferTo)).toString()).to.equal('49999970797782360');
+      expect((await provider.getBalance(transferTo)).toString()).to.equal('49999970797767888000000');
+      expect((await erc20.balanceOf(transferTo)).toString()).to.equal('49999970797767888');
     } else {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(dollar.mul(5000000000).toString());
       expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(5000).toString());

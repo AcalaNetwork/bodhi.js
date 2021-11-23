@@ -62,10 +62,10 @@ describe('Prices', () => {
     expect(await prices.getPrice(ADDRESS.KUSD)).to.equal(0);
   });
 
-  it('ignores invalid address', async () => {
+  it('ignores invalid address as CurrencyId::erc20', async () => {
     // not system contract
-    await expect(prices.getPrice('0x1000000000000000000000000000000000000000')).to.be.reverted;
-    // not MultiCurrency token
+    expect(await prices.getPrice('0x1000000000000000000000000000000000000000')).to.equal(0);
+    // Zero address
     await expect(prices.getPrice('0x0000000000000000000000000000000000000000')).to.be.reverted;
   });
 });
