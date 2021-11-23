@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
@@ -14,6 +14,7 @@
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@acala-network/eth-transactions": "workspace:*",
     "@polkadot/api": "~6.4.2",
     "@polkadot/api-derive": "~6.4.2",
     "@polkadot/types": "~6.4.2",
