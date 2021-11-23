@@ -79,7 +79,7 @@ importers:
   ../../eth-providers:
     specifiers:
       '@acala-network/api': ~3.0.2-1
-      '@acala-network/contracts': ~1.2.1
+      '@acala-network/contracts': ~3.0.0
       '@acala-network/eth-transactions': workspace:*
       '@acala-network/types': ~3.0.1
       '@ethersproject/abstract-provider': ~5.4.0
@@ -136,7 +136,7 @@ importers:
       graphql: 16.0.1
       graphql-request: 3.6.1_graphql@16.0.1
     devDependencies:
-      '@acala-network/contracts': 1.2.1
+      '@acala-network/contracts': 3.0.0
       '@ethersproject/address': 5.4.0
       '@ethersproject/contracts': 5.5.0
       '@ethersproject/wallet': 5.5.0
@@ -595,6 +595,10 @@ packages:
 
   /@acala-network/contracts/1.2.1:
     resolution: {integrity: sha512-i40CiTnj6vWvZUgMjeENjhNu9+3GuTB9ZDXDDZ7aokE5es6Q3/wG9zVM8aaZeLH9iNiU9xPf8j6fH7LaorgZzg==}
+    dev: false
+
+  /@acala-network/contracts/3.0.0:
+    resolution: {integrity: sha512-qDgC5s/own+kSBgJ/BXmZ/az4QBh7MqOvr2XwcxYNVwaQ48BW5CA3+VWbZXdi2PvthPnvXhFkpjzyB7TUhtB8w==}
     dev: true
 
   /@acala-network/contracts/2.0.0:

@@ -49,7 +49,7 @@
     "mocha": "~9.1.3",
     "ts-node": "~10.3.0",
     "@polkadot/keyring": "~7.5.1",
-    "@acala-network/contracts": "~1.2.1",
+    "@acala-network/contracts": "~3.0.0",
     "@ethersproject/contracts": "~5.5.0",
     "@ethersproject/wallet": "~5.5.0"
   }

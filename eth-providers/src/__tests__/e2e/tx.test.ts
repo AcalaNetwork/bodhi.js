@@ -20,7 +20,7 @@ const account1Wallet = Wallet.fromMnemonic(account1.mnemonic).connect(provider a
 
 const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, account1Wallet);
 
-describe('rpc test', () => {
+describe('transaction test', () => {
   let Alice: KeyringPair;
   let oneAca: bigint;
 
