@@ -884,15 +884,13 @@ export abstract class BaseProvider extends AbstractProvider {
   getTransactionByHash = async (txHash: string): Promise<TX> => {
     const tx = await this._getTXReceipt(txHash);
 
-    const [nonce, extrinsic] = await Promise.all([
-      this.getEvmTransactionCount(tx.from, tx.blockHash),
-      this._getExtrinsicsAtBlock(tx.blockHash, txHash)
-    ]);
+    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash)
 
     if (!extrinsic) {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
+    const nonce = ((extrinsic as GenericExtrinsic).toHuman()! as any).nonce;
     const { args } = (extrinsic as GenericExtrinsic).method.toJSON();
     const input = (args as any).input ?? '';
     const value = (args as any).value ?? 0;
