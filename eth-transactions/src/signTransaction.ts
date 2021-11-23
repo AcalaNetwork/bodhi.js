@@ -1,27 +1,10 @@
-import { createTransactionPayload } from './createTransactionPayload';
+import { joinSignature } from '@ethersproject/bytes';
 import { _TypedDataEncoder } from '@ethersproject/hash';
-import { verifyTypedData, Wallet } from '@ethersproject/wallet';
-import {
-  arrayify,
-  Bytes,
-  BytesLike,
-  concat,
-  hexDataSlice,
-  isHexString,
-  joinSignature,
-  SignatureLike
-} from '@ethersproject/bytes';
+import { Wallet } from '@ethersproject/wallet';
+import { createTransactionPayload } from './createTransactionPayload';
+import { Eip712TransactionPayload } from './types';
 
-type Transaction = {
-  chainId: number;
-  nonce: number;
-  gasLimit: number;
-  to?: string;
-  value: string;
-  data: string;
-};
-
-export const signTransaction = (privateKey: string, tx: Transaction): string => {
+export const signTransaction = (privateKey: string, tx: Eip712TransactionPayload): string => {
   const payload = createTransactionPayload(tx);
 
   const wallet = new Wallet(privateKey);

@@ -1,13 +1,10 @@
-type Transaction = {
-  chainId: number;
-  nonce: number;
-  gasLimit: number;
-  to?: string;
-  value: string;
-  data: string;
-};
+import { BigNumber } from '@ethersproject/bignumber';
+import { hexlify } from '@ethersproject/bytes';
+import { Eip712TransactionPayload } from './types';
 
-export const createTransactionPayload = (tx: Transaction) => {
+export const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+
+export const createTransactionPayload = (tx: Eip712TransactionPayload) => {
   return {
     types: {
       EIP712Domain: [
@@ -45,18 +42,18 @@ export const createTransactionPayload = (tx: Transaction) => {
       name: 'Acala EVM',
       version: '1',
       chainId: tx.chainId,
-      salt: '0x0000000000000000000000000000000000000000000000000000000000000000'
+      salt: hexlify(tx.salt || '0x')
     },
     message: {
-      action: tx.to ? 'Call' : 'Create',
+      action: tx.action || (tx.to ? 'Call' : 'Create'),
       to: tx.to || '0x0000000000000000000000000000000000000000',
-      nonce: tx.nonce,
-      tip: 2,
-      data: tx.data,
-      value: '0',
-      gasLimit: tx.gasLimit,
-      storageLimit: 20000,
-      validUntil: 0
+      nonce: BigNumber.from(tx.nonce).toString(),
+      tip: BigNumber.from(tx.tip || 0).toString(),
+      data: hexlify(tx.data || '0x'),
+      value: BigNumber.from(tx.value || 0).toString(),
+      gasLimit: BigNumber.from(tx.gasLimit || 0).toString(),
+      storageLimit: BigNumber.from(tx.storageLimit || 0).toString(),
+      validUntil: BigNumber.from(tx.validUntil || MAX_UINT256).toString()
     }
   };
 };
