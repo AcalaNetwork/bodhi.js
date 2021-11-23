@@ -4,12 +4,12 @@ import { arrayify, BytesLike, hexlify, hexZeroPad, joinSignature } from '@ethers
 import { Zero } from '@ethersproject/constants';
 import { Logger } from '@ethersproject/logger';
 import * as RLP from '@ethersproject/rlp';
-import { parse, Transaction, UnsignedTransaction } from '@ethersproject/transactions';
+import { parse } from '@ethersproject/transactions';
 import { logger } from './logger';
 import { serializeEip712 } from './serializeTransaction';
 import { transactionHash } from './transactionHash';
-import { verifyTransaction } from './verifyTransaction';
 import { Eip712Transaction, UnsignedEip712Transaction } from './types';
+import { verifyTransaction } from './verifyTransaction';
 
 function handleNumber(value: string): BigNumber {
   if (value === '0x') {
@@ -26,7 +26,7 @@ function handleAddress(value: string): string | null {
 }
 
 function _parseEip712Signature(
-  tx: Transaction,
+  tx: Eip712Transaction,
   fields: Array<string>,
   serialize: (tx: UnsignedEip712Transaction) => string
 ): void {
@@ -43,21 +43,24 @@ function _parseEip712Signature(
   tx.r = hexZeroPad(fields[1], 32);
   tx.s = hexZeroPad(fields[2], 32);
 
-  try {
-    tx.from = verifyTransaction(
-      {
-        chainId: tx.chainId,
-        nonce: tx.nonce,
-        gasLimit: tx.gasLimit.toNumber(),
-        to: tx.to,
-        value: tx.value.toString(),
-        data: tx.data
-      },
-      joinSignature({ r: tx.r, s: tx.s, v: tx.v })
-    );
-  } catch (error) {
-    console.log(error);
-  }
+  // try {
+  tx.from = verifyTransaction(
+    {
+      chainId: tx.chainId,
+      salt: tx.salt,
+      nonce: tx.nonce,
+      gasLimit: tx.gasLimit,
+      storageLimit: tx.storageLimit,
+      to: tx.to,
+      value: tx.value,
+      data: tx.data,
+      validUntil: tx.validUntil
+    },
+    joinSignature({ r: tx.r, s: tx.s, v: tx.v })
+  );
+  // } catch (error) {
+  //   console.log(error);
+  // }
 }
 
 export type SignatureType = 'Ethereum' | 'AcalaEip712';
@@ -95,18 +98,18 @@ export function parseEip712(payload: Uint8Array): Eip712Transaction {
     storageLimit: tx.storageLimit,
     validUntil: tx.validUntil,
     nonce: tx.nonce,
-    gasLimit: tx.gasLimit.toNumber(),
+    gasLimit: tx.gasLimit,
     to: tx.to,
-    value: tx.value.toString(),
+    value: tx.value,
     data: tx.data
   });
 
-  _parseEip712Signature(tx, transaction.slice(6), serializeEip712);
+  _parseEip712Signature(tx, transaction.slice(9), serializeEip712);
 
   return tx;
 }
 
-export function parseTransaction(rawTransaction: BytesLike): Transaction {
+export function parseTransaction(rawTransaction: BytesLike): Eip712Transaction {
   const payload = arrayify(rawTransaction);
 
   // Ethereum Transactions

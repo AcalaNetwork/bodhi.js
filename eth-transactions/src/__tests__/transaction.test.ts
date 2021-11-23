@@ -2,13 +2,16 @@ import { joinSignature } from '@ethersproject/bytes';
 import { expect } from 'chai';
 import { parseTransaction } from '../parseTransaction';
 import { serializeTransaction } from '../serializeTransaction';
+import { transactionHash } from '../transactionHash';
+import { signTransaction } from '../signTransaction';
 
-const sig =
-  '0xd8c6ff1a8b4fbdd8b9c4fe640933e8f61002de0ed0ef64989cc6e9168941dc677e4f06493616c4c45a7cb9b99c1a3a4281a6d088d7ebe19d4c2f823103726af81c';
+const privateKey = '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269acd85c';
+const address = '0xb00cB924ae22b2BBb15E10c17258D6a2af980421';
 
 const data = {
   chainId: 0,
   nonce: 0,
+  salt: '0x0000000000000000000000000000000000000000000000000000000000000000',
   gasLimit: 2100000,
   to: undefined,
   value: 0,
@@ -19,7 +22,10 @@ const data = {
 //[chainId, nonce, gasLimit, to, value, data, eip712sig]
 describe('transaction', () => {
   it('serializeTransaction signed', async () => {
-    const tx = serializeTransaction(data, sig);
+    const ethersHash = transactionHash(data);
+    const ethersSig = signTransaction(privateKey, data);
+
+    const tx = serializeTransaction(data, ethersSig);
 
     const parsedTx = parseTransaction(tx);
 
@@ -29,15 +35,17 @@ describe('transaction', () => {
       gasLimit: parsedTx.gasLimit.toNumber(),
       to: parsedTx.chainId || undefined,
       value: parsedTx.value.toNumber(),
+      salt: (parsedTx as any).salt,
       data: parsedTx.data,
       type: parsedTx.type
     });
 
-    console.log(parsedTx.from);
+    expect(parsedTx.hash).equal(ethersHash);
 
     const parsedSig = joinSignature({ r: parsedTx.r!, s: parsedTx.s, v: parsedTx.v });
 
-    expect(parsedSig).equal(sig);
+    expect(parsedSig).equal(ethersSig);
+    expect(parsedTx.from).equal(address);
   });
 
   it('serializeTransaction unsigned', async () => {
@@ -51,6 +59,7 @@ describe('transaction', () => {
       gasLimit: parsedTx.gasLimit.toNumber(),
       to: parsedTx.chainId || undefined,
       value: parsedTx.value.toNumber(),
+      salt: (parsedTx as any).salt,
       data: parsedTx.data,
       type: parsedTx.type
     });

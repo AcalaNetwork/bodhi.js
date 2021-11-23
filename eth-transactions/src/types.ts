@@ -4,7 +4,7 @@ import { UnsignedTransaction, Transaction } from '@ethersproject/transactions';
 
 export type Eip712TransactionPayload = {
   chainId: BigNumberish;
-  salt: BytesLike;
+  salt?: BytesLike;
 
   action?: 'Create' | 'Call';
   to?: string;
@@ -18,13 +18,13 @@ export type Eip712TransactionPayload = {
 };
 
 export interface Eip712Transaction extends Transaction {
-  salt: BytesLike;
+  salt?: BytesLike;
   storageLimit?: BigNumberish;
   validUntil?: BigNumberish;
 }
 
 export interface UnsignedEip712Transaction extends UnsignedTransaction {
-  salt: BytesLike;
+  salt?: BytesLike;
   storageLimit?: BigNumberish;
   validUntil?: BigNumberish;
 }

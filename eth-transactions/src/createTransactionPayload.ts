@@ -1,5 +1,8 @@
+import { BigNumber } from '@ethersproject/bignumber';
 import { hexlify } from '@ethersproject/bytes';
 import { Eip712TransactionPayload } from './types';
+
+export const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
 
 export const createTransactionPayload = (tx: Eip712TransactionPayload) => {
   return {
@@ -39,18 +42,18 @@ export const createTransactionPayload = (tx: Eip712TransactionPayload) => {
       name: 'Acala EVM',
       version: '1',
       chainId: tx.chainId,
-      salt: hexlify(tx.salt)
+      salt: hexlify(tx.salt || '0x')
     },
     message: {
       action: tx.action || (tx.to ? 'Call' : 'Create'),
       to: tx.to || '0x0000000000000000000000000000000000000000',
-      nonce: hexlify(tx.nonce),
-      tip: hexlify(tx.tip || '0'),
-      data: hexlify(tx.data || '0'),
-      value: hexlify(tx.value || '0'),
-      gasLimit: hexlify(tx.gasLimit || '0'),
-      storageLimit: hexlify(tx.storageLimit || '0'),
-      validUntil: hexlify(tx.validUntil || '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+      nonce: BigNumber.from(tx.nonce).toString(),
+      tip: BigNumber.from(tx.tip || 0).toString(),
+      data: hexlify(tx.data || '0x'),
+      value: BigNumber.from(tx.value || 0).toString(),
+      gasLimit: BigNumber.from(tx.gasLimit || 0).toString(),
+      storageLimit: BigNumber.from(tx.storageLimit || 0).toString(),
+      validUntil: BigNumber.from(tx.validUntil || MAX_UINT256).toString()
     }
   };
 };

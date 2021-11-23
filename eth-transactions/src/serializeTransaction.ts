@@ -4,6 +4,7 @@ import { hexConcat, SignatureLike, splitSignature, stripZeros } from '@etherspro
 import { Logger } from '@ethersproject/logger';
 import * as RLP from '@ethersproject/rlp';
 import { serialize, UnsignedTransaction } from '@ethersproject/transactions';
+import { MAX_UINT256 } from './createTransactionPayload';
 import { logger } from './logger';
 import { UnsignedEip712Transaction } from './types';
 
@@ -26,7 +27,7 @@ export function serializeEip712(transaction: UnsignedEip712Transaction, signatur
     transaction.to != null ? getAddress(transaction.to) : '0x',
     formatNumber(transaction.value || 0, 'value'),
     transaction.data || '0x',
-    formatNumber(transaction.validUntil || 0, 'validUntil')
+    formatNumber(transaction.validUntil || MAX_UINT256, 'validUntil')
   ];
 
   if (signature) {
