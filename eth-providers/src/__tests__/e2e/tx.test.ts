@@ -39,7 +39,6 @@ describe('transaction test', () => {
     expect(computeDefaultSubstrateAddress(account1.evmAddress)).to.equal(account1.defaultSubstrateAddress);
   });
 
-  // FIXME: this one fails
   it('recieve aca', async () => {
     const queryBalance = () => acaContract.balanceOf(account1.evmAddress);
 
