@@ -19,15 +19,15 @@ module.exports = {
 };
 
 const polkadotDeps = {
-  "@polkadot/api": "~6.4.2",
-  "@polkadot/api-derive": "~6.4.2",
-  "@polkadot/types": "~6.4.2",
-  "@polkadot/rpc-core": "~6.4.2",
-  "@polkadot/types-known": "~6.4.2",
-  "@polkadot/rpc-provider": "~6.4.2",
-  "@polkadot/keyring": "^7.5.1",
-  "@polkadot/util": "^7.5.1",
-  "@polkadot/util-crypto": "^7.5.1",
+  "@polkadot/api": "~6.9.2",
+  "@polkadot/api-derive": "~6.9.2",
+  "@polkadot/types": "~6.9.2",
+  "@polkadot/rpc-core": "~6.9.2",
+  "@polkadot/types-known": "~6.9.2",
+  "@polkadot/rpc-provider": "~6.9.2",
+  "@polkadot/keyring": "~7.9.2",
+  "@polkadot/util": "~7.9.2",
+  "@polkadot/util-crypto": "~7.9.2",
 }
 
 const fixedDeps = {
