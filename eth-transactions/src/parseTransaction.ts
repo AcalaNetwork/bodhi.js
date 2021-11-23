@@ -2,14 +2,14 @@ import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import { arrayify, BytesLike, hexlify, hexZeroPad, joinSignature } from '@ethersproject/bytes';
 import { Zero } from '@ethersproject/constants';
-import { keccak256 } from '@ethersproject/keccak256';
 import { Logger } from '@ethersproject/logger';
 import * as RLP from '@ethersproject/rlp';
-import { parse, recoverAddress, Transaction, UnsignedTransaction } from '@ethersproject/transactions';
+import { parse, Transaction, UnsignedTransaction } from '@ethersproject/transactions';
 import { logger } from './logger';
 import { serializeEip712 } from './serializeTransaction';
-import { verifyTransaction } from './verifyTransaction';
 import { transactionHash } from './transactionHash';
+import { verifyTransaction } from './verifyTransaction';
+import { Eip712Transaction, UnsignedEip712Transaction } from './types';
 
 function handleNumber(value: string): BigNumber {
   if (value === '0x') {
@@ -28,7 +28,7 @@ function handleAddress(value: string): string | null {
 function _parseEip712Signature(
   tx: Transaction,
   fields: Array<string>,
-  serialize: (tx: UnsignedTransaction) => string
+  serialize: (tx: UnsignedEip712Transaction) => string
 ): void {
   try {
     const recid = handleNumber(fields[0]).toNumber();
@@ -62,31 +62,38 @@ function _parseEip712Signature(
 
 export type SignatureType = 'Ethereum' | 'AcalaEip712';
 
-export function parseEip712(payload: Uint8Array): Transaction {
+// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, eip712sig])
+export function parseEip712(payload: Uint8Array): Eip712Transaction {
   const transaction = RLP.decode(payload.slice(1));
 
-  if (transaction.length !== 6 && transaction.length !== 9) {
+  if (transaction.length !== 9 && transaction.length !== 12) {
     logger.throwArgumentError('invalid component count for transaction type: 96', 'payload', hexlify(payload));
   }
 
-  const tx: Transaction = {
+  const tx: Eip712Transaction = {
     type: 96,
     chainId: handleNumber(transaction[0]).toNumber(),
-    nonce: handleNumber(transaction[1]).toNumber(),
-    gasLimit: handleNumber(transaction[2]),
+    salt: transaction[1],
+    nonce: handleNumber(transaction[2]).toNumber(),
+    gasLimit: handleNumber(transaction[3]),
+    storageLimit: handleNumber(transaction[4]),
     // @ts-ignore
-    to: handleAddress(transaction[3]),
-    value: handleNumber(transaction[4]),
-    data: transaction[5]
+    to: handleAddress(transaction[5]),
+    value: handleNumber(transaction[6]),
+    data: transaction[7],
+    validUntil: handleNumber(transaction[8])
   };
 
   // Unsigned EIP-712 Transaction
-  if (transaction.length === 6) {
+  if (transaction.length === 9) {
     return tx;
   }
 
   tx.hash = transactionHash({
     chainId: tx.chainId,
+    salt: tx.salt,
+    storageLimit: tx.storageLimit,
+    validUntil: tx.validUntil,
     nonce: tx.nonce,
     gasLimit: tx.gasLimit.toNumber(),
     to: tx.to,

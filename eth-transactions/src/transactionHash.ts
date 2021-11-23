@@ -1,16 +1,8 @@
 import { createTransactionPayload } from './createTransactionPayload';
 import { _TypedDataEncoder } from '@ethersproject/hash';
+import { Eip712TransactionPayload } from './types';
 
-type Transaction = {
-  chainId: number;
-  nonce: number;
-  gasLimit: number;
-  to?: string;
-  value: string;
-  data: string;
-};
-
-export const transactionHash = (tx: Transaction): string => {
+export const transactionHash = (tx: Eip712TransactionPayload): string => {
   const payload = createTransactionPayload(tx);
 
   return _TypedDataEncoder.hash(

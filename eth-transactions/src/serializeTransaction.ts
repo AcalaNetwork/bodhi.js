@@ -5,6 +5,7 @@ import { Logger } from '@ethersproject/logger';
 import * as RLP from '@ethersproject/rlp';
 import { serialize, UnsignedTransaction } from '@ethersproject/transactions';
 import { logger } from './logger';
+import { UnsignedEip712Transaction } from './types';
 
 function formatNumber(value: BigNumberish, name: string): Uint8Array {
   const result = stripZeros(BigNumber.from(value).toHexString());
@@ -14,15 +15,18 @@ function formatNumber(value: BigNumberish, name: string): Uint8Array {
   return result;
 }
 
-// rlp([chainId, nonce, gasLimit, to, value, data, eip712sig])
-export function serializeEip712(transaction: UnsignedTransaction, signature?: SignatureLike) {
+// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, eip712sig])
+export function serializeEip712(transaction: UnsignedEip712Transaction, signature?: SignatureLike) {
   const fields: any = [
     formatNumber(transaction.chainId || 0, 'chainId'),
+    transaction.salt || '0x',
     formatNumber(transaction.nonce || 0, 'nonce'),
     formatNumber(transaction.gasLimit || 0, 'gasLimit'),
+    formatNumber(transaction.storageLimit || 0, 'storageLimit'),
     transaction.to != null ? getAddress(transaction.to) : '0x',
     formatNumber(transaction.value || 0, 'value'),
-    transaction.data || '0x'
+    transaction.data || '0x',
+    formatNumber(transaction.validUntil || 0, 'validUntil')
   ];
 
   if (signature) {
@@ -43,7 +47,7 @@ export function serializeTransaction(transaction: UnsignedTransaction, signature
 
   // eip712
   if (transaction.type === 96) {
-    return serializeEip712(transaction, signature);
+    return serializeEip712(transaction as UnsignedEip712Transaction, signature);
   }
 
   return logger.throwError(`unsupported transaction type: ${transaction.type}`, Logger.errors.UNSUPPORTED_OPERATION, {
