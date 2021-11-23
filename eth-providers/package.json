@@ -14,6 +14,7 @@
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@acala-network/eth-transactions": "workspace:*",
     "@polkadot/api": "~6.4.2",
     "@polkadot/api-derive": "~6.4.2",
     "@polkadot/types": "~6.4.2",
