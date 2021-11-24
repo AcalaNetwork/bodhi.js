@@ -209,6 +209,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   chainId = async (): Promise<number> => {
+    await this.api.isReadyOrError;
     return (this.api.consts.evm.chainId as any).toNumber();
   };
 
@@ -585,7 +586,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return accountInfo.unwrap().contractInfo;
   };
 
-  sendRawTransaction = async (rawTx: string, signature: Signature): Promise<string> => {
+  sendRawTransaction = async (rawTx: string): Promise<string> => {
     await this.getNetwork();
 
     const signatureType = checkSignatureType(rawTx);
@@ -595,8 +596,9 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
 
-    const storageLimit = ethTx.gasPrice?.shr(32).toString() ?? 0;
-    const validUntil = ethTx.gasPrice?.and(0xffffffff).toString() ?? 0;
+    const storageLimit = ethTx.type === 96 ? ethTx.storageLimit?.toString() : ethTx.gasPrice?.shr(32).toString() ?? 0;
+    const validUntil =
+      ethTx.type === 96 ? ethTx.validUntil?.toString() : ethTx.gasPrice?.and(0xffffffff).toString() ?? 0;
 
     const acalaTx = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },

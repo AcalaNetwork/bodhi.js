@@ -215,7 +215,7 @@ class Eip1193BridgeImpl {
    */
   async eth_sendRawTransaction(params: any[]): Promise<string> {
     validate([{ type: 'transactionData' }], params);
-    return this.#provider.sendRawTransaction(params[0], 'Ethereum');
+    return this.#provider.sendRawTransaction(params[0]);
   }
 
   /**

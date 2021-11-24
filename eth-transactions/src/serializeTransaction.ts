@@ -40,7 +40,7 @@ export function serializeEip712(transaction: UnsignedEip712Transaction, signatur
   return hexConcat(['0x60', RLP.encode(fields)]);
 }
 
-export function serializeTransaction(transaction: UnsignedTransaction, signature?: SignatureLike): string {
+export function serializeTransaction(transaction: UnsignedEip712Transaction, signature?: SignatureLike): string {
   // Ethereum Transactions
   if (transaction.type == null || transaction.type === 0 || transaction.type === 1 || transaction.type === 2) {
     return serialize(transaction, signature);
