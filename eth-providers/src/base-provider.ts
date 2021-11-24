@@ -867,7 +867,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const nonce = ((extrinsic as GenericExtrinsic).toHuman()! as any).nonce;
+    const nonce = (extrinsic as GenericExtrinsic).nonce.toNumber();
     const { args } = (extrinsic as GenericExtrinsic).method.toJSON();
     const input = (args as any).input ?? '';
     const value = (args as any).value ?? 0;
