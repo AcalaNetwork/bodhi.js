@@ -1,3 +1,4 @@
+import { checkSignatureType, Eip712Transaction, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   EventType,
@@ -12,14 +13,15 @@ import {
   TransactionResponse
 } from '@ethersproject/abstract-provider';
 import { getAddress } from '@ethersproject/address';
-import { hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
+import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
+import { Formatter } from '@ethersproject/providers';
 import { accessListify, Transaction } from '@ethersproject/transactions';
-import { parseTransaction, checkSignatureType } from '@acala-network/eth-transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
+import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option } from '@polkadot/types';
 import type { AccountId, Header } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
@@ -43,6 +45,7 @@ import {
   getPartialTransactionReceipt,
   getTxReceiptByHash,
   logger,
+  sendTx,
   throwNotImplemented
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
@@ -128,9 +131,15 @@ export interface TXReceipt extends partialTX {
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
+  readonly formatter: Formatter;
 
   _network?: Network;
   _cache?: UnfinalizedBlockCache;
+
+  constructor() {
+    super();
+    this.formatter = new Formatter();
+  }
 
   startCache = async (): Promise<any> => {
     this._cache = new UnfinalizedBlockCache();
@@ -586,7 +595,12 @@ export abstract class BaseProvider extends AbstractProvider {
     return accountInfo.unwrap().contractInfo;
   };
 
-  sendRawTransaction = async (rawTx: string): Promise<string> => {
+  prepareTransaction = async (
+    rawTx: string
+  ): Promise<{
+    extrinsic: SubmittableExtrinsic<'promise'>;
+    transaction: Eip712Transaction;
+  }> => {
     await this.getNetwork();
 
     const signatureType = checkSignatureType(rawTx);
@@ -600,7 +614,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const validUntil =
       ethTx.type === 96 ? ethTx.validUntil?.toString() : ethTx.gasPrice?.and(0xffffffff).toString() ?? 0;
 
-    const acalaTx = this.api.tx.evm.ethCall(
+    const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
       ethTx.data,
       ethTx.value.toString(),
@@ -613,7 +627,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const sig = joinSignature({ r: ethTx.r!, s: ethTx.s, v: ethTx.v });
 
-    acalaTx.addSignature(subAddr, { [signatureType]: sig } as any, {
+    extrinsic.addSignature(subAddr, { [signatureType]: sig } as any, {
       blockHash: '0x', // ignored
       era: '0x00', // mortal
       genesisHash: '0x', // ignored
@@ -628,14 +642,146 @@ export abstract class BaseProvider extends AbstractProvider {
       {
         evmAddr: ethTx.from,
         address: subAddr,
-        hash: acalaTx.hash.toHex()
+        hash: extrinsic.hash.toHex()
       },
       'sending raw transaction'
     );
 
-    await acalaTx.send();
+    return {
+      extrinsic,
+      transaction: ethTx
+    };
+  };
 
-    return acalaTx.hash.toHex();
+  sendRawTransaction = async (rawTx: string): Promise<string> => {
+    const { extrinsic } = await this.prepareTransaction(rawTx);
+
+    await extrinsic.send();
+
+    return extrinsic.hash.toHex();
+  };
+
+  sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
+    await this.getNetwork();
+    const hexTx = await Promise.resolve(signedTransaction).then((t) => hexlify(t));
+    const tx = this.formatter.transaction(signedTransaction);
+
+    if (tx.confirmations == null) {
+      tx.confirmations = 0;
+    }
+
+    try {
+      const { extrinsic, transaction } = await this.prepareTransaction(hexTx);
+      //@TODO
+      // wait for tx in block
+      const result = await sendTx(this.api, extrinsic);
+      const blockHash = result.status.isInBlock ? result.status.asInBlock : result.status.asFinalized;
+      const header = await this.api.rpc.chain.getHeader(blockHash);
+      const blockNumber = header.number.toNumber();
+      const hash = extrinsic.hash.toHex();
+
+      return this._wrapTransaction(transaction, hash, blockNumber, blockHash.toHex());
+    } catch (error) {
+      (<any>error).transaction = tx;
+      (<any>error).transactionHash = tx.hash;
+      throw error;
+    }
+  };
+
+  _wrapTransaction = async (
+    tx: Eip712Transaction,
+    hash: string,
+    startBlock: number,
+    startBlockHash: string
+  ): Promise<TransactionResponse> => {
+    if (hash != null && hexDataLength(hash) !== 32) {
+      throw new Error('invalid hash - sendTransaction');
+    }
+
+    // Check the hash we expect is the same as the hash the server reported
+    // @TODO expectedHash
+    // if (hash != null && tx.hash !== hash) {
+    //   logger.throwError('Transaction hash mismatch from Provider.sendTransaction.', Logger.errors.UNKNOWN_ERROR, {
+    //     expectedHash: tx.hash,
+    //     returnedHash: hash
+    //   });
+    // }
+
+    const result = <TransactionResponse>tx;
+
+    // fix tx hash
+    result.hash = hash;
+    result.blockNumber = startBlock;
+    result.blockHash = startBlockHash;
+
+    const apiAt = await this.api.at(result.blockHash);
+    result.timestamp = (await apiAt.query.timestamp.now()).toNumber();
+
+    result.wait = async (confirms?: number, timeout?: number) => {
+      if (confirms === null || confirms === undefined) {
+        confirms = 1;
+      }
+      if (timeout == null) {
+        timeout = 0;
+      }
+
+      return new Promise((resolve, reject) => {
+        const cancelFuncs: Array<() => void> = [];
+
+        let done = false;
+
+        const alreadyDone = function () {
+          if (done) {
+            return true;
+          }
+          done = true;
+          cancelFuncs.forEach((func) => {
+            func();
+          });
+          return false;
+        };
+
+        this.api.rpc.chain
+          .subscribeNewHeads((head) => {
+            const blockNumber = head.number.toNumber();
+
+            if ((confirms as number) <= blockNumber - startBlock) {
+              const receipt = this.getTransactionReceiptAtBlock(hash, startBlockHash);
+              if (alreadyDone()) {
+                return;
+              }
+              resolve(receipt);
+            }
+          })
+          .then((unsubscribe) => {
+            cancelFuncs.push(() => {
+              unsubscribe();
+            });
+          })
+          .catch((error) => {
+            reject(error);
+          });
+
+        if (typeof timeout === 'number' && timeout > 0) {
+          const timer = setTimeout(() => {
+            if (alreadyDone()) {
+              return;
+            }
+            reject(logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeout }));
+          }, timeout);
+
+          if (timer.unref) {
+            timer.unref();
+          }
+
+          cancelFuncs.push(() => {
+            clearTimeout(timer);
+          });
+        }
+      });
+    };
+
+    return result;
   };
 
   _getBlockTag = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
@@ -762,9 +908,12 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   // @TODO Testing
-  getTransactionReceiptAtBlock = async (txHash: string, blockHash: string): Promise<TransactionReceipt> => {
-    txHash = txHash.toLowerCase();
-    blockHash = blockHash.toLowerCase();
+  getTransactionReceiptAtBlock = async (
+    hash: string | Promise<string>,
+    blockTag: BlockTag | string | Promise<BlockTag | string>
+  ): Promise<TransactionReceipt> => {
+    const txHash = (await hash).toLowerCase();
+    const blockHash = await this._getBlockTag(blockTag);
 
     const apiAt = await this.api.at(blockHash);
 
@@ -815,7 +964,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     // to and contractAddress may be undefined
-    return {
+    return this.formatter.receipt({
       confirmations: (await this._getBlockNumberFromTag('latest')) - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
@@ -823,14 +972,12 @@ export abstract class BaseProvider extends AbstractProvider {
         ...transactionInfo,
         ...log
       }))
-    } as any;
+    }) as any;
   };
 
   static isProvider(value: any): value is Provider {
     return !!(value && value._isProvider);
   }
-
-  abstract sendTransaction(signedTransaction: string | Promise<string>): Promise<TransactionResponse>;
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
     const targetBlockNumber = await this._cache?.getBlockNumber(txHash);
@@ -887,13 +1034,16 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
-    throwNotImplemented('getTransactionReceipt (deprecated: please use getTXReceiptByHash)');
+  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> => {
+    // @TODO
+    // @ts-ignore
+    return this.getTXReceiptByHash(txHash);
+  };
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt> => {
     const tx = await this._getTXReceipt(txHash);
 
-    return {
+    return this.formatter.receipt({
       to: tx.to || null,
       from: tx.from,
       contractAddress: tx.contractAddress || null,
@@ -909,7 +1059,7 @@ export abstract class BaseProvider extends AbstractProvider {
       status: tx.status,
       effectiveGasPrice: EFFECTIVE_GAS_PRICE,
       confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber
-    };
+    });
   };
 
   // Bloom-filter Queries
@@ -928,7 +1078,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filteredLogs = await getFilteredLogs(_filter as Filter);
 
-    return filteredLogs;
+    return this.formatter.filterLog(filteredLogs);
   };
 
   // ENS

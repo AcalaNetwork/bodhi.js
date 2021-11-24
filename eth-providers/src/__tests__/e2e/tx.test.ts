@@ -59,27 +59,33 @@ it('a series of tests', async () => {
   // await sendTx(provider.api, extrinsic2);
 
   /** serializeTransaction legacyRawTx */
-  // console.log('serializeTransaction legacy');
-  // const unsignTx: Eip712Transaction = {
-  //   nonce: await provider.getTransactionCount(account1Wallet.address),
-  //   chainId,
-  //   gasLimit:  BigNumber.from('0x030dcf'),
-  //   gasPrice: BigNumber.from('0x0186a000002710'),
-  //   data: deployHelloWorldData,
-  //   value: BigNumber.from(0)
-  // };
+  console.log('serializeTransaction legacy');
+  const unsignTx: Eip712Transaction = {
+    nonce: await provider.getTransactionCount(account1Wallet.address),
+    chainId,
+    gasLimit: BigNumber.from('0x030dcf'),
+    gasPrice: BigNumber.from('0x0186a000002710'),
+    data: deployHelloWorldData,
+    value: BigNumber.from(0)
+  };
 
-  // const rawTx = await account1Wallet.signTransaction(unsignTx);
+  const rawTx = await account1Wallet.signTransaction(unsignTx);
 
-  // const parsedTx = parseTransaction(rawTx);
-  // expect(parsedTx.from).equal(account1Wallet.address);
-  // expect(parsedTx.data).equal(deployHelloWorldData);
+  const parsedTx = parseTransaction(rawTx);
+  expect(parsedTx.from).equal(account1Wallet.address);
+  expect(parsedTx.data).equal(deployHelloWorldData);
 
-  // console.log(parsedTx);
-  // const errorSignTx = rawTx.replace(/.$/, '1');
-  // expect(parseTransaction(errorSignTx).from).not.equal(account1Wallet.address);
+  console.log(parsedTx);
+  const errorSignTx = rawTx.replace(/.$/, '1');
+  expect(parseTransaction(errorSignTx).from).not.equal(account1Wallet.address);
 
-  // await provider.sendRawTransaction(rawTx);
+  const response1 = await provider.sendTransaction(rawTx);
+
+  console.log(response1);
+
+  const receipt = await response1.wait(2);
+
+  console.log(receipt);
 
   /** serializeTransaction eip712 */
   console.log('serializeTransaction eip712');
