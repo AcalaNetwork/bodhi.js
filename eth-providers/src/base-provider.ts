@@ -747,7 +747,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
             if ((confirms as number) <= blockNumber - startBlock) {
               const receipt = this.getTransactionReceiptAtBlock(hash, startBlockHash);
-              done = true;
+              if (alreadyDone()) {
+                return;
+              }
               resolve(receipt);
             }
           })
