@@ -11,9 +11,6 @@ export class EvmRpcProvider extends BaseProvider {
     this.startCache() as unknown as void;
   }
 
-  sendTransaction = (signedTransaction: string | Promise<string>): Promise<TransactionResponse> =>
-    throwNotImplemented('sendTransaction');
-
   getTransactionCount = (
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
