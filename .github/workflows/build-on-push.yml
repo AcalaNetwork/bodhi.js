@@ -44,6 +44,26 @@ jobs:
       - name: test
         run: cd eth-providers && yarn test
 
+  test-eth-transactions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.16.0'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build -t @acala-network/eth-transactions
+
+      - name: test
+        run: cd eth-transactions && yarn test
+
   test-eth-rpc-adapter:
     runs-on: ubuntu-latest
     steps:

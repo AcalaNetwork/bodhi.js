@@ -9,7 +9,7 @@ import { signTransaction } from '../signTransaction';
 import { transactionHash } from '../transactionHash';
 
 const value = {
-  chainId: 0,
+  chainId: 595,
   nonce: 0,
   salt: '0x0000000000000000000000000000000000000000000000000000000000000000',
   gasLimit: 2100000,

@@ -9,7 +9,7 @@ const privateKey = '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269
 const address = '0xb00cB924ae22b2BBb15E10c17258D6a2af980421';
 
 const data = {
-  chainId: 0,
+  chainId: 595,
   nonce: 0,
   salt: '0x0000000000000000000000000000000000000000000000000000000000000000',
   gasLimit: 2100000,
@@ -33,7 +33,7 @@ describe('transaction', () => {
       chainId: parsedTx.chainId,
       nonce: parsedTx.nonce,
       gasLimit: parsedTx.gasLimit.toNumber(),
-      to: parsedTx.chainId || undefined,
+      to: parsedTx.to || undefined,
       value: parsedTx.value.toNumber(),
       salt: (parsedTx as any).salt,
       data: parsedTx.data,
@@ -57,7 +57,7 @@ describe('transaction', () => {
       chainId: parsedTx.chainId,
       nonce: parsedTx.nonce,
       gasLimit: parsedTx.gasLimit.toNumber(),
-      to: parsedTx.chainId || undefined,
+      to: parsedTx.to || undefined,
       value: parsedTx.value.toNumber(),
       salt: (parsedTx as any).salt,
       data: parsedTx.data,
