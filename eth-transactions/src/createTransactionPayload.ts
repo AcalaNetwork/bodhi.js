@@ -1,10 +1,19 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexlify } from '@ethersproject/bytes';
+import { logger } from './logger';
 import { Eip712TransactionPayload } from './types';
 
-export const MAX_UINT256 = '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+export const MAX_UINT256 = '0xffffffff';
 
 export const createTransactionPayload = (tx: Eip712TransactionPayload) => {
+  if (!tx.salt) {
+    logger.throwError('eip712tx missing salt');
+  }
+
+  if (!tx.chainId) {
+    logger.throwError('eip712tx missing chainId');
+  }
+
   return {
     types: {
       EIP712Domain: [
