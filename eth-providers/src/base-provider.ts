@@ -1078,7 +1078,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filteredLogs = await getFilteredLogs(_filter as Filter);
 
-    return this.formatter.filterLog(filteredLogs);
+    return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
   // ENS
