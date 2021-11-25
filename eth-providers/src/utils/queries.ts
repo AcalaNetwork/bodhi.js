@@ -1,7 +1,6 @@
 import { BlockTag, Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
-import { TransactionReceipt, Query, LogFilter } from './gqlTypes';
-export * from './gqlTypes';
+import { Query, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
 
 const URL = 'http://localhost:3001';
 
@@ -48,7 +47,7 @@ const TX_RECEIPT_NODES = `
   }
 `;
 
-export const getAllTxReceipts = async (): Promise<TransactionReceipt[]> => {
+export const getAllTxReceipts = async (): Promise<TXReceiptGQL[]> => {
   const res = await queryGraphql(`
     query {
       transactionReceipts {
@@ -57,10 +56,10 @@ export const getAllTxReceipts = async (): Promise<TransactionReceipt[]> => {
     }
   `);
 
-  return res.transactionReceipts!.nodes as TransactionReceipt[];
+  return res.transactionReceipts!.nodes as TXReceiptGQL[];
 };
 
-export const getTxReceiptByHash = async (hash: string): Promise<TransactionReceipt | null> => {
+export const getTxReceiptByHash = async (hash: string): Promise<TXReceiptGQL | null> => {
   const res = await queryGraphql(`
     query {
       transactionReceipts(filter: {
@@ -124,6 +123,13 @@ export const getLogsQueryFilter = (filter: Filter): string => {
   return queryFilter;
 };
 
+// adapt logs from graphql to provider compatible types
+const _adaptLogs = (logs: LogGQL[]): Log[] =>
+  logs.map((log) => ({
+    ...log,
+    data: log.data || ''
+  }));
+
 export const getAllLogs = async (): Promise<Log[]> => {
   const res = await queryGraphql(`
     query {
@@ -133,7 +139,7 @@ export const getAllLogs = async (): Promise<Log[]> => {
     }
   `);
 
-  return res.logs!.nodes as Log[];
+  return _adaptLogs(res.logs!.nodes as LogGQL[]);
 };
 
 export const getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
@@ -147,5 +153,5 @@ export const getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
     }
   `);
 
-  return res.logs!.nodes as Log[];
+  return _adaptLogs(res.logs!.nodes as LogGQL[]);
 };

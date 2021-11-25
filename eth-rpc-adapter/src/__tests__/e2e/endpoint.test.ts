@@ -21,7 +21,7 @@ const rpcGet =
 export const logsEq = (a: Log[], b: Log[]): boolean =>
   a.length === b.length &&
   a.every(({ transactionHash: t0, logIndex: l0 }) =>
-    b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && l0 === l1)
+    b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
   );
 
 describe('eth_getTransactionReceipt', () => {
