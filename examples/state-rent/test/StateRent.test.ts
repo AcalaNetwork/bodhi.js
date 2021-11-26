@@ -19,7 +19,7 @@ const testPairs = createTestPairs();
 const transfer = async (contract: string, new_maintainer: string) => {
   return new Promise((resolve) => {
     provider.api.tx.evm.transferMaintainer(contract, new_maintainer).signAndSend(testPairs.alice.address, (result) => {
-      if (result.status.isInBlock) {
+      if (result.status.isFinalized || result.status.isInBlock) {
         resolve(undefined);
       }
     });

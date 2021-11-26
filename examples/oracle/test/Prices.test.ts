@@ -21,7 +21,7 @@ const feedValues = async (token: string, price: number) => {
     provider.api.tx.acalaOracle
       .feedValues([[{ Token: token }, price]])
       .signAndSend(testPairs.alice.address, (result) => {
-        if (result.status.isInBlock) {
+        if (result.status.isFinalized || result.status.isInBlock) {
           resolve(undefined);
         }
       });
