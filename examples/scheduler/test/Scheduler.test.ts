@@ -20,7 +20,7 @@ const dollar = BigNumber.from('10000000000000');
 const next_block = async (block_number: number) => {
   return new Promise((resolve) => {
     provider.api.tx.system.remark(block_number.toString(16)).signAndSend(testPairs.alice.address, (result) => {
-      if (result.status.isInBlock) {
+      if (result.status.isFinalized || result.status.isInBlock) {
         resolve(undefined);
       }
     });
