@@ -1,0 +1,18 @@
+{
+  "name": "evm-truffle-examples",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Acala Dev Team",
+  "license": "MIT",
+  "dependencies": {
+    "truffle": "^5.4.19"
+  },
+  "devDependencies": {
+    "@truffle/hdwallet-provider": "^1.6.0"
+  },
+  "scripts": {
+    "build": "truffle compile",
+    "test": "truffle test --network mandala",
+    "deploy": "truffle migrate --network mandala"
+  }
+}

@@ -460,6 +460,9 @@
       "reviewCategory": "production",
       "shouldPublish": true
     },
+
+    /* ---------- waffle examples ---------- */
+    // TODO: combine them all to one repo?
     {
       "packageName": "evm-waffle-example-dex",
       "projectFolder": "examples/waffle/dex",
@@ -505,6 +508,28 @@
     {
       "packageName": "evm-waffle-example-uniswap",
       "projectFolder": "examples/waffle/uniswap",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-hello-world",
+      "projectFolder": "examples/waffle/hello-world",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+
+    /* ---------- hardhat examples ---------- */
+    {
+      "packageName": "evm-hardhat-examples",
+      "projectFolder": "examples/hardhat",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+
+    /* ---------- truffle examples ---------- */
+    {
+      "packageName": "evm-truffle-examples",
+      "projectFolder": "examples/truffle",
       "reviewCategory": "tests",
       "shouldPublish": false
     }

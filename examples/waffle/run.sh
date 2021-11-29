@@ -2,6 +2,7 @@
 
 build_all() {
   sh -c 'rush build \
+    -t evm-waffle-example-hello-world \
     -t evm-waffle-example-dex \
     -t evm-waffle-example-e2e \
     -t evm-waffle-example-erc20 \
@@ -13,6 +14,7 @@ build_all() {
 
 rebuild_all() {
   sh -c 'rush rebuild \
+    -t evm-waffle-example-hello-world \
     -t evm-waffle-example-dex \
     -t evm-waffle-example-e2e \
     -t evm-waffle-example-erc20 \
@@ -24,6 +26,7 @@ rebuild_all() {
 
 test_all() {
   examples=(
+    "hello-world"
     "dex"
     "oracle"
     "erc20"

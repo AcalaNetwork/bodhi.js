@@ -1,4 +1,4 @@
-# Acala EVM Examples
+# Acala EVM Waffle Examples
 
 ETHDenver Workshop Link: https://www.crowdcast.io/e/acala-ethdenver-2021
 
