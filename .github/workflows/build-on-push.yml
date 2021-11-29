@@ -107,7 +107,7 @@ jobs:
       - name: test
         run: cd evm-subql && yarn test
 
-  test-evm-examples:
+  test-evm-waffle-examples:
     runs-on: ubuntu-latest
     steps:
       - name: checkout

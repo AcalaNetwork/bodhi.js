@@ -1,10 +1,10 @@
 {
-  "name": "evm-example-scheduler",
+  "name": "evm-waffle-example-arbitrager",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
+    "test": "ts-node --transpile-only src/deploy.ts",
     "build": "waffle waffle.json"
   },
   "devDependencies": {
@@ -22,6 +22,8 @@
     "@acala-network/api": "~3.0.3-3",
     "@acala-network/bodhi": "workspace:*",
     "@acala-network/contracts": "~2.0.0",
+    "@uniswap/v2-core": "~1.0.1",
+    "@uniswap/v2-periphery": "~1.1.0-beta.0",
     "@polkadot/keyring": "~7.9.2",
     "@polkadot/api": "~6.9.2"
   }

@@ -1,5 +1,5 @@
 {
-  "name": "evm-example-dex",
+  "name": "evm-waffle-example-scheduler",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -8,6 +8,7 @@
     "build": "waffle waffle.json"
   },
   "devDependencies": {
+    "@openzeppelin/contracts": "~3.4.2",
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
     "chai": "~4.3.4",
@@ -20,7 +21,8 @@
   "dependencies": {
     "@acala-network/api": "~3.0.3-3",
     "@acala-network/bodhi": "workspace:*",
-    "@acala-network/contracts": "~4.0.1",
+    "@acala-network/contracts": "~2.0.0",
+    "@polkadot/keyring": "~7.9.2",
     "@polkadot/api": "~6.9.2"
   }
 }

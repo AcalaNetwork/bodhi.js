@@ -295,7 +295,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/arbitrager:
+  ../../examples/waffle/arbitrager:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -315,7 +315,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 2.0.0
       '@polkadot/api': 6.9.2
       '@polkadot/keyring': 7.9.2
@@ -332,7 +332,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/dex:
+  ../../examples/waffle/dex:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -348,7 +348,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
       '@polkadot/api': 6.9.2
     devDependencies:
@@ -361,7 +361,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/e2e:
+  ../../examples/waffle/e2e:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -378,7 +378,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
       '@polkadot/api': 6.9.2
       '@polkadot/keyring': 7.9.2
@@ -392,7 +392,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/erc20:
+  ../../examples/waffle/erc20:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -410,7 +410,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
       '@polkadot/api': 6.9.2
       '@polkadot/keyring': 7.9.2
@@ -425,7 +425,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/oracle:
+  ../../examples/waffle/oracle:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -440,7 +440,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
     devDependencies:
       '@types/chai': 4.2.22
@@ -452,7 +452,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/scheduler:
+  ../../examples/waffle/scheduler:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -470,7 +470,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 2.0.0
       '@polkadot/api': 6.9.2
       '@polkadot/keyring': 7.9.2
@@ -485,7 +485,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/state-rent:
+  ../../examples/waffle/state-rent:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -502,7 +502,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
       '@polkadot/api': 6.9.2
       '@polkadot/keyring': 7.9.2
@@ -516,7 +516,7 @@ importers:
       ts-node: 10.3.1_typescript@4.4.4
       typescript: 4.4.4
 
-  ../../examples/uniswap:
+  ../../examples/waffle/uniswap:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
@@ -534,7 +534,7 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/api': 3.0.3-3
-      '@acala-network/bodhi': link:../../bodhi
+      '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
       '@polkadot/api': 6.9.2
       '@polkadot/keyring': 7.9.2
@@ -3429,7 +3429,7 @@ packages:
   /async/2.6.2:
     resolution: {integrity: sha512-H1qVYh1MYhEEFLsP97cVKqCGo7KfCyTt6uEWqsTBr9SO84oK9Uwbyd/yCW+6rKJLHksBNUVWZDAjfS+Ccx0Bbg==}
     dependencies:
-      lodash: 4.17.20
+      lodash: 4.17.21
     dev: true
 
   /asynckit/0.4.0:
@@ -3490,7 +3490,7 @@ packages:
       convert-source-map: 1.8.0
       debug: 2.6.9
       json5: 0.5.1
-      lodash: 4.17.20
+      lodash: 4.17.21
       minimatch: 3.0.4
       path-is-absolute: 1.0.1
       private: 0.1.8
@@ -3506,7 +3506,7 @@ packages:
       babel-types: 6.26.0
       detect-indent: 4.0.0
       jsesc: 1.3.0
-      lodash: 4.17.20
+      lodash: 4.17.21
       source-map: 0.5.7
       trim-right: 1.0.1
     dev: true
@@ -3534,7 +3534,7 @@ packages:
       babel-helper-function-name: 6.24.1
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.20
+      lodash: 4.17.21
     dev: true
 
   /babel-helper-explode-assignable-expression/6.24.1:
@@ -3581,7 +3581,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.20
+      lodash: 4.17.21
     dev: true
 
   /babel-helper-remap-async-to-generator/6.24.1:
@@ -3673,7 +3673,7 @@ packages:
       babel-template: 6.26.0
       babel-traverse: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.20
+      lodash: 4.17.21
     dev: true
 
   /babel-plugin-transform-es2015-classes/6.24.1:
@@ -3922,7 +3922,7 @@ packages:
       babel-runtime: 6.26.0
       core-js: 2.6.12
       home-or-tmp: 2.0.0
-      lodash: 4.17.20
+      lodash: 4.17.21
       mkdirp: 0.5.5
       source-map-support: 0.4.18
     dev: true
@@ -3941,7 +3941,7 @@ packages:
       babel-traverse: 6.26.0
       babel-types: 6.26.0
       babylon: 6.18.0
-      lodash: 4.17.20
+      lodash: 4.17.21
     dev: true
 
   /babel-traverse/6.26.0:
@@ -3955,7 +3955,7 @@ packages:
       debug: 2.6.9
       globals: 9.18.0
       invariant: 2.2.4
-      lodash: 4.17.20
+      lodash: 4.17.21
     dev: true
 
   /babel-types/6.26.0:
@@ -3963,7 +3963,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       esutils: 2.0.3
-      lodash: 4.17.20
+      lodash: 4.17.21
       to-fast-properties: 1.0.3
     dev: true
 
@@ -7878,7 +7878,7 @@ packages:
   /level-post/1.0.7:
     resolution: {integrity: sha512-PWYqG4Q00asOrLhX7BejSajByB4EmG2GaKHfj3h5UmmZ2duciXLPGYWIjBzLECFWUGOZWlm5B20h/n3Gs3HKew==}
     dependencies:
-      ltgt: 2.1.3
+      ltgt: 2.2.1
     dev: true
 
   /level-sublevel/6.6.4:
@@ -11511,7 +11511,7 @@ packages:
       eventemitter3: 4.0.4
       underscore: 1.9.1
       web3-core-helpers: 1.2.11
-      websocket: 1.0.32
+      websocket: 1.0.34
     dev: true
     optional: true
 

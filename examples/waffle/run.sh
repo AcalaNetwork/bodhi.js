@@ -2,24 +2,24 @@
 
 build_all() {
   sh -c 'rush build \
-    -t evm-example-dex \
-    -t evm-example-e2e \
-    -t evm-example-erc20 \
-    -t evm-example-oracle \
-    -t evm-example-state-rent \
-    -t evm-example-arbitrager \
-    -t evm-example-scheduler'
+    -t evm-waffle-example-dex \
+    -t evm-waffle-example-e2e \
+    -t evm-waffle-example-erc20 \
+    -t evm-waffle-example-oracle \
+    -t evm-waffle-example-state-rent \
+    -t evm-waffle-example-arbitrager \
+    -t evm-waffle-example-scheduler'
 }
 
 rebuild_all() {
   sh -c 'rush rebuild \
-    -t evm-example-dex \
-    -t evm-example-e2e \
-    -t evm-example-erc20 \
-    -t evm-example-oracle \
-    -t evm-example-state-rent \
-    -t evm-example-arbitrager \
-    -t evm-example-scheduler'
+    -t evm-waffle-example-dex \
+    -t evm-waffle-example-e2e \
+    -t evm-waffle-example-erc20 \
+    -t evm-waffle-example-oracle \
+    -t evm-waffle-example-state-rent \
+    -t evm-waffle-example-arbitrager \
+    -t evm-waffle-example-scheduler'
 }
 
 test_all() {

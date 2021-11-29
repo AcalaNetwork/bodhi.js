@@ -19,6 +19,11 @@ compile and build all contracts
 ./run.sh rebuild  # force rebuild all
 ```
 
+start a acala node with docker
+```
+docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:2.0.2 --dev --instant-sealing --ws-external=true --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe
+```
+
 run all tests
 ```
 ./run.sh test

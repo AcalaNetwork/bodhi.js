@@ -1,14 +1,14 @@
 {
-  "name": "evm-example-arbitrager",
+  "name": "evm-waffle-example-erc20",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "ts-node --transpile-only src/deploy.ts",
+    "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
     "build": "waffle waffle.json"
   },
   "devDependencies": {
-    "@openzeppelin/contracts": "~3.4.2",
+    "@openzeppelin/contracts": "~4.3.2",
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
     "chai": "~4.3.4",
@@ -21,10 +21,8 @@
   "dependencies": {
     "@acala-network/api": "~3.0.3-3",
     "@acala-network/bodhi": "workspace:*",
-    "@acala-network/contracts": "~2.0.0",
-    "@uniswap/v2-core": "~1.0.1",
-    "@uniswap/v2-periphery": "~1.1.0-beta.0",
-    "@polkadot/keyring": "~7.9.2",
-    "@polkadot/api": "~6.9.2"
+    "@acala-network/contracts": "~4.0.1",
+    "@polkadot/api": "~6.9.2",
+    "@polkadot/keyring": "~7.9.2"
   }
 }

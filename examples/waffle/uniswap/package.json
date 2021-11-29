@@ -1,13 +1,13 @@
 {
-  "name": "evm-example-state-rent",
+  "name": "evm-waffle-example-uniswap",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
-    "build": "waffle waffle.json"
+    "test": "ts-node --transpile-only src/deploy-and-trade.ts"
   },
   "devDependencies": {
+    "@openzeppelin/contracts": "~4.3.2",
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
     "chai": "~4.3.4",
