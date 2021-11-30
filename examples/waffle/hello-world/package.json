@@ -1,5 +1,5 @@
 {
-  "name": "evm-waffle-hello-world",
+  "name": "evm-waffle-example-hello-world",
   "version": "1.0.0",
   "main": "index.js",
   "author": "Jan Turk",
