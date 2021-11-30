@@ -107,7 +107,7 @@ jobs:
       - name: test
         run: cd evm-subql && yarn test
 
-  test-evm-examples:
+  test-evm-waffle-examples:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -125,4 +125,44 @@ jobs:
         run: node common/scripts/install-run-rush.js build
 
       - name: test
-        run: echo "TODO" # some tests need some fix
+        run: echo "TODO" # use public mandala for testing
+
+  test-evm-hardhat-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.16.0'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build -t evm-hardhat-examples
+
+      - name: test
+        run: echo "TODO" # use public mandala for testing
+
+  test-evm-truffle-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.16.0'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build -t evm-truffle-examples
+
+      - name: test
+        run: echo "TODO" # use public mandala for testing

@@ -38,8 +38,17 @@ Make sure to feed some EVM transactions to acala node, for example we can use [t
 npm i -g @subql/node @subql/query
 ```
 
-- run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 (in terminal 1), and feed EVM data to it
+- run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 (in terminal 1)
+```
+docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:2.0.2 --dev --ws-external=true --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe
+```
 
+- feed some EVM transactions to Acala node
+```
+cd ../examples/waffle/dex
+yarn test
+cd -
+```
 
 - run a postgres service and listen to port 5432 (in terminal 2)
 ```

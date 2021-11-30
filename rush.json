@@ -172,7 +172,7 @@
    * and set projectFolderMaxDepth to a large number.
    */
   // "projectFolderMinDepth": 2,
-  // "projectFolderMaxDepth": 2,
+  "projectFolderMaxDepth": 3,
 
   /**
    * Today the npmjs.com registry enforces fairly strict naming rules for packages, but in the early
@@ -460,51 +460,76 @@
       "reviewCategory": "production",
       "shouldPublish": true
     },
+
+    /* ---------- waffle examples ---------- */
+    // TODO: combine them all to one repo?
     {
-      "packageName": "evm-example-dex",
-      "projectFolder": "examples/dex",
+      "packageName": "evm-waffle-example-dex",
+      "projectFolder": "examples/waffle/dex",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-example-erc20",
-      "projectFolder": "examples/erc20",
+      "packageName": "evm-waffle-example-erc20",
+      "projectFolder": "examples/waffle/erc20",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-example-oracle",
-      "projectFolder": "examples/oracle",
+      "packageName": "evm-waffle-example-oracle",
+      "projectFolder": "examples/waffle/oracle",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-example-state-rent",
-      "projectFolder": "examples/state-rent",
+      "packageName": "evm-waffle-example-state-rent",
+      "projectFolder": "examples/waffle/state-rent",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-example-arbitrager",
-      "projectFolder": "examples/arbitrager",
+      "packageName": "evm-waffle-example-arbitrager",
+      "projectFolder": "examples/waffle/arbitrager",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-example-e2e",
-      "projectFolder": "examples/e2e",
+      "packageName": "evm-waffle-example-e2e",
+      "projectFolder": "examples/waffle/e2e",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-example-scheduler",
-      "projectFolder": "examples/scheduler",
+      "packageName": "evm-waffle-example-scheduler",
+      "projectFolder": "examples/waffle/scheduler",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-example-uniswap",
-      "projectFolder": "examples/uniswap",
+      "packageName": "evm-waffle-example-uniswap",
+      "projectFolder": "examples/waffle/uniswap",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-hello-world",
+      "projectFolder": "examples/waffle/hello-world",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+
+    /* ---------- hardhat examples ---------- */
+    {
+      "packageName": "evm-hardhat-examples",
+      "projectFolder": "examples/hardhat",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+
+    /* ---------- truffle examples ---------- */
+    {
+      "packageName": "evm-truffle-examples",
+      "projectFolder": "examples/truffle",
       "reviewCategory": "tests",
       "shouldPublish": false
     }

@@ -460,7 +460,7 @@ network:
 dataSources:
   - name: main
     kind: substrate/Runtime
-    startBlock: 2
+    startBlock: 0
     mapping:
       handlers:
         - handler: handleEvmEvent
