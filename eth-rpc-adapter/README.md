@@ -47,3 +47,19 @@ GET http://localhost:8545
 
 ## Test
 `rushx test`
+
+## Docker Image
+- build docker image with default mandala URL
+```
+docker build . -t eth-rpc-adaptor
+```
+
+- build docker image with custom mandala url
+```
+docker build . -t eth-rpc-adaptor --build-arg mandala_url=xxxxx
+```
+
+- run with docker
+```
+docker run -it -p 8545:8545 eth-rpc-adaptor
+```
