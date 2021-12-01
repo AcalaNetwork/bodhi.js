@@ -40,7 +40,7 @@ npm i -g @subql/node @subql/query
 
 - run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 (in terminal 1)
 ```
-docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:2.0.2 --dev --ws-externatrue --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe --tmp [--instant-sealing]
+docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:2.0.2 --dev --ws-external=true --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe --tmp [--instant-sealing]
 ```
 
 - feed some EVM transactions to Acala node (this step is *REQUIRED* if run acala node with `--instant-sealing`, otherwise it is optional)
