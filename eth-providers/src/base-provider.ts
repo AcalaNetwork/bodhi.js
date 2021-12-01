@@ -134,7 +134,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
 
-  _network?: Network;
+  _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
 
   constructor() {
@@ -184,21 +184,22 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.api.registry.chainDecimals[0] || 10;
   }
 
-  isReady = async (): Promise<Network> => {
+  isReady = (): Promise<Network> => {
     if (!this._network) {
-      try {
-        await this.api.isReadyOrError;
-
-        const network = {
-          name: this.api.runtimeVersion.specName.toString(),
-          chainId: await this.chainId()
-        };
-
-        this._network = network;
-      } catch (e) {
-        await this.api.disconnect();
-        throw e;
-      }
+      this._network = this.api.isReadyOrError
+        .then(async (api) => {
+          return this.chainId().then((chainId) => {
+            return {
+              name: api.runtimeVersion.specName.toString(),
+              chainId: chainId
+            };
+          });
+        })
+        .catch((error) => {
+          return this.api.disconnect().then(() => {
+            throw error;
+          });
+        });
     }
 
     return this._network;
