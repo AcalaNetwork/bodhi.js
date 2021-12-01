@@ -1,9 +1,14 @@
-import { expect } from 'chai';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { EvmRpcProvider } from '../../rpc-provider';
 
 const endpoint = 'ws://127.0.0.1:9944';
 
 const provider = EvmRpcProvider.from(endpoint);
+
+chai.use(chaiAsPromised);
+
+const { expect } = chai;
 
 describe('rpc test', () => {
   before(async () => {
@@ -51,12 +56,8 @@ describe('rpc test', () => {
   });
 
   it('getBlockByNumber', async () => {
-    try {
-      const result = await provider._getBlockHeader(
-        '0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c'
-      );
-    } catch (error) {
-      expect(error.message === 'header not found');
-    }
+    await expect(
+      provider._getBlockHeader('0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c')
+    ).to.be.rejectedWith('header not found');
   });
 });
