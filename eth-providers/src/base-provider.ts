@@ -627,7 +627,7 @@ export abstract class BaseProvider extends AbstractProvider {
       }
       storageLimit = _storageLimit;
       validUntil = _validUntil;
-    } else if (ethTx.type == null || ethTx.type === 0 || ethTx.type === 1) {
+    } else if (ethTx.type == null || ethTx.type === 0) {
       //  Legacy and EIP-155 Transactions
       storageLimit = ethTx.gasPrice?.shr(32).toString() ?? '0';
       validUntil = ethTx.gasPrice?.and(0xffffffff).toString() ?? '0';
