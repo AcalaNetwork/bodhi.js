@@ -633,10 +633,10 @@ export abstract class BaseProvider extends AbstractProvider {
       validUntil = ethTx.gasPrice?.and(0xffffffff).toString() ?? '0';
     } else if (ethTx.type === 1) {
       // EIP-2930
-      return throwNotImplemented('EIP-2930 transactions is not supported at this time');
+      return throwNotImplemented('EIP-2930 transactions');
     } else if (ethTx.type === 2) {
       // EIP-1559
-      return throwNotImplemented('EIP-1559 transactions is not supported at this time');
+      return throwNotImplemented('EIP-1559 transactions');
     }
 
     const extrinsic = this.api.tx.evm.ethCall(
