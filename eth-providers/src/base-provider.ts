@@ -612,9 +612,31 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
 
-    const storageLimit = ethTx.type === 96 ? ethTx.storageLimit?.toString() : ethTx.gasPrice?.shr(32).toString() ?? 0;
-    const validUntil =
-      ethTx.type === 96 ? ethTx.validUntil?.toString() : ethTx.gasPrice?.and(0xffffffff).toString() ?? 0;
+    let storageLimit = '0';
+    let validUntil = '0';
+
+    if (ethTx.type === 96) {
+      // eip712
+      const _storageLimit = ethTx.storageLimit?.toString();
+      const _validUntil = ethTx.validUntil?.toString();
+      if (!_storageLimit) {
+        return logger.throwError('expect storageLimit');
+      }
+      if (!_validUntil) {
+        return logger.throwError('expect validUntil');
+      }
+      storageLimit = _storageLimit;
+      validUntil = _validUntil;
+    } else if (ethTx.type == null || ethTx.type === 0 || ethTx.type === 1) {
+      //  Legacy and EIP-155 Transactions
+      storageLimit = ethTx.gasPrice?.shr(32).toString() ?? '0';
+      validUntil = ethTx.gasPrice?.and(0xffffffff).toString() ?? '0';
+    } else if (ethTx.type === 1) {
+      return throwNotImplemented('EIP-2930 transactions is not supported at this time');
+    } else if (ethTx.type === 2) {
+      // EIP-1559
+      return throwNotImplemented('EIP-1559 transactions is not supported at this time');
+    }
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
