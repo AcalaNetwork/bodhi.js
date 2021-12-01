@@ -76,8 +76,6 @@ it('a series of tests', async () => {
   expect(parsedTx.data).equal(deployHelloWorldData);
 
   console.log(parsedTx);
-  const errorSignTx = rawTx.replace(/.$/, '1');
-  expect(parseTransaction(errorSignTx).from).not.equal(account1Wallet.address);
 
   const response1 = await provider.sendTransaction(rawTx);
 
@@ -86,6 +84,19 @@ it('a series of tests', async () => {
   const receipt = await response1.wait(2);
 
   console.log(receipt);
+
+  /** wallet sendTransaction  */
+  const walletSendTransaction = async () => {
+    console.log('wallet sendTransaction');
+    await account1Wallet.sendTransaction({
+      gasLimit: BigNumber.from('0x030dcf'),
+      gasPrice: BigNumber.from('0x0186a000002710'),
+      data: deployHelloWorldData,
+      type: 0
+    });
+  };
+
+  await walletSendTransaction();
 
   /** serializeTransaction eip712 */
   console.log('serializeTransaction eip712');
