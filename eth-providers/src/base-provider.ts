@@ -1075,18 +1075,40 @@ export abstract class BaseProvider extends AbstractProvider {
     });
   };
 
+  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
+    switch (blockTag) {
+      case 'pending': {
+        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      case 'latest': {
+        const header = await this.api.rpc.chain.getHeader();
+        return header.number.toNumber();
+      }
+      case 'earliest': {
+        return 0;
+      }
+      default: {
+        if (typeof blockTag !== 'number') {
+          return logger.throwArgumentError("blocktag should be number | 'latest' | 'earliest'", 'blockTag', blockTag);
+        }
+
+        return blockTag;
+      }
+    }
+  };
+
   // Bloom-filter Queries
   getLogs = async (filter: Filter): Promise<Log[]> => {
-    const { fromBlock, toBlock } = filter;
+    const { fromBlock = 'latest', toBlock = 'latest' } = filter;
     const _filter = { ...filter };
 
     if (fromBlock) {
-      const fromBlockNumberHeader = await this._getBlockHeader(fromBlock);
-      _filter.fromBlock = fromBlockNumberHeader.number.toNumber();
+      const fromBlockNumber = await this._getBlockNumberFromTag(fromBlock);
+      _filter.fromBlock = fromBlockNumber;
     }
     if (toBlock) {
-      const toBlockNumberHeader = await this._getBlockHeader(toBlock);
-      _filter.toBlock = toBlockNumberHeader.number.toNumber();
+      const toBlockNumber = await this._getBlockNumberFromTag(toBlock);
+      _filter.toBlock = toBlockNumber;
     }
 
     const filteredLogs = await getFilteredLogs(_filter as Filter);
