@@ -186,20 +186,23 @@ export abstract class BaseProvider extends AbstractProvider {
 
   isReady = (): Promise<Network> => {
     if (!this._network) {
-      this._network = this.api.isReadyOrError
-        .then(async (api) => {
-          return this.chainId().then((chainId) => {
-            return {
-              name: api.runtimeVersion.specName.toString(),
-              chainId: chainId
-            };
-          });
-        })
-        .catch((error) => {
-          return this.api.disconnect().then(() => {
-            throw error;
-          });
-        });
+      const _getNetwork = async () => {
+        try {
+          await this.api.isReadyOrError;
+
+          const network = {
+            name: this.api.runtimeVersion.specName.toString(),
+            chainId: await this.chainId()
+          };
+
+          return network;
+        } catch (e) {
+          await this.api.disconnect();
+          throw e;
+        }
+      };
+
+      this._network = _getNetwork();
     }
 
     return this._network;
