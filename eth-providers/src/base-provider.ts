@@ -1111,11 +1111,15 @@ export abstract class BaseProvider extends AbstractProvider {
         return 0;
       }
       default: {
-        if (typeof blockTag !== 'number') {
-          return logger.throwArgumentError("blocktag should be number | 'latest' | 'earliest'", 'blockTag', blockTag);
+        if (isHexString(blockTag) || typeof blockTag === 'number') {
+          return BigNumber.from(blockTag).toNumber();
         }
 
-        return blockTag;
+        return logger.throwArgumentError(
+          "blocktag should be number | hex string | 'latest' | 'earliest'",
+          'blockTag',
+          blockTag
+        );
       }
     }
   };

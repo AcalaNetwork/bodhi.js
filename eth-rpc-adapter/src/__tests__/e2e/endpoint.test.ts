@@ -110,6 +110,7 @@ describe('eth_getLogs', () => {
   describe('filter by block number', () => {
     it('returns correct logs', async () => {
       const BIG_NUMBER = 88888888;
+      const BIG_NUMBER_HEX = '0x54C5638';
       const allLogs = await getAllLogs();
       let res;
       let expectedLogs;
@@ -124,6 +125,10 @@ describe('eth_getLogs', () => {
       expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
       res = await eth_getLogs([{ fromBlock: -100000, toBlock: BIG_NUMBER }]);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+
+      res = await eth_getLogs([{ fromBlock: -100000, toBlock: BIG_NUMBER_HEX }]);
       expect(res.status).to.equal(200);
       expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
@@ -171,6 +176,18 @@ describe('eth_getLogs', () => {
       expect(res.status).to.equal(200);
       expect(logsEq(res.data.result, allLogs)).to.equal(true);
 
+      res = await eth_getLogs([{ fromBlock: 0 }]);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+
+      res = await eth_getLogs([{ fromBlock: '0x0' }]);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+
+      res = await eth_getLogs([{ fromBlock: '0x00000000' }]);
+      expect(res.status).to.equal(200);
+      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 'latest' }]);
       expect(res.status).to.equal(200);
       expect(logsEq(res.data.result, allLogs)).to.equal(true);
@@ -180,6 +197,9 @@ describe('eth_getLogs', () => {
       expect(res.data.result).to.deep.equal([]);
 
       res = await eth_getLogs([{ fromBlock: 'latest', toBlock: 5 }]);
+      expect(res.data.result).to.deep.equal([]);
+
+      res = await eth_getLogs([{ fromBlock: 'latest', toBlock: '0x5' }]);
       expect(res.data.result).to.deep.equal([]);
 
       res = await eth_getLogs([{ fromBlock: 8, toBlock: 'earliest' }]);
@@ -205,10 +225,19 @@ describe('eth_getLogs', () => {
     });
 
     it('returns correct error code and messge for invalid tag', async () => {
-      const res = await eth_getLogs([{ fromBlock: 'polkadot' }]);
+      let res;
+
+      /* ---------- invalid tag ---------- */
+      res = await eth_getLogs([{ fromBlock: 'polkadot' }]);
       expect(res.status).to.equal(200);
       expect(res.data.error.code).to.equal(-32602);
-      expect(res.data.error.message).to.contain("blocktag should be number | 'latest' | 'earliest'");
+      expect(res.data.error.message).to.contain("blocktag should be number | hex string | 'latest' | 'earliest'");
+
+      /* ---------- invalid hex string ---------- */
+      res = await eth_getLogs([{ toBlock: '0xzzzz' }]);
+      expect(res.status).to.equal(200);
+      expect(res.data.error.code).to.equal(-32602);
+      expect(res.data.error.message).to.contain("blocktag should be number | hex string | 'latest' | 'earliest'");
     });
   });
 
