@@ -49,4 +49,14 @@ describe('rpc test', () => {
 
     expect(result.toString()).to.equal('0');
   });
+
+  it('getBlockByNumber', async () => {
+    try {
+      const result = await provider._getBlockHeader(
+        '0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c'
+      );
+    } catch (error) {
+      expect(error.message === 'header not found');
+    }
+  });
 });
