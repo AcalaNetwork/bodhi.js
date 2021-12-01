@@ -632,6 +632,7 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit = ethTx.gasPrice?.shr(32).toString() ?? '0';
       validUntil = ethTx.gasPrice?.and(0xffffffff).toString() ?? '0';
     } else if (ethTx.type === 1) {
+      // EIP-2930
       return throwNotImplemented('EIP-2930 transactions is not supported at this time');
     } else if (ethTx.type === 2) {
       // EIP-1559
