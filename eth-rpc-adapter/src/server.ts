@@ -38,5 +38,6 @@ export async function start() {
 
   await provider.isReady();
 
-  console.log(`server started -- listening to: HTTP ${HTTP_PORT}, WS: ${WS_PORT}`);
+  console.log(`server started with ${ENDPOINT_URL}`);
+  console.log(`listening to: HTTP ${HTTP_PORT}, WS: ${WS_PORT}`);
 }

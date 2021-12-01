@@ -512,7 +512,7 @@
       "shouldPublish": false
     },
     {
-      "packageName": "evm-waffle-hello-world",
+      "packageName": "evm-waffle-example-hello-world",
       "projectFolder": "examples/waffle/hello-world",
       "reviewCategory": "tests",
       "shouldPublish": false

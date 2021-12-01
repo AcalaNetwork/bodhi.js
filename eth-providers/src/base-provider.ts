@@ -45,6 +45,7 @@ import {
   getPartialTransactionReceipt,
   getTxReceiptByHash,
   logger,
+  PROVIDER_ERRORS,
   sendTx,
   throwNotImplemented
 } from './utils';
@@ -225,8 +226,8 @@ export abstract class BaseProvider extends AbstractProvider {
   getBlockNumber = async (): Promise<number> => {
     await this.getNetwork();
 
-    const blockHash = await this._getBlockTag('latest');
-    const header = await this.api.rpc.chain.getHeader(blockHash);
+    const header = await this._getBlockHeader('latest');
+
     return header.number.toNumber();
   };
 
@@ -240,16 +241,17 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError('getBlock full param not implemented', Logger.errors.UNSUPPORTED_OPERATION);
     }
 
-    const { fullTx, blockHash } = await resolveProperties({
-      blockHash: this._getBlockTag(blockTag),
+    const { fullTx, header } = await resolveProperties({
+      header: this._getBlockHeader(blockTag),
       fullTx: full
     });
 
+    const blockHash = header.hash.toHex();
+
     const apiAt = await this.api.at(blockHash);
 
-    const [block, header, validators, now] = await Promise.all([
+    const [block, validators, now] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
-      this.api.rpc.chain.getHeader(blockHash),
       this.api.query.session ? apiAt.query.session.validators() : ([] as any),
       apiAt.query.timestamp.now()
       // apiAt.query.system.events(),
@@ -300,7 +302,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockTag(blockTag)
+      blockHash: this._getBlockHash(blockTag)
     });
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
@@ -346,7 +348,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return idx.toNumber();
     }
 
-    const blockHash = await this._getBlockTag(blockTag);
+    const blockHash = await this._getBlockHash(blockTag);
 
     const apiAt = await this.api.at(blockHash);
     const accountInfo = await apiAt.query.system.account(substrateAddress);
@@ -362,7 +364,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockTag(blockTag)
+      blockHash: this._getBlockHash(blockTag)
     });
 
     const contractInfo = await this.queryContractInfo(address, blockHash);
@@ -388,7 +390,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
-      blockHash: this._getBlockTag(blockTag)
+      blockHash: this._getBlockHash(blockTag)
     });
 
     if (!resolved.transaction.from) {
@@ -421,7 +423,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // @TODO resolvedPosition
     const { address, blockHash, resolvedPosition } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockTag(blockTag),
+      blockHash: this._getBlockHash(blockTag),
       resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))
     });
 
@@ -532,7 +534,7 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<string> => {
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockTag(blockTag)
+      blockHash: this._getBlockHash(blockTag)
     });
 
     const apiAt = await this.api.at(blockHash);
@@ -549,7 +551,7 @@ export abstract class BaseProvider extends AbstractProvider {
     substrateAddress = await substrateAddress;
 
     const { blockHash } = await resolveProperties({
-      blockHash: this._getBlockTag(blockTag)
+      blockHash: this._getBlockHash(blockTag)
     });
 
     const apiAt = await this.api.at(blockHash);
@@ -572,7 +574,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockTag(blockTag)
+      blockHash: this._getBlockHash(blockTag)
     });
 
     const apiAt = await this.api.at(blockHash);
@@ -676,7 +678,7 @@ export abstract class BaseProvider extends AbstractProvider {
       // wait for tx in block
       const result = await sendTx(this.api, extrinsic);
       const blockHash = result.status.isInBlock ? result.status.asInBlock : result.status.asFinalized;
-      const header = await this.api.rpc.chain.getHeader(blockHash);
+      const header = await this._getBlockHeader(blockHash.toHex());
       const blockNumber = header.number.toNumber();
       const hash = extrinsic.hash.toHex();
 
@@ -784,7 +786,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return result;
   };
 
-  _getBlockTag = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
+  _getBlockHash = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
     blockTag = await blockTag;
 
     if (blockTag === undefined) {
@@ -804,43 +806,55 @@ export abstract class BaseProvider extends AbstractProvider {
         return hash.toHex();
       }
       default: {
-        if (!isHexString(blockTag)) {
-          return logger.throwArgumentError('blocktag should be a hex string', 'blockTag', blockTag);
+        let blockHash: undefined | string = undefined;
+
+        if (isHexString(blockTag, 32)) {
+          blockHash = blockTag as string;
+        } else if (isHexString(blockTag) || typeof blockTag === 'number') {
+          const blockNumber = BigNumber.from(blockTag);
+
+          // max blockNumber is u32
+          if (blockNumber.gt(0xffffffff)) {
+            return logger.throwArgumentError('block number should be less than u32', 'blockNumber', blockNumber);
+          }
+
+          const _blockHash = await this.api.rpc.chain.getBlockHash(blockNumber.toBigInt());
+
+          if (_blockHash.isEmpty) {
+            //@ts-ignore
+            return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND);
+          }
+
+          blockHash = _blockHash.toHex();
         }
 
-        // block hash
-        if (typeof blockTag === 'string' && isHexString(blockTag, 32)) {
-          return blockTag;
+        if (!blockHash) {
+          return logger.throwArgumentError('blocktag should be a hex string or number', 'blockTag', blockTag);
         }
 
-        const blockNumber = BigNumber.from(blockTag).toNumber();
-
-        const hash = await this.api.rpc.chain.getBlockHash(blockNumber);
-
-        return hash.toHex();
+        return blockHash;
       }
     }
   };
 
-  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
-    switch (blockTag) {
-      case 'pending': {
-        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
-      }
-      case 'latest': {
-        const header = await this.api.rpc.chain.getHeader();
-        return header.number.toNumber();
-      }
-      case 'earliest': {
-        return 0;
-      }
-      default: {
-        if (typeof blockTag !== 'number') {
-          return logger.throwArgumentError("blocktag should be number | 'latest' | 'earliest'", 'blockTag', blockTag);
-        }
+  _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
+    const blockHash = await this._getBlockHash(blockTag);
 
-        return blockTag;
+    try {
+      const header = await this.api.rpc.chain.getHeader(blockHash);
+
+      return header;
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        typeof (error as any).message === 'string' &&
+        (error as any).message.match(/Unable to retrieve header and parent from supplied hash/gi)
+      ) {
+        //@ts-ignore
+        return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND);
       }
+
+      throw error;
     }
   };
 
@@ -913,17 +927,16 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<TransactionReceipt> => {
     const txHash = (await hash).toLowerCase();
-    const blockHash = await this._getBlockTag(blockTag);
+    const header = await this._getBlockHeader(blockTag);
+    const blockHash = header.hash.toHex();
+    const blockNumber = header.number.toNumber();
 
     const apiAt = await this.api.at(blockHash);
 
-    const [block, header, blockEvents] = await Promise.all([
+    const [block, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
-      this.api.rpc.chain.getHeader(blockHash),
       apiAt.query.system.events()
     ]);
-
-    const blockNumber = header.number.toNumber();
 
     const { extrinsic, extrinsicIndex } =
       block.block.extrinsics
@@ -965,7 +978,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // to and contractAddress may be undefined
     return this.formatter.receipt({
-      confirmations: (await this._getBlockNumberFromTag('latest')) - blockNumber,
+      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
       logs: partialTransactionReceipt.logs.map((log) => ({
@@ -1058,7 +1071,7 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: EFFECTIVE_GAS_PRICE,
-      confirmations: (await this._getBlockNumberFromTag('latest')) - tx.blockNumber
+      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
     });
   };
 
@@ -1068,12 +1081,12 @@ export abstract class BaseProvider extends AbstractProvider {
     const _filter = { ...filter };
 
     if (fromBlock) {
-      const fromBlockNumber = await this._getBlockNumberFromTag(fromBlock);
-      _filter.fromBlock = fromBlockNumber;
+      const fromBlockNumberHeader = await this._getBlockHeader(fromBlock);
+      _filter.fromBlock = fromBlockNumberHeader.number.toNumber();
     }
     if (toBlock) {
-      const toBlockNumber = await this._getBlockNumberFromTag(toBlock);
-      _filter.toBlock = toBlockNumber;
+      const toBlockNumberHeader = await this._getBlockHeader(toBlock);
+      _filter.toBlock = toBlockNumberHeader.number.toNumber();
     }
 
     const filteredLogs = await getFilteredLogs(_filter as Filter);

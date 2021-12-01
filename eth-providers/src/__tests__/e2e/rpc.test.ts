@@ -1,9 +1,14 @@
-import { expect } from 'chai';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
 import { EvmRpcProvider } from '../../rpc-provider';
 
 const endpoint = 'ws://127.0.0.1:9944';
 
 const provider = EvmRpcProvider.from(endpoint);
+
+chai.use(chaiAsPromised);
+
+const { expect } = chai;
 
 describe('rpc test', () => {
   before(async () => {
@@ -48,5 +53,11 @@ describe('rpc test', () => {
     const result = await provider.getBalance('0x33f9440ff970496a09e391f3773a66f1e98eb13c');
 
     expect(result.toString()).to.equal('0');
+  });
+
+  it('getBlockByNumber', async () => {
+    await expect(
+      provider._getBlockHeader('0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c')
+    ).to.be.rejectedWith('header not found');
   });
 });
