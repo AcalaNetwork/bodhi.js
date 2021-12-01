@@ -13,4 +13,6 @@ RUN [ "yarn", "build" ]
 
 EXPOSE 8545
 
+USER node
+
 CMD ["yarn", "start"]
