@@ -6,18 +6,10 @@ Some examples of how to use hardhat to interact with Acala EVM+.
 ```
 rush update 
 ```
-or 
-```
-yarn
-```
 
 - build all contracts
 ```
-rush build -t evm-hardhat-examples
-```
-or
-```
-yarn build
+rush build -t .
 ```
 
 - run all tests

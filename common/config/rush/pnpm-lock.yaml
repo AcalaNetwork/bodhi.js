@@ -305,9 +305,11 @@ importers:
 
   ../../examples/hardhat:
     specifiers:
+      '@acala-network/bodhi': workspace:*
       '@nomiclabs/hardhat-ethers': ^2.0.0
       '@nomiclabs/hardhat-etherscan': ^2.1.3
       '@nomiclabs/hardhat-waffle': ^2.0.0
+      '@openzeppelin/contracts': ~4.3.2
       '@typechain/ethers-v5': ^7.0.1
       '@typechain/hardhat': ^2.3.0
       '@types/chai': ~4.2.22
@@ -336,9 +338,11 @@ importers:
       typechain: ^5.1.2
       typescript: ~4.4.4
     devDependencies:
+      '@acala-network/bodhi': link:../../bodhi
       '@nomiclabs/hardhat-ethers': 2.0.2_ethers@5.4.7+hardhat@2.7.0
       '@nomiclabs/hardhat-etherscan': 2.1.8_hardhat@2.7.0
       '@nomiclabs/hardhat-waffle': 2.0.1_2cd909a2c50cb55545f7606ca367297e
+      '@openzeppelin/contracts': 4.3.3
       '@typechain/ethers-v5': 7.2.0_dc7e7861abec6e73a454b31cbd0ee444
       '@typechain/hardhat': 2.3.1_hardhat@2.7.0+typechain@5.2.0
       '@types/chai': 4.2.22
@@ -6206,7 +6210,7 @@ packages:
     resolution: {integrity: sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==}
     deprecated: Critical security vulnerability fixed in v0.21.1. For more information, see https://github.com/axios/axios/pull/3410
     dependencies:
-      follow-redirects: 1.14.5
+      follow-redirects: 1.14.5_debug@4.3.2
     transitivePeerDependencies:
       - debug
     dev: false
@@ -6215,7 +6219,7 @@ packages:
   /axios/0.24.0:
     resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
     dependencies:
-      follow-redirects: 1.14.5
+      follow-redirects: 1.14.5_debug@4.3.2
     transitivePeerDependencies:
       - debug
     dev: false
@@ -10690,7 +10694,7 @@ packages:
     resolution: {integrity: sha1-SiksW8/4s5+mzAyxqFPYbyfu/3s=}
     dev: true
 
-  /follow-redirects/1.14.5:
+  /follow-redirects/1.14.5_debug@4.3.2:
     resolution: {integrity: sha512-wtphSXy7d4/OR+MvIFbCVBDzZ5520qV8XfPklSN5QtxuMUJZ+b0Wnst1e1lCDocfzuCkHqj8k0FpZqO+UIaKNA==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -10698,6 +10702,8 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+    dependencies:
+      debug: 4.3.2
 
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
@@ -17777,7 +17783,7 @@ packages:
     dependencies:
       command-exists: 1.2.9
       commander: 3.0.2
-      follow-redirects: 1.14.5
+      follow-redirects: 1.14.5_debug@4.3.2
       fs-extra: 0.30.0
       js-sha3: 0.8.0
       memorystream: 0.3.1
