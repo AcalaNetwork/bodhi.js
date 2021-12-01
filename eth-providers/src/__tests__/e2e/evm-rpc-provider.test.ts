@@ -20,11 +20,11 @@ describe('EvmRpcProvider', () => {
     }
   });
 
-  it('getBlockTag', async () => {
-    const provider = EvmRpcProvider.from(endpoint);
-    await provider.isReady();
-    const blockHash = await provider._getBlockTag('0x123');
+  // it('getBlockTag', async () => {
+  //   const provider = EvmRpcProvider.from(endpoint);
+  //   await provider.isReady();
+  //   const blockHash = await provider._getBlockTag('0x123');
 
-    expect(blockHash.length).to.equal(66);
-  });
+  //   expect(blockHash.length).to.equal(66);
+  // });
 });
