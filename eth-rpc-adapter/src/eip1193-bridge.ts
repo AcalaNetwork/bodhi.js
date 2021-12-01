@@ -1,4 +1,5 @@
 import { EvmRpcProvider, TX, TXReceipt } from '@acala-network/eth-providers';
+import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
 import { getAddress } from '@ethersproject/address';
@@ -134,8 +135,15 @@ class Eip1193BridgeImpl {
    */
   async eth_getBlockByHash(params: any[]): Promise<any> {
     validate([{ type: 'blockHash' }, { type: 'flag' }], params);
-    const block = await this.#provider.getBlock(params[0], params[1]);
-    return hexlifyRpcResult(block);
+    try {
+      const block = await this.#provider.getBlock(params[0], params[1]);
+      return hexlifyRpcResult(block);
+    } catch (error) {
+      if (typeof error === 'object' && (error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -146,8 +154,15 @@ class Eip1193BridgeImpl {
    */
   async eth_getBlockByNumber(params: any[]): Promise<any> {
     validate([{ type: 'block' }, { type: 'flag' }], params);
-    const block = await this.#provider.getBlock(params[0], params[1]);
-    return hexlifyRpcResult(block);
+    try {
+      const block = await this.#provider.getBlock(params[0], params[1]);
+      return hexlifyRpcResult(block);
+    } catch (error) {
+      if (typeof error === 'object' && (error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND) {
+        return null;
+      }
+      throw error;
+    }
   }
 
   /**

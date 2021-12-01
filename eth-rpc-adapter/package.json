@@ -60,6 +60,8 @@
     "@rushstack/heft": "~0.41.6",
     "mocha": "~9.1.3",
     "chai": "~4.3.4",
-    "@ethersproject/wallet": "~5.5.0"
+    "@ethersproject/wallet": "~5.5.0",
+    "@types/chai-as-promised": "~7.1.4",
+    "chai-as-promised": "~7.1.1"
   }
 }
