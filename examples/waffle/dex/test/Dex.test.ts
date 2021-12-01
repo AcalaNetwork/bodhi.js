@@ -2,7 +2,7 @@ import { TestProvider, Signer, evmChai } from '@acala-network/bodhi';
 import { WsProvider } from '@polkadot/api';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
-import { Contract } from 'ethers';
+import { Contract, ethers } from 'ethers';
 import Dex from '../build/Dex.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
 
@@ -93,7 +93,7 @@ describe('Dex', () => {
     let pool_0 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
       await dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD], 1_000_000_000_000, 1, {
-        value: 1_000_000_000_000,
+        value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
@@ -104,7 +104,7 @@ describe('Dex', () => {
     let pool_2 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
       await dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.ACA], 1_000_000_000_000, 1, {
-        value: 1_000_000_000_000,
+        value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
@@ -134,7 +134,7 @@ describe('Dex', () => {
     let pool_0 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
       await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD], 1, 1_000_000_000_000, {
-        value: 1_000_000_000_000,
+        value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
@@ -145,7 +145,7 @@ describe('Dex', () => {
     let pool_2 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
       await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.ACA], 1, 1_000_000_000_000, {
-        value: 1_000_000_000_000,
+        value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
@@ -175,7 +175,7 @@ describe('Dex', () => {
     let pool_0 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
       await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD], 1_000_000_000_000, 1_000_000_000_000, {
-        value: 1_000_000_000_000,
+        value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
@@ -185,7 +185,7 @@ describe('Dex', () => {
 
     expect(
       await dex.addLiquidity(ADDRESS.ACA, ADDRESS.AUSD, 1_000_000_000_000, 1_000_000_000_000, 0, {
-        value: 1_000_000_000_000,
+        value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
@@ -195,7 +195,7 @@ describe('Dex', () => {
 
     expect(
       await dex.removeLiquidity(ADDRESS.ACA, ADDRESS.AUSD, 100_000_000_000, 0, 0, {
-        value: 1_000_000_000_000,
+        value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
