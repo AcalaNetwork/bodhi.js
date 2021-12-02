@@ -16,6 +16,10 @@ const provider = new TestProvider({
 
 const testPairs = createTestPairs();
 
+const formatAmount = (amount: String) => {
+  return amount.replace(/_/g, '');
+};
+
 const transfer = async (contract: string, new_maintainer: string) => {
   return new Promise((resolve) => {
     provider.api.tx.evm.transferMaintainer(contract, new_maintainer).signAndSend(testPairs.alice.address, (result) => {
@@ -42,13 +46,13 @@ describe('StateRent', () => {
 
   it('stateRent works', async () => {
     if (!process.argv.includes('--with-ethereum-compatibility')) {
-      expect(await stateRent.newContractExtraBytes()).to.equal(10000);
+      expect((await stateRent.newContractExtraBytes()).toString()).to.equal(formatAmount('10_000'));
 
-      expect(await stateRent.storageDepositPerByte()).to.equal(100000000);
+      expect((await stateRent.storageDepositPerByte()).toString()).to.equal(formatAmount('100_000_000_000_000'));
 
-      expect(await stateRent.developerDeposit()).to.equal(1000000000000);
+      expect((await stateRent.developerDeposit()).toString()).to.equal(formatAmount('1_000_000_000_000_000_000'));
 
-      expect(await stateRent.deploymentFee()).to.equal(1000000000000);
+      expect((await stateRent.deploymentFee()).toString()).to.equal(formatAmount('1_000_000_000_000_000_000'));
 
       await provider.api.tx.evm.deploy(stateRent.address).signAndSend(testPairs.alice.address);
     } else {

@@ -15,7 +15,10 @@ const provider = new TestProvider({
 });
 
 const testPairs = createTestPairs();
-const dollar = BigNumber.from('10000000000000');
+const formatAmount = (amount: String) => {
+  return amount.replace(/_/g, '');
+};
+const dollar = BigNumber.from(formatAmount('1_000_000_000_000'));
 
 const next_block = async (block_number: number) => {
   return new Promise((resolve) => {
@@ -116,9 +119,10 @@ describe('Schedule', () => {
     const recurringPayment = await deployContract(
       wallet as any,
       RecurringPayment,
-      [3, 4, dollar.mul(1000), transferTo],
+      [3, 4, ethers.utils.parseEther('1000'), transferTo],
       { gasLimit: 2_000_000 }
     );
+    // ACA as erc20 decimals is 12
     await erc20.transfer(recurringPayment.address, dollar.mul(5000));
     const inital_block_number = Number(await provider.api.query.system.number());
     await recurringPayment.initialize();
@@ -154,8 +158,8 @@ describe('Schedule', () => {
     expect((await provider.getBalance(recurringPayment.address)).toString()).to.equal('0');
     expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
     if (!process.argv.includes('--with-ethereum-compatibility')) {
-      expect((await provider.getBalance(transferTo)).toString()).to.equal('49999970797767888000000');
-      expect((await erc20.balanceOf(transferTo)).toString()).to.equal('49999970797767888');
+      expect((await provider.getBalance(transferTo)).toString()).to.equal(formatAmount('4999_914_997_200_000_000_000'));
+      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4999_914_997_200_000'));
     } else {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(dollar.mul(5000000000).toString());
       expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(5000).toString());
@@ -164,10 +168,10 @@ describe('Schedule', () => {
 
   it('works with Subscription', async () => {
     const period = 10;
-    const subPrice = dollar.mul(1000);
+    const subPrice = ethers.utils.parseEther('1000');
 
     const subscription = await deployContract(wallet as any, Subscription, [subPrice, period], {
-      value: dollar.mul(5000),
+      value: ethers.utils.parseEther('5000'),
       gasLimit: 2_000_000
     });
     if (!process.argv.includes('--with-ethereum-compatibility')) {
@@ -180,10 +184,13 @@ describe('Schedule', () => {
     expect((await subscription.monthsSubscribed(subscriber.getAddress())).toString()).to.equal('0');
 
     const subscriberContract = subscription.connect(subscriber as any);
-    await subscriberContract.subscribe({ value: dollar.mul(10_000), gasLimit: 2_000_000 });
+    await subscriberContract.subscribe({
+      value: ethers.utils.parseEther(formatAmount('10_000')).toString(),
+      gasLimit: 2_000_000
+    });
 
     expect((await subscription.balanceOf(subscriber.getAddress())).toString()).to.equal(
-      (dollar.mul(10_000) - subPrice).toString()
+      ethers.utils.parseEther(formatAmount('10_000')).sub(subPrice).toString()
     );
     expect((await subscription.subTokensOf(subscriber.getAddress())).toString()).to.equal('1');
     expect((await subscription.monthsSubscribed(subscriber.getAddress())).toString()).to.equal('1');
@@ -195,7 +202,7 @@ describe('Schedule', () => {
     }
 
     expect((await subscription.balanceOf(subscriber.getAddress())).toString()).to.equal(
-      (dollar.mul(10_000) - subPrice * 2).toString()
+      ethers.utils.parseEther(formatAmount('10_000')).sub(subPrice.mul(2)).toString()
     );
     expect((await subscription.subTokensOf(subscriber.getAddress())).toString()).to.equal('3');
     expect((await subscription.monthsSubscribed(subscriber.getAddress())).toString()).to.equal('2');
@@ -207,7 +214,7 @@ describe('Schedule', () => {
     }
 
     expect((await subscription.balanceOf(subscriber.getAddress())).toString()).to.equal(
-      (dollar.mul(10_000) - subPrice * 3).toString()
+      ethers.utils.parseEther(formatAmount('10_000')).sub(subPrice.mul(3)).toString()
     );
     expect((await subscription.subTokensOf(subscriber.getAddress())).toString()).to.equal('6');
     expect((await subscription.monthsSubscribed(subscriber.getAddress())).toString()).to.equal('3');
