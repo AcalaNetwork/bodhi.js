@@ -6,14 +6,16 @@ import { SubstrateEvent } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
 
 const NOT_EXIST_TRANSACTION_INDEX = 0xffff;
+const DUMMY_TX_HASH = '0x6666666666666666666666666666666666666666666666666666666666666666';
 
 export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   const { block } = event;
 
   const txIdx = event.extrinsic?.idx ?? NOT_EXIST_TRANSACTION_INDEX;
 
+  const transactionHash = event.extrinsic?.extrinsic.hash.toHex() || DUMMY_TX_HASH;
   const transactionInfo = {
-    transactionHash: event.extrinsic.extrinsic.hash.toHex(),
+    transactionHash,
     blockNumber: block.block.header.number.toNumber(),
     blockHash: block.block.hash.toHex(),
     transactionIndex: txIdx
@@ -47,7 +49,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   for (const [idx, evmLog] of ret.logs.entries()) {
     const log = Log.create({
       id: `${receiptId}-${idx}`,
-      transactionHash: event.extrinsic.extrinsic.hash.toHex(),
+      transactionHash,
       blockNumber: block.block.header.number.toNumber(),
       blockHash: block.block.hash.toHex(),
       transactionIndex: txIdx,
