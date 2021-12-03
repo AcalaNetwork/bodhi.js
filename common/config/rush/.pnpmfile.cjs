@@ -37,7 +37,7 @@ const fixedDeps = {
 } 
 
 const projects = [
-  "@acala-network/eth-rpc-adaptor",
+  "@acala-network/eth-rpc-adapter",
   "@acala-network/evm-subql",
   "@acala-network/bodhi"
 ]
