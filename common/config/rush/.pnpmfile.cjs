@@ -34,7 +34,6 @@ const fixedDeps = {
   ...polkadotDeps,
   "bn.js": "4.12.0",
   "@types/bn.js": "5.1.0",
-  "uglifyjs-webpack-plugin": "2.2.0"
 } 
 
 const projects = [
