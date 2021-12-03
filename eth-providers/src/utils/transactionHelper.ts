@@ -5,9 +5,11 @@ type TxConsts = {
   txFeePerGas: BigNumberish;
 };
 
-const bigNumDiv = (x: BigNumber, y: BigNumber) => {
-  const res = x.div(y);
-  return res.mul(y) === x ? res : res.add(1);
+const divRoundUp = (x: BigNumber, y: BigNumber): BigNumber => {
+  const mod = x.mod(y);
+  const div = x.div(y);
+
+  return div.add(mod.gt(0) ? 1 : 0);
 };
 
 export const calcEthereumTransactionParams = (
@@ -26,12 +28,11 @@ export const calcEthereumTransactionParams = (
   const storageByteDeposit = BigNumber.from(data.storageByteDeposit);
   const txFeePerGas = BigNumber.from(data.txFeePerGas);
 
-  const blockPeriod = validUntil.div(30);
-  const storageEntryLimit = storageLimit.div(64);
+  const blockPeriod = divRoundUp(validUntil, BigNumber.from(30));
+  const storageEntryLimit = divRoundUp(storageLimit, BigNumber.from(64));
   const storageEntryDeposit = storageByteDeposit.mul(64);
   const txGasPrice = txFeePerGas.add(blockPeriod.shl(16)).add(storageEntryLimit);
-
-  const txGasLimit = storageEntryDeposit.div(txFeePerGas).mul(storageEntryLimit).add(gasLimit);
+  const txGasLimit = divRoundUp(storageEntryDeposit, txFeePerGas).mul(storageEntryLimit).add(gasLimit);
 
   return {
     txGasPrice,
