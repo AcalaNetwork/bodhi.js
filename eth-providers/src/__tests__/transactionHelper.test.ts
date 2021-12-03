@@ -20,7 +20,7 @@ it('transactionHelper', async () => {
     storageByteDeposit
   });
 
-  expect(subParams.gasLimit.toNumber()).gte(2100001);
-  expect(subParams.storageLimit.toNumber()).gte(64001);
-  expect(subParams.validUntil.toNumber()).gte(3601);
+  expect(subParams.gasLimit.toNumber()).eq(2100001);
+  expect(subParams.storageLimit.toNumber()).eq(64064);
+  expect(subParams.validUntil.toNumber()).eq(3630);
 });
