@@ -1,4 +1,7 @@
-import { getPartialTransactionReceipt } from '@acala-network/eth-providers/lib/utils/getPartialTransactionReceipt';
+import {
+  getPartialTransactionReceipt,
+  PartialTransactionReceipt
+} from '@acala-network/eth-providers/lib/utils/getPartialTransactionReceipt';
 import { SubstrateEvent } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
 
@@ -18,7 +21,13 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
 
   const receiptId = `${block.block.header.number.toString()}-${event.extrinsic?.idx ?? event.phase.toString()}`;
 
-  const ret = getPartialTransactionReceipt(event);
+  let ret: PartialTransactionReceipt;
+  try {
+    ret = getPartialTransactionReceipt(event);
+  } catch (e) {
+    logger.warn(e, 'event skipped due to error -- ');
+    return;
+  }
 
   const transactionReceipt = TransactionReceipt.create({
     id: receiptId,
