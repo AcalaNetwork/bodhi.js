@@ -22,7 +22,7 @@ import { accessListify, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import type { GenericExtrinsic, Option } from '@polkadot/types';
+import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish } from 'ethers';
@@ -47,7 +47,8 @@ import {
   logger,
   PROVIDER_ERRORS,
   sendTx,
-  throwNotImplemented
+  throwNotImplemented,
+  calcSubstrateTransactionParams
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
@@ -612,8 +613,9 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
 
-    let storageLimit = '0';
-    let validUntil = '0';
+    let storageLimit = 0n;
+    let validUntil = 0n;
+    let gasLimit = 0n;
 
     if (ethTx.type === 96) {
       // eip712
@@ -625,12 +627,22 @@ export abstract class BaseProvider extends AbstractProvider {
       if (!_validUntil) {
         return logger.throwError('expect validUntil');
       }
-      storageLimit = _storageLimit;
-      validUntil = _validUntil;
+
+      gasLimit = ethTx.gasLimit.toBigInt();
+      storageLimit = BigInt(_storageLimit);
+      validUntil = BigInt(_validUntil);
     } else if (ethTx.type == null || ethTx.type === 0) {
       //  Legacy and EIP-155 Transactions
-      storageLimit = ethTx.gasPrice?.shr(32).toString() ?? '0';
-      validUntil = ethTx.gasPrice?.and(0xffffffff).toString() ?? '0';
+      const params = calcSubstrateTransactionParams({
+        txGasPrice: ethTx.gasPrice || '0',
+        txGasLimit: ethTx.gasLimit || '0',
+        storageByteDeposit: (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt(),
+        txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt()
+      });
+
+      gasLimit = params.gasLimit.toBigInt();
+      validUntil = params.validUntil.toBigInt();
+      storageLimit = params.storageLimit.toBigInt();
     } else if (ethTx.type === 1) {
       // EIP-2930
       return throwNotImplemented('EIP-2930 transactions');
@@ -643,7 +655,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ethTx.to ? { Call: ethTx.to } : { Create: null },
       ethTx.data,
       ethTx.value.toString(),
-      ethTx.gasLimit.toString(),
+      gasLimit,
       storageLimit,
       validUntil
     );
