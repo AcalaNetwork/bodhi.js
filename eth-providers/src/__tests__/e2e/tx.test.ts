@@ -65,12 +65,14 @@ it('a series of tests', async () => {
   console.log('serializeTransaction legacy');
 
   const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
-    gasLimit: 2100000n,
-    validUntil: 3600n,
-    storageLimit: 64000n,
+    gasLimit: 2100001n,
+    validUntil: 3601n,
+    storageLimit: 64001n,
     txFeePerGas,
     storageByteDeposit
   });
+
+  console.log(txFeePerGas, storageByteDeposit);
 
   const unsignTx: Eip712Transaction = {
     nonce: await provider.getTransactionCount(account1Wallet.address),
