@@ -31,7 +31,7 @@ export const calcEthereumTransactionParams = (
   const storageEntryDeposit = storageByteDeposit.mul(64);
   const txGasPrice = txFeePerGas.add(blockPeriod.shl(16)).add(storageEntryLimit);
 
-  const txGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas).add(gasLimit);
+  const txGasLimit = storageEntryDeposit.div(txFeePerGas).mul(storageEntryLimit).add(gasLimit);
 
   return {
     txGasPrice,

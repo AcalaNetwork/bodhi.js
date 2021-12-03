@@ -32,7 +32,7 @@ it('transactionHelper', async () => {
   });
 
   expect(ethParams.txGasPrice.toBigInt()).equal(200007812072n);
-  expect(ethParams.txGasLimit.toBigInt()).equal(34100009n);
+  expect(ethParams.txGasLimit.toBigInt()).equal(34100001n);
 
   const subParams = calcSubstrateTransactionParams({
     txGasLimit: ethParams.txGasLimit,
@@ -41,7 +41,7 @@ it('transactionHelper', async () => {
     storageByteDeposit
   });
 
-  expect(subParams.gasLimit.toBigInt()).equal(2100009n);
+  expect(subParams.gasLimit.toBigInt()).equal(2100001n);
   expect(subParams.storageLimit.toBigInt()).equal(64000n);
   expect(subParams.validUntil.toBigInt()).equal(3600n);
 });
