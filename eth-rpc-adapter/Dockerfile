@@ -24,6 +24,7 @@ RUN yarn build
 # =============
 
 FROM node:16-alpine
+LABEL maintainer="hello@acala.network"
 
 COPY --from=builder /app /app
 
