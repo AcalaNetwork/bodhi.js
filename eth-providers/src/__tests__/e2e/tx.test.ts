@@ -7,7 +7,7 @@ import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
-import { sendTx } from '../../utils';
+import { sendTx, calcEthereumTransactionParams } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
 import evmAccounts from '../evmAccounts';
 import {
@@ -17,6 +17,7 @@ import {
   createTransactionPayload,
   signTransaction
 } from '@acala-network/eth-transactions';
+import type { UInt } from '@polkadot/types';
 
 it('a series of tests', async () => {
   console.log('test start');
@@ -26,6 +27,8 @@ it('a series of tests', async () => {
 
   const provider = EvmRpcProvider.from(endpoint);
   const chainId = await provider.chainId();
+  const storageByteDeposit = (provider.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+  const txFeePerGas = (provider.api.consts.evm.txFeePerGas as UInt).toBigInt();
 
   const account1Wallet = new Wallet(account1.privateKey).connect(provider as any);
 
@@ -60,11 +63,22 @@ it('a series of tests', async () => {
 
   /** serializeTransaction legacyRawTx */
   console.log('serializeTransaction legacy');
+
+  const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
+    gasLimit: 2100001n,
+    validUntil: 3601n,
+    storageLimit: 64001n,
+    txFeePerGas,
+    storageByteDeposit
+  });
+
+  console.log(txFeePerGas, storageByteDeposit);
+
   const unsignTx: Eip712Transaction = {
     nonce: await provider.getTransactionCount(account1Wallet.address),
     chainId,
-    gasLimit: BigNumber.from('0x030dcf'),
-    gasPrice: BigNumber.from('0x0186a000002710'),
+    gasLimit: txGasLimit,
+    gasPrice: txGasPrice,
     data: deployHelloWorldData,
     value: BigNumber.from(0)
   };
@@ -89,8 +103,8 @@ it('a series of tests', async () => {
   const walletSendTransaction = async () => {
     console.log('wallet sendTransaction');
     await account1Wallet.sendTransaction({
-      gasLimit: BigNumber.from('0x030dcf'),
-      gasPrice: BigNumber.from('0x0186a000002710'),
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice,
       data: deployHelloWorldData,
       type: 0
     });
@@ -100,7 +114,6 @@ it('a series of tests', async () => {
 
   /** serializeTransaction eip712 */
   console.log('serializeTransaction eip712');
-  console.log('nonce', await provider.getTransactionCount(account1Wallet.address));
   const unsignEip712Tx: Eip712Transaction = {
     nonce: await provider.getTransactionCount(account1Wallet.address),
     chainId,
