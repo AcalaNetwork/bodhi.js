@@ -1,5 +1,5 @@
 {
-  "name": "@acala-network/eth-rpc-adaptor",
+  "name": "@acala-network/eth-rpc-adapter",
   "version": "1.0.0",
   "main": "lib/index.js",
   "license": "MIT",
@@ -7,7 +7,7 @@
   "scripts": {
     "build": "heft build --clean",
     "build:watch": "heft build",
-    "watch": "rush build:watch --to @acala-network/eth-rpc-adaptor",
+    "watch": "rush build:watch --to @acala-network/eth-rpc-adapter",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "mocha **/*.test.ts --ignore **/e2e/**",
     "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",

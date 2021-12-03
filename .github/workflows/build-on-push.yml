@@ -79,7 +79,7 @@ jobs:
         run: node common/scripts/install-run-rush.js update
 
       - name: build
-        run: node common/scripts/install-run-rush.js build -t @acala-network/eth-rpc-adaptor
+        run: node common/scripts/install-run-rush.js build -t @acala-network/eth-rpc-adapter
 
       - name: test
         run: cd eth-rpc-adapter && yarn test

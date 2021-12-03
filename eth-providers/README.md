@@ -1,6 +1,6 @@
 # @acala-network/eth-providers
 
-Providers that contain some reusable functionalities for bodhi and eth-rpc-adaptor.
+Providers that contain some reusable functionalities for bodhi and eth-rpc-adapter.
 
 ## Run
 - install deps

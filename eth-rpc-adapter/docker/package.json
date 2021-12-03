@@ -1,5 +1,5 @@
 {
-  "name": "@acala-network/eth-rpc-adaptor",
+  "name": "@acala-network/eth-rpc-adapter",
   "version": "1.0.0",
   "main": "lib/index.js",
   "license": "MIT",

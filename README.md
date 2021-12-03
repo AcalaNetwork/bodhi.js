@@ -16,13 +16,13 @@ rush update
 - build
 ```
 rush build // build all
-rush build --to @acala-network/eth-rpc-adaptor //  build all the things that @acala-network/eth-rpc-adaptor depends on, and also @acala-network/eth-rpc-adaptor itself
+rush build --to @acala-network/eth-rpc-adapter //  build all the things that @acala-network/eth-rpc-adapter depends on, and also @acala-network/eth-rpc-adapter itself
 ```
 
 - run build when the file changes
 ```
 rush build:watch // watch all packages
-rush build:watch --to @acala-network/eth-rpc-adaptor //  watch all the things that @acala-network/eth-rpc-adaptor depends on, and also @acala-network/eth-rpc-adaptor itself
+rush build:watch --to @acala-network/eth-rpc-adapter //  watch all the things that @acala-network/eth-rpc-adapter depends on, and also @acala-network/eth-rpc-adapter itself
 ```
 
 - run a script defined in project's `package.json`
