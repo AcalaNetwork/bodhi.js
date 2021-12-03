@@ -6,7 +6,7 @@ import { SubstrateEvent } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
 
 const NOT_EXIST_TRANSACTION_INDEX = 0xffff;
-const DUMMY_TX_HASH = '0x6666666666666';
+const DUMMY_TX_HASH = '0x6666666666666666666666666666666666666666666666666666666666666666';
 
 export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   const { block } = event;
