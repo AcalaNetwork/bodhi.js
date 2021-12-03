@@ -1,35 +1,38 @@
-FROM node:16-buster as builder
+FROM node:16-alpine as builder
 LABEL maintainer="hello@acala.network"
-ENV NODE_ENV=production
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# RUN apk add git python3 make gcc g++ musl-dev
+# required to build some native deps
+RUN apk add git python3 make gcc g++ musl-dev
 
-# # required by some legacy deps
-# RUN ln -s /usr/bin/python3 /usr/bin/python && \
-#     ln -s /usr/bin/pip3 /usr/bin/pip
+# required by some legacy deps
+RUN ln -s /usr/bin/python3 /usr/bin/python && \
+    ln -s /usr/bin/pip3 /usr/bin/pip
 
 # install rush. should match version in rush.json
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY . .
-# RUN rush update
-# RUN rush build -t @acala-network/eth-rpc-adaptor
-# RUN cd eth-rpc-adapter
-# RUN yarn
-# RUN yarn build
+RUN rush update
+
+WORKDIR /app/eth-rpc-adapter
+
+RUN rush build -t .
+RUN yarn build
 
 # =============
 
-# FROM node:14-alpine as builder
+FROM node:16-alpine
 
-# COPY --from=builder
+COPY --from=builder /app /app
 
-# EXPOSE 8545
+WORKDIR /app/eth-rpc-adapter
 
-# USER node
+EXPOSE 8545
 
-ENTRYPOINT sh
+USER node
 
-# CMD ["yarn", "start"]
+ENV NODE_ENV=production
+
+CMD ["yarn", "start"]

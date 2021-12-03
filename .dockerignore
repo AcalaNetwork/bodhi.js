@@ -9,4 +9,8 @@ dist
 lib
 common/changes
 **/cache/solcjs
+**/temp
 build
+Dockerfile
+*.log
+.dockerignore
