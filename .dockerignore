@@ -1,0 +1,16 @@
+node_modules
+.git
+.vscode
+.env
+common/deploy/
+common/autoinstallers/*/.npmrc
+**/.rush/temp/
+dist
+lib
+common/changes
+**/cache/solcjs
+**/temp
+build
+Dockerfile
+*.log
+.dockerignore
