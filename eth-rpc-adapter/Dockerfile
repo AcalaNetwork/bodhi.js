@@ -19,7 +19,6 @@ RUN rush update
 WORKDIR /app/eth-rpc-adapter
 
 RUN rush build -t .
-RUN yarn build
 
 # =============
 
