@@ -39,5 +39,6 @@ export async function start() {
   await provider.isReady();
 
   console.log(`server started with ${ENDPOINT_URL}`);
+  console.log(`subquery url: ${process.env.SUBQL_URL}`);
   console.log(`listening to: HTTP ${HTTP_PORT}, WS: ${WS_PORT}`);
 }

@@ -253,7 +253,7 @@ class Eip1193BridgeImpl {
         res = await fn(...args);
       } catch (e) {
         console.log(`failed attemp # ${tries}/${maxRetries}`);
-        if (tries === maxRetries) {
+        if (tries === maxRetries || !(e as any).message.includes('transaction hash not found')) {
           throw e;
         }
         await sleep(interval);
