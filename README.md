@@ -16,13 +16,13 @@ rush update
 - build
 ```
 rush build // build all
-rush build --to @acala-network/eth-rpc-adapter //  build all the things that @acala-network/eth-rpc-adapter depends on, and also @acala-network/eth-rpc-adapter itself
+rush build -t @acala-network/eth-rpc-adapter //  build all the things that @acala-network/eth-rpc-adapter depends on, and also @acala-network/eth-rpc-adapter itself
 ```
 
 - run build when the file changes
 ```
 rush build:watch // watch all packages
-rush build:watch --to @acala-network/eth-rpc-adapter //  watch all the things that @acala-network/eth-rpc-adapter depends on, and also @acala-network/eth-rpc-adapter itself
+rush build:watch -t @acala-network/eth-rpc-adapter //  watch all the things that @acala-network/eth-rpc-adapter depends on, and also @acala-network/eth-rpc-adapter itself
 ```
 
 - run a script defined in project's `package.json`
@@ -35,6 +35,13 @@ rushx <script-name>
 ```
 rush add -p <package> --all             # for all projects
 cd <project> && rush add -p <package>   # for this project only
+```
+
+## use with docker
+- build and run `eth-rpc-adaptor`
+```
+docker build -f eth-rpc-adapter/Dockerfile . -t eth-rpc-adapter
+docker run -it -p 8545:8545 [--env-file=eth-rpc-adapter/.env] eth-rpc-adapter yarn dev
 ```
 
 ## Documentation
@@ -54,7 +61,7 @@ rush build
 rush publish -p --set-access-level public -n <paste_npm_token_here>
 ```
 
-### CI (deprecated, rush has some different workflow)
+### CI
 In order to trigger a auto release, we need to tag the commit with 'v*', any other commit won't trigger the auto publish. Also, remember to update the `version` fields in `package.json`, otherwise publishing will fail.
 
 For example
