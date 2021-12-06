@@ -4,13 +4,16 @@ A node service that allows existing Ethereum dApp to be able to interact with [A
 ## Run
 - provide an optional `.env` file for:
   - **ENDPOINT_URL**: acala node WS url
+  - **SUBQL_URL**: subquery service url
   - **HTTP_PORT**: HTTP port for requests
   - **WS_PORT**: WS port for requests
 
-for example:
+for example checkout `.env.sample`:
 ```
-ENDPOINT_URL=ws://localhost:9944  # default WS port that acala node exposes
-HTTP_PORT=8545                    # default http port that hardhat looks for
+ENDPOINT_URL=ws://localhost:9944 # default WS port that acala node exposes
+SUBQL_URL=http://localhost:3001  # default http port that subquery exposes
+HTTP_PORT=8545                   # default http port that hardhat looks for
+WS_PORT=3331
 ```
 
 - install dependencies

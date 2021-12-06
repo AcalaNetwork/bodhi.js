@@ -1,8 +1,11 @@
 import { BlockTag, Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
+import dotenv from 'dotenv';
 import { Query, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
 
-const URL = 'http://localhost:3001';
+dotenv.config();
+
+const URL = process.env.SUBQL_URL || 'http://localhost:3001';
 
 const queryGraphql = (query: string): Promise<Query> =>
   request(
