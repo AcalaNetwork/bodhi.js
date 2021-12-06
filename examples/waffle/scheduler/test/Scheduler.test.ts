@@ -1,18 +1,16 @@
 import { expect, use } from 'chai';
 import { ethers, BigNumber, Contract } from 'ethers';
 import { deployContract, solidity } from 'ethereum-waffle';
-import { TestAccountSigningKey, TestProvider, Signer, evmChai } from '@acala-network/bodhi';
-import { WsProvider } from '@polkadot/api';
+import { TestAccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import RecurringPayment from '../build/RecurringPayment.json';
 import Subscription from '../build/Subscription.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
+import { getTestProvider } from '../../utils';
 
 use(evmChai);
 
-const provider = new TestProvider({
-  provider: new WsProvider('ws://127.0.0.1:9944')
-});
+const provider = getTestProvider();
 
 const testPairs = createTestPairs();
 const formatAmount = (amount: String) => {

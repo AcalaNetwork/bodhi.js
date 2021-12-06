@@ -1,17 +1,15 @@
 import { expect, use } from 'chai';
 import { ethers, Contract, BigNumber } from 'ethers';
 import { deployContract, solidity } from 'ethereum-waffle';
-import { TestAccountSigningKey, TestProvider, Signer, evmChai } from '@acala-network/bodhi';
-import { WsProvider } from '@polkadot/api';
+import { TestAccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import ADDRESS from '@acala-network/contracts/utils/Address';
+import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
 
-const provider = new TestProvider({
-  provider: new WsProvider('ws://127.0.0.1:9944')
-});
+const provider = getTestProvider();
 
 const ERC20_ABI = require('@acala-network/contracts/build/contracts/Token.json').abi;
 const DEX_ABI = require('@acala-network/contracts/build/contracts/DEX.json').abi;

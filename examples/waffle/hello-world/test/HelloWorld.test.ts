@@ -2,17 +2,15 @@ import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract } from 'ethers';
 
-import { evmChai, Signer, TestProvider } from '@acala-network/bodhi';
-import { WsProvider } from '@polkadot/api';
+import { evmChai, Signer } from '@acala-network/bodhi';
+import { getTestProvider } from '../../utils';
 
 import HelloWorld from '../build/HelloWorld.json';
 
 use(solidity);
 use(evmChai);
 
-const provider = new TestProvider({
-  provider: new WsProvider('ws://localhost:9944')
-});
+const provider = getTestProvider();
 
 describe('HelloWorld', () => {
   let wallet: Signer;

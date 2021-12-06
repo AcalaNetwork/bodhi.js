@@ -2,18 +2,16 @@ import { expect, use } from 'chai';
 import { Contract } from 'ethers';
 import { deployContract, solidity } from 'ethereum-waffle';
 import BasicToken from '../build/BasicToken.json';
-import { TestAccountSigningKey, TestProvider, Signer, evmChai } from '@acala-network/bodhi';
-import { WsProvider } from '@polkadot/api';
+import { TestAccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
 
 const testPairs = createTestPairs();
 
-const provider = new TestProvider({
-  provider: new WsProvider('ws://127.0.0.1:9944')
-});
+const provider = getTestProvider();
 
 describe('BasicToken', () => {
   let wallet: Signer;

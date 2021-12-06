@@ -1,17 +1,15 @@
-import { TestProvider, Signer, evmChai } from '@acala-network/bodhi';
-import { WsProvider } from '@polkadot/api';
+import { Signer, evmChai } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, ethers } from 'ethers';
 import Dex from '../build/Dex.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
+import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
 
-const provider = new TestProvider({
-  provider: new WsProvider('ws://127.0.0.1:9944')
-});
+const provider = getTestProvider();
 
 describe('Dex', () => {
   let wallet: Signer;

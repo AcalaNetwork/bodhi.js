@@ -7,7 +7,7 @@ import UniswapFactory from '../artifacts/UniswapV2Factory.json';
 import UniswapRouter from '../artifacts/UniswapV2Router02.json';
 import Arbitrager from '../build/Arbitrager.json';
 import IERC20 from '../artifacts/IERC20.json';
-import setup from './setup';
+import { setup } from '../../utils';
 
 use(evmChai);
 
