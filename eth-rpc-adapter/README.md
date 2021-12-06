@@ -47,14 +47,3 @@ GET http://localhost:8545
 
 ## Test
 `rushx test`
-
-## Docker Image
-- build docker image
-```
-docker build . -t eth-rpc-adapter
-```
-
-- run with docker
-```
-docker run -it -p 8545:8545 --env-file=.env eth-rpc-adapter
-```
