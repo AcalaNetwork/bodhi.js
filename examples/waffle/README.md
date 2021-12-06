@@ -19,14 +19,14 @@ compile and build all contracts
 ./run.sh rebuild  # force rebuild all
 ```
 
-start a acala node with docker
+if testing with local node, start a acala node with docker
 ```
 docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:2.0.2 --dev --instant-sealing --ws-external=true --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe
 ```
 
 run all tests
 ```
-./run.sh test
+[ENDPOINT_URL=ws://127.0.0.1:9944] ./run.sh test
 ```
 
 build and run together
@@ -37,7 +37,7 @@ build and run together
 or we can run tests for a single example:
 - cd into one of the example project
   - You can find your contract ABI in the build directory. You can upload these ABI files to [acala evm playground](https://evm.acala.network/#/upload) for testing.
-  - Run the tests with `rushx test`.
+  - Run the tests with `[ENDPOINT_URL=xxxxx] yarn test `.
 
 ## Development
 update dep package version for all examples
@@ -52,5 +52,5 @@ rush add -p <package>
 ```
 
 ### Tips and Docs
-- `rushx` is an alternative to `yarn`, so we can also use `yarn test` instead of `rushx test`.
+- `rushx` is an alternative to `yarn`, so `yarn test` and `rushx test` are equivalent.
 - The test cases are written with with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).

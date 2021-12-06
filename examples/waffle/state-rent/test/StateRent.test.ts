@@ -1,18 +1,16 @@
-import { TestProvider, Signer, TestAccountSigningKey, evmChai } from '@acala-network/bodhi';
-import { WsProvider } from '@polkadot/api';
+import { Signer, TestAccountSigningKey, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, BigNumber } from 'ethers';
 import StateRent from '../build/StateRent.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
+import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
 
-const provider = new TestProvider({
-  provider: new WsProvider('ws://127.0.0.1:9944')
-});
+const provider = getTestProvider();
 
 const testPairs = createTestPairs();
 

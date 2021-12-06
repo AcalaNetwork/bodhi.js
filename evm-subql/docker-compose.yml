@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mandala-node:
-    image: acala/mandala-node:2.0.2
+    image: acala/mandala-node:943f80a5
     ports:
       - 9944:9944
     command:
@@ -15,6 +15,7 @@ services:
       - --rpc-external=true
       - --rpc-cors=all
       - --rpc-methods=unsafe
+      - --instant-sealing
       - --tmp
 
   postgres:
