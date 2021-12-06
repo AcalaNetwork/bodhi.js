@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "yarn && yarn codegen && tsc -b",
+    "build": "yarn codegen && tsc -b",
     "build:watch": "tsc -b",
     "prepack": "rm -rf dist && npm build",
     "codegen": "./node_modules/.bin/subql codegen",
