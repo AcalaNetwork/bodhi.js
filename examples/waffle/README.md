@@ -26,7 +26,7 @@ docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:2.0.2 --dev --i
 
 run all tests
 ```
-./run.sh test [ENDPOINT_URL=ws://127.0.0.1:9944]
+[ENDPOINT_URL=ws://127.0.0.1:9944] ./run.sh test
 ```
 
 build and run together
@@ -37,7 +37,7 @@ build and run together
 or we can run tests for a single example:
 - cd into one of the example project
   - You can find your contract ABI in the build directory. You can upload these ABI files to [acala evm playground](https://evm.acala.network/#/upload) for testing.
-  - Run the tests with `yarn test [ENDPOINT_URL=xxxxx]`.
+  - Run the tests with `[ENDPOINT_URL=xxxxx] yarn test `.
 
 ## Development
 update dep package version for all examples
