@@ -41,7 +41,7 @@ cd <project> && rush add -p <package>   # for this project only
 - build and run `eth-rpc-adaptor`
 ```
 docker build -f eth-rpc-adapter/Dockerfile . -t eth-rpc-adapter
-docker run -it -p 8545:8545 [--env-file=eth-rpc-adapter/.env] eth-rpc-adapter yarn start
+docker run -it -p 8545:8545 [--env-file=eth-rpc-adapter/.env] eth-rpc-adapter yarn dev
 ```
 
 ## Documentation
