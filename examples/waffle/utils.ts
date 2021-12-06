@@ -28,6 +28,8 @@ export const setup = async (urlOverwrite?: string) => {
 
   await provider.api.isReady;
 
+  console.log(`provider connected to ${url}`);
+
   let pair: KeyringPair;
   if (seed) {
     const keyring = new Keyring({ type: 'sr25519' });
