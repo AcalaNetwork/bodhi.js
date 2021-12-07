@@ -21,12 +21,12 @@ importers:
       '@ethersproject/strings': ~5.4.0
       '@ethersproject/transactions': ~5.4.0
       '@open-web3/scanner': ~0.9.4-19
-      '@polkadot/api': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
-      '@polkadot/rpc-provider': ~6.9.2
-      '@polkadot/types': ~6.9.2
-      '@polkadot/util': ~7.9.2
-      '@polkadot/util-crypto': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
+      '@polkadot/rpc-provider': ~6.11.1
+      '@polkadot/types': ~6.11.1
+      '@polkadot/util': ~8.1.2
+      '@polkadot/util-crypto': ~8.1.2
       '@rushstack/eslint-config': ~2.4.2
       '@rushstack/heft': ~0.41.6
       '@types/bn.js': 5.1.0
@@ -53,19 +53,19 @@ importers:
       '@ethersproject/properties': 5.4.1
       '@ethersproject/strings': 5.4.0
       '@ethersproject/transactions': 5.4.0
-      '@open-web3/scanner': 0.9.4-38_@polkadot+api@6.9.2
-      '@polkadot/api': 6.9.2
-      '@polkadot/keyring': 7.9.2
-      '@polkadot/rpc-provider': 6.9.2
-      '@polkadot/types': 6.9.2
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
+      '@open-web3/scanner': 0.9.4-38_@polkadot+api@6.11.1
+      '@polkadot/api': 6.11.1
+      '@polkadot/keyring': 8.1.2
+      '@polkadot/rpc-provider': 6.11.1
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
       '@types/bn.js': 5.1.0
       blakejs: 1.1.1
       bn.js: 4.12.0
       ethers: 5.4.7
     devDependencies:
-      '@acala-network/api': 3.0.3-3_@polkadot+types@6.9.2
+      '@acala-network/api': 3.0.3-3_@polkadot+types@6.11.1
       '@rushstack/eslint-config': 2.4.5_eslint@7.32.0+typescript@4.4.4
       '@rushstack/heft': 0.41.8
       '@types/chai': 4.2.22
@@ -95,12 +95,12 @@ importers:
       '@ethersproject/wallet': ~5.5.0
       '@graphql-codegen/cli': 2.2.2
       '@graphql-codegen/typescript': 2.3.0
-      '@polkadot/api': ~6.9.2
-      '@polkadot/api-derive': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
-      '@polkadot/types': ~6.9.2
-      '@polkadot/util': ~7.9.2
-      '@polkadot/util-crypto': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/api-derive': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
+      '@polkadot/types': ~6.11.1
+      '@polkadot/util': ~8.1.2
+      '@polkadot/util-crypto': ~8.1.2
       '@rushstack/eslint-config': ~2.4.2
       '@rushstack/heft': ~0.41.6
       '@types/bn.js': ~5.1.0
@@ -119,7 +119,7 @@ importers:
       ts-node: ~10.3.0
       typescript: ~4.4.4
     dependencies:
-      '@acala-network/api': 3.0.3-3_@polkadot+types@6.9.2
+      '@acala-network/api': 3.0.3-3_@polkadot+types@6.11.1
       '@acala-network/eth-transactions': link:../eth-transactions
       '@acala-network/types': 3.0.3-3
       '@ethersproject/abstract-provider': 5.4.1
@@ -131,11 +131,11 @@ importers:
       '@ethersproject/providers': 5.5.0
       '@ethersproject/transactions': 5.4.0
       '@graphql-codegen/typescript': 2.3.0_graphql@16.0.1
-      '@polkadot/api': 6.9.2
-      '@polkadot/api-derive': 6.9.2
-      '@polkadot/types': 6.9.2
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/api-derive': 6.11.1
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
       bn.js: 4.12.0
       dotenv: 10.0.0
       ethers: 5.4.7
@@ -147,7 +147,7 @@ importers:
       '@ethersproject/contracts': 5.5.0
       '@ethersproject/wallet': 5.5.0
       '@graphql-codegen/cli': 2.2.2_graphql@16.0.1+typescript@4.4.4
-      '@polkadot/keyring': 7.9.2
+      '@polkadot/keyring': 8.1.2
       '@rushstack/eslint-config': 2.4.5_eslint@7.32.0+typescript@4.4.4
       '@rushstack/heft': 0.41.8
       '@types/bn.js': 5.1.0
@@ -175,11 +175,11 @@ importers:
       '@ethersproject/properties': ~5.4.0
       '@ethersproject/transactions': ~5.4.0
       '@ethersproject/wallet': ~5.5.0
-      '@polkadot/api': ~6.9.2
-      '@polkadot/api-derive': ~6.9.2
-      '@polkadot/types': ~6.9.2
-      '@polkadot/util': ~7.9.2
-      '@polkadot/util-crypto': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/api-derive': ~6.11.1
+      '@polkadot/types': ~6.11.1
+      '@polkadot/util': ~8.1.2
+      '@polkadot/util-crypto': ~8.1.2
       '@rushstack/eslint-config': ~2.4.2
       '@rushstack/heft': ~0.41.6
       '@types/body-parser': ~1.19.1
@@ -209,7 +209,7 @@ importers:
       typescript: ~4.4.4
       ws: ~8.2.2
     dependencies:
-      '@acala-network/api': 3.0.3-3_@polkadot+types@6.9.2
+      '@acala-network/api': 3.0.3-3_@polkadot+types@6.11.1
       '@acala-network/eth-providers': link:../eth-providers
       '@acala-network/types': 3.0.3-3
       '@ethersproject/abstract-provider': 5.4.1
@@ -221,11 +221,11 @@ importers:
       '@ethersproject/properties': 5.4.1
       '@ethersproject/transactions': 5.4.0
       '@ethersproject/wallet': 5.5.0
-      '@polkadot/api': 6.9.2
-      '@polkadot/api-derive': 6.9.2
-      '@polkadot/types': 6.9.2
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/api-derive': 6.11.1
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
       axios: 0.24.0
       body-parser: 1.19.0
       connect: 3.7.0
@@ -384,8 +384,8 @@ importers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~2.0.0
       '@openzeppelin/contracts': ~3.4.2
-      '@polkadot/api': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       '@uniswap/v2-core': ~1.0.1
@@ -400,8 +400,8 @@ importers:
       '@acala-network/api': 3.0.3-3
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 2.0.0
-      '@polkadot/api': 6.9.2
-      '@polkadot/keyring': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/keyring': 8.1.2
       '@uniswap/v2-core': 1.0.1
       '@uniswap/v2-periphery': 1.1.0-beta.0
     devDependencies:
@@ -420,7 +420,7 @@ importers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.0.1
-      '@polkadot/api': ~6.9.2
+      '@polkadot/api': ~6.11.1
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -433,7 +433,7 @@ importers:
       '@acala-network/api': 3.0.3-3
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
-      '@polkadot/api': 6.9.2
+      '@polkadot/api': 6.11.1
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -449,8 +449,8 @@ importers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.0.1
-      '@polkadot/api': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -463,8 +463,8 @@ importers:
       '@acala-network/api': 3.0.3-3
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
-      '@polkadot/api': 6.9.2
-      '@polkadot/keyring': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/keyring': 8.1.2
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -481,8 +481,8 @@ importers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.0.1
       '@openzeppelin/contracts': ~4.3.2
-      '@polkadot/api': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -495,8 +495,8 @@ importers:
       '@acala-network/api': 3.0.3-3
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
-      '@polkadot/api': 6.9.2
-      '@polkadot/keyring': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/keyring': 8.1.2
     devDependencies:
       '@openzeppelin/contracts': 4.3.3
       '@types/chai': 4.2.22
@@ -564,8 +564,8 @@ importers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~2.0.0
       '@openzeppelin/contracts': ~3.4.2
-      '@polkadot/api': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -578,8 +578,8 @@ importers:
       '@acala-network/api': 3.0.3-3
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 2.0.0
-      '@polkadot/api': 6.9.2
-      '@polkadot/keyring': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/keyring': 8.1.2
     devDependencies:
       '@openzeppelin/contracts': 3.4.2
       '@types/chai': 4.2.22
@@ -596,8 +596,8 @@ importers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.0.1
-      '@polkadot/api': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -610,8 +610,8 @@ importers:
       '@acala-network/api': 3.0.3-3
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
-      '@polkadot/api': 6.9.2
-      '@polkadot/keyring': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/keyring': 8.1.2
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -628,8 +628,8 @@ importers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.0.1
       '@openzeppelin/contracts': ~4.3.2
-      '@polkadot/api': ~6.9.2
-      '@polkadot/keyring': ~7.9.2
+      '@polkadot/api': ~6.11.1
+      '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -642,8 +642,8 @@ importers:
       '@acala-network/api': 3.0.3-3
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.0.1
-      '@polkadot/api': 6.9.2
-      '@polkadot/keyring': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/keyring': 8.1.2
     devDependencies:
       '@openzeppelin/contracts': 4.3.3
       '@types/chai': 4.2.22
@@ -666,13 +666,13 @@ packages:
     dev: false
     optional: true
 
-  /@acala-network/api-derive/3.0.3-3_@polkadot+api@6.9.2:
+  /@acala-network/api-derive/3.0.3-3_@polkadot+api@6.11.1:
     resolution: {integrity: sha512-LUiVne5c6HNofl3q2aThK8FwXNvmtcqBQ6PM8coENWUkTYpsE+ILp0w91AuVmxgAd6CJeA6uGxCjFGsICr5YIA==}
     dependencies:
       '@acala-network/types': 3.0.3-3
       '@babel/runtime': 7.16.3
-      '@open-web3/orml-types': 1.0.2-2_@polkadot+api@6.9.2
-      '@polkadot/api-derive': 6.9.2
+      '@open-web3/orml-types': 1.0.2-2_@polkadot+api@6.11.1
+      '@polkadot/api-derive': 6.11.1
     transitivePeerDependencies:
       - '@polkadot/api'
       - '@polkadot/typegen'
@@ -683,29 +683,29 @@ packages:
     peerDependencies:
       '@polkadot/types': ^6.5.2
     dependencies:
-      '@acala-network/api-derive': 3.0.3-3_@polkadot+api@6.9.2
+      '@acala-network/api-derive': 3.0.3-3_@polkadot+api@6.11.1
       '@acala-network/types': 3.0.3-3
       '@babel/runtime': 7.16.3
-      '@open-web3/orml-api-derive': 1.0.2-2_@polkadot+api@6.9.2
-      '@polkadot/api': 6.9.2
-      '@polkadot/rpc-core': 6.9.2
+      '@open-web3/orml-api-derive': 1.0.2-2_@polkadot+api@6.11.1
+      '@polkadot/api': 6.11.1
+      '@polkadot/rpc-core': 6.11.1
     transitivePeerDependencies:
       - '@polkadot/typegen'
       - supports-color
     dev: false
 
-  /@acala-network/api/3.0.3-3_@polkadot+types@6.9.2:
+  /@acala-network/api/3.0.3-3_@polkadot+types@6.11.1:
     resolution: {integrity: sha512-k2wVTHI4QsLQhwXeFn44/07EFCTJfwwcJSp1zuZGGPnHptCS7of/g8HPtEToz2fECzZeuuhD+rQzytrxXGVxkA==}
     peerDependencies:
       '@polkadot/types': ^6.5.2
     dependencies:
-      '@acala-network/api-derive': 3.0.3-3_@polkadot+api@6.9.2
+      '@acala-network/api-derive': 3.0.3-3_@polkadot+api@6.11.1
       '@acala-network/types': 3.0.3-3
       '@babel/runtime': 7.16.3
-      '@open-web3/orml-api-derive': 1.0.2-2_@polkadot+api@6.9.2
-      '@polkadot/api': 6.9.2
-      '@polkadot/rpc-core': 6.9.2
-      '@polkadot/types': 6.9.2
+      '@open-web3/orml-api-derive': 1.0.2-2_@polkadot+api@6.11.1
+      '@polkadot/api': 6.11.1
+      '@polkadot/rpc-core': 6.11.1
+      '@polkadot/types': 6.11.1
     transitivePeerDependencies:
       - '@polkadot/typegen'
       - supports-color
@@ -727,11 +727,11 @@ packages:
     dependencies:
       '@acala-network/type-definitions': 3.0.3-3
       '@babel/runtime': 7.16.3
-      '@open-web3/api-mobx': 1.0.2-2_@polkadot+api@6.9.2
-      '@open-web3/orml-types': 1.0.2-2_58f71897b939cf218cdbe20410f27596
-      '@polkadot/api': 6.9.2
+      '@open-web3/api-mobx': 1.0.2-2_@polkadot+api@6.11.1
+      '@open-web3/orml-types': 1.0.2-2_c6704d7eb7336d4ffab86336145c3381
+      '@polkadot/api': 6.11.1
       '@polkadot/typegen': 6.9.2
-      '@polkadot/types': 6.9.2
+      '@polkadot/types': 6.11.1
     transitivePeerDependencies:
       - supports-color
 
@@ -3271,6 +3271,12 @@ packages:
       graphql: 16.0.1
     dev: true
 
+  /@noble/hashes/0.4.1:
+    resolution: {integrity: sha512-Qxy9mZoDf5SyFrQ8hpWHeMZ2Scmb9BAz/lt23sKdr/QHnACW9dD6S+/WVJHd3R/BPoNHcUYWXoXXe74cxSEYoA==}
+
+  /@noble/secp256k1/1.3.0:
+    resolution: {integrity: sha512-wuFthUc6Ul4xflhY5u1+p1bDILPzVEisekxt5M+iLg4R+gG6+k2jnRR19sC9fMtzlsN5sKloBwprziDS0XlmyQ==}
+
   /@nodefactory/filsnap-adapter/0.2.2:
     resolution: {integrity: sha512-nbaYMwVopOXN2bWOdDY3il6gGL9qMuCmMN4WPuoxzJjSnAMJNqEeSe6MNNJ/fYBLipZcJfAtirNXRrFLFN+Tvw==}
     deprecated: Package is deprecated in favour of @chainsafe/filsnap-adapter
@@ -3343,21 +3349,21 @@ packages:
       hardhat: 2.7.0
     dev: true
 
-  /@open-web3/api-mobx/1.0.2-2_@polkadot+api@6.9.2:
+  /@open-web3/api-mobx/1.0.2-2_@polkadot+api@6.11.1:
     resolution: {integrity: sha512-bsYhz+/FtWZtQpaEfk8avLkp0PW4lDhxOGeJQq0DSxTF8Ppp6Wc9vqwBaEhbemDvPpFvzvyOJSGKS0r8oINgDw==}
     peerDependencies:
       '@polkadot/api': ^6.3.1
     dependencies:
-      '@polkadot/api': 6.9.2
+      '@polkadot/api': 6.11.1
       mobx: 5.15.7
       mobx-utils: 5.6.2_mobx@5.15.7
 
-  /@open-web3/orml-api-derive/1.0.2-2_@polkadot+api@6.9.2:
+  /@open-web3/orml-api-derive/1.0.2-2_@polkadot+api@6.11.1:
     resolution: {integrity: sha512-5A2qy/9kzyHEqUZBkjpbWkH54i931zjmKnknr1zE5TuH/tnLn+Mm5qtMPCCupTe9in4KU0iduLrIkpPWXBSqpA==}
     peerDependencies:
       '@polkadot/api': ^6.3.1
     dependencies:
-      '@polkadot/api': 6.9.2
+      '@polkadot/api': 6.11.1
       memoizee: 0.4.15
       rxjs: 7.4.0
 
@@ -3366,31 +3372,31 @@ packages:
     dependencies:
       lodash.merge: 4.6.2
 
-  /@open-web3/orml-types/1.0.2-2_58f71897b939cf218cdbe20410f27596:
+  /@open-web3/orml-types/1.0.2-2_@polkadot+api@6.11.1:
     resolution: {integrity: sha512-WIOkobP7oXPT3wF5DGtTmvF4J4JCQdAQGfvxfKgvUOutjc31PpeSzNhjY6G5iXpG7MvlGw8sMlBoPfV8A3mIfQ==}
     peerDependencies:
       '@polkadot/api': ^6.3.1
       '@polkadot/typegen': ^6.3.1
     dependencies:
       '@open-web3/orml-type-definitions': 1.0.2-2
-      '@polkadot/api': 6.9.2
+      '@polkadot/api': 6.11.1
+
+  /@open-web3/orml-types/1.0.2-2_c6704d7eb7336d4ffab86336145c3381:
+    resolution: {integrity: sha512-WIOkobP7oXPT3wF5DGtTmvF4J4JCQdAQGfvxfKgvUOutjc31PpeSzNhjY6G5iXpG7MvlGw8sMlBoPfV8A3mIfQ==}
+    peerDependencies:
+      '@polkadot/api': ^6.3.1
+      '@polkadot/typegen': ^6.3.1
+    dependencies:
+      '@open-web3/orml-type-definitions': 1.0.2-2
+      '@polkadot/api': 6.11.1
       '@polkadot/typegen': 6.9.2
 
-  /@open-web3/orml-types/1.0.2-2_@polkadot+api@6.9.2:
-    resolution: {integrity: sha512-WIOkobP7oXPT3wF5DGtTmvF4J4JCQdAQGfvxfKgvUOutjc31PpeSzNhjY6G5iXpG7MvlGw8sMlBoPfV8A3mIfQ==}
-    peerDependencies:
-      '@polkadot/api': ^6.3.1
-      '@polkadot/typegen': ^6.3.1
-    dependencies:
-      '@open-web3/orml-type-definitions': 1.0.2-2
-      '@polkadot/api': 6.9.2
-
-  /@open-web3/scanner/0.9.4-38_@polkadot+api@6.9.2:
+  /@open-web3/scanner/0.9.4-38_@polkadot+api@6.11.1:
     resolution: {integrity: sha512-DTqFtfSsLK9xbEBKTYxNHjS6jIPdSblmLUykaqORe2LpD8lDc1Rz8Ywb7dZDuxtA7LFhCBPrH/STmSoaP+QrxA==}
     peerDependencies:
       '@polkadot/api': 5.*
     dependencies:
-      '@polkadot/api': 6.9.2
+      '@polkadot/api': 6.11.1
     dev: false
 
   /@openzeppelin/contracts/3.4.2:
@@ -3401,69 +3407,69 @@ packages:
     resolution: {integrity: sha512-tDBopO1c98Yk7Cv/PZlHqrvtVjlgK5R4J6jxLwoO7qxK4xqOiZG+zSkIvGFpPZ0ikc3QOED3plgdqjgNTnBc7g==}
     dev: true
 
-  /@polkadot/api-derive/6.9.2:
-    resolution: {integrity: sha512-KppFp+erUiu3f8C2G4362wkBqILqPl6Z+bAO9ABNaeO0WX37g3K7TmrvDxXcs7+mN4TsZ3NzfpfR+cUf9gdKzQ==}
+  /@polkadot/api-derive/6.11.1:
+    resolution: {integrity: sha512-v5tLUPVk5WjHVZTmEBtuuSlR0bl3Vd1cab57gEVaHMn7N2ZUoPhUrj5KqZhzx4lKVihKve5X/1Zlmk9ssrH+UQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/api': 6.9.2
-      '@polkadot/rpc-core': 6.9.2
-      '@polkadot/types': 6.9.2
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/rpc-core': 6.11.1
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
       rxjs: 7.4.0
 
-  /@polkadot/api/6.9.2:
-    resolution: {integrity: sha512-VlKW2Y0zcJhH0Y9/vNRkYIokMaXr/QQ9fZdHKP6z6slhTOfPQYr09msuBSXNyj0X1VGXR6pAXyjsu/gnMIpPrg==}
+  /@polkadot/api/6.11.1:
+    resolution: {integrity: sha512-MhaPJNe4Tu39j/kzjknfjGOloN2681qjQxVxDpFp6pOx1bfOjtwwiJYpOF9cZlMKkssvPGSN+LGqVHUXRlBuOw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/api-derive': 6.9.2
-      '@polkadot/keyring': 7.9.2
-      '@polkadot/rpc-core': 6.9.2
-      '@polkadot/rpc-provider': 6.9.2
-      '@polkadot/types': 6.9.2
-      '@polkadot/types-known': 6.9.2
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
+      '@polkadot/api-derive': 6.11.1
+      '@polkadot/keyring': 8.1.2
+      '@polkadot/rpc-core': 6.11.1
+      '@polkadot/rpc-provider': 6.11.1
+      '@polkadot/types': 6.11.1
+      '@polkadot/types-known': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
       eventemitter3: 4.0.7
       rxjs: 7.4.0
 
-  /@polkadot/keyring/7.9.2:
-    resolution: {integrity: sha512-6UGoIxhiTyISkYEZhUbCPpgVxaneIfb/DBVlHtbvaABc8Mqh1KuqcTIq19Mh9wXlBuijl25rw4lUASrE/9sBqg==}
+  /@polkadot/keyring/8.1.2:
+    resolution: {integrity: sha512-WsVx9TCJ9H6dmADTyMibwrlSPZrmPlsvFoqrbMTMD04Q7CYZXP46ht3YrF6t81YPQWDoszeDomNuSF2iPXSCTQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
 
-  /@polkadot/networks/7.9.2:
-    resolution: {integrity: sha512-4obI1RdW5/7TFwbwKA9oqw8aggVZ65JAUvIFMd2YmMC2T4+NiZLnok0WhRkhZkUnqjLIHXYNwq7Ho1i39dte0g==}
+  /@polkadot/networks/8.1.2:
+    resolution: {integrity: sha512-OPjEjEdlErZW0dv1WNIEAaOja8g2ynscwM4pQbVWzbpACuM1xziPgfDF74M0R8fMOxr5EJOVbKsvOSBytw+TDg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
 
-  /@polkadot/rpc-core/6.9.2:
-    resolution: {integrity: sha512-4iFoaDmks0J74C17M46tuwR5jSuTmYKgr+alBnTRJP6bpPdEbNabNbtwT9BJT8Ov5R8bi7dBgtLsVyplgxbIYg==}
+  /@polkadot/rpc-core/6.11.1:
+    resolution: {integrity: sha512-WCn284LeNW35HWpXV5BpFohdGBOu5gLxVfDCLnFPg/drxuRFwTuMCKC2IDB7Aoo4EThfAzC61tNO5Qr29goUrg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/rpc-provider': 6.9.2
-      '@polkadot/types': 6.9.2
-      '@polkadot/util': 7.9.2
+      '@polkadot/rpc-provider': 6.11.1
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
       rxjs: 7.4.0
 
-  /@polkadot/rpc-provider/6.9.2:
-    resolution: {integrity: sha512-MOYPbKHrqZ2ixEkhQCbOd+4NMZUThe1Nlhyy1OuyUrLC+dw6M6NMEB59BjLRuv46IeKO4+v8PRkdXaF4FV0OEg==}
+  /@polkadot/rpc-provider/6.11.1:
+    resolution: {integrity: sha512-KMxPlx2Grtg+64ACLuroJC4VJQnTqnH6nw9rP0wMf5+K0jILdQ3h2GHJvBDDlEUg3rNNNOSjol6qTdHJVXh8OA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/types': 6.9.2
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
-      '@polkadot/x-fetch': 7.9.2
-      '@polkadot/x-global': 7.9.2
-      '@polkadot/x-ws': 7.9.2
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
+      '@polkadot/x-fetch': 8.1.2
+      '@polkadot/x-global': 8.1.2
+      '@polkadot/x-ws': 8.1.2
       eventemitter3: 4.0.7
 
   /@polkadot/typegen/6.9.2:
@@ -3474,142 +3480,160 @@ packages:
       '@babel/core': 7.16.0
       '@babel/register': 7.16.0_@babel+core@7.16.0
       '@babel/runtime': 7.16.3
-      '@polkadot/api': 6.9.2
-      '@polkadot/rpc-provider': 6.9.2
-      '@polkadot/types': 6.9.2
+      '@polkadot/api': 6.11.1
+      '@polkadot/rpc-provider': 6.11.1
+      '@polkadot/types': 6.11.1
       '@polkadot/types-support': 6.9.2
-      '@polkadot/util': 7.9.2
+      '@polkadot/util': 8.1.2
       handlebars: 4.7.7
       websocket: 1.0.34
       yargs: 17.2.1
     transitivePeerDependencies:
       - supports-color
 
-  /@polkadot/types-known/6.9.2:
-    resolution: {integrity: sha512-u3mpiyG6xeLV9YVdVWzXMlFjB/1qjFedZWtE400c5/s/rWLWbF92JIkA9QV/K6wDbM7bz8xXO7iRj7LlNMU1Ew==}
+  /@polkadot/types-known/6.11.1:
+    resolution: {integrity: sha512-Vl4WJu56dNvMoXwJ+v9xO0rlWLocb/1KMNczG8UklxrAMfkkgCDIxGjkx/TpgCEfBLxBYavu9MQqQZhJulSP8g==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/networks': 7.9.2
-      '@polkadot/types': 6.9.2
-      '@polkadot/util': 7.9.2
+      '@polkadot/networks': 8.1.2
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
 
   /@polkadot/types-support/6.9.2:
     resolution: {integrity: sha512-93LpTOj7VZ6fy9X0JWyko5RPeZuLXd76raRNRPTWMNPQHW/ZSu3MRyoRV2HHhkCc7u8poT+ntFzzAbNEvrbDGw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/util': 7.9.2
+      '@polkadot/util': 8.1.2
 
-  /@polkadot/types/6.9.2:
-    resolution: {integrity: sha512-GOFlMFv9627uojTyQwyJyg3oWvI0nE7HONakPfXE3pMrnYfM+nBxrh3mH3ETHSyVj9QqrPNqenFmTUdCy0awGg==}
+  /@polkadot/types/6.11.1:
+    resolution: {integrity: sha512-utdAL7XrZmKWTk7iT/cUdr1FD4oaDT9OhZ1yRxilEiMk58QZg4Ntm8POH1Sq/l8/JvLcheE0qy1uZhxK3FS0Rw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/util': 7.9.2
-      '@polkadot/util-crypto': 7.9.2
+      '@polkadot/types-known': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
       rxjs: 7.4.0
 
-  /@polkadot/util-crypto/7.9.2:
-    resolution: {integrity: sha512-nNwqUwP44eCH9jKKcPie+IHLKkg9LMe6H7hXo91hy3AtoslnNrT51tP3uAm5yllhLvswJfnAgnlHq7ybCgqeFw==}
+  /@polkadot/util-crypto/8.1.2:
+    resolution: {integrity: sha512-sqyz4zLyBleBmoaNkGaAQsNXVktqmHJ3XiuYgt9KJ7hIZjP7wjJMLZWzyOKVaL1w5/hUNTRzVuTGiA8GD62ByA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/networks': 7.9.2
-      '@polkadot/util': 7.9.2
-      '@polkadot/wasm-crypto': 4.4.1_1c269728885d05dca877bd833b3013c8
-      '@polkadot/x-randomvalues': 7.9.2
-      blakejs: 1.1.1
-      bn.js: 4.12.0
-      create-hash: 1.2.0
+      '@noble/hashes': 0.4.1
+      '@noble/secp256k1': 1.3.0
+      '@polkadot/networks': 8.1.2
+      '@polkadot/util': 8.1.2
+      '@polkadot/wasm-crypto': 4.5.1_5c8f6d0bc2ef252e2063afa557e15e5a
+      '@polkadot/x-bigint': 8.1.2
+      '@polkadot/x-noble-hashes': 8.1.2
+      '@polkadot/x-noble-secp256k1': 8.1.2
+      '@polkadot/x-randomvalues': 8.1.2
       ed2curve: 0.3.0
-      elliptic: 6.5.4
-      hash.js: 1.1.7
-      js-sha3: 0.8.0
       micro-base: 0.9.0
-      scryptsy: 2.1.0
       tweetnacl: 1.0.3
-      xxhashjs: 0.2.2
 
-  /@polkadot/util/7.9.2:
-    resolution: {integrity: sha512-6ABY6ErgkCsM4C6+X+AJSY4pBGwbKlHZmUtHftaiTvbaj4XuA4nTo3GU28jw8wY0Jh2cJZJvt6/BJ5GVkm5tBA==}
+  /@polkadot/util/8.1.2:
+    resolution: {integrity: sha512-s1Q6J7I2sxDdk8S9SA1wVSMRUN+6YGpAUehl1zE/VKtHUzxtZfX/M7dmZgNpARi8kmk7/0J61ZuIaFb0Cq81jw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/x-textdecoder': 7.9.2
-      '@polkadot/x-textencoder': 7.9.2
+      '@polkadot/x-bigint': 8.1.2
+      '@polkadot/x-global': 8.1.2
+      '@polkadot/x-textdecoder': 8.1.2
+      '@polkadot/x-textencoder': 8.1.2
       '@types/bn.js': 5.1.0
       bn.js: 4.12.0
-      camelcase: 6.2.1
       ip-regex: 4.3.0
 
-  /@polkadot/wasm-crypto-asmjs/4.4.1:
-    resolution: {integrity: sha512-qeMQfybpLe04reBIyHx6GwyRl9jdQdTC/cdtuEdkRzljZ7/8rIY/rLCt6Hs6vo866E+w2p92swQLZGl0snEBWQ==}
+  /@polkadot/wasm-crypto-asmjs/4.5.1:
+    resolution: {integrity: sha512-DOdRiWhxVvmqTvp+E9z1j+Yr0zDOGsDvqnT/eNw0Dl1FVUOImsEa7FKns/urASmcxCVEE1jtUWSnij29jrORMQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
 
-  /@polkadot/wasm-crypto-wasm/4.4.1:
-    resolution: {integrity: sha512-FduItUfsNhkH8I4cQvBsowhw1KzcNdma96x+KDQYuB6iDUfQa+NpicuLZozhmVBDRQsmZkU90wWNiUjf126OXA==}
+  /@polkadot/wasm-crypto-wasm/4.5.1:
+    resolution: {integrity: sha512-hPwke85HxpgG/RAlwdCE8u5w7bThvWg399mlB+XjogXMxOUWBZSgq2XYbgzROUXx27inK9nStF4Pnc4zJnqs9A==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
 
-  /@polkadot/wasm-crypto/4.4.1_1c269728885d05dca877bd833b3013c8:
-    resolution: {integrity: sha512-AeOOuuh04QlkTgXswC+bUT/ftELki58JGu/buZondvCCsPLw9Eu2KloE03ElgX0GmDlPA/MRkEzjQp3fchfydQ==}
+  /@polkadot/wasm-crypto/4.5.1_5c8f6d0bc2ef252e2063afa557e15e5a:
+    resolution: {integrity: sha512-Cr21ais3Kq3aedIHZ3J1tjgeD/+K8FCiwEawr0oRywNBSJR8wyuZMePs4swR/6xm8wbBkpqoBVHz/UQHqqQJmA==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       '@polkadot/util': '*'
       '@polkadot/x-randomvalues': '*'
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/util': 7.9.2
-      '@polkadot/wasm-crypto-asmjs': 4.4.1
-      '@polkadot/wasm-crypto-wasm': 4.4.1
-      '@polkadot/x-randomvalues': 7.9.2
+      '@polkadot/util': 8.1.2
+      '@polkadot/wasm-crypto-asmjs': 4.5.1
+      '@polkadot/wasm-crypto-wasm': 4.5.1
+      '@polkadot/x-randomvalues': 8.1.2
 
-  /@polkadot/x-fetch/7.9.2:
-    resolution: {integrity: sha512-zutLkFJVaLVpY3cIGYJD0AReLfAnPr2J82Ca4pvy/BxqwwGYuGLcn36A4m6nliGBP2lcH4oYY+mcCqIwoPWQUQ==}
+  /@polkadot/x-bigint/8.1.2:
+    resolution: {integrity: sha512-MI9D/gXQQLqrdp66InZtkGDa+FYsrc+Dq0DzsRkGRE0hjX75C7OretNLm7zMG7IQYjiuBQkH8tnTE7I8k/KwDw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/x-global': 7.9.2
+      '@polkadot/x-global': 8.1.2
+
+  /@polkadot/x-fetch/8.1.2:
+    resolution: {integrity: sha512-W92VrsApH1I/ams1gJMNJwaTp+WUzF/WPMZ84VSOw/pR+2P002zoMhAqmr8H4kpue2j/uowDpDUyjzp8taGrxg==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@babel/runtime': 7.16.3
+      '@polkadot/x-global': 8.1.2
       '@types/node-fetch': 2.5.12
       node-fetch: 2.6.6
 
-  /@polkadot/x-global/7.9.2:
-    resolution: {integrity: sha512-JX5CrGWckHf1P9xKXq4vQCAuMUbL81l2hOWX7xeP8nv4caHEpmf5T1wD1iMdQBL5PFifo6Pg0V6/oZBB+bts7A==}
+  /@polkadot/x-global/8.1.2:
+    resolution: {integrity: sha512-prHFu2okMOrOvF4JtCjuHZ742yqim2ip6SuZqSEHrkbQPewXYquC51nXkscJygheTpQgrNt3dBuk5Y8jFWjUHg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
 
-  /@polkadot/x-randomvalues/7.9.2:
-    resolution: {integrity: sha512-svQfG31yCXf6yVyIgP0NgCzEy7oc3Lw054ZspkaqjOivxYdrXaf5w3JSSUyM/MRjI2+nk+B/EyJoMYcfSwTfsQ==}
+  /@polkadot/x-noble-hashes/8.1.2:
+    resolution: {integrity: sha512-Vj0d2ueyFgPnc4SrPP8oEQlp++DDHXMhNlSi7vupWBoehXoKnDpIb7UjZcL78lg+dF8U3/2iSb6DgfHS0lAK5w==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/x-global': 7.9.2
 
-  /@polkadot/x-textdecoder/7.9.2:
-    resolution: {integrity: sha512-wfwbSHXPhrOAl12QvlIOGNkMH/N/h8PId2ytIjvM/8zPPFB5Il6DWSFLtVapOGEpIFjEWbd5t8Td4pHBVXIEbg==}
+  /@polkadot/x-noble-secp256k1/8.1.2:
+    resolution: {integrity: sha512-6fSXJDmEHxWmNQ55tnZTx6xbH1sFgCjJLxyIwLcqJuH9rgaNALloWbGvcG8C3NVbqh3REQRSC20vfabqVjrCpQ==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/x-global': 7.9.2
 
-  /@polkadot/x-textencoder/7.9.2:
-    resolution: {integrity: sha512-A19wwYINuZwU2dUyQ/mMzB0ISjyfc4cISfL4zCMUAVgj7xVoXMYV2GfjNdMpA8Wsjch3su6pxLbtJ2wU03sRTQ==}
+  /@polkadot/x-randomvalues/8.1.2:
+    resolution: {integrity: sha512-hYTGMLXIpAKRiEPcguv0e+ZXIfqUxl8TJQ8qItB/PxE58s1Xa9F+0lAuSCCAzfuJFBn6Qzr3nBkuGx+T/cTz9w==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/x-global': 7.9.2
+      '@polkadot/x-global': 8.1.2
 
-  /@polkadot/x-ws/7.9.2:
-    resolution: {integrity: sha512-+yppMsZtvDztVOSmkqAQuhR6TfV1Axa6ergAsWb52DrfXvFP5geqtARsI6ZdDgMsE3qHSVQTcJz8vgNOr5+ztQ==}
+  /@polkadot/x-textdecoder/8.1.2:
+    resolution: {integrity: sha512-NuQepvIqEIeWPMdGry/ReJAEtXwWRt0qrX0xwYIoY7V1rR8vDVX66Q5YtG/i7/JLBydgabXA1GCj5k4sRpwakA==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.16.3
-      '@polkadot/x-global': 7.9.2
+      '@polkadot/x-global': 8.1.2
+
+  /@polkadot/x-textencoder/8.1.2:
+    resolution: {integrity: sha512-8m+RvtxPEd4/vfHWuhTQyE/RbjN3NTbbrTQ0SMAPRM04NGauKXJOVA5A7WBJYJsj6bDlSaWSavOMJSzO5NKE8w==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@babel/runtime': 7.16.3
+      '@polkadot/x-global': 8.1.2
+
+  /@polkadot/x-ws/8.1.2:
+    resolution: {integrity: sha512-9ELWRNbQL5WARAv9/m0mpdPc9ucN/xwgpPrQ4WSK+HMHswwrpmmq8mPlfIhGtw0ys5DQPgXXIYLGP50m0MNshA==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@babel/runtime': 7.16.3
+      '@polkadot/x-global': 8.1.2
       '@types/websocket': 1.0.4
       websocket: 1.0.34
 
@@ -7377,6 +7401,7 @@ packages:
   /camelcase/6.2.1:
     resolution: {integrity: sha512-tVI4q5jjFV5CavAU8DXfza/TJcZutVKo/5Foskmsqcm0MsL91moHvwiGNnqaa2o6PF/7yT5ikDRcVcl8Rj6LCA==}
     engines: {node: '>=10'}
+    dev: true
 
   /caniuse-lite/1.0.30001282:
     resolution: {integrity: sha512-YhF/hG6nqBEllymSIjLtR2iWDDnChvhnVJqp+vloyt2tEHFG1yBR+ac2B/rOw0qOK0m0lEXU2dv4E/sMk5P9Kg==}
@@ -8339,9 +8364,6 @@ packages:
       cssom: 0.3.8
     dev: false
     optional: true
-
-  /cuint/0.2.2:
-    resolution: {integrity: sha1-QICG1AlVDCYxFVYZ6fp7ytw7mRs=}
 
   /d/1.0.1:
     resolution: {integrity: sha512-m62ShEObQ39CfralilEQRjH6oAMtNCV1xJyEx5LpRYUVN+EviphDgUc/F3hnYbADmkiNs67Y+3ylmlG7Lnu+FA==}
@@ -17381,9 +17403,6 @@ packages:
     dev: true
     optional: true
 
-  /scryptsy/2.1.0:
-    resolution: {integrity: sha512-1CdSqHQowJBnMAFyPEBRfqag/YP9OF394FV+4YREIJX4ljD7OxvQRDayyoyyCk+senRjSkP6VnUNQmVQqB6g7w==}
-
   /scuid/1.1.0:
     resolution: {integrity: sha512-MuCAyrGZcTLfQoH2XoBlQ8C6bzwN88XT/0slOGz0pn8+gIP85BOAfYa44ZXQUTOwRwPU0QvgU+V+OSajl/59Xg==}
     dev: true
@@ -20482,11 +20501,6 @@ packages:
   /xtend/4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
-
-  /xxhashjs/0.2.2:
-    resolution: {integrity: sha512-AkTuIuVTET12tpsVIQo+ZU6f/qDmKuRUcjaqR+OIvm+aCBsZ95i7UVY5WJ9TMsSaZ0DA2WxoZ4acu0sPH+OKAw==}
-    dependencies:
-      cuint: 0.2.2
 
   /y18n/3.2.2:
     resolution: {integrity: sha512-uGZHXkHnhF0XeeAPgnKfPv1bgKAYyVvmNL1xlKsPYZPaIHxGti2hHqvOCQv71XMsLxu1QjergkqogUnms5D3YQ==}
