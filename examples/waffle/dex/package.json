@@ -21,6 +21,6 @@
     "@acala-network/api": "~3.0.3-3",
     "@acala-network/bodhi": "workspace:*",
     "@acala-network/contracts": "~4.0.1",
-    "@polkadot/api": "~6.9.2"
+    "@polkadot/api": "~6.11.1"
   }
 }
