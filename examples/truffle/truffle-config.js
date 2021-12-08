@@ -42,7 +42,8 @@ module.exports = {
           'http://127.0.0.1:8545'
         ),
       network_id: 595,
-      gasPrice: 429496729610000, // storage_limit = 100000, validUntil = 10000, 100000 << 32 | 10000
+      gasPrice: 200786445289, // storage_limit = 64001, validUntil = 360001, gasLimit = 2100001
+      gas: 34132001,
       timeoutBlocks: 25,
       confirmations: 0
     }
