@@ -1,10 +1,26 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
+import { calcEthereumTransactionParams } from '@acala-network/eth-providers';
 
 describe('HelloWorld', function () {
   it("Should return the new greeting once it's changed", async function () {
+    const txFeePerGas = '199999946752';
+    const storageByteDeposit = '100000000000000';
+
+    const ethParams = calcEthereumTransactionParams({
+      gasLimit: '2100001',
+      validUntil: '360001',
+      storageLimit: '64001',
+      txFeePerGas,
+      storageByteDeposit
+    });
+
     const HelloWorld = await ethers.getContractFactory('HelloWorld');
-    const contract = await HelloWorld.deploy('Hello, world!');
+    const contract = await HelloWorld.deploy('Hello, world!', {
+      gasPrice: ethParams.txGasPrice,
+      gasLimit: ethParams.txGasLimit
+    });
+
     await contract.deployed();
 
     expect(await contract.greet()).to.equal('Hello, world!');
