@@ -7,7 +7,7 @@
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test --network mandala",
-    "deploy": "TS_NODE_FILES=true npx ts-node scripts/deploy.ts"
+    "deploy": "TS_NODE_TRANSPILE_ONLY=true hardhat run scripts/deploy.ts --network mandala"
   },
   "dependencies": {},
   "devDependencies": {

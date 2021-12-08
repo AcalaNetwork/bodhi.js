@@ -4,6 +4,10 @@
 // When running the script with `npx hardhat run <script>` you'll find the Hardhat
 // Runtime Environment's members available in the global scope.
 import { ethers } from 'hardhat';
+import { calcEthereumTransactionParams } from '@acala-network/eth-providers';
+
+const txFeePerGas = '199999946752';
+const storageByteDeposit = '100000000000000';
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -13,9 +17,20 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const ethParams = calcEthereumTransactionParams({
+    gasLimit: '2100001',
+    validUntil: '360001',
+    storageLimit: '64001',
+    txFeePerGas,
+    storageByteDeposit
+  });
+
   // We get the contract to deploy
   const HelloWorld = await ethers.getContractFactory('HelloWorld');
-  const contract = await HelloWorld.deploy('Hello, Hardhat!');
+  const contract = await HelloWorld.deploy('Hello, Hardhat!', {
+    gasPrice: ethParams.txGasPrice,
+    gasLimit: ethParams.txGasLimit
+  });
 
   await contract.deployed();
 
