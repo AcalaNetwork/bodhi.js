@@ -13,6 +13,8 @@
   "scripts": {
     "build": "truffle compile",
     "test": "truffle test --network mandala",
-    "deploy": "truffle migrate --network mandala"
+    "deploy": "truffle migrate --network mandala",
+    "test:pub": "truffle test --network mandalaPub",
+    "deploy:pub": "truffle migrate --network mandalaPub"
   }
 }

@@ -42,9 +42,23 @@ module.exports = {
           'http://127.0.0.1:8545'
         ),
       network_id: 595,
-      gasPrice: 429496729610000, // storage_limit = 100000, validUntil = 10000, 100000 << 32 | 10000
+      gasPrice: 200786445289, // storage_limit = 64001, validUntil = 360001, gasLimit = 2100001
+      gas: 34132001,
       timeoutBlocks: 25,
       confirmations: 0
+    },
+    mandalaPub: {
+      provider: () =>
+        new HDWalletProvider(
+          ['0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f'],
+          'https://tc7-eth.aca-dev.network'
+        ),
+      network_id: 595,
+      gasPrice: 200786445289, // storage_limit = 64001, validUntil = 360001, gasLimit = 2100001
+      gas: 34132001,
+      timeoutBlocks: 25,
+      confirmations: 0,
+      networkCheckTime: 50000
     }
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.

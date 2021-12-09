@@ -26,8 +26,13 @@ const config: HardhatUserConfig = {
       url: 'http://localhost:8545',
       chainId: 595,
       // Development built-in default deployment account
-      accounts: ['0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f'],
-      gasPrice: 429496729610000
+      accounts: ['0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f']
+    },
+    mandalaPub: {
+      url: 'https://tc7-eth.aca-dev.network',
+      chainId: 595,
+      // Development built-in default deployment account
+      accounts: ['0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f']
     }
   },
   mocha: {
