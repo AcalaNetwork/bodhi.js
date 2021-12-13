@@ -87,9 +87,7 @@ CMD ["yarn", "test"]
 # ###############################################
 FROM node:16-alpine as eth-providers
 
-COPY --from=bodhi /app/common /app/common
-COPY --from=bodhi /app/eth-transactions /app/eth-transactions
-COPY --from=bodhi /app/eth-providers /app/eth-providers
+COPY --from=bodhi /app /app
 
 WORKDIR /app/eth-providers
 
