@@ -8,9 +8,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
 
-      - name: Build the stack
-        run: docker-compose build
+      # - name: Build the stack
+      #   run: docker-compose build
       - name: Test
-        run: docker-compose up \
-          --abort-on-container-exit \
-          --exit-code-from test-waffle-example-dex
+        run: docker-compose up --abort-on-container-exit --exit-code-from test-eth-providers

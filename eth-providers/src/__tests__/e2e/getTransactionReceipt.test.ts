@@ -9,9 +9,12 @@ import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { sendTx } from '../../utils';
 import evmAccounts from '../evmAccounts';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 it('getTransactionReceipt', async () => {
-  const endpoint = 'ws://127.0.0.1:9944';
+  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
 
@@ -33,8 +36,8 @@ it('getTransactionReceipt', async () => {
   await sendTx(provider.api, extrinsic);
 
   const result = await acaContract.functions.transfer(account2.evmAddress, 10n * oneAca, {
-    gasLimit: BigNumber.from('0x030dcf'),
-    gasPrice: BigNumber.from('0x0186a000002710'),
+    gasLimit: BigNumber.from(34132001n),
+    gasPrice: BigNumber.from(200786445289n),
     type: 0
   });
 

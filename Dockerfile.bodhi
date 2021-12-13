@@ -41,53 +41,62 @@ RUN cd evm-subql && yarn
 # copy files and build all
 COPY . .
 
-# RUN rush build \
+RUN rush build -t @acala-network/eth-providers -t evm-waffle-example-dex
 #     -t @acala-network/bodhi \
 #     -t @acala-network/eth-rpc-adapter \
-#     -t @acala-network/eth-providers \
 #     -t @acala-network/eth-transactions
 
-RUN rush build \
-    -t evm-waffle-example-hello-world \
-    -t evm-waffle-example-dex \
-    -t evm-waffle-example-e2e \
-    -t evm-waffle-example-erc20 \
-    -t evm-waffle-example-oracle \
-    -t evm-waffle-example-state-rent \
-    -t evm-waffle-example-arbitrager \
-    -t evm-waffle-example-scheduler
+# RUN rush build \
+#     -t @acala-network/eth-rpc-adapter \
+#     -t evm-waffle-example-hello-world \
+#     -t evm-waffle-example-dex \
+#     -t evm-waffle-example-e2e \
+#     -t evm-waffle-example-erc20 \
+#     -t evm-waffle-example-oracle \
+#     -t evm-waffle-example-state-rent \
+#     -t evm-waffle-example-arbitrager \
+#     -t evm-waffle-example-scheduler
 
 # RUN cd evm-subql && yarn build
 
 ###############################################
-FROM node:16-alpine as waffle-example-dex
+FROM node:16-alpine as waffle-examples
 RUN apk add bash
 
-# WORKDIR /app
 COPY --from=bodhi /app /app
-# COPY --from=bodhi /app/common /app/common
-# COPY --from=bodhi /app/bodhi /app/bodhi
-# COPY --from=bodhi /app/examples/waffle/dex/ /app/examples/waffle/dex/
 
 WORKDIR /app/examples/waffle
-RUN chmod 777 run.sh
 
+RUN chmod 777 run.sh
 ENV ENDPOINT_URL=ws://mandala-node:9944
 CMD ["/bin/bash", "run.sh", "test"]
 
+###############################################
+FROM node:16-alpine as feed-tx
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/waffle/dex
+
+ENV ENDPOINT_URL=ws://mandala-node:9944
+CMD ["yarn", "test"]
+
 # ###############################################
-# FROM node:16-alpine as eth-providers
+FROM node:16-alpine as eth-providers
 
-# COPY --from=bodhi /app/common /app/common
-# COPY --from=bodhi /app/eth-transactions /app/eth-transactions
-# COPY --from=bodhi /app/eth-providers /app/eth-providers
+COPY --from=bodhi /app/common /app/common
+COPY --from=bodhi /app/eth-transactions /app/eth-transactions
+COPY --from=bodhi /app/eth-providers /app/eth-providers
 
-# WORKDIR /app/eth-providers
-# CMD ["yarn", "test:dev"]
+WORKDIR /app/eth-providers
+
+ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV SUBQL_URL=http://graphql-engine:3001
+CMD ["yarn", "test:CI"]
 
 
 # ###############################################
-# FROM node:16-alpine as eth-rpc-adapter
+# FROM node:16-alpine as eth-rpc-adapter-server
 # # WORKDIR /app
 # COPY --from=bodhi /app/common /app/common
 # COPY --from=bodhi /app/eth-transactions /app/eth-transactions
