@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/bin/bash
+
+failed=0
 
 build_all() {
   sh -c 'rush build \
@@ -44,20 +46,30 @@ test_all() {
     echo "--------------- testing ${e} ---------------"
 
     cd  "${ROOT}/${e}"
-    yarn test
+
+    if ! yarn test; then
+      ((failed=failed+1))
+    fi
 
     echo ""
   done
+
+  echo "+++++++++++++++++++++++"
+  echo "test failed: $failed"
+  echo "+++++++++++++++++++++++"
 }
 
 build_and_test() {
   build_all
   test_all
+
+  exit $failed
 }
 
 case "$1" in
   "build") build_all ;;
   "rebuild") rebuild_all ;;
   "test") test_all ;;
+  "build_and_test") build_and_test ;;
   *) build_and_test ;;
 esac

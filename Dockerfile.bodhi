@@ -43,10 +43,9 @@ COPY . .
 
 RUN rush build \
     -t @acala-network/eth-providers \
+    -t @acala-network/bodhi \
     -t evm-waffle-example-dex
-#     -t @acala-network/bodhi \
 #     -t @acala-network/eth-rpc-adapter \
-#     -t @acala-network/eth-transactions
 
 # RUN rush build \
 #     -t @acala-network/eth-rpc-adapter \
@@ -64,6 +63,7 @@ RUN rush build \
 ###############################################
 FROM node:16-alpine as waffle-examples
 RUN apk add bash
+RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
 
@@ -71,7 +71,7 @@ WORKDIR /app/examples/waffle
 
 RUN chmod 777 run.sh
 ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh"]
+CMD ["/bin/bash", "run.sh", "build_and_test"]
 
 ###############################################
 FROM node:16-alpine as feed-tx
@@ -94,6 +94,7 @@ WORKDIR /app/eth-providers
 
 ENV ENDPOINT_URL=ws://mandala-node:9944
 ENV SUBQL_URL=http://graphql-engine:3001
+ENV START_DELAY=60
 CMD ["yarn", "test:CI"]
 
 

@@ -2,7 +2,7 @@ name: Test All Packages
 on: push
 
 jobs:
-  test-eth-providers:
+  test-waffle-examples:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -13,7 +13,7 @@ jobs:
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=test-waffle-examples -- test-waffle-examples
 
-  test-waffle:
+  test-eth-providers:
     runs-on: ubuntu-latest
     steps:
       - name: checkout

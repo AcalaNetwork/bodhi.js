@@ -82,7 +82,7 @@ services:
   #   build:
   #     context: .
   #     dockerfile: Dockerfile.bodhi
-  #     target: eth-rpc-adapter
+  #     target: eth-rpc-adapter-server
   #   depends_on:
   #     - mandala-node
 
