@@ -29,8 +29,8 @@ COPY examples/waffle/erc20/package.json examples/waffle/erc20/package.json
 COPY examples/waffle/oracle/package.json examples/waffle/oracle/package.json
 COPY examples/waffle/hello-world/package.json examples/waffle/hello-world/package.json
 COPY examples/waffle/state-rent/package.json examples/waffle/state-rent/package.json
-COPY examples/waffle/arbitrager/package.json examples/waffle/arbitrager/package.json
 COPY examples/waffle/scheduler/package.json examples/waffle/scheduler/package.json
+RUN true
 COPY examples/waffle/uniswap/package.json examples/waffle/uniswap/package.json
 
 RUN rush update
