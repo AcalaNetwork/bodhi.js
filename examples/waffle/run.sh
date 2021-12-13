@@ -44,7 +44,7 @@ test_all() {
     echo "--------------- testing ${e} ---------------"
 
     cd  "${ROOT}/${e}"
-    rushx test
+    yarn test
 
     echo ""
   done
