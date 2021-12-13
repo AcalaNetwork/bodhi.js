@@ -12,7 +12,6 @@ export const sleep = async (time: number = 1000): Promise<void> => new Promise((
 describe('getTxReceiptByHash', () => {
   it('returns correct result when hash exist', async () => {
     await sleep(START_DELAY);
-
     const allTxReceipts = await getAllTxReceipts();
 
     // test first one
@@ -32,7 +31,6 @@ describe('getTxReceiptByHash', () => {
   });
 
   it('returns null when hash not found', async () => {
-    await sleep(START_DELAY);
     const res = await getTxReceiptByHash('0x000');
     expect(res).to.deep.equal(null);
   });
@@ -47,7 +45,6 @@ export const logsEq = (a: Log[], b: Log[]): boolean =>
 describe('getFilteredLogs', () => {
   describe('when no filter', () => {
     it('returns all logs', async () => {
-      await sleep(START_DELAY);
       const allLogs = await getAllLogs();
       const filteredLogs = await getFilteredLogs({});
 
@@ -57,7 +54,6 @@ describe('getFilteredLogs', () => {
 
   describe('filter by address', () => {
     it('returns correct logs', async () => {
-      await sleep(START_DELAY);
       const allLogs = await getAllLogs();
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];
@@ -86,7 +82,6 @@ describe('getFilteredLogs', () => {
 
   describe('filter by block number', () => {
     it('returns correct logs', async () => {
-      await sleep(START_DELAY);
       const BIG_NUMBER = 88888888;
       const allLogs = await getAllLogs();
       let filteredLogs;
@@ -128,7 +123,6 @@ describe('getFilteredLogs', () => {
 
   describe('filter by topics', () => {
     it('returns correct logs', async () => {
-      await sleep(START_DELAY);
       const allLogs = await getAllLogs();
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];

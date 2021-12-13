@@ -68,13 +68,13 @@ services:
       - --playground
       - --indexer=http://subquery-node:3000
 
-  test-waffle-examples:
-    build:
-      context: .
-      dockerfile: Dockerfile.bodhi
-      target: waffle-examples
-    depends_on:
-      - mandala-node
+  # test-waffle-examples:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.bodhi
+  #     target: waffle-examples
+  #   depends_on:
+  #     - mandala-node
 
   # command: tail -f /dev/null
 
