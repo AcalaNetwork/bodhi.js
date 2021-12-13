@@ -30,7 +30,6 @@ COPY examples/waffle/oracle/package.json examples/waffle/oracle/package.json
 COPY examples/waffle/hello-world/package.json examples/waffle/hello-world/package.json
 COPY examples/waffle/state-rent/package.json examples/waffle/state-rent/package.json
 COPY examples/waffle/scheduler/package.json examples/waffle/scheduler/package.json
-RUN true
 COPY examples/waffle/uniswap/package.json examples/waffle/uniswap/package.json
 
 RUN rush update
@@ -42,11 +41,11 @@ RUN cd evm-subql && yarn
 # copy files and build all
 COPY . .
 
-RUN rush build \
-    -t @acala-network/bodhi \
-    -t @acala-network/eth-rpc-adapter \
-    -t @acala-network/eth-providers \
-    -t @acala-network/eth-transactions
+# RUN rush build \
+#     -t @acala-network/bodhi \
+#     -t @acala-network/eth-rpc-adapter \
+#     -t @acala-network/eth-providers \
+#     -t @acala-network/eth-transactions
 
 RUN rush build \
     -t evm-waffle-example-hello-world \
