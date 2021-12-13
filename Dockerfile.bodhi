@@ -41,7 +41,9 @@ RUN cd evm-subql && yarn
 # copy files and build all
 COPY . .
 
-RUN rush build -t @acala-network/eth-providers -t evm-waffle-example-dex
+RUN rush build \
+    -t @acala-network/eth-providers \
+    -t evm-waffle-example-dex
 #     -t @acala-network/bodhi \
 #     -t @acala-network/eth-rpc-adapter \
 #     -t @acala-network/eth-transactions
@@ -69,7 +71,7 @@ WORKDIR /app/examples/waffle
 
 RUN chmod 777 run.sh
 ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "test"]
+CMD ["/bin/bash", "run.sh"]
 
 ###############################################
 FROM node:16-alpine as feed-tx

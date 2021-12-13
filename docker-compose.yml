@@ -3,6 +3,7 @@ services:
     image: acala/mandala-node:2.1.0
     ports:
       - 9944:9944
+      - 9933:9933
     command:
       - --dev
       # - -lruntime=debug
@@ -67,13 +68,13 @@ services:
       - --playground
       - --indexer=http://subquery-node:3000
 
-  # test-waffle-examples:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.bodhi
-  #     target: waffle-examples
-  #   depends_on:
-  #     - mandala-node
+  test-waffle-examples:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: waffle-examples
+    depends_on:
+      - mandala-node
 
   # command: tail -f /dev/null
 
@@ -106,5 +107,12 @@ services:
     depends_on:
       feed-tx:
         condition: service_completed_successfully
+      postgres:
+        condition: service_started
+      subquery-node:
+        condition: service_started
+      graphql-engine:
+        condition: service_started
+
 volumes:
   postgres:
