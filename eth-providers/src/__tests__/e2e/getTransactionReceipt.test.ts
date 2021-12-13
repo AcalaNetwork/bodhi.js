@@ -9,17 +9,8 @@ import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { sendTx } from '../../utils';
 import evmAccounts from '../evmAccounts';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const START_DELAY = process.env.START_DELAY * 1000 || 0;
-
-export const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
 
 it('getTransactionReceipt', async () => {
-  await sleep(START_DELAY);
-
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
