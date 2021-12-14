@@ -3,7 +3,6 @@ services:
     image: acala/mandala-node:2.1.0
     ports:
       - 9944:9944
-      - 9933:9933
     command:
       - --dev
       # - -lruntime=debug
@@ -14,7 +13,7 @@ services:
       - --rpc-external=true
       - --rpc-cors=all
       - --rpc-methods=unsafe
-      # - --instant-sealing
+      - --instant-sealing
       - --tmp
 
   postgres:
@@ -110,23 +109,22 @@ services:
     ports:
       - 8545:8545
     depends_on:
-      feed-tx:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_started
-      subquery-node:
-        condition: service_started
-      graphql-engine:
-        condition: service_started
+      - postgres
+      - subquery-node
+      - graphql-engine
     command: yarn dev
-
   eth-rpc-adapter-test:
     build:
       context: .
       dockerfile: Dockerfile.bodhi
       target: eth-rpc-adapter
     depends_on:
-      - eth-rpc-adapter-server
+      eth-rpc-adapter-server:
+        condition: service_started
+      postgres:
+        condition: service_started
+      feed-tx:
+        condition: service_completed_successfully
     environment:
       RPC_URL: http://eth-rpc-adapter-server:8545
     command: yarn test:CI

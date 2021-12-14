@@ -123,5 +123,3 @@ COPY --from=bodhi /app /app
 WORKDIR /app/examples/truffle
 
 RUN rush build -t .
-
-CMD ["yarn", "test"]
