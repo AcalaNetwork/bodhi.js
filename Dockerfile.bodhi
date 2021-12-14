@@ -13,7 +13,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python && \
 ### install rush. should match version in rush.json
 RUN npm install -g @microsoft/rush@5.55.0
 
-# install all dependencies first before copying
+# install all dependencies first before copying in favor of caching
 COPY rush.json .
 COPY common ./common
 COPY bodhi/package.json bodhi/package.json
@@ -48,7 +48,7 @@ RUN rush build \
 
 RUN cd evm-subql && yarn build
 
-###############################################
+# =============== waffle-examples =============== #
 FROM node:16-alpine as waffle-examples
 RUN apk add bash
 RUN npm install -g @microsoft/rush@5.55.0
@@ -61,7 +61,7 @@ RUN chmod 777 run.sh
 ENV ENDPOINT_URL=ws://mandala-node:9944
 CMD ["/bin/bash", "run.sh", "build_and_test"]
 
-###############################################
+# =============== feed-tx =============== #
 FROM node:16-alpine as feed-tx
 
 COPY --from=bodhi /app /app
@@ -71,7 +71,7 @@ WORKDIR /app/examples/waffle/dex
 ENV ENDPOINT_URL=ws://mandala-node:9944
 CMD ["yarn", "test"]
 
-# ###############################################
+# =============== eth-providers =============== #
 FROM node:16-alpine as eth-providers
 
 COPY --from=bodhi /app /app
@@ -83,14 +83,14 @@ ENV SUBQL_URL=http://graphql-engine:3001
 ENV START_DELAY=10
 CMD ["yarn", "test:CI"]
 
-# ###############################################
+# =============== subql-node =============== #
 FROM onfinality/subql-node:latest as subql-node
 
 COPY --from=bodhi /app /app
 
 WORKDIR /app/evm-subql
 
-###############################################
+# =============== eth-rpc-adapter =============== #
 FROM node:16-alpine as eth-rpc-adapter
 
 COPY --from=bodhi /app /app
@@ -102,7 +102,7 @@ ENV WS_PORT=3331
 
 WORKDIR /app/eth-rpc-adapter
 
-###############################################
+# =============== hardhat-examples =============== #
 FROM node:16-alpine as hardhat-examples
 RUN npm install -g @microsoft/rush@5.55.0
 
@@ -114,7 +114,7 @@ RUN rush build -t .
 
 CMD ["yarn", "test"]
 
-###############################################
+# =============== truffle-examples =============== #
 FROM node:16-alpine as truffle-examples
 RUN npm install -g @microsoft/rush@5.55.0
 
