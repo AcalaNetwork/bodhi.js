@@ -1,0 +1,118 @@
+services:
+  mandala-node:
+    image: acala/mandala-node:2.1.0
+    ports:
+      - 9944:9944
+      - 9933:9933
+    command:
+      - --dev
+      # - -lruntime=debug
+      # - -levm=debug
+      - --ws-port=9944
+      - --ws-external=true
+      - --rpc-port=9933
+      - --rpc-external=true
+      - --rpc-cors=all
+      - --rpc-methods=unsafe
+      - --instant-sealing
+      - --tmp
+
+  postgres:
+    image: postgres:12-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+  subquery-node:
+    image: onfinality/subql-node:latest
+    depends_on:
+      - postgres
+      - mandala-node
+    ports:
+      - 3000:3000
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+    volumes:
+      - ./evm-subql:/app
+    command:
+      - -f=/app
+      - --network-endpoint=ws://mandala-node:9944
+      - --subquery-name=acala-evm
+      - --log-level=debug
+
+  graphql-engine:
+    image: onfinality/subql-query:latest
+    ports:
+      - 3001:3001
+    depends_on:
+      - postgres
+      - subquery-node
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      PORT: 3001
+    command:
+      - --name=acala-evm
+      - --playground
+      - --indexer=http://subquery-node:3000
+
+  # test-waffle-examples:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.bodhi
+  #     target: waffle-examples
+  #   depends_on:
+  #     - mandala-node
+
+  # command: tail -f /dev/null
+
+  # test-eth-rpc-adapter:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.bodhi
+  #     target: eth-rpc-adapter-server
+  #   depends_on:
+  #     - mandala-node
+
+  feed-tx:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: feed-tx
+    depends_on:
+      - mandala-node
+    # healthcheck:
+    #   test: "exit 0"
+    #   interval: 2s
+    #   timeout: 10s
+    #   retries: 1000
+
+  test-eth-providers:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: eth-providers
+    depends_on:
+      feed-tx:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+      subquery-node:
+        condition: service_started
+      graphql-engine:
+        condition: service_started
+
+volumes:
+  postgres:

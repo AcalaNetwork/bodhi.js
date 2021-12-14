@@ -1,7 +1,10 @@
 import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
+import dotenv from 'dotenv';
 
-const endpoint = 'ws://127.0.0.1:9944';
+dotenv.config();
+
+const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
 describe('EvmRpcProvider', () => {
   it('connect chain', async () => {
