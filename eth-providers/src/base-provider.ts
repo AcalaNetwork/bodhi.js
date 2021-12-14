@@ -998,6 +998,29 @@ export abstract class BaseProvider extends AbstractProvider {
       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
+    const isExtrinsicFailed = events[events.length - 1].event.method === 'ExtrinsicFailed';
+
+    if (isExtrinsicFailed) {
+      const [dispatchError] = events[events.length - 1].event.data as any[];
+
+      let message = dispatchError.type;
+
+      if (dispatchError.isModule) {
+        try {
+          const mod = dispatchError.asModule;
+          const error = this.api.registry.findMetaError(new Uint8Array([mod.index.toNumber(), mod.error.toNumber()]));
+          message = `${error.section}.${error.name}`;
+        } catch (error) {
+          // swallow
+        }
+      }
+
+      return logger.throwError(`ExtrinsicFailed: ${message}`, Logger.errors.UNKNOWN_ERROR, {
+        hash: txHash,
+        blockHash
+      });
+    }
+
     const evmEvent = events.find(({ event }) => {
       return (
         event.section.toUpperCase() === 'EVM' &&
