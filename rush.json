@@ -520,8 +520,8 @@
 
     /* ---------- hardhat examples ---------- */
     {
-      "packageName": "evm-hardhat-examples",
-      "projectFolder": "examples/hardhat",
+      "packageName": "evm-hardhat-examples-helloworld",
+      "projectFolder": "examples/hardhat/helloworld",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
