@@ -16,7 +16,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test -- eth-providers-test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
 
   eth-rpc-adaptor:
     runs-on: ubuntu-latest
@@ -24,7 +24,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test -- eth-rpc-adapter-test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
 
   hardhat-examples:
     runs-on: ubuntu-latest
@@ -32,7 +32,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-examples-test -- hardhat-examples-test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-examples-test --build -- hardhat-examples-test
 
   truffle-examples:
     runs-on: ubuntu-latest
@@ -40,4 +40,4 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-examples-test -- truffle-examples-test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-examples-test --build -- truffle-examples-test

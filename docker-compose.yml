@@ -129,6 +129,16 @@ services:
       RPC_URL: http://eth-rpc-adapter-server:8545
     command: yarn test:CI
 
+  # helper for hardhat with instant-sealing node
+  loop:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: hardhat-examples
+    depends_on:
+      - eth-rpc-adapter-server
+    command: yarn loop:CI
+
   hardhat-examples-test:
     build:
       context: .
@@ -136,6 +146,7 @@ services:
       target: hardhat-examples
     depends_on:
       - eth-rpc-adapter-server
+      - loop
     command: yarn test:CI
 
   truffle-examples-test:

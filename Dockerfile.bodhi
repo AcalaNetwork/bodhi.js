@@ -112,8 +112,6 @@ WORKDIR /app/examples/hardhat
 
 RUN rush build -t .
 
-CMD ["yarn", "test"]
-
 # =============== truffle-examples =============== #
 FROM node:16-alpine as truffle-examples
 RUN npm install -g @microsoft/rush@5.55.0
