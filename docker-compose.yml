@@ -14,7 +14,7 @@ services:
       - --rpc-external=true
       - --rpc-cors=all
       - --rpc-methods=unsafe
-      - --instant-sealing
+      # - --instant-sealing
       - --tmp
 
   postgres:
