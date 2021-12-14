@@ -71,23 +71,13 @@ services:
       - --playground
       - --indexer=http://subquery-node:3000
 
-  # test-waffle-examples:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.bodhi
-  #     target: waffle-examples
-  #   depends_on:
-  #     - mandala-node
-
-  # command: tail -f /dev/null
-
-  # test-eth-rpc-adapter:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.bodhi
-  #     target: eth-rpc-adapter-server
-  #   depends_on:
-  #     - mandala-node
+  waffle-examples-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: waffle-examples
+    depends_on:
+      - mandala-node
 
   feed-tx:
     build:
@@ -102,7 +92,7 @@ services:
     #   timeout: 10s
     #   retries: 1000
 
-  test-eth-providers:
+  eth-providers-test:
     build:
       context: .
       dockerfile: Dockerfile.bodhi
@@ -116,6 +106,40 @@ services:
         condition: service_started
       graphql-engine:
         condition: service_started
+
+  eth-rpc-adapter-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: eth-rpc-adapter
+    ports:
+      - 8545:8545
+    depends_on:
+      feed-tx:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+      subquery-node:
+        condition: service_started
+      graphql-engine:
+        condition: service_started
+    # environment:
+    # ENDPOINT_URL: ws://mandala-node:9944
+    # SUBQL_URL: http://graphql-engine:3001
+    # HTTP_PORT: 8545
+    # WS_PORT: 3331
+    command: yarn dev
+
+  eth-rpc-adapter-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: eth-rpc-adapter
+    depends_on:
+      - eth-rpc-adapter-server
+    environment:
+      RPC_URL: http://eth-rpc-adapter-server:8545
+    command: yarn test:CI
 
 volumes:
   postgres:

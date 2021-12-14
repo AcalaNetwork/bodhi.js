@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "mocha **/*.test.ts --ignore **/e2e/**",
     "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",
+    "test:CI": "mocha **/*.test.ts --timeout 300000",
     "start": "ts-node src/index",
     "dev": "nodemon --watch \"*\" --ext \"js,ts,json\" --ignore \"src/**/*.{spec,test}.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
   },

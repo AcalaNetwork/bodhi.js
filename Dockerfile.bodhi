@@ -62,17 +62,17 @@ RUN cd evm-subql && yarn build
 
 
 ###############################################
-# FROM node:16-alpine as waffle-examples
-# RUN apk add bash
-# RUN npm install -g @microsoft/rush@5.55.0
+FROM node:16-alpine as waffle-examples
+RUN apk add bash
+RUN npm install -g @microsoft/rush@5.55.0
 
-# COPY --from=bodhi /app /app
+COPY --from=bodhi /app /app
 
-# WORKDIR /app/examples/waffle
+WORKDIR /app/examples/waffle
 
-# RUN chmod 777 run.sh
-# ENV ENDPOINT_URL=ws://mandala-node:9944
-# CMD ["/bin/bash", "run.sh", "build_and_test"]
+RUN chmod 777 run.sh
+ENV ENDPOINT_URL=ws://mandala-node:9944
+CMD ["/bin/bash", "run.sh", "build_and_test"]
 
 ###############################################
 FROM node:16-alpine as feed-tx
@@ -102,21 +102,14 @@ FROM onfinality/subql-node:latest as subql-node
 COPY --from=bodhi /app /app
 
 WORKDIR /app/evm-subql
+###############################################
+FROM node:16-alpine as eth-rpc-adapter
 
-# ENV DB_USER: postgres
-# ENV DB_PASS: postgres
-# ENV DB_DATABASE: postgres
-# ENV DB_HOST: postgres
-# ENV DB_PORT: 5432
+COPY --from=bodhi /app /app
 
-# CMD ["yarn", "test:CI"]
+ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV SUBQL_URL=http://graphql-engine:3001
+ENV HTTP_PORT=8545
+ENV WS_PORT=3331
 
-# ###############################################
-# FROM node:16-alpine as eth-rpc-adapter-server
-# # WORKDIR /app
-# COPY --from=bodhi /app/common /app/common
-# COPY --from=bodhi /app/eth-transactions /app/eth-transactions
-# COPY --from=bodhi /app/eth-rpc-adapter /app/eth-providers
-
-# WORKDIR /app/eth-providers
-# CMD ["yarn", "dev"]
+WORKDIR /app/eth-rpc-adapter

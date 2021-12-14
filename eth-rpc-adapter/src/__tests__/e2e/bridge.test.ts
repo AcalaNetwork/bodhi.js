@@ -3,12 +3,17 @@ import { Wallet } from '@ethersproject/wallet';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { Eip1193Bridge } from '../../eip1193-bridge';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
 chai.use(chaiAsPromised);
 
 describe('e2e test', () => {
   const signer = new Wallet('0x5a214c9bcb10dfe58af9b349cad6f4564cd6f10d880bdfcf780e5812c3cbc855');
-  const provider = EvmRpcProvider.from('ws://127.0.0.1:9944');
+  const provider = EvmRpcProvider.from(endpoint);
 
   const bridge = new Eip1193Bridge(provider, signer as any);
 

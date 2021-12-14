@@ -2,29 +2,7 @@ name: Test All Packages
 on: push
 
 jobs:
-  # test-waffle-examples:
-  #   runs-on: [self-hosted, linux]
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v2
-
-  #     # - name: Build the stack
-  #     #   run: docker-compose build
-  #     - name: test
-  #       run: docker-compose up --abort-on-container-exit --exit-code-from=test-waffle-examples -- test-waffle-examples
-
-  # test-eth-providers:
-  #   runs-on: [self-hosted, linux]
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v2
-
-  #     # - name: Build the stack
-  #     #   run: docker-compose build
-  #     - name: test
-  #       run: docker-compose up --abort-on-container-exit --exit-code-from=test-eth-providers -- test-eth-providers
-
-  test-all:
+  test-waffle-examples:
     runs-on: [self-hosted, linux]
     steps:
       - name: checkout
@@ -33,4 +11,37 @@ jobs:
       # - name: Build the stack
       #   run: docker-compose build
       - name: test
-        run: docker-compose up
+        run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test -- waffle-examples-test
+
+  test-eth-providers:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      # - name: Build the stack
+      #   run: docker-compose build
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test -- eth-providers-test
+
+  test-eth-rpc-adaptor:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      # - name: Build the stack
+      #   run: docker-compose build
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test -- eth-rpc-adapter-test
+
+  # test-all:
+  #   runs-on: [self-hosted, linux]
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v2
+
+  #     # - name: Build the stack
+  #     #   run: docker-compose build
+  #     - name: test
+  #       run: docker-compose up
