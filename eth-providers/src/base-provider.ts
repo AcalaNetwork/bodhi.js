@@ -1064,16 +1064,15 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    const [txFromCache, txFromSubql] = await Promise.all([
-      this._getTxReceiptFromCache(txHash),
-      getTxReceiptByHash(txHash)
-    ]);
+    // @TODO Optimize performance
+    // Prioritizing the use of cache data can avoid using the database when testing.
+    const txFromCache = await this._getTxReceiptFromCache(txHash);
 
-    return (
-      txFromCache ||
-      txFromSubql ||
-      logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash })
-    );
+    if (txFromCache) return txFromCache;
+
+    const txFromSubql = await this._getTxReceiptFromCache(txHash);
+
+    return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
   };
 
   // Queries
