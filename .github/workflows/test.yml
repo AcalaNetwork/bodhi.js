@@ -1,4 +1,4 @@
-name: Test All Packages
+name: Build + E2E Tests
 on: push
 
 jobs:
@@ -7,9 +7,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-
-      # - name: Build the stack
-      #   run: docker-compose build
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test -- waffle-examples-test
 
@@ -18,9 +15,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-
-      # - name: Build the stack
-      #   run: docker-compose build
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test -- eth-providers-test
 
@@ -29,11 +23,24 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-
-      # - name: Build the stack
-      #   run: docker-compose build
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test -- eth-rpc-adapter-test
+
+  test-hardhat-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-examples-test -- hardhat-examples-test
+
+  test-truffle-examples:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-examples-test -- truffle-examples-test
 
   # test-all:
   #   runs-on: ubuntu-latest

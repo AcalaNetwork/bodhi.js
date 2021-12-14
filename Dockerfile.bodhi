@@ -3,14 +3,14 @@ LABEL maintainer="hello@acala.network"
 
 WORKDIR /app
 
-# required to build some native deps
+### required to build some native deps
 RUN apk add git python3 make gcc g++ musl-dev
 
-# required by some legacy deps
+### required by some legacy deps
 RUN ln -s /usr/bin/python3 /usr/bin/python && \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
-# install rush. should match version in rush.json
+### install rush. should match version in rush.json
 RUN npm install -g @microsoft/rush@5.55.0
 
 # install all dependencies first before copying
@@ -38,28 +38,15 @@ COPY evm-subql/package.json evm-subql/package.json
 COPY evm-subql/yarn.lock evm-subql/yarn.lock 
 RUN cd evm-subql && yarn
 
-# copy files and build all
+### copy files and build common packages
 COPY . .
 
 RUN rush build \
     -t @acala-network/eth-providers \
     -t @acala-network/bodhi \
     -t evm-waffle-example-dex
-#     -t @acala-network/eth-rpc-adapter \
 
 RUN cd evm-subql && yarn build
-
-# RUN rush build \
-#     -t @acala-network/eth-rpc-adapter \
-#     -t evm-waffle-example-hello-world \
-#     -t evm-waffle-example-dex \
-#     -t evm-waffle-example-e2e \
-#     -t evm-waffle-example-erc20 \
-#     -t evm-waffle-example-oracle \
-#     -t evm-waffle-example-state-rent \
-#     -t evm-waffle-example-arbitrager \
-#     -t evm-waffle-example-scheduler
-
 
 ###############################################
 FROM node:16-alpine as waffle-examples
@@ -102,6 +89,7 @@ FROM onfinality/subql-node:latest as subql-node
 COPY --from=bodhi /app /app
 
 WORKDIR /app/evm-subql
+
 ###############################################
 FROM node:16-alpine as eth-rpc-adapter
 
@@ -113,3 +101,27 @@ ENV HTTP_PORT=8545
 ENV WS_PORT=3331
 
 WORKDIR /app/eth-rpc-adapter
+
+###############################################
+FROM node:16-alpine as hardhat-examples
+RUN npm install -g @microsoft/rush@5.55.0
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/hardhat
+
+RUN rush build -t .
+
+CMD ["yarn", "test"]
+
+###############################################
+FROM node:16-alpine as truffle-examples
+RUN npm install -g @microsoft/rush@5.55.0
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/truffle
+
+RUN rush build -t .
+
+CMD ["yarn", "test"]

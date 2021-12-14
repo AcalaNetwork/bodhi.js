@@ -86,11 +86,6 @@ services:
       target: feed-tx
     depends_on:
       - mandala-node
-    # healthcheck:
-    #   test: "exit 0"
-    #   interval: 2s
-    #   timeout: 10s
-    #   retries: 1000
 
   eth-providers-test:
     build:
@@ -123,11 +118,6 @@ services:
         condition: service_started
       graphql-engine:
         condition: service_started
-    # environment:
-    # ENDPOINT_URL: ws://mandala-node:9944
-    # SUBQL_URL: http://graphql-engine:3001
-    # HTTP_PORT: 8545
-    # WS_PORT: 3331
     command: yarn dev
 
   eth-rpc-adapter-test:
@@ -139,6 +129,24 @@ services:
       - eth-rpc-adapter-server
     environment:
       RPC_URL: http://eth-rpc-adapter-server:8545
+    command: yarn test:CI
+
+  hardhat-examples-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: hardhat-examples
+    depends_on:
+      - eth-rpc-adapter-server
+    command: yarn test:CI
+
+  truffle-examples-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: truffle-examples
+    depends_on:
+      - eth-rpc-adapter-server
     command: yarn test:CI
 
 volumes:
