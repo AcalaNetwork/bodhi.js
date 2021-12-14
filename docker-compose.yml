@@ -27,7 +27,10 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: onfinality/subql-node:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.bodhi
+      target: subql-node
     depends_on:
       - postgres
       - mandala-node
@@ -40,10 +43,10 @@ services:
       DB_DATABASE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
-    volumes:
-      - ./evm-subql:/app
+    # volumes:
+    #   - ./:/app
     command:
-      - -f=/app
+      - -f=./
       - --network-endpoint=ws://mandala-node:9944
       - --subquery-name=acala-evm
       - --log-level=debug
