@@ -109,9 +109,14 @@ services:
     ports:
       - 8545:8545
     depends_on:
-      - postgres
-      - subquery-node
-      - graphql-engine
+      feed-tx:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+      subquery-node:
+        condition: service_started
+      graphql-engine:
+        condition: service_started
     command: yarn dev
   eth-rpc-adapter-test:
     build:
@@ -119,12 +124,7 @@ services:
       dockerfile: Dockerfile.bodhi
       target: eth-rpc-adapter
     depends_on:
-      eth-rpc-adapter-server:
-        condition: service_started
-      postgres:
-        condition: service_started
-      feed-tx:
-        condition: service_completed_successfully
+      - eth-rpc-adapter-server
     environment:
       RPC_URL: http://eth-rpc-adapter-server:8545
     command: yarn test:CI
