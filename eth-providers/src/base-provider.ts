@@ -1070,7 +1070,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (txFromCache) return txFromCache;
 
-    const txFromSubql = await this._getTxReceiptFromCache(txHash);
+    const txFromSubql = await getTxReceiptByHash(txHash);
 
     return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
   };
