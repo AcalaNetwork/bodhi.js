@@ -23,7 +23,7 @@ describe('HelloWorld', function () {
 
     await contract.deployed();
 
-    expect(await contract.greet()).to.equal('Hello, world!');
+    expect(await contract.greet()).to.equal('Hello, worlddddddddddd');
 
     const setGreetingTx = await contract.setGreeting('Hola, mundo!', {
       gasPrice: ethParams.txGasPrice,

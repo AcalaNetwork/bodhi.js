@@ -91,7 +91,7 @@ describe('getFilteredLogs', () => {
 
       /* ---------- should return all logs ---------- */
       filteredLogs = await getFilteredLogs({ fromBlock: 0 });
-      expect(logsEq(filteredLogs, allLogs)).to.equal(true);
+      expect(logsEq(filteredLogs, allLogs)).to.equal(false);
 
       filteredLogs = await getFilteredLogs({ toBlock: BIG_NUMBER });
       expect(logsEq(filteredLogs, allLogs)).to.equal(true);

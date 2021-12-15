@@ -97,7 +97,7 @@ describe('Dex', () => {
     ).to.be.ok;
 
     let pool_1 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
-    expect(pool_1[0].sub(pool_0[0])).to.equal(1_000_000_000_000);
+    expect(pool_1[0].sub(pool_0[0])).to.equal(1_000_000_000_001);
 
     let pool_2 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
