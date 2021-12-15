@@ -38,11 +38,37 @@ cd <project> && rush add -p <package>   # for this project only
 ```
 
 ## use with docker
-- build and run `eth-rpc-adaptor`
+### build and run `eth-rpc-adaptor`
 ```
 docker build -f eth-rpc-adapter/Dockerfile . -t eth-rpc-adapter
 docker run -it -p 8545:8545 [--env-file=eth-rpc-adapter/.env] eth-rpc-adapter yarn dev
 ```
+
+### run tests with docker
+- clean up
+```
+# super-quickly clean up docker containers and volumes (make sure you know what you are doing)
+docker compose down ; docker rm -f $(docker ps -a -q) ; docker volume rm $(docker volume ls -q)
+
+# or more safe way to clean up only related services
+docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')
+docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')
+docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')
+docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')
+docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}')
+docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}')
+docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}')
+```
+
+- run tests
+```
+# run any test, where xxx ∈ { waffle-examples-test, eth-providers-test, eth-rpc-adapter-test, hardhat-examples-test, truffle-examples-test }
+docker-compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
+
+# run all tests (not recommended since log will be too messy)
+docker-compose up
+```
+
 
 ## Documentation
 - This project is managed by [Rushstack](https://github.com/microsoft/rushstack).
