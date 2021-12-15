@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// this is not necessary, but we could delay running these tests in automated tests
+// which will give subql some extra time, making sure it picked up all previous TXs
 const START_DELAY = process.env.START_DELAY * 1000 || 0;
 
 export const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));

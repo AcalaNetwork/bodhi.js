@@ -2,7 +2,7 @@
 .vscode
 .env
 .dockerignore
-Dockerfile.bodhi
+bodhi.Dockerfile
 docker-compose.yml
 
 common/deploy/
