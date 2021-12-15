@@ -647,6 +647,16 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit = params.gasLimit.toBigInt();
       validUntil = params.validUntil.toBigInt();
       storageLimit = params.storageLimit.toBigInt();
+
+      if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
+        logger.throwError('invalid gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
+          txGasLimit: ethTx.gasLimit.toBigInt(),
+          txGasPrice: ethTx.gasPrice?.toBigInt(),
+          gasLimit,
+          validUntil,
+          storageLimit
+        });
+      }
     } else if (ethTx.type === 1) {
       // EIP-2930
       return throwNotImplemented('EIP-2930 transactions');
