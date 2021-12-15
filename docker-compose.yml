@@ -20,8 +20,8 @@ services:
     image: postgres:12-alpine
     ports:
       - 5432:5432
-    volumes:
-      - postgres:/var/lib/postgresql/data
+    # volumes:
+    #   - postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgres
 
@@ -159,5 +159,5 @@ services:
       - eth-rpc-adapter-server
     command: yarn test:CI
 
-volumes:
-  postgres:
+# volumes:
+#   postgres:
