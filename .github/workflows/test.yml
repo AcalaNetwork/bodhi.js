@@ -19,7 +19,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: clean docker volume
-        run: docker compose down ; docker rm -f $(docker ps -a -q) ; docker volume rm $(docker volume ls -q)
+        run: docker ps
+      - name: clean docker volume
+        run: docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test -- waffle-examples-test
 
@@ -30,7 +32,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: clean docker volume
-        run: docker compose down ; docker rm -f $(docker ps -a -q) ; docker volume rm $(docker volume ls -q)
+        run: docker ps
+      - name: clean docker volume
+        run: docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
 
@@ -41,7 +45,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: clean docker volume
-        run: docker compose down ; docker rm -f $(docker ps -a -q) ; docker volume rm $(docker volume ls -q)
+        run: docker ps
+      - name: clean docker volume
+        run: docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
 
@@ -52,7 +58,9 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: clean docker volume
-        run: docker compose down ; docker rm -f $(docker ps -a -q) ; docker volume rm $(docker volume ls -q)
+        run: docker ps
+      - name: clean docker volume
+        run: docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-examples-test --build -- hardhat-examples-test
 
@@ -63,6 +71,8 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: clean docker volume
-        run: docker compose down ; docker rm -f $(docker ps -a -q) ; docker volume rm $(docker volume ls -q)
+        run: docker ps
+      - name: clean docker volume
+        run: docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-examples-test --build -- truffle-examples-test
