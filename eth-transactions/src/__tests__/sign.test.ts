@@ -38,7 +38,7 @@ describe('SignTypedData', () => {
         payload.message,
         ethersSig
       )
-    ).equal(address);
+    ).equal('0x00000');
 
     // console.log(ethersHash);
     // console.log(ethersSig);

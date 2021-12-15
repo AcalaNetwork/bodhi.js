@@ -32,7 +32,7 @@ describe('getTxReceiptByHash', () => {
 
   it('returns null when hash not found', async () => {
     const res = await getTxReceiptByHash('0x000');
-    expect(res).to.deep.equal(null);
+    expect(res).to.deep.equal('a');
   });
 });
 

@@ -48,7 +48,7 @@ describe('eth_getTransactionReceipt', () => {
     // test middle one
     txR = allTxReceipts[Math.floor(allTxReceipts.length / 2)];
     res = await eth_getTransactionReceipt([txR.transactionHash]);
-    expect(res.status).to.equal(200);
+    expect(res.status).to.equal(201);
     expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
   });
 
