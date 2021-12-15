@@ -2,8 +2,19 @@ name: Build + E2E Tests
 on: push
 
 jobs:
+  clean-up-actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        # Only cancel non-master branch runs
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+
   waffle-examples:
     runs-on: [self-hosted, linux]
+    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -12,6 +23,7 @@ jobs:
 
   eth-providers:
     runs-on: [self-hosted, linux]
+    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -20,6 +32,7 @@ jobs:
 
   eth-rpc-adaptor:
     runs-on: [self-hosted, linux]
+    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -28,6 +41,7 @@ jobs:
 
   hardhat-examples:
     runs-on: [self-hosted, linux]
+    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -36,6 +50,7 @@ jobs:
 
   truffle-examples:
     runs-on: [self-hosted, linux]
+    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
