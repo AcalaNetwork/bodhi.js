@@ -636,17 +636,29 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit = BigInt(_storageLimit);
       validUntil = BigInt(_validUntil);
     } else if (ethTx.type == null || ethTx.type === 0) {
-      //  Legacy and EIP-155 Transactions
-      const params = calcSubstrateTransactionParams({
-        txGasPrice: ethTx.gasPrice || '0',
-        txGasLimit: ethTx.gasLimit || '0',
-        storageByteDeposit: (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt(),
-        txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt()
-      });
+      const storageDepositPerByte = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+      const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
 
-      gasLimit = params.gasLimit.toBigInt();
-      validUntil = params.validUntil.toBigInt();
-      storageLimit = params.storageLimit.toBigInt();
+      try {
+        //  Legacy and EIP-155 Transactions
+        const params = calcSubstrateTransactionParams({
+          txGasPrice: ethTx.gasPrice || '0',
+          txGasLimit: ethTx.gasLimit || '0',
+          storageByteDeposit: storageDepositPerByte,
+          txFeePerGas: txFeePerGas
+        });
+
+        gasLimit = params.gasLimit.toBigInt();
+        validUntil = params.validUntil.toBigInt();
+        storageLimit = params.storageLimit.toBigInt();
+      } catch {
+        logger.throwError('bad gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
+          txGasLimit: ethTx.gasLimit.toBigInt(),
+          txGasPrice: ethTx.gasPrice?.toBigInt(),
+          txFeePerGas,
+          storageDepositPerByte
+        });
+      }
 
       if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
         logger.throwError('invalid gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
@@ -654,7 +666,9 @@ export abstract class BaseProvider extends AbstractProvider {
           txGasPrice: ethTx.gasPrice?.toBigInt(),
           gasLimit,
           validUntil,
-          storageLimit
+          storageLimit,
+          storageDepositPerByte,
+          txFeePerGas
         });
       }
     } else if (ethTx.type === 1) {
