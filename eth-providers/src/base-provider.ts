@@ -998,6 +998,29 @@ export abstract class BaseProvider extends AbstractProvider {
       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
+    const isExtrinsicFailed = events[events.length - 1].event.method === 'ExtrinsicFailed';
+
+    if (isExtrinsicFailed) {
+      const [dispatchError] = events[events.length - 1].event.data as any[];
+
+      let message = dispatchError.type;
+
+      if (dispatchError.isModule) {
+        try {
+          const mod = dispatchError.asModule;
+          const error = this.api.registry.findMetaError(new Uint8Array([mod.index.toNumber(), mod.error.toNumber()]));
+          message = `${error.section}.${error.name}`;
+        } catch (error) {
+          // swallow
+        }
+      }
+
+      return logger.throwError(`ExtrinsicFailed: ${message}`, Logger.errors.UNKNOWN_ERROR, {
+        hash: txHash,
+        blockHash
+      });
+    }
+
     const evmEvent = events.find(({ event }) => {
       return (
         event.section.toUpperCase() === 'EVM' &&
@@ -1041,16 +1064,15 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    const [txFromCache, txFromSubql] = await Promise.all([
-      this._getTxReceiptFromCache(txHash),
-      getTxReceiptByHash(txHash)
-    ]);
+    // @TODO Optimize performance
+    // Prioritizing the use of cache data can avoid using the database when testing.
+    const txFromCache = await this._getTxReceiptFromCache(txHash);
 
-    return (
-      txFromCache ||
-      txFromSubql ||
-      logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash })
-    );
+    if (txFromCache) return txFromCache;
+
+    const txFromSubql = await this._getTxReceiptFromCache(txHash);
+
+    return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
   };
 
   // Queries
