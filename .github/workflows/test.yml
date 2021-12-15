@@ -1,4 +1,4 @@
-name: Build + E2E Tests
+name: Build + E2E Tests with own Linux
 on: push
 
 jobs:
@@ -12,73 +12,123 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  clean-up-docker:
-    runs-on: [self-hosted, linux]
-    needs: clean-up-prev-run
-    steps:
-      - name: check docker info before cleaning
-        run: docker ps && echo '' && docker volume ls
-      - name: clean up docker process and volumes
-        run: |
-          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}') || true
-          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}') || true
-          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}') || true
-          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}') || true
-          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true
-      - name: check docker info after cleaning
-        run: docker ps && echo '' && docker volume ls
+  # clean-up-docker:
+  #   runs-on: [self-hosted, linux]
+  #   needs: clean-up-prev-run
+  #   steps:
+  #     - name: check docker info before cleaning
+  #       run: docker ps && echo '' && docker volume ls
+  #     - name: clean up docker process and volumes
+  #       run: |
+  #         docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}') || true
+  #         docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}') || true
+  #         docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}') || true
+  #         docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}') || true
+  #         docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true || true
+  #     - name: check docker info after cleaning
+  #       run: docker ps && echo '' && docker volume ls
 
   waffle-examples:
     runs-on: [self-hosted, linux]
-    needs: clean-up-docker
+    # needs: clean-up-docker
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker volume rm bodhijs_postgres || true
       - name: check docker info after cleaning
-        run: docker ps && echo '' && docker volume ls
+        run: docker ps && docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
 
   eth-providers:
     runs-on: [self-hosted, linux]
-    needs: clean-up-docker
+    # needs: clean-up-docker
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker volume rm bodhijs_postgres || true
       - name: check docker info after cleaning
-        run: docker ps && echo '' && docker volume ls
+        run: docker ps && docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
 
   eth-rpc-adaptor:
     runs-on: [self-hosted, linux]
-    needs: clean-up-docker
+    # needs: clean-up-docker
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker volume rm bodhijs_postgres || true
       - name: check docker info after cleaning
-        run: docker ps && echo '' && docker volume ls
+        run: docker ps && docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
 
   hardhat-examples:
     runs-on: [self-hosted, linux]
-    needs: clean-up-docker
+    # needs: clean-up-docker
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker volume rm bodhijs_postgres || true
       - name: check docker info after cleaning
-        run: docker ps && echo '' && docker volume ls
+        run: docker ps && docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-examples-test --build -- hardhat-examples-test
 
   truffle-examples:
     runs-on: [self-hosted, linux]
-    needs: clean-up-docker
+    # needs: clean-up-docker
     steps:
       - name: checkout
         uses: actions/checkout@v2
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker volume rm bodhijs_postgres || true
       - name: check docker info after cleaning
-        run: docker ps && echo '' && docker volume ls
+        run: docker ps && docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-examples-test --build -- truffle-examples-test

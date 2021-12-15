@@ -1,4 +1,4 @@
-name: Build + E2E Tests
+name: Build + E2E Tests with Ubuntu-latest
 on: push
 
 jobs:
