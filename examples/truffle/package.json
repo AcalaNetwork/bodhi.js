@@ -15,6 +15,7 @@
     "test": "truffle test --network mandala",
     "deploy": "truffle migrate --network mandala",
     "test:pub": "truffle test --network mandalaPub",
-    "deploy:pub": "truffle migrate --network mandalaPub"
+    "deploy:pub": "truffle migrate --network mandalaPub",
+    "test:CI": "truffle migrate --network mandalaCI && truffle test --network mandalaCI"
   }
 }

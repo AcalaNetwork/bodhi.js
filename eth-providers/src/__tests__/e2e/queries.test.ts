@@ -1,9 +1,19 @@
 import { Log } from '@ethersproject/abstract-provider';
 import { expect } from 'chai';
 import { getAllLogs, getAllTxReceipts, getFilteredLogs, getTxReceiptByHash } from '../../utils';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// this is not necessary, but we could delay running these tests in automated tests
+// which will give subql some extra time, making sure it picked up all previous TXs
+const START_DELAY = process.env.START_DELAY * 1000 || 0;
+
+export const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
 
 describe('getTxReceiptByHash', () => {
   it('returns correct result when hash exist', async () => {
+    await sleep(START_DELAY);
     const allTxReceipts = await getAllTxReceipts();
 
     // test first one

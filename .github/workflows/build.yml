@@ -1,4 +1,4 @@
-name: Build And Test All Packages
+name: Build + Unit Tests
 on: push
 
 jobs:

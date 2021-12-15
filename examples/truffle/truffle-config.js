@@ -23,6 +23,16 @@ const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
+const mandalaConfig = (endpointUrl) => ({
+  provider: () =>
+    new HDWalletProvider(['0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f'], endpointUrl),
+  network_id: 595,
+  gasPrice: 200786445289, // storage_limit = 64001, validUntil = 360001, gasLimit = 10000000
+  gas: 42032000,
+  timeoutBlocks: 25,
+  confirmations: 0
+});
+
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -35,31 +45,10 @@ module.exports = {
    */
 
   networks: {
-    mandala: {
-      provider: () =>
-        new HDWalletProvider(
-          ['0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f'],
-          'http://127.0.0.1:8545'
-        ),
-      network_id: 595,
-      gasPrice: 200786445289, // storage_limit = 64001, validUntil = 360001, gasLimit = 2100001
-      gas: 34132001,
-      timeoutBlocks: 25,
-      confirmations: 0
-    },
-    mandalaPub: {
-      provider: () =>
-        new HDWalletProvider(
-          ['0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f'],
-          'https://tc7-eth.aca-dev.network'
-        ),
-      network_id: 595,
-      gasPrice: 200786445289, // storage_limit = 64001, validUntil = 360001, gasLimit = 2100001
-      gas: 34132001,
-      timeoutBlocks: 25,
-      confirmations: 0,
-      networkCheckTime: 50000
-    }
+    mandala: mandalaConfig('http://127.0.0.1:8545'),
+    mandalaPub: mandalaConfig('https://tc7-eth.aca-dev.network'),
+    mandalaCI: mandalaConfig('http://eth-rpc-adapter-server:8545')
+
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.
     // You should run a client (like ganache-cli, geth or parity) in a separate terminal

@@ -18,10 +18,13 @@ import {
   signTransaction
 } from '@acala-network/eth-transactions';
 import type { UInt } from '@polkadot/types';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 it('a series of tests', async () => {
   console.log('test start');
-  const endpoint = 'ws://127.0.0.1:9944';
+  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
 
@@ -66,7 +69,7 @@ it('a series of tests', async () => {
 
   const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
     gasLimit: 2100001n,
-    validUntil: 3601n,
+    validUntil: 360001n,
     storageLimit: 64001n,
     txFeePerGas,
     storageByteDeposit
@@ -95,7 +98,7 @@ it('a series of tests', async () => {
 
   console.log(response1);
 
-  const receipt = await response1.wait(2);
+  const receipt = await response1.wait(0);
 
   console.log(receipt);
 

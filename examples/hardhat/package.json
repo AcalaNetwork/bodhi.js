@@ -9,7 +9,10 @@
     "test": "hardhat test --network mandala",
     "deploy": "TS_NODE_TRANSPILE_ONLY=true hardhat run scripts/deploy.ts --network mandala",
     "test:pub": "hardhat test --network mandalaPub",
-    "deploy:pub": "TS_NODE_TRANSPILE_ONLY=true hardhat run scripts/deploy.ts --network mandalaPub"
+    "deploy:pub": "TS_NODE_TRANSPILE_ONLY=true hardhat run scripts/deploy.ts --network mandalaPub",
+    "test:CI": "TS_NODE_TRANSPILE_ONLY=true hardhat run scripts/deploy.ts --network mandalaCI && hardhat test --network mandalaCI",
+    "loop": "TS_NODE_TRANSPILE_ONLY=true hardhat run test/loop.ts --network mandala",
+    "loop:CI": "TS_NODE_TRANSPILE_ONLY=true hardhat run test/loop.ts --network mandalaCI"
   },
   "dependencies": {},
   "devDependencies": {

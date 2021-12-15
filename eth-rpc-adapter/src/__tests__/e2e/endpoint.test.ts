@@ -2,8 +2,11 @@ import { getAllLogs, getAllTxReceipts } from '@acala-network/eth-providers/lib/u
 import { Log } from '@ethersproject/abstract-provider';
 import axios from 'axios';
 import { expect } from 'chai';
+import dotenv from 'dotenv';
 
-const RPC_URL = 'http://localhost:8545';
+dotenv.config();
+
+const RPC_URL = process.env.RPC_URL || 'ws://127.0.0.1:9944';
 const rpcGet =
   (
     method: string // eslint-disable-line

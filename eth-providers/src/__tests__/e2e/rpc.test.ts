@@ -1,8 +1,11 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { EvmRpcProvider } from '../../rpc-provider';
+import dotenv from 'dotenv';
 
-const endpoint = 'ws://127.0.0.1:9944';
+dotenv.config();
+
+const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
 const provider = EvmRpcProvider.from(endpoint);
 
