@@ -17,7 +17,6 @@ jobs:
     env:
       SCCACHE_CACHE_SIZE: "50G"
       CARGO_INCREMENTAL: 0
-    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -29,7 +28,6 @@ jobs:
     env:
       SCCACHE_CACHE_SIZE: "50G"
       CARGO_INCREMENTAL: 0
-    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -41,7 +39,6 @@ jobs:
     env:
       SCCACHE_CACHE_SIZE: "50G"
       CARGO_INCREMENTAL: 0
-    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -53,7 +50,6 @@ jobs:
     env:
       SCCACHE_CACHE_SIZE: "50G"
       CARGO_INCREMENTAL: 0
-    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -65,7 +61,6 @@ jobs:
     env:
       SCCACHE_CACHE_SIZE: "50G"
       CARGO_INCREMENTAL: 0
-    needs: clean-up-actions
     steps:
       - name: checkout
         uses: actions/checkout@v2

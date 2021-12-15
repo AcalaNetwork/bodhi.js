@@ -1,3 +1,5 @@
+version: '2'
+
 services:
   mandala-node:
     image: acala/mandala-node:2.1.0
