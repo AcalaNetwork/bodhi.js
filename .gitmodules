@@ -1,0 +1,3 @@
+[submodule "hardhat"]
+	path = examples/hardhat-tutorials
+	url = git@github.com:AcalaNetwork/hardhat-tutorials.git
