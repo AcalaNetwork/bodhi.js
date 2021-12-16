@@ -468,14 +468,19 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getGasPrice = async (): Promise<BigNumber> => {
-    return GAS_PRICE;
+    // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
+    const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
+    const currentHeader = await this.api.rpc.chain.getHeader();
+    const currentBlockNumber = BigNumber.from(currentHeader.number.toBigInt());
+
+    return txFeePerGas.add(currentBlockNumber.div(30).add(5).shl(16)).add(10);
   };
 
   getFeeData = async (): Promise<FeeData> => {
     return {
       maxFeePerGas: MAX_FEE_PER_GAS,
       maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
-      gasPrice: GAS_PRICE
+      gasPrice: await this.getGasPrice()
     };
   };
 
