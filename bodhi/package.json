@@ -15,15 +15,15 @@
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
     "@acala-network/types": "~3.0.3-3",
-    "@ethersproject/abstract-provider": "~5.4.0",
-    "@ethersproject/address": "~5.4.0",
-    "@ethersproject/bignumber": "~5.4.0",
-    "@ethersproject/bytes": "~5.4.0",
-    "@ethersproject/logger": "~5.4.0",
-    "@ethersproject/networks": "~5.4.0",
-    "@ethersproject/properties": "~5.4.0",
-    "@ethersproject/strings": "~5.4.0",
-    "@ethersproject/transactions": "~5.4.0",
+    "@ethersproject/abstract-provider": "~5.5.0",
+    "@ethersproject/address": "~5.5.0",
+    "@ethersproject/bignumber": "~5.5.0",
+    "@ethersproject/bytes": "~5.5.0",
+    "@ethersproject/logger": "~5.5.0",
+    "@ethersproject/networks": "~5.5.0",
+    "@ethersproject/properties": "~5.5.0",
+    "@ethersproject/strings": "~5.5.0",
+    "@ethersproject/transactions": "~5.5.0",
     "@open-web3/scanner": "~0.9.4-19",
     "@polkadot/api": "~6.11.1",
     "@polkadot/keyring": "~8.1.2",
@@ -35,7 +35,7 @@
     "blakejs": "~1.1.0",
     "bn.js": "~5.2.0",
     "ethers": "~5.4.7",
-    "@ethersproject/abstract-signer": "~5.4.0"
+    "@ethersproject/abstract-signer": "~5.5.0"
   },
   "devDependencies": {
     "@types/chai": "~4.2.22",
