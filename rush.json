@@ -544,25 +544,25 @@
 
     /* ---------- hardhat examples ---------- */
     {
-      "packageName": "hello-world",
+      "packageName": "hardhat-tutorial-hello-world",
       "projectFolder": "examples/hardhat-tutorials/hello-world",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "echo",
+      "packageName": "hardhat-tutorial-echo",
       "projectFolder": "examples/hardhat-tutorials/echo",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "token",
+      "packageName": "hardhat-tutorial-token",
       "projectFolder": "examples/hardhat-tutorials/token",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "nft",
+      "packageName": "hardhat-tutorial-nft",
       "projectFolder": "examples/hardhat-tutorials/NFT",
       "reviewCategory": "tests",
       "shouldPublish": false
