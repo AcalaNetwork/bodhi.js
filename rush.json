@@ -517,6 +517,30 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "waffle-tutorial-hello-world",
+      "projectFolder": "examples/waffle-tutorials/hello-world",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "waffle-tutorial-echo",
+      "projectFolder": "examples/waffle-tutorials/echo",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "waffle-tutorial-token",
+      "projectFolder": "examples/waffle-tutorials/token",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "waffle-tutorial-nft",
+      "projectFolder": "examples/waffle-tutorials/NFT",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- hardhat examples ---------- */
     {
