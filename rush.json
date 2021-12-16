@@ -538,7 +538,7 @@
       "shouldPublish": false
     },
     {
-      "packageName": "NFT",
+      "packageName": "nft",
       "projectFolder": "examples/hardhat-tutorials/NFT",
       "reviewCategory": "tests",
       "shouldPublish": false
@@ -546,8 +546,26 @@
 
     /* ---------- truffle examples ---------- */
     {
-      "packageName": "evm-truffle-examples",
-      "projectFolder": "examples/truffle",
+      "packageName": "truffle-tutorial-hello-world",
+      "projectFolder": "examples/truffle-tutorials/hello-world",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-echo",
+      "projectFolder": "examples/truffle-tutorials/echo",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-token",
+      "projectFolder": "examples/truffle-tutorials/token",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-nft",
+      "projectFolder": "examples/truffle-tutorials/NFT",
       "reviewCategory": "tests",
       "shouldPublish": false
     }
