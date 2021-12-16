@@ -520,8 +520,26 @@
 
     /* ---------- hardhat examples ---------- */
     {
-      "packageName": "evm-hardhat-examples",
-      "projectFolder": "examples/hardhat",
+      "packageName": "hello-world",
+      "projectFolder": "examples/hardhat-tutorials/hello-world",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "echo",
+      "projectFolder": "examples/hardhat-tutorials/echo",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "token",
+      "projectFolder": "examples/hardhat-tutorials/token",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "NFT",
+      "projectFolder": "examples/hardhat-tutorials/NFT",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
