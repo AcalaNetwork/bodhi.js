@@ -2,7 +2,7 @@ import {
   getPartialTransactionReceipt,
   PartialTransactionReceipt,
   getTransactionIndexAndHash
-} from '@acala-network/eth-providers/lib/utils';
+} from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
 import { SubstrateEvent } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
 
