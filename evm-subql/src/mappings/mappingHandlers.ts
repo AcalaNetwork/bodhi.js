@@ -13,7 +13,14 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   const { block } = event;
 
   const transactionHash = event.extrinsic?.extrinsic.hash.toHex() || DUMMY_TX_HASH;
-  const transactionIndex = getTransactionIndexAndHash(transactionHash, block.block.extrinsics, block.events);
+  let transactionIndex = NOT_EXIST_TRANSACTION_INDEX;
+
+  try {
+    const tx = getTransactionIndexAndHash(transactionHash, block.block.extrinsics, block.events);
+    transactionIndex = tx.transactionIndex;
+  } catch (error) {
+    logger.error(error);
+  }
 
   const transactionInfo = {
     transactionHash,
