@@ -305,7 +305,9 @@ export abstract class BaseProvider extends AbstractProvider {
             blockNumber,
             transactionIndex,
             hash: extrinsic.hash.toHex(),
-            nonce: extrinsic.nonce.toNumber()
+            nonce: extrinsic.nonce.toNumber(),
+            // @TODO get tx value
+            value: 0
           };
         }
 
@@ -322,7 +324,9 @@ export abstract class BaseProvider extends AbstractProvider {
           hash: extrinsic.hash.toHex(),
           nonce: extrinsic.nonce.toNumber(),
           from: from,
-          to: to
+          to: to,
+          // @TODO get tx value
+          value: 0
         };
       });
     }
