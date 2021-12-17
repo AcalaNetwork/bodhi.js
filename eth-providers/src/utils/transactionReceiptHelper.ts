@@ -168,7 +168,7 @@ export const getTransactionIndexAndHash = (
 
   let extrinsicIndex: number | undefined = undefined;
 
-  if (isHexString(hashOrNumber, 64)) {
+  if (isHexString(hashOrNumber, 32)) {
     extrinsicIndex = extrinsicsHashes.findIndex((hash) => hashOrNumber === hash);
   } else {
     const index = BigNumber.from(hashOrNumber).toNumber();
@@ -176,8 +176,6 @@ export const getTransactionIndexAndHash = (
   }
 
   const transactionHash = extrinsicIndex ? extrinsics[extrinsicIndex]?.hash.toHex() : undefined;
-
-  console.log(evmExtrinsicIndexes, extrinsicsHashes);
 
   if (extrinsicIndex === undefined || transactionHash === undefined || extrinsicIndex < 0) {
     return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, {
