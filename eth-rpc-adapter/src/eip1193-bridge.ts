@@ -325,19 +325,25 @@ class Eip1193BridgeImpl {
     return tx.hash;
   }
 
+  async eth_getTransactionByBlockHashAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'blockHash' }, { type: 'hexNumber' }], params);
+
+    const res = await this.#provider.getTransactionReceiptAtBlock(params[1], params[0]);
+    return hexlifyRpcResult(res);
+  }
+
+  async eth_getTransactionByBlockNumberAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'block' }, { type: 'hexNumber' }], params);
+
+    const res = await this.#provider.getTransactionReceiptAtBlock(params[1], params[0]);
+    return hexlifyRpcResult(res);
+  }
+
   // async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
 
   // }
 
   // async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
-
-  // }
-
-  // async eth_getTransactionByBlockHashAndIndex(params: any[]): Promise<any> {
-
-  // }
-
-  // async eth_getTransactionByBlockNumberAndIndex(params: any[]): Promise<any> {
 
   // }
 

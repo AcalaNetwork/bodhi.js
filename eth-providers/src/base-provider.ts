@@ -43,12 +43,15 @@ import {
   convertNativeToken,
   getFilteredLogs,
   getPartialTransactionReceipt,
+  getTransactionIndexAndHash,
   getTxReceiptByHash,
   logger,
   PROVIDER_ERRORS,
   sendTx,
   throwNotImplemented,
-  calcSubstrateTransactionParams
+  calcSubstrateTransactionParams,
+  getEvmExtrinsicIndexes,
+  findEvmEvent
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
@@ -65,6 +68,7 @@ export interface _Block {
   timestamp: number;
   nonce: string;
   difficulty: number;
+  _difficulty: BigNumber;
 
   gasLimit: BigNumber;
   gasUsed: BigNumber;
@@ -240,11 +244,20 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag: BlockTag | string | Promise<BlockTag | string>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock> => {
+    return this._getBlock(blockTag, true) as Promise<RichBlock>;
+  };
+
+  getBlockWithTransactions = async (
+    blockTag: BlockTag | string | Promise<BlockTag | string>
+  ): Promise<BlockWithTransactions> => {
+    return this._getBlock(blockTag, true) as Promise<BlockWithTransactions>;
+  };
+
+  _getBlock = async (
+    blockTag: BlockTag | string | Promise<BlockTag | string>,
+    full?: boolean | Promise<boolean>
+  ): Promise<RichBlock | BlockWithTransactions> => {
     await this.getNetwork();
-    // @TODO
-    if (full) {
-      return logger.throwError('getBlock full param not implemented', Logger.errors.UNSUPPORTED_OPERATION);
-    }
 
     const { fullTx, header } = await resolveProperties({
       header: this._getBlockHeader(blockTag),
@@ -255,24 +268,73 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const apiAt = await this.api.at(blockHash);
 
-    const [block, validators, now] = await Promise.all([
+    const [block, validators, now, events] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.query.session ? apiAt.query.session.validators() : ([] as any),
-      apiAt.query.timestamp.now()
-      // apiAt.query.system.events(),
+      apiAt.query.timestamp.now(),
+      apiAt.query.system.events()
     ]);
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
+
+    const blockNumber = headerExtended.number.toNumber();
 
     const deafultNonce = this.api.registry.createType('u64', 0);
     const deafultMixHash = this.api.registry.createType('u256', 0);
 
     const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : EMPTY_STRING;
 
-    return {
-      hash: headerExtended.hash.toHex(),
+    const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
+
+    let transactions: any[];
+
+    if (!fullTx) {
+      // not full
+      transactions = evmExtrinsicIndexes.map((extrinsicIndex) => {
+        return block.block.extrinsics[extrinsicIndex].hash.toHex();
+      });
+    } else {
+      // full
+      transactions = evmExtrinsicIndexes.map((extrinsicIndex, transactionIndex) => {
+        const extrinsic = block.block.extrinsics[extrinsicIndex];
+        const evmEvent = findEvmEvent(events);
+
+        if (!evmEvent) {
+          return {
+            blockHash,
+            blockNumber,
+            transactionIndex,
+            hash: extrinsic.hash.toHex(),
+            nonce: extrinsic.nonce.toNumber(),
+            // @TODO get tx value
+            value: 0
+          };
+        }
+
+        const from = evmEvent.event.data[0].toString();
+        const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
+          ? null
+          : evmEvent.event.data[1].toString();
+
+        // @TODO Missing data
+        return {
+          blockHash,
+          blockNumber,
+          transactionIndex,
+          hash: extrinsic.hash.toHex(),
+          nonce: extrinsic.nonce.toNumber(),
+          from: from,
+          to: to,
+          // @TODO get tx value
+          value: 0
+        };
+      });
+    }
+
+    const data = {
+      hash: blockHash,
       parentHash: headerExtended.parentHash.toHex(),
-      number: headerExtended.number.toNumber(),
+      number: blockNumber,
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: now.toNumber(),
@@ -287,15 +349,12 @@ export abstract class BaseProvider extends AbstractProvider {
       extraData: EMPTY_STRING,
 
       baseFeePerGas: BIGNUMBER_ZERO,
-      transactions: block.block.extrinsics.map((e) => e.hash.toHex()) // When the full parameter is true, it should return TransactionReceipt
+      transactions
     };
-  };
 
-  getBlockWithTransactions = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>
-  ): Promise<BlockWithTransactions> => {
-    // @TODO implementing full
-    return this.getBlock(blockTag, true) as any;
+    // @TODO remove ts-ignore
+    // @ts-ignore
+    return data;
   };
 
   // @TODO free
@@ -991,10 +1050,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   // @TODO Testing
   getTransactionReceiptAtBlock = async (
-    hash: string | Promise<string>,
+    hashOrNumber: number | string | Promise<string>,
     blockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<TransactionReceipt> => {
-    const txHash = (await hash).toLowerCase();
+    hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
@@ -1006,31 +1065,18 @@ export abstract class BaseProvider extends AbstractProvider {
       apiAt.query.system.events()
     ]);
 
-    const { extrinsic, extrinsicIndex } =
-      block.block.extrinsics
-        .map((extrinsic, index) => {
-          return {
-            extrinsic,
-            extrinsicIndex: index
-          };
-        })
-        .find(({ extrinsic }) => extrinsic.hash.toHex() === txHash) || {};
+    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
+      hashOrNumber,
+      block.block.extrinsics,
+      blockEvents
+    );
 
-    if (!extrinsic || !extrinsicIndex) {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, {
-        hash: txHash,
-        blockHash
-      });
-    }
-
-    const events = blockEvents.filter(
+    const extrinsicEvents = blockEvents.filter(
       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
-    const isExtrinsicFailed = events[events.length - 1].event.method === 'ExtrinsicFailed';
-
     if (isExtrinsicFailed) {
-      const [dispatchError] = events[events.length - 1].event.data as any[];
+      const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
 
       let message = dispatchError.type;
 
@@ -1045,26 +1091,23 @@ export abstract class BaseProvider extends AbstractProvider {
       }
 
       return logger.throwError(`ExtrinsicFailed: ${message}`, Logger.errors.UNKNOWN_ERROR, {
-        hash: txHash,
+        hash: transactionHash,
         blockHash
       });
     }
 
-    const evmEvent = events.find(({ event }) => {
-      return (
-        event.section.toUpperCase() === 'EVM' &&
-        ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.method)
-      );
-    });
+    // @TODO
+    const evmEvent = findEvmEvent(extrinsicEvents);
 
     if (!evmEvent) {
       return logger.throwError(`evm event not found`, Logger.errors.UNKNOWN_ERROR, {
-        hash: txHash,
+        hash: transactionHash,
         blockHash
       });
     }
 
-    const transactionInfo = { transactionIndex: extrinsicIndex, blockHash, transactionHash: txHash, blockNumber };
+    const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
+
     const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     // to and contractAddress may be undefined
@@ -1099,9 +1142,13 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (txFromCache) return txFromCache;
 
-    const txFromSubql = await getTxReceiptByHash(txHash);
+    try {
+      const txFromSubql = await getTxReceiptByHash(txHash);
 
-    return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+      return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+    } catch {
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+    }
   };
 
   // Queries

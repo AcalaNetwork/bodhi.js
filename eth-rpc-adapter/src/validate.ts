@@ -11,7 +11,8 @@ export type Schema = {
     | 'position'
     | 'transactionData'
     | 'object'
-    | 'message';
+    | 'message'
+    | 'hexNumber';
 }[];
 
 export const validateString = (value: any) => {
@@ -141,6 +142,10 @@ export const validate = (schema: Schema, data: unknown[]) => {
         }
         case 'message': {
           validateString(data[i]);
+          break;
+        }
+        case 'hexNumber': {
+          validateHexNumber(data[i] as any);
           break;
         }
         default:
