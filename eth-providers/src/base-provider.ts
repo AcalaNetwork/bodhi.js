@@ -296,7 +296,7 @@ export abstract class BaseProvider extends AbstractProvider {
     } else {
       // full
       transactions = evmExtrinsicIndexes.map((extrinsicIndex, transactionIndex) => {
-        const extrinsics = block.block.extrinsics[extrinsicIndex];
+        const extrinsic = block.block.extrinsics[extrinsicIndex];
         const evmEvent = findEvmEvent(events);
 
         if (!evmEvent) {
@@ -304,7 +304,8 @@ export abstract class BaseProvider extends AbstractProvider {
             blockHash,
             blockNumber,
             transactionIndex,
-            hash: extrinsics.hash.toHex()
+            hash: extrinsic.hash.toHex(),
+            nonce: extrinsic.nonce.toNumber()
           };
         }
 
@@ -318,7 +319,8 @@ export abstract class BaseProvider extends AbstractProvider {
           blockHash,
           blockNumber,
           transactionIndex,
-          hash: extrinsics.hash.toHex(),
+          hash: extrinsic.hash.toHex(),
+          nonce: extrinsic.nonce.toNumber(),
           from: from,
           to: to
         };
