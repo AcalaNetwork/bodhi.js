@@ -137,16 +137,16 @@ jobs:
         run: node common/scripts/install-run-rush.js build
 
       - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-hello-world
+        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-hello-world
 
       - name: build echo
-        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-echo
+        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-echo
 
       - name: build token
-        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-token
+        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-token
 
       - name: build nft
-        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-nft
+        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-nft
 
       - name: test
         run: echo "TODO" # use public mandala for testing
@@ -168,16 +168,16 @@ jobs:
         run: node common/scripts/install-run-rush.js update
 
       - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-hello-world
+        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-hello-world
 
       - name: build echo
-        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-echo
+        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-echo
 
       - name: build token
-        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-token
+        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-token
 
       - name: build nft
-        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-nft
+        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-nft
 
       - name: test
         run: echo "TODO" # use public mandala for testing
@@ -199,16 +199,16 @@ jobs:
         run: node common/scripts/install-run-rush.js update
 
       - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-hello-world
+        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-hello-world
 
       - name: build echo
-        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-echo
+        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-echo
 
       - name: build token
-        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-token
+        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-token
 
       - name: build nft
-        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-nft
+        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-nft
 
       - name: test
         run: echo "TODO" # use public mandala for testing
