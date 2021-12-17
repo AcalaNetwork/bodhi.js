@@ -112,6 +112,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -124,6 +126,18 @@ jobs:
       - name: build
         run: node common/scripts/install-run-rush.js build
 
+      - name: build hello world
+        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-hello-world
+
+      - name: build echo
+        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-echo
+
+      - name: build token
+        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-token
+
+      - name: build nft
+        run: node common/scripts/install-run-rush.js build -t evm-waffle-example-nft
+
       - name: test
         run: echo "TODO" # use public mandala for testing
 
@@ -132,6 +146,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -141,8 +157,17 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
-      - name: build
-        run: node common/scripts/install-run-rush.js build -t evm-hardhat-examples
+      - name: build hello world
+        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-hello-world
+
+      - name: build echo
+        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-echo
+
+      - name: build token
+        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-token
+
+      - name: build nft
+        run: node common/scripts/install-run-rush.js build -t evm-hardhat-example-nft
 
       - name: test
         run: echo "TODO" # use public mandala for testing
@@ -152,6 +177,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -161,8 +188,17 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
-      - name: build
-        run: node common/scripts/install-run-rush.js build -t evm-truffle-examples
+      - name: build hello world
+        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-hello-world
+
+      - name: build echo
+        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-echo
+
+      - name: build token
+        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-token
+
+      - name: build nft
+        run: node common/scripts/install-run-rush.js build -t evm-truffle-example-nft
 
       - name: test
         run: echo "TODO" # use public mandala for testing
