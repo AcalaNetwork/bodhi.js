@@ -1,7 +1,8 @@
 import {
   getPartialTransactionReceipt,
-  PartialTransactionReceipt
-} from '@acala-network/eth-providers/lib/utils/getPartialTransactionReceipt';
+  PartialTransactionReceipt,
+  getTransactionIndexAndHash
+} from '@acala-network/eth-providers/lib/utils';
 import { SubstrateEvent } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
 
@@ -11,14 +12,14 @@ const DUMMY_TX_HASH = '0x6666666666666666666666666666666666666666666666666666666
 export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   const { block } = event;
 
-  const txIdx = event.extrinsic?.idx ?? NOT_EXIST_TRANSACTION_INDEX;
-
   const transactionHash = event.extrinsic?.extrinsic.hash.toHex() || DUMMY_TX_HASH;
+  const transactionIndex = getTransactionIndexAndHash(transactionHash, block.block.extrinsics, block.events);
+
   const transactionInfo = {
     transactionHash,
     blockNumber: block.block.header.number.toNumber(),
     blockHash: block.block.hash.toHex(),
-    transactionIndex: txIdx
+    transactionIndex
   };
 
   const receiptId = `${block.block.header.number.toString()}-${event.extrinsic?.idx ?? event.phase.toString()}`;
@@ -52,7 +53,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
       transactionHash,
       blockNumber: block.block.header.number.toNumber(),
       blockHash: block.block.hash.toHex(),
-      transactionIndex: txIdx,
+      transactionIndex,
       removed: evmLog.removed,
       address: evmLog.address,
       data: evmLog.data,
