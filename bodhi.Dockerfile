@@ -6,6 +6,9 @@ WORKDIR /app
 ### required to build some native deps
 RUN apk add git python3 make gcc g++ musl-dev
 
+### required to uhave the sbmodules available
+RUN git submodule update --init --recursive
+
 ### required by some legacy deps
 RUN ln -s /usr/bin/python3 /usr/bin/python && \
     ln -s /usr/bin/pip3 /usr/bin/pip
