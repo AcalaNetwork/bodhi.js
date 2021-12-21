@@ -127,10 +127,10 @@ services:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
-      target: hardhat-examples
+      target: hardhat-tutorials
     depends_on:
       - eth-rpc-adapter-server
-    command: yarn loop:CI
+    command: cd hello-world/ && yarn loop:CI
 
   hardhat-tutorials-test:
     build:
