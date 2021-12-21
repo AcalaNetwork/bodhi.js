@@ -137,6 +137,17 @@ WORKDIR /app/examples/hardhat-tutorials
 RUN chmod 777 run.sh
 CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
 
+# =============== hardhat-tutorials =============== #
+FROM node:16-alpine as loop
+RUN apk add bash
+RUN npm install -g @microsoft/rush@5.55.0
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/hardhat-tutorials/hello-world
+
+RUN rush build -t .
+
 # =============== truffle-tutorials =============== #
 FROM node:16-alpine as truffle-tutorials
 RUN apk add bash
