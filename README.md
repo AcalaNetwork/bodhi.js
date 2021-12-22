@@ -1,5 +1,5 @@
 # @acala-network/bodhi.js
-Some tools and SDKs related to Acala EVM. 
+Some tools and SDKs related to Acala EVM.  
 
 Packages:
 - [bodhi](./bodhi)
