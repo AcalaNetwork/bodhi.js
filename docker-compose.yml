@@ -1,6 +1,6 @@
 services:
   mandala-node:
-    image: acala/mandala-node:2.1.0
+    image: acala/mandala-node:2.1.1
     ports:
       - 9944:9944
     command:
@@ -158,6 +158,5 @@ services:
     depends_on:
       - eth-rpc-adapter-server
     command: yarn test:CI
-
 # volumes:
 #   postgres:
