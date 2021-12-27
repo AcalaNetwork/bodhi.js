@@ -63,7 +63,7 @@ function _parseEip712Signature(
   // }
 }
 
-export type SignatureType = 'Ethereum' | 'AcalaEip712';
+export type SignatureType = 'Ethereum' | 'AcalaEip712' | 'Eip1559';
 
 // rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, eip712sig])
 export function parseEip712(payload: Uint8Array): Eip712Transaction {
@@ -132,9 +132,11 @@ export function checkSignatureType(rawTransaction: BytesLike): SignatureType {
   const payload = arrayify(rawTransaction);
 
   // Ethereum Transactions
-  if (payload[0] > 0x7f || payload[0] === 1 || payload[0] === 2) {
+  if (payload[0] > 0x7f || payload[0] === 1) {
     return 'Ethereum';
   }
+
+  if (payload[0] === 2) return 'Eip1559';
 
   // EIP 712
   if (payload[0] === 96) {

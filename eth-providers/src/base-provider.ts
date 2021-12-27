@@ -740,7 +740,52 @@ export abstract class BaseProvider extends AbstractProvider {
       return throwNotImplemented('EIP-2930 transactions');
     } else if (ethTx.type === 2) {
       // EIP-1559
-      return throwNotImplemented('EIP-1559 transactions');
+      const storageDepositPerByte = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+      const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+      const { maxFeePerGas, gasPrice } = ethTx;
+
+      logger.info(ethTx, '!!!!!!!!!!!!!!!!!! ethTx');
+
+      try {
+        const params = calcSubstrateTransactionParams({
+          txGasPrice: maxFeePerGas || gasPrice || '0',
+          txGasLimit: ethTx.gasLimit || '0',
+          storageByteDeposit: storageDepositPerByte,
+          txFeePerGas: txFeePerGas
+        });
+
+        gasLimit = params.gasLimit.toBigInt();
+        validUntil = params.validUntil.toBigInt();
+        storageLimit = params.storageLimit.toBigInt();
+
+        logger.info(
+          {
+            gasLimit,
+            validUntil,
+            storageLimit
+          },
+          'params'
+        );
+      } catch {
+        logger.throwError('bad gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
+          txGasLimit: ethTx.gasLimit.toBigInt(),
+          txGasPrice: ethTx.gasPrice?.toBigInt(),
+          txFeePerGas,
+          storageDepositPerByte
+        });
+      }
+
+      if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
+        logger.throwError('invalid gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
+          txGasLimit: ethTx.gasLimit.toBigInt(),
+          txGasPrice: ethTx.gasPrice?.toBigInt(),
+          gasLimit,
+          validUntil,
+          storageLimit,
+          storageDepositPerByte,
+          txFeePerGas
+        });
+      }
     }
 
     const extrinsic = this.api.tx.evm.ethCall(
@@ -763,7 +808,7 @@ export abstract class BaseProvider extends AbstractProvider {
       method: 'Bytes', // don't know waht is this
       nonce: ethTx.nonce,
       specVersion: 0, // ignored
-      tip: 0, // need to be zero
+      tip: ethTx.maxPriorityFeePerGas?.toNumber() * Number(gasLimit) || 0, // need to be zero
       transactionVersion: 0 // ignored
     });
 
