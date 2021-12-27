@@ -666,27 +666,19 @@ export abstract class BaseProvider extends AbstractProvider {
     return accountInfo.unwrap().contractInfo;
   };
 
-  prepareTransaction = async (
-    rawTx: string
-  ): Promise<{
-    extrinsic: SubmittableExtrinsic<'promise'>;
-    transaction: Eip712Transaction;
-  }> => {
-    await this.getNetwork();
-
-    const signatureType = checkSignatureType(rawTx);
-    const ethTx = parseTransaction(rawTx);
-
-    if (!ethTx.from) {
-      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
-    }
-
+  _getSubstrateGasParams = (
+    ethTx: Eip712Transaction
+  ): {
+    gasLimit: bigint;
+    storageLimit: bigint;
+    validUntil: bigint;
+  } => {
+    let gasLimit = 0n;
     let storageLimit = 0n;
     let validUntil = 0n;
-    let gasLimit = 0n;
 
     if (ethTx.type === 96) {
-      // eip712
+      // EIP-712 transaction
       const _storageLimit = ethTx.storageLimit?.toString();
       const _validUntil = ethTx.validUntil?.toString();
       if (!_storageLimit) {
@@ -699,14 +691,14 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit = ethTx.gasLimit.toBigInt();
       storageLimit = BigInt(_storageLimit);
       validUntil = BigInt(_validUntil);
-    } else if (ethTx.type == null || ethTx.type === 0) {
+    } else if (ethTx.type == null || ethTx.type === 0 || ethTx.type === 2) {
+      // Legacy, EIP-155, and EIP-1559 transaction
       const storageDepositPerByte = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
       const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
 
       try {
-        //  Legacy and EIP-155 Transactions
         const params = calcSubstrateTransactionParams({
-          txGasPrice: ethTx.gasPrice || '0',
+          txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
           txGasLimit: ethTx.gasLimit || '0',
           storageByteDeposit: storageDepositPerByte,
           txFeePerGas: txFeePerGas
@@ -736,46 +728,33 @@ export abstract class BaseProvider extends AbstractProvider {
         });
       }
     } else if (ethTx.type === 1) {
-      // EIP-2930
+      // EIP-2930 transaction
       return throwNotImplemented('EIP-2930 transactions');
-    } else if (ethTx.type === 2) {
-      // EIP-1559
-      const storageDepositPerByte = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
-      const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
-      const { maxFeePerGas, gasPrice } = ethTx;
-
-      try {
-        const params = calcSubstrateTransactionParams({
-          txGasPrice: maxFeePerGas || gasPrice || '0',
-          txGasLimit: ethTx.gasLimit || '0',
-          storageByteDeposit: storageDepositPerByte,
-          txFeePerGas: txFeePerGas
-        });
-
-        gasLimit = params.gasLimit.toBigInt();
-        validUntil = params.validUntil.toBigInt();
-        storageLimit = params.storageLimit.toBigInt();
-      } catch {
-        logger.throwError('bad gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
-          txGasLimit: ethTx.gasLimit.toBigInt(),
-          txGasPrice: ethTx.gasPrice?.toBigInt(),
-          txFeePerGas,
-          storageDepositPerByte
-        });
-      }
-
-      if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
-        logger.throwError('invalid gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
-          txGasLimit: ethTx.gasLimit.toBigInt(),
-          txGasPrice: ethTx.gasPrice?.toBigInt(),
-          gasLimit,
-          validUntil,
-          storageLimit,
-          storageDepositPerByte,
-          txFeePerGas
-        });
-      }
     }
+
+    return {
+      gasLimit,
+      storageLimit,
+      validUntil
+    };
+  };
+
+  prepareTransaction = async (
+    rawTx: string
+  ): Promise<{
+    extrinsic: SubmittableExtrinsic<'promise'>;
+    transaction: Eip712Transaction;
+  }> => {
+    await this.getNetwork();
+
+    const signatureType = checkSignatureType(rawTx);
+    const ethTx = parseTransaction(rawTx);
+
+    if (!ethTx.from) {
+      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
+    }
+
+    const { storageLimit, validUntil, gasLimit } = this._getSubstrateGasParams(ethTx);
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
