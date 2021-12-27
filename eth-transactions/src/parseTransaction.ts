@@ -131,17 +131,9 @@ export function parseTransaction(rawTransaction: BytesLike): Eip712Transaction {
 export function checkSignatureType(rawTransaction: BytesLike): SignatureType {
   const payload = arrayify(rawTransaction);
 
-  // Ethereum Transactions
-  if (payload[0] > 0x7f || payload[0] === 1) {
-    return 'Ethereum';
-  }
-
-  if (payload[0] === 2) return 'Eip1559';
-
-  // EIP 712
-  if (payload[0] === 96) {
-    return 'AcalaEip712';
-  }
+  if (payload[0] > 0x7f || payload[0] === 1) return 'Ethereum'; // Legacy and EIP-155
+  if (payload[0] === 2) return 'Eip1559'; // EIP-1559
+  if (payload[0] === 96) return 'AcalaEip712'; // Acala EIP-712
 
   return logger.throwError(`unsupported transaction type: ${payload[0]}`, Logger.errors.UNSUPPORTED_OPERATION, {
     operation: 'checkSignatureType',

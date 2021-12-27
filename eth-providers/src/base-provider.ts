@@ -744,8 +744,6 @@ export abstract class BaseProvider extends AbstractProvider {
       const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
       const { maxFeePerGas, gasPrice } = ethTx;
 
-      logger.info(ethTx, '!!!!!!!!!!!!!!!!!! ethTx');
-
       try {
         const params = calcSubstrateTransactionParams({
           txGasPrice: maxFeePerGas || gasPrice || '0',
@@ -757,15 +755,6 @@ export abstract class BaseProvider extends AbstractProvider {
         gasLimit = params.gasLimit.toBigInt();
         validUntil = params.validUntil.toBigInt();
         storageLimit = params.storageLimit.toBigInt();
-
-        logger.info(
-          {
-            gasLimit,
-            validUntil,
-            storageLimit
-          },
-          'params'
-        );
       } catch {
         logger.throwError('bad gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
           txGasLimit: ethTx.gasLimit.toBigInt(),
@@ -806,10 +795,10 @@ export abstract class BaseProvider extends AbstractProvider {
       era: '0x00', // mortal
       genesisHash: '0x', // ignored
       method: 'Bytes', // don't know waht is this
-      nonce: ethTx.nonce,
       specVersion: 0, // ignored
-      tip: ethTx.maxPriorityFeePerGas?.toNumber() * Number(gasLimit) || 0, // need to be zero
-      transactionVersion: 0 // ignored
+      transactionVersion: 0, // ignored
+      nonce: ethTx.nonce,
+      tip: (ethTx.maxPriorityFeePerGas?.toNumber() || 0) * Number(gasLimit)
     });
 
     logger.debug(

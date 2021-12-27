@@ -22,16 +22,12 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-it('a series of tests', async () => {
-  console.log('test start');
+describe('transaction tests', () => {
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
 
   const provider = EvmRpcProvider.from(endpoint);
-  const chainId = await provider.chainId();
-  const storageByteDeposit = (provider.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
-  const txFeePerGas = (provider.api.consts.evm.txFeePerGas as UInt).toBigInt();
 
   const account1Wallet = new Wallet(account1.privateKey).connect(provider as any);
 
@@ -40,150 +36,173 @@ it('a series of tests', async () => {
   const deployHelloWorldData =
     '0x60806040526040518060400160405280600c81526020017f48656c6c6f20576f726c642100000000000000000000000000000000000000008152506000908051906020019061004f929190610062565b5034801561005c57600080fd5b50610166565b82805461006e90610134565b90600052602060002090601f01602090048101928261009057600085556100d7565b82601f106100a957805160ff19168380011785556100d7565b828001600101855582156100d7579182015b828111156100d65782518255916020019190600101906100bb565b5b5090506100e491906100e8565b5090565b5b808211156101015760008160009055506001016100e9565b5090565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000600282049050600182168061014c57607f821691505b602082108114156101605761015f610105565b5b50919050565b61022e806101756000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063c605f76c14610030575b600080fd5b61003861004e565b6040516100459190610175565b60405180910390f35b6000805461005b906101c6565b80601f0160208091040260200160405190810160405280929190818152602001828054610087906101c6565b80156100d45780601f106100a9576101008083540402835291602001916100d4565b820191906000526020600020905b8154815290600101906020018083116100b757829003601f168201915b505050505081565b600081519050919050565b600082825260208201905092915050565b60005b838110156101165780820151818401526020810190506100fb565b83811115610125576000848401525b50505050565b6000601f19601f8301169050919050565b6000610147826100dc565b61015181856100e7565b93506101618185602086016100f8565b61016a8161012b565b840191505092915050565b6000602082019050818103600083015261018f818461013c565b905092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b600060028204905060018216806101de57607f821691505b602082108114156101f2576101f1610197565b5b5091905056fea26469706673582212204d363ed34111d1be492d4fd086e9f2df62b3c625e89ade31f30e63201ed1e24f64736f6c63430008090033';
 
-  await provider.isReady();
   const pairs = createTestPairs();
   const oneAca = 10n ** BigInt(provider.api.registry.chainDecimals[0]);
   const Alice = pairs.alice;
+  const queryBalance = () => acaContract.balanceOf(account1.evmAddress);
 
-  expect(computeDefaultSubstrateAddress(account1.evmAddress)).to.equal(account1.defaultSubstrateAddress);
-  expect(computeDefaultSubstrateAddress(account2.evmAddress)).to.equal(account2.defaultSubstrateAddress);
+  let chainId: number;
+  let storageByteDeposit: bigint;
+  let txFeePerGas: bigint;
+  let txGasLimit: BigNumber;
+  let txGasPrice: BigNumber;
 
-  /** transfer aca */
-  // console.log('transfer aca');
-  // const queryBalance = () => acaContract.balanceOf(account1.evmAddress);
-  // const balance1: BigNumber = await queryBalance();
-  // const amount = 100n * oneAca;
-  // const extrinsic = provider.api.tx.balances.transfer(account1.defaultSubstrateAddress, amount);
-  // await extrinsic.signAsync(Alice);
-  // await sendTx(provider.api, extrinsic);
-  // const balance2: BigNumber = await queryBalance();
-  // expect(balance2.sub(balance1).toBigInt()).equal(amount);
+  let partialTx;
 
-  /** send to account2 */
-  // const extrinsic2 = provider.api.tx.balances.transfer(account2.defaultSubstrateAddress, amount);
-  // await extrinsic2.signAsync(Alice);
-  // await sendTx(provider.api, extrinsic2);
+  before('prepare common variables', async () => {
+    await provider.isReady();
 
-  /** serializeTransaction legacyRawTx */
-  // console.log('serializeTransaction legacy');
+    chainId = await provider.chainId();
+    storageByteDeposit = (provider.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    txFeePerGas = (provider.api.consts.evm.txFeePerGas as UInt).toBigInt();
 
-  // const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
-  //   gasLimit: 2100001n,
-  //   validUntil: 360001n,
-  //   storageLimit: 64001n,
-  //   txFeePerGas,
-  //   storageByteDeposit
-  // });
+    ({ txGasLimit, txGasPrice } = calcEthereumTransactionParams({
+      gasLimit: 2100001n,
+      validUntil: 360001n,
+      storageLimit: 64001n,
+      txFeePerGas,
+      storageByteDeposit
+    }));
 
-  // console.log(txFeePerGas, storageByteDeposit);
-
-  // const unsignTx: Eip712Transaction = {
-  //   nonce: await provider.getTransactionCount(account1Wallet.address),
-  //   chainId,
-  //   gasLimit: txGasLimit,
-  //   gasPrice: txGasPrice,
-  //   data: deployHelloWorldData,
-  //   value: BigNumber.from(0)
-  // };
-
-  // const rawTx = await account1Wallet.signTransaction(unsignTx);
-
-  // const parsedTx = parseTransaction(rawTx);
-  // expect(parsedTx.from).equal(account1Wallet.address);
-  // expect(parsedTx.data).equal(deployHelloWorldData);
-
-  // console.log(parsedTx);
-
-  // const response1 = await provider.sendTransaction(rawTx);
-
-  // console.log(response1);
-
-  // const receipt = await response1.wait(0);
-
-  // console.log(receipt);
-
-  /** serializeTransaction legacyRawTx */
-  console.log('serializeTransaction 1559');
-
-  const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
-    gasLimit: 2100001n,
-    validUntil: 360001n,
-    storageLimit: 64001n,
-    txFeePerGas,
-    storageByteDeposit
+    partialTx = {
+      chainId,
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice,
+      data: deployHelloWorldData,
+      value: BigNumber.from(0)
+    };
   });
 
-  // console.log(txFeePerGas, storageByteDeposit);
+  after(async () => {
+    await provider.disconnect();
+  });
 
-  const priorityFee = BigNumber.from(2);
-  const tip = priorityFee * 2100001;
-  const unsignTx1559: Eip712Transaction = {
-    nonce: await provider.getTransactionCount(account1Wallet.address),
-    chainId,
-    gasLimit: txGasLimit,
-    // gasPrice: txGasPrice,
-    data: deployHelloWorldData,
-    value: BigNumber.from(0),
-    maxPriorityFeePerGas: priorityFee,
-    maxFeePerGas: txGasPrice,
-    type: 2
-  };
+  describe('transfer aca', () => {
+    it('evm address match', () => {
+      expect(computeDefaultSubstrateAddress(account1.evmAddress)).to.equal(account1.defaultSubstrateAddress);
+      expect(computeDefaultSubstrateAddress(account2.evmAddress)).to.equal(account2.defaultSubstrateAddress);
+    });
 
-  const rawTx = await account1Wallet.signTransaction(unsignTx1559);
+    it('has correct balance after transfer', async () => {
+      const balance1: BigNumber = await queryBalance();
+      const amount = 100n * oneAca;
+      const extrinsic = provider.api.tx.balances.transfer(account1.defaultSubstrateAddress, amount);
+      await extrinsic.signAsync(Alice);
+      await sendTx(provider.api, extrinsic);
+      const balance2: BigNumber = await queryBalance();
+      expect(balance2.sub(balance1).toBigInt()).equal(amount);
 
-  const parsedTx1559 = parseTransaction(rawTx);
-  expect(parsedTx1559.from).equal(account1Wallet.address);
-  expect(parsedTx1559.data).equal(deployHelloWorldData);
-  expect(parsedTx1559.type).equal(2);
-  expect(parsedTx1559.maxFeePerGas.toNumber()).equal(txGasPrice.toNumber());
-  expect(parsedTx1559.maxPriorityFeePerGas.toNumber()).equal(priorityFee.toNumber());
-  expect(parsedTx1559.gasLimit.toNumber()).equal(txGasLimit.toNumber());
+      /** send to account2 */
+      // const extrinsic2 = provider.api.tx.balances.transfer(account2.defaultSubstrateAddress, amount);
+      // await extrinsic2.signAsync(Alice);
+      // await sendTx(provider.api, extrinsic2);
+    });
+  });
 
-  console.log('parsedTx1559:', parsedTx1559);
+  describe('legacy and EIP-155 format', () => {
+    it('serialize, parse, and send raw tx', async () => {
+      const unsignedTx: Eip712Transaction = {
+        ...partialTx,
+        nonce: await provider.getTransactionCount(account1Wallet.address)
+      };
 
-  const response1 = await provider.sendTransaction(rawTx);
+      const rawTx = await account1Wallet.signTransaction(unsignedTx);
+      const parsedTx = parseTransaction(rawTx);
 
-  console.log('response1', response1);
+      expect(parsedTx.gasPrice.eq(txGasPrice)).equal(true);
+      expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
 
-  const receipt = await response1.wait(0);
+      expect(parsedTx.from).equal(account1Wallet.address);
+      expect(parsedTx.data).equal(deployHelloWorldData);
+      expect(parsedTx.type).equal(null); // TODO: is this correct expectation?
+      expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
+      expect(parsedTx.maxFeePerGas).equal(undefined);
 
-  console.log('receipt', receipt);
+      const response = await provider.sendTransaction(rawTx);
+      const receipt = await response.wait(0);
 
-  /** wallet sendTransaction  */
-  // const walletSendTransaction = async () => {
-  //   console.log('wallet sendTransaction');
-  //   await account1Wallet.sendTransaction({
-  //     gasLimit: txGasLimit,
-  //     gasPrice: txGasPrice,
-  //     data: deployHelloWorldData,
-  //     type: 0
-  //   });
-  // };
+      expect(receipt.type).equal(0); // TODO: is this correct expectation?
+      expect(receipt.status).equal(1);
+      expect(receipt.from).equal(account1Wallet.address);
+    });
+  });
 
-  // await walletSendTransaction();
+  describe('EIP-1559 format', () => {
+    it('serialize, parse, and send raw tx', async () => {
+      const priorityFee = BigNumber.from(2);
+      const unsignedTx: Eip712Transaction = {
+        ...partialTx,
+        nonce: await provider.getTransactionCount(account1Wallet.address),
+        gasPrice: undefined,
+        maxPriorityFeePerGas: priorityFee,
+        maxFeePerGas: txGasPrice,
+        type: 2
+      };
 
-  /** serializeTransaction eip712 */
-  // console.log('serializeTransaction eip712');
-  // const unsignEip712Tx: Eip712Transaction = {
-  //   nonce: await provider.getTransactionCount(account1Wallet.address),
-  //   chainId,
-  //   gasLimit: BigNumber.from('0x030dcf'),
-  //   data: deployHelloWorldData,
-  //   value: BigNumber.from(0),
-  //   salt: provider.genesisHash,
-  //   validUntil: 10000,
-  //   storageLimit: 100000,
-  //   type: 0x60
-  // };
+      const rawTx = await account1Wallet.signTransaction(unsignedTx);
+      const parsedTx = parseTransaction(rawTx);
 
-  // const eip712sig = signTransaction(account1.privateKey, unsignEip712Tx);
-  // const raw712Tx = serializeTransaction(unsignEip712Tx, eip712sig);
+      expect(parsedTx.maxFeePerGas.eq(txGasPrice)).equal(true);
+      expect(parsedTx.maxPriorityFeePerGas.eq(priorityFee)).equal(true);
+      expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
 
-  // const parsed712Tx = parseTransaction(raw712Tx);
-  // expect(parsed712Tx.from).equal(account1Wallet.address);
-  // expect(parsed712Tx.data).equal(deployHelloWorldData);
+      expect(parsedTx.from).equal(account1Wallet.address);
+      expect(parsedTx.data).equal(deployHelloWorldData);
+      expect(parsedTx.type).equal(2);
+      expect(parsedTx.gasPrice).equal(null);
 
-  // await provider.sendRawTransaction(raw712Tx);
+      const response = await provider.sendTransaction(rawTx);
+      const receipt = await response.wait(0);
 
-  await provider.disconnect();
+      expect(receipt.type).equal(0); // TODO: is this correct expectation? why not 2?
+      expect(receipt.status).equal(1);
+      expect(receipt.from).equal(account1Wallet.address);
+    });
+  });
+
+  describe('EIP-712 format', () => {
+    it('wallet send tx', async () => {
+      const response = await account1Wallet.sendTransaction({
+        ...partialTx,
+        type: 0
+      });
+      const receipt = await response.wait(0);
+
+      expect(receipt.type).equal(0);
+      expect(receipt.status).equal(1);
+      expect(receipt.from).equal(account1Wallet.address);
+    });
+
+    it('serialize, parse, and send raw tx', async () => {
+      const gasLimit = BigNumber.from('0x030dcf');
+      const validUntil = 10000;
+      const storageLimit = 100000;
+
+      const unsignEip712Tx: Eip712Transaction = {
+        ...partialTx,
+        nonce: await provider.getTransactionCount(account1Wallet.address),
+        salt: provider.genesisHash,
+        gasLimit,
+        validUntil,
+        storageLimit,
+        type: 0x60
+      };
+
+      const eip712sig = signTransaction(account1.privateKey, unsignEip712Tx);
+      const raw712Tx = serializeTransaction(unsignEip712Tx, eip712sig);
+      const parsedTx = parseTransaction(raw712Tx);
+
+      expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
+      expect(parsedTx.validUntil.eq(validUntil)).equal(true);
+      expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
+
+      expect(parsedTx.from).equal(account1Wallet.address);
+      expect(parsedTx.data).equal(deployHelloWorldData);
+      expect(parsedTx.type).equal(96);
+      expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
+      expect(parsedTx.maxFeePerGas).equal(undefined);
+
+      await provider.sendRawTransaction(raw712Tx);
+    });
+  });
 });
