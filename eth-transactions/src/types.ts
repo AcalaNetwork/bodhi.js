@@ -2,7 +2,7 @@ import { BigNumberish } from '@ethersproject/bignumber';
 import { BytesLike } from '@ethersproject/bytes';
 import { UnsignedTransaction, Transaction } from '@ethersproject/transactions';
 
-export type Eip712TransactionPayload = {
+export type AcalaEvmTXPayload = {
   chainId: BigNumberish;
   salt?: BytesLike;
 
@@ -17,13 +17,13 @@ export type Eip712TransactionPayload = {
   validUntil?: BigNumberish;
 };
 
-export interface Eip712Transaction extends Transaction {
+export interface AcalaEvmTX extends Transaction {
   salt?: BytesLike;
   storageLimit?: BigNumberish;
   validUntil?: BigNumberish;
 }
 
-export interface UnsignedEip712Transaction extends UnsignedTransaction {
+export interface UnsignedAcalaEvmTX extends UnsignedTransaction {
   salt?: BytesLike;
   storageLimit?: BigNumberish;
   validUntil?: BigNumberish;

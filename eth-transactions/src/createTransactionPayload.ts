@@ -1,11 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexlify } from '@ethersproject/bytes';
 import { logger } from './logger';
-import { Eip712TransactionPayload } from './types';
+import { AcalaEvmTXPayload } from './types';
 
 export const MAX_UINT256 = '0xffffffff';
 
-export const createTransactionPayload = (tx: Eip712TransactionPayload) => {
+export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
   if (!tx.salt) {
     logger.throwError('eip712tx missing salt');
   }

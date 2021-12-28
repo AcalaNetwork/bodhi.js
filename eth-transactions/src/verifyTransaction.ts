@@ -1,8 +1,8 @@
 import { verifyTypedData } from '@ethersproject/wallet';
 import { createTransactionPayload } from './createTransactionPayload';
-import { Eip712TransactionPayload } from './types';
+import { AcalaEvmTXPayload } from './types';
 
-export const verifyTransaction = (tx: Eip712TransactionPayload, signature: string): string => {
+export const verifyTransaction = (tx: AcalaEvmTXPayload, signature: string): string => {
   const payload = createTransactionPayload(tx);
 
   return verifyTypedData(

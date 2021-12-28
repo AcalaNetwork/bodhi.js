@@ -1,4 +1,4 @@
-import { checkSignatureType, Eip712Transaction, parseTransaction } from '@acala-network/eth-transactions';
+import { checkSignatureType, AcalaEvmTX, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   EventType,
@@ -667,7 +667,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getSubstrateGasParams = (
-    ethTx: Eip712Transaction
+    ethTx: AcalaEvmTX
   ): {
     gasLimit: bigint;
     storageLimit: bigint;
@@ -743,7 +743,7 @@ export abstract class BaseProvider extends AbstractProvider {
     rawTx: string
   ): Promise<{
     extrinsic: SubmittableExtrinsic<'promise'>;
-    transaction: Eip712Transaction;
+    transaction: AcalaEvmTX;
   }> => {
     await this.getNetwork();
 
@@ -831,7 +831,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _wrapTransaction = async (
-    tx: Eip712Transaction,
+    tx: AcalaEvmTX,
     hash: string,
     startBlock: number,
     startBlockHash: string

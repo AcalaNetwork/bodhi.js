@@ -13,7 +13,7 @@ import { computeDefaultSubstrateAddress } from '../../utils/address';
 import evmAccounts from '../evmAccounts';
 import {
   serializeTransaction,
-  Eip712Transaction,
+  AcalaEvmTX,
   parseTransaction,
   createTransactionPayload,
   signTransaction
@@ -89,7 +89,7 @@ describe('transaction tests', () => {
 
     describe('with legacy EIP-155 signature', () => {
       it('serialize, parse, and send tx correctly', async () => {
-        const unsignedTx: Eip712Transaction = {
+        const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
           nonce: await wallet1.getTransactionCount()
         };
@@ -118,7 +118,7 @@ describe('transaction tests', () => {
     describe('with EIP-1559 signature', () => {
       it('serialize, parse, and send tx correctly', async () => {
         const priorityFee = BigNumber.from(2);
-        const unsignedTx: Eip712Transaction = {
+        const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
           nonce: await wallet1.getTransactionCount(),
           gasPrice: undefined,
@@ -154,7 +154,7 @@ describe('transaction tests', () => {
         const validUntil = 10000;
         const storageLimit = 100000;
 
-        const unsignEip712Tx: Eip712Transaction = {
+        const unsignEip712Tx: AcalaEvmTX = {
           ...partialDeployTx,
           nonce: await wallet1.getTransactionCount(),
           salt: provider.genesisHash,
@@ -230,7 +230,7 @@ describe('transaction tests', () => {
         const balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
-        const transferTX: Eip712Transaction = {
+        const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
           nonce: await wallet1.getTransactionCount()
         };
@@ -256,7 +256,7 @@ describe('transaction tests', () => {
         const balance2 = await queryBalance(account2.evmAddress);
 
         const priorityFee = BigNumber.from(2);
-        const transferTX: Eip712Transaction = {
+        const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
           nonce: await wallet1.getTransactionCount(),
           gasPrice: undefined,
@@ -289,7 +289,7 @@ describe('transaction tests', () => {
         const validUntil = 10000;
         const storageLimit = 100000;
 
-        const transferTX: Eip712Transaction = {
+        const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
           nonce: await wallet1.getTransactionCount(),
           salt: provider.genesisHash,
