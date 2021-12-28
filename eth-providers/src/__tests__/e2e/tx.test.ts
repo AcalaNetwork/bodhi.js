@@ -102,14 +102,14 @@ describe('transaction tests', () => {
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
-        expect(parsedTx.type).equal(null); // TODO: is this correct expectation?
+        expect(parsedTx.type).equal(null);
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
         expect(parsedTx.maxFeePerGas).equal(undefined);
 
         const response = await provider.sendTransaction(rawTx);
         const receipt = await response.wait(0);
 
-        expect(receipt.type).equal(0); // TODO: is this correct expectation?
+        expect(receipt.type).equal(0); // TODO: should be null, need to fix getPartialTransactionReceipt
         expect(receipt.status).equal(1);
         expect(receipt.from).equal(wallet1.address);
       });
@@ -142,7 +142,7 @@ describe('transaction tests', () => {
         const response = await provider.sendTransaction(rawTx);
         const receipt = await response.wait(0);
 
-        expect(receipt.type).equal(0); // TODO: wrong type, need to fix getPartialTransactionReceipt
+        expect(receipt.type).equal(0); // TODO: should be 2, need to fix getPartialTransactionReceipt
         expect(receipt.status).equal(1);
         expect(receipt.from).equal(wallet1.address);
       });
@@ -221,7 +221,6 @@ describe('transaction tests', () => {
         await sendTx(provider.api, extrinsic);
 
         const _balance = await queryBalance(account1.evmAddress);
-        console.log(_balance.toNumber(), balance.toNumber());
         expect(_balance.sub(balance).toBigInt()).equal(amount);
       });
     });
