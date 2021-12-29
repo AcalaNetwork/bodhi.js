@@ -1,12 +1,19 @@
+import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
+import ADDRESS from '@acala-network/contracts/utils/Address';
 import { getAllLogs, getAllTxReceipts } from '@acala-network/eth-providers/lib/utils';
+import { parseTransaction } from '@acala-network/eth-transactions';
 import { Log } from '@ethersproject/abstract-provider';
+import { Contract } from '@ethersproject/contracts';
+import { Wallet } from '@ethersproject/wallet';
+import { BigNumber } from '@ethersproject/bignumber';
+import { parseUnits, Interface } from 'ethers/lib/utils';
 import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const RPC_URL = process.env.RPC_URL || 'ws://127.0.0.1:9944';
+const RPC_URL = process.env.RPC_URL || 'ws://127.0.0.1:8545';
 const rpcGet =
   (
     method: string // eslint-disable-line
@@ -330,5 +337,263 @@ describe('eth_accounts', () => {
     const res = await eth_accounts([]);
     expect(res.status).to.equal(200);
     expect(res.data.result).to.deep.equal([]);
+  });
+});
+
+const evmAccounts = [
+  {
+    privateKey: '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f',
+    evmAddress: '0x75E480dB528101a381Ce68544611C169Ad7EB342'
+  },
+  {
+    privateKey: '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269acd85c',
+    evmAddress: '0xb00cB924ae22b2BBb15E10c17258D6a2af980421'
+  }
+];
+
+describe('eth_sendRawTransaction', () => {
+  const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction');
+  const eth_getTransactionCount = rpcGet('eth_getTransactionCount');
+  const eth_getBalance = rpcGet('eth_getBalance');
+  const eth_chainId = rpcGet('eth_chainId');
+
+  // const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+  // const provider = EvmRpcProvider.from(endpoint);
+
+  const account1 = evmAccounts[0];
+  const account2 = evmAccounts[1];
+  const wallet1 = new Wallet(account1.privateKey);
+
+  let chainId: number;
+  let storageByteDeposit: bigint;
+  let txFeePerGas: bigint;
+  let txGasLimit: BigNumber;
+  let txGasPrice: BigNumber;
+
+  before('prepare common variables', async () => {
+    // await provider.isReady();
+
+    chainId = BigNumber.from((await eth_chainId()).data.result).toNumber();
+    storageByteDeposit = 100000000000000n;
+    txFeePerGas = 199999946752n;
+
+    // TODO: get these from rpc calls
+    txGasLimit = BigNumber.from(34132001n);
+    txGasPrice = BigNumber.from(200786445289n);
+  });
+
+  // after('clean up', async () => {
+  //   await provider.disconnect();
+  // });
+
+  describe('test deploy contract (hello world)', () => {
+    const deployHelloWorldData =
+      '0x60806040526040518060400160405280600c81526020017f48656c6c6f20576f726c642100000000000000000000000000000000000000008152506000908051906020019061004f929190610062565b5034801561005c57600080fd5b50610166565b82805461006e90610134565b90600052602060002090601f01602090048101928261009057600085556100d7565b82601f106100a957805160ff19168380011785556100d7565b828001600101855582156100d7579182015b828111156100d65782518255916020019190600101906100bb565b5b5090506100e491906100e8565b5090565b5b808211156101015760008160009055506001016100e9565b5090565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000600282049050600182168061014c57607f821691505b602082108114156101605761015f610105565b5b50919050565b61022e806101756000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063c605f76c14610030575b600080fd5b61003861004e565b6040516100459190610175565b60405180910390f35b6000805461005b906101c6565b80601f0160208091040260200160405190810160405280929190818152602001828054610087906101c6565b80156100d45780601f106100a9576101008083540402835291602001916100d4565b820191906000526020600020905b8154815290600101906020018083116100b757829003601f168201915b505050505081565b600081519050919050565b600082825260208201905092915050565b60005b838110156101165780820151818401526020810190506100fb565b83811115610125576000848401525b50505050565b6000601f19601f8301169050919050565b6000610147826100dc565b61015181856100e7565b93506101618185602086016100f8565b61016a8161012b565b840191505092915050565b6000602082019050818103600083015261018f818461013c565b905092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b600060028204905060018216806101de57607f821691505b602082108114156101f2576101f1610197565b5b5091905056fea26469706673582212204d363ed34111d1be492d4fd086e9f2df62b3c625e89ade31f30e63201ed1e24f64736f6c63430008090033';
+
+    let partialDeployTx;
+
+    before(() => {
+      partialDeployTx = {
+        chainId,
+        gasLimit: txGasLimit,
+        gasPrice: txGasPrice,
+        data: deployHelloWorldData,
+        value: BigNumber.from(0)
+      };
+    });
+
+    describe('with legacy EIP-155 signature', () => {
+      it('serialize, parse, and send tx correctly', async () => {
+        const unsignedTx: AcalaEvmTX = {
+          ...partialDeployTx,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result
+        };
+
+        const rawTx = await wallet1.signTransaction(unsignedTx);
+        const parsedTx = parseTransaction(rawTx);
+
+        expect(parsedTx.gasPrice.eq(txGasPrice)).equal(true);
+        expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
+
+        expect(parsedTx.from).equal(wallet1.address);
+        expect(parsedTx.data).equal(deployHelloWorldData);
+        expect(parsedTx.type).equal(null);
+        expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
+        expect(parsedTx.maxFeePerGas).equal(undefined);
+
+        await eth_sendRawTransaction([rawTx]);
+      });
+    });
+
+    describe('with EIP-1559 signature', () => {
+      it('serialize, parse, and send tx correctly', async () => {
+        const priorityFee = BigNumber.from(2);
+        const unsignedTx: AcalaEvmTX = {
+          ...partialDeployTx,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          gasPrice: undefined,
+          maxPriorityFeePerGas: priorityFee,
+          maxFeePerGas: txGasPrice,
+          type: 2
+        };
+
+        const rawTx = await wallet1.signTransaction(unsignedTx);
+        const parsedTx = parseTransaction(rawTx);
+
+        expect(parsedTx.maxFeePerGas.eq(txGasPrice)).equal(true);
+        expect(parsedTx.maxPriorityFeePerGas.eq(priorityFee)).equal(true);
+        expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
+
+        expect(parsedTx.from).equal(wallet1.address);
+        expect(parsedTx.data).equal(deployHelloWorldData);
+        expect(parsedTx.type).equal(2);
+        expect(parsedTx.gasPrice).equal(null);
+
+        await eth_sendRawTransaction([rawTx]);
+      });
+    });
+
+    // TODO: how does EIP-712 works with RPC calls?
+    describe.skip('with EIP-712 signature', () => {
+      it('serialize, parse, and send tx correctly', async () => {
+        const gasLimit = BigNumber.from('0x030dcf');
+        const validUntil = 10000;
+        const storageLimit = 100000;
+
+        const unsignEip712Tx: AcalaEvmTX = {
+          ...partialDeployTx,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          salt: provider.genesisHash,
+          gasLimit,
+          validUntil,
+          storageLimit,
+          type: 0x60
+        };
+
+        const sig = signTransaction(account1.privateKey, unsignEip712Tx);
+        const rawTx = serializeTransaction(unsignEip712Tx, sig);
+        const parsedTx = parseTransaction(rawTx);
+
+        expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
+        expect(parsedTx.validUntil.eq(validUntil)).equal(true);
+        expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
+
+        expect(parsedTx.from).equal(wallet1.address);
+        expect(parsedTx.data).equal(deployHelloWorldData);
+        expect(parsedTx.type).equal(96);
+        expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
+        expect(parsedTx.maxFeePerGas).equal(undefined);
+
+        await provider.sendRawTransaction(rawTx);
+      });
+    });
+  });
+
+  describe('test call contract (transfer ACA)', () => {
+    const ACADigits = 12;
+    const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, wallet1);
+    const iface = new Interface(ACAABI.abi);
+    const queryBalance = async (addr) =>
+      BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result).div(10 ** (18 - 12));
+    const transferAmount = parseUnits('100', ACADigits);
+    let partialTransferTX: any;
+
+    before(() => {
+      partialTransferTX = {
+        chainId,
+        to: ADDRESS.ACA,
+        gasLimit: txGasLimit,
+        gasPrice: txGasPrice,
+        data: iface.encodeFunctionData('transfer', [account2.evmAddress, transferAmount]),
+        value: BigNumber.from(0)
+      };
+    });
+
+    describe('with legacy EIP-155 signature', () => {
+      it('has correct balance after transfer', async () => {
+        const balance1 = await queryBalance(account1.evmAddress);
+        const balance2 = await queryBalance(account2.evmAddress);
+
+        const transferTX: AcalaEvmTX = {
+          ...partialTransferTX,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result
+        };
+
+        const rawTx = await wallet1.signTransaction(transferTX);
+
+        await eth_sendRawTransaction([rawTx]);
+
+        const _balance1 = await queryBalance(account1.evmAddress);
+        const _balance2 = await queryBalance(account2.evmAddress);
+
+        // TODO: check sender's balance is correct
+        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+      });
+    });
+
+    describe('with EIP-1559 signature', () => {
+      it('has correct balance after transfer', async () => {
+        const balance1 = await queryBalance(account1.evmAddress);
+        const balance2 = await queryBalance(account2.evmAddress);
+
+        const priorityFee = BigNumber.from(2);
+        const transferTX: AcalaEvmTX = {
+          ...partialTransferTX,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          gasPrice: undefined,
+          maxPriorityFeePerGas: priorityFee,
+          maxFeePerGas: txGasPrice,
+          type: 2
+        };
+
+        const rawTx = await wallet1.signTransaction(transferTX);
+        const parsedTx = parseTransaction(rawTx);
+
+        await eth_sendRawTransaction([rawTx]);
+
+        const _balance1 = await queryBalance(account1.evmAddress);
+        const _balance2 = await queryBalance(account2.evmAddress);
+
+        // TODO: check sender's balance is correct
+        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+      });
+    });
+
+    // TODO: how does EIP-712 works with RPC calls?
+    describe.skip('with EIP-712 signature', () => {
+      it('has correct balance after transfer', async () => {
+        const balance1 = await queryBalance(account1.evmAddress);
+        const balance2 = await queryBalance(account2.evmAddress);
+
+        const gasLimit = BigNumber.from('0x030dcf');
+        const validUntil = 10000;
+        const storageLimit = 100000;
+
+        const transferTX: AcalaEvmTX = {
+          ...partialTransferTX,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          salt: provider.genesisHash,
+          gasLimit,
+          validUntil,
+          storageLimit,
+          type: 0x60
+        };
+
+        const sig = signTransaction(account1.privateKey, transferTX);
+        const rawTx = serializeTransaction(transferTX, sig);
+        const parsedTx = parseTransaction(rawTx);
+
+        await provider.sendRawTransaction(rawTx);
+
+        const _balance1 = await queryBalance(account1.evmAddress);
+        const _balance2 = await queryBalance(account2.evmAddress);
+
+        // TODO: check sender's balance is correct
+        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+      });
+    });
   });
 });
