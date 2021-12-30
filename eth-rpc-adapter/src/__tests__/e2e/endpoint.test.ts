@@ -498,13 +498,14 @@ describe('eth_sendRawTransaction', () => {
   });
 
   describe('test call contract (transfer ACA)', () => {
+    const ETHDigits = 18;
     const ACADigits = 12;
     const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, wallet1);
     const iface = new Interface(ACAABI.abi);
     const queryBalance = async (addr) =>
-      BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result).div(10 ** (18 - 12));
+      BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result).div(10 ** (ETHDigits - ACADigits));
     const transferAmount = parseUnits('100', ACADigits);
-    let partialTransferTX: any;
+    let partialTransferTX: Partial<AcalaEvmTX>;
 
     before(() => {
       partialTransferTX = {
