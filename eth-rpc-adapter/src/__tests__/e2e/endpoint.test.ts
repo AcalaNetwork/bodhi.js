@@ -368,6 +368,8 @@ describe('eth_sendRawTransaction', () => {
   let txGasPrice: BigNumber;
   let genesisHash: string;
 
+  let api: ApiPromise;
+
   before('prepare common variables', async () => {
     chainId = BigNumber.from((await eth_chainId()).data.result).toNumber();
 
@@ -376,7 +378,7 @@ describe('eth_sendRawTransaction', () => {
 
     const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
     const wsProvider = new WsProvider(endpoint);
-    const api = await ApiPromise.create({ provider: wsProvider });
+    api = await ApiPromise.create({ provider: wsProvider });
 
     genesisHash = api.genesisHash.toHex(); // TODO: why EIP-712 salt has to be genesis hash?
 
@@ -387,6 +389,10 @@ describe('eth_sendRawTransaction', () => {
       since after calcSubstrateTransactionParams gasLmit will become super big
                                                                                                             ----- */
     // txGasPrice = BigNumber.from((await eth_gasPrice()).data.result).toHexString();
+  });
+
+  after(async () => {
+    await api.disconnect();
   });
 
   describe('test deploy contract (hello world)', () => {
