@@ -8,7 +8,7 @@ import { parse } from '@ethersproject/transactions';
 import { logger } from './logger';
 import { serializeEip712 } from './serializeTransaction';
 import { transactionHash } from './transactionHash';
-import { Eip712Transaction, UnsignedEip712Transaction } from './types';
+import { AcalaEvmTX, UnsignedAcalaEvmTX } from './types';
 import { verifyTransaction } from './verifyTransaction';
 
 function handleNumber(value: string): BigNumber {
@@ -26,9 +26,9 @@ function handleAddress(value: string): string | null {
 }
 
 function _parseEip712Signature(
-  tx: Eip712Transaction,
+  tx: AcalaEvmTX,
   fields: Array<string>,
-  serialize: (tx: UnsignedEip712Transaction) => string
+  serialize: (tx: UnsignedAcalaEvmTX) => string
 ): void {
   try {
     const recid = handleNumber(fields[0]).toNumber();
@@ -63,17 +63,17 @@ function _parseEip712Signature(
   // }
 }
 
-export type SignatureType = 'Ethereum' | 'AcalaEip712';
+export type SignatureType = 'Ethereum' | 'AcalaEip712' | 'Eip1559';
 
 // rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, eip712sig])
-export function parseEip712(payload: Uint8Array): Eip712Transaction {
+export function parseEip712(payload: Uint8Array): AcalaEvmTX {
   const transaction = RLP.decode(payload.slice(1));
 
   if (transaction.length !== 9 && transaction.length !== 12) {
     logger.throwArgumentError('invalid component count for transaction type: 96', 'payload', hexlify(payload));
   }
 
-  const tx: Eip712Transaction = {
+  const tx: AcalaEvmTX = {
     type: 96,
     chainId: handleNumber(transaction[0]).toNumber(),
     salt: transaction[1],
@@ -109,7 +109,7 @@ export function parseEip712(payload: Uint8Array): Eip712Transaction {
   return tx;
 }
 
-export function parseTransaction(rawTransaction: BytesLike): Eip712Transaction {
+export function parseTransaction(rawTransaction: BytesLike): AcalaEvmTX {
   const payload = arrayify(rawTransaction);
 
   // Ethereum Transactions
@@ -131,15 +131,9 @@ export function parseTransaction(rawTransaction: BytesLike): Eip712Transaction {
 export function checkSignatureType(rawTransaction: BytesLike): SignatureType {
   const payload = arrayify(rawTransaction);
 
-  // Ethereum Transactions
-  if (payload[0] > 0x7f || payload[0] === 1 || payload[0] === 2) {
-    return 'Ethereum';
-  }
-
-  // EIP 712
-  if (payload[0] === 96) {
-    return 'AcalaEip712';
-  }
+  if (payload[0] > 0x7f || payload[0] === 1) return 'Ethereum'; // Legacy and EIP-155
+  if (payload[0] === 2) return 'Eip1559'; // EIP-1559
+  if (payload[0] === 96) return 'AcalaEip712'; // Acala EIP-712
 
   return logger.throwError(`unsupported transaction type: ${payload[0]}`, Logger.errors.UNSUPPORTED_OPERATION, {
     operation: 'checkSignatureType',

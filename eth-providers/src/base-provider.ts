@@ -1,4 +1,4 @@
-import { checkSignatureType, Eip712Transaction, parseTransaction } from '@acala-network/eth-transactions';
+import { checkSignatureType, AcalaEvmTX, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   EventType,
@@ -666,27 +666,19 @@ export abstract class BaseProvider extends AbstractProvider {
     return accountInfo.unwrap().contractInfo;
   };
 
-  prepareTransaction = async (
-    rawTx: string
-  ): Promise<{
-    extrinsic: SubmittableExtrinsic<'promise'>;
-    transaction: Eip712Transaction;
-  }> => {
-    await this.getNetwork();
-
-    const signatureType = checkSignatureType(rawTx);
-    const ethTx = parseTransaction(rawTx);
-
-    if (!ethTx.from) {
-      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
-    }
-
+  _getSubstrateGasParams = (
+    ethTx: AcalaEvmTX
+  ): {
+    gasLimit: bigint;
+    storageLimit: bigint;
+    validUntil: bigint;
+  } => {
+    let gasLimit = 0n;
     let storageLimit = 0n;
     let validUntil = 0n;
-    let gasLimit = 0n;
 
     if (ethTx.type === 96) {
-      // eip712
+      // EIP-712 transaction
       const _storageLimit = ethTx.storageLimit?.toString();
       const _validUntil = ethTx.validUntil?.toString();
       if (!_storageLimit) {
@@ -699,14 +691,14 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit = ethTx.gasLimit.toBigInt();
       storageLimit = BigInt(_storageLimit);
       validUntil = BigInt(_validUntil);
-    } else if (ethTx.type == null || ethTx.type === 0) {
+    } else if (ethTx.type == null || ethTx.type === 0 || ethTx.type === 2) {
+      // Legacy, EIP-155, and EIP-1559 transaction
       const storageDepositPerByte = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
       const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
 
       try {
-        //  Legacy and EIP-155 Transactions
         const params = calcSubstrateTransactionParams({
-          txGasPrice: ethTx.gasPrice || '0',
+          txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
           txGasLimit: ethTx.gasLimit || '0',
           storageByteDeposit: storageDepositPerByte,
           txFeePerGas: txFeePerGas
@@ -736,12 +728,33 @@ export abstract class BaseProvider extends AbstractProvider {
         });
       }
     } else if (ethTx.type === 1) {
-      // EIP-2930
+      // EIP-2930 transaction
       return throwNotImplemented('EIP-2930 transactions');
-    } else if (ethTx.type === 2) {
-      // EIP-1559
-      return throwNotImplemented('EIP-1559 transactions');
     }
+
+    return {
+      gasLimit,
+      storageLimit,
+      validUntil
+    };
+  };
+
+  prepareTransaction = async (
+    rawTx: string
+  ): Promise<{
+    extrinsic: SubmittableExtrinsic<'promise'>;
+    transaction: AcalaEvmTX;
+  }> => {
+    await this.getNetwork();
+
+    const signatureType = checkSignatureType(rawTx);
+    const ethTx = parseTransaction(rawTx);
+
+    if (!ethTx.from) {
+      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
+    }
+
+    const { storageLimit, validUntil, gasLimit } = this._getSubstrateGasParams(ethTx);
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -761,10 +774,10 @@ export abstract class BaseProvider extends AbstractProvider {
       era: '0x00', // mortal
       genesisHash: '0x', // ignored
       method: 'Bytes', // don't know waht is this
-      nonce: ethTx.nonce,
       specVersion: 0, // ignored
-      tip: 0, // need to be zero
-      transactionVersion: 0 // ignored
+      transactionVersion: 0, // ignored
+      nonce: ethTx.nonce,
+      tip: (ethTx.maxPriorityFeePerGas?.toNumber() || 0) * Number(gasLimit)
     });
 
     logger.debug(
@@ -818,7 +831,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _wrapTransaction = async (
-    tx: Eip712Transaction,
+    tx: AcalaEvmTX,
     hash: string,
     startBlock: number,
     startBlockHash: string

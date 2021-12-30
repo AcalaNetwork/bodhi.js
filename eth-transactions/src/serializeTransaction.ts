@@ -6,7 +6,7 @@ import * as RLP from '@ethersproject/rlp';
 import { serialize, UnsignedTransaction } from '@ethersproject/transactions';
 import { MAX_UINT256 } from './createTransactionPayload';
 import { logger } from './logger';
-import { UnsignedEip712Transaction } from './types';
+import { UnsignedAcalaEvmTX } from './types';
 
 function formatNumber(value: BigNumberish, name: string): Uint8Array {
   const result = stripZeros(BigNumber.from(value).toHexString());
@@ -17,7 +17,7 @@ function formatNumber(value: BigNumberish, name: string): Uint8Array {
 }
 
 // rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, eip712sig])
-export function serializeEip712(transaction: UnsignedEip712Transaction, signature?: SignatureLike) {
+export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: SignatureLike) {
   const fields: any = [
     formatNumber(transaction.chainId || 0, 'chainId'),
     transaction.salt || '0x',
@@ -40,7 +40,7 @@ export function serializeEip712(transaction: UnsignedEip712Transaction, signatur
   return hexConcat(['0x60', RLP.encode(fields)]);
 }
 
-export function serializeTransaction(transaction: UnsignedEip712Transaction, signature?: SignatureLike): string {
+export function serializeTransaction(transaction: UnsignedAcalaEvmTX, signature?: SignatureLike): string {
   // Ethereum Transactions
   if (transaction.type == null || transaction.type === 0 || transaction.type === 1 || transaction.type === 2) {
     return serialize(transaction, signature);
@@ -48,7 +48,7 @@ export function serializeTransaction(transaction: UnsignedEip712Transaction, sig
 
   // eip712
   if (transaction.type === 96) {
-    return serializeEip712(transaction as UnsignedEip712Transaction, signature);
+    return serializeEip712(transaction as UnsignedAcalaEvmTX, signature);
   }
 
   return logger.throwError(`unsupported transaction type: ${transaction.type}`, Logger.errors.UNSUPPORTED_OPERATION, {
