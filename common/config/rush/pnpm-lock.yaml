@@ -165,6 +165,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/eth-providers': workspace:*
+      '@acala-network/eth-transactions': workspace:*
       '@acala-network/types': ~3.0.3-3
       '@ethersproject/abstract-provider': ~5.5.0
       '@ethersproject/abstract-signer': ~5.5.0
@@ -211,6 +212,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16_@polkadot+types@6.11.1
       '@acala-network/eth-providers': link:../eth-providers
+      '@acala-network/eth-transactions': link:../eth-transactions
       '@acala-network/types': 3.0.3-16
       '@ethersproject/abstract-provider': 5.5.1
       '@ethersproject/abstract-signer': 5.5.0
