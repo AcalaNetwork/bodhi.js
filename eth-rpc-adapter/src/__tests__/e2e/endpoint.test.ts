@@ -1,7 +1,7 @@
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
 import { getAllLogs, getAllTxReceipts } from '@acala-network/eth-providers/lib/utils';
-import { parseTransaction } from '@acala-network/eth-transactions';
+import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { Log } from '@ethersproject/abstract-provider';
 import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
@@ -356,6 +356,7 @@ describe('eth_sendRawTransaction', () => {
   const eth_getTransactionCount = rpcGet('eth_getTransactionCount');
   const eth_getBalance = rpcGet('eth_getBalance');
   const eth_chainId = rpcGet('eth_chainId');
+  const eth_gasPrice = rpcGet('eth_gasPrice');
 
   // const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   // const provider = EvmRpcProvider.from(endpoint);
@@ -377,9 +378,13 @@ describe('eth_sendRawTransaction', () => {
     storageByteDeposit = 100000000000000n;
     txFeePerGas = 199999946752n;
 
-    // TODO: get these from rpc calls
     txGasLimit = BigNumber.from(34132001n);
     txGasPrice = BigNumber.from(200786445289n);
+
+    // TODO: make this work
+    // current error: Error: 1010: Invalid Transaction: Transaction would exhaust the block limits
+    // seems only works with EIP-712
+    // txGasPrice = BigNumber.from((await eth_gasPrice()).data.result).toHexString();
   });
 
   // after('clean up', async () => {
@@ -421,7 +426,9 @@ describe('eth_sendRawTransaction', () => {
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
         expect(parsedTx.maxFeePerGas).equal(undefined);
 
-        await eth_sendRawTransaction([rawTx]);
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
       });
     });
 
@@ -449,12 +456,13 @@ describe('eth_sendRawTransaction', () => {
         expect(parsedTx.type).equal(2);
         expect(parsedTx.gasPrice).equal(null);
 
-        await eth_sendRawTransaction([rawTx]);
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
       });
     });
 
-    // TODO: how does EIP-712 works with RPC calls?
-    describe.skip('with EIP-712 signature', () => {
+    describe('with EIP-712 signature', () => {
       it('serialize, parse, and send tx correctly', async () => {
         const gasLimit = BigNumber.from('0x030dcf');
         const validUntil = 10000;
@@ -463,7 +471,7 @@ describe('eth_sendRawTransaction', () => {
         const unsignEip712Tx: AcalaEvmTX = {
           ...partialDeployTx,
           nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
-          salt: provider.genesisHash,
+          salt: '0x9c007d2b92ba7af320bc2d3e22cad5cfa987f9f1c95be2f2f0912a6e8a014da2', // TODO: why has to be this?
           gasLimit,
           validUntil,
           storageLimit,
@@ -484,7 +492,9 @@ describe('eth_sendRawTransaction', () => {
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
         expect(parsedTx.maxFeePerGas).equal(undefined);
 
-        await provider.sendRawTransaction(rawTx);
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
       });
     });
   });
@@ -521,7 +531,9 @@ describe('eth_sendRawTransaction', () => {
 
         const rawTx = await wallet1.signTransaction(transferTX);
 
-        await eth_sendRawTransaction([rawTx]);
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
@@ -550,7 +562,9 @@ describe('eth_sendRawTransaction', () => {
         const rawTx = await wallet1.signTransaction(transferTX);
         const parsedTx = parseTransaction(rawTx);
 
-        await eth_sendRawTransaction([rawTx]);
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
@@ -561,8 +575,7 @@ describe('eth_sendRawTransaction', () => {
       });
     });
 
-    // TODO: how does EIP-712 works with RPC calls?
-    describe.skip('with EIP-712 signature', () => {
+    describe('with EIP-712 signature', () => {
       it('has correct balance after transfer', async () => {
         const balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
@@ -574,7 +587,7 @@ describe('eth_sendRawTransaction', () => {
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
-          salt: provider.genesisHash,
+          salt: '0x9c007d2b92ba7af320bc2d3e22cad5cfa987f9f1c95be2f2f0912a6e8a014da2', // TODO: why has to be this?
           gasLimit,
           validUntil,
           storageLimit,
@@ -585,7 +598,9 @@ describe('eth_sendRawTransaction', () => {
         const rawTx = serializeTransaction(transferTX, sig);
         const parsedTx = parseTransaction(rawTx);
 
-        await provider.sendRawTransaction(rawTx);
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
