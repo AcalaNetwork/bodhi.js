@@ -7,6 +7,7 @@ import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseUnits, Interface } from 'ethers/lib/utils';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
@@ -358,38 +359,35 @@ describe('eth_sendRawTransaction', () => {
   const eth_chainId = rpcGet('eth_chainId');
   const eth_gasPrice = rpcGet('eth_gasPrice');
 
-  // const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
-  // const provider = EvmRpcProvider.from(endpoint);
-
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
   const wallet1 = new Wallet(account1.privateKey);
 
   let chainId: number;
-  let storageByteDeposit: bigint;
-  let txFeePerGas: bigint;
   let txGasLimit: BigNumber;
   let txGasPrice: BigNumber;
+  let genesisHash: string;
 
   before('prepare common variables', async () => {
-    // await provider.isReady();
-
     chainId = BigNumber.from((await eth_chainId()).data.result).toNumber();
-    storageByteDeposit = 100000000000000n;
-    txFeePerGas = 199999946752n;
 
     txGasLimit = BigNumber.from(34132001n);
     txGasPrice = BigNumber.from(200786445289n);
 
-    // TODO: make this work
-    // current error: Error: 1010: Invalid Transaction: Transaction would exhaust the block limits
-    // seems only works with EIP-712
+    const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+    const wsProvider = new WsProvider(endpoint);
+    const api = await ApiPromise.create({ provider: wsProvider });
+
+    genesisHash = api.genesisHash.toHex(); // TODO: why EIP-712 salt has to be genesis hash?
+
+    /* -----
+      TODO: 
+      currently eth_gasPrice() only works for EIP-712, since it doesn't go through calcSubstrateTransactionParams
+      legacy and EIP-1559 will get Error: 1010: Invalid Transaction: Transaction would exhaust the block limits
+      since after calcSubstrateTransactionParams gasLmit will become super big
+                                                                                                            ----- */
     // txGasPrice = BigNumber.from((await eth_gasPrice()).data.result).toHexString();
   });
-
-  // after('clean up', async () => {
-  //   await provider.disconnect();
-  // });
 
   describe('test deploy contract (hello world)', () => {
     const deployHelloWorldData =
@@ -471,7 +469,7 @@ describe('eth_sendRawTransaction', () => {
         const unsignEip712Tx: AcalaEvmTX = {
           ...partialDeployTx,
           nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
-          salt: '0x9c007d2b92ba7af320bc2d3e22cad5cfa987f9f1c95be2f2f0912a6e8a014da2', // TODO: why has to be this?
+          salt: genesisHash,
           gasLimit,
           validUntil,
           storageLimit,
@@ -587,7 +585,7 @@ describe('eth_sendRawTransaction', () => {
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
-          salt: '0x9c007d2b92ba7af320bc2d3e22cad5cfa987f9f1c95be2f2f0912a6e8a014da2', // TODO: why has to be this?
+          salt: genesisHash,
           gasLimit,
           validUntil,
           storageLimit,
