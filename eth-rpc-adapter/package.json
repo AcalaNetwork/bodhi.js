@@ -41,7 +41,8 @@
     "axios": "~0.24.0",
     "@ethersproject/abstract-signer": "~5.5.0",
     "@ethersproject/address": "~5.5.0",
-    "@ethersproject/wallet": "~5.5.0"
+    "@ethersproject/wallet": "~5.5.0",
+    "@acala-network/eth-transactions": "workspace:*"
   },
   "devDependencies": {
     "@types/chai": "~4.2.22",

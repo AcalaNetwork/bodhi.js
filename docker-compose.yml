@@ -126,8 +126,10 @@ services:
       target: eth-rpc-adapter
     depends_on:
       - eth-rpc-adapter-server
+      - mandala-node
     environment:
       RPC_URL: http://eth-rpc-adapter-server:8545
+      ENDPOINT_URL: ws://mandala-node:9944
     command: yarn test:CI
 
   # helper for hardhat with instant-sealing node
