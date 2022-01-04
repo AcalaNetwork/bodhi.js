@@ -358,6 +358,7 @@ describe('eth_sendRawTransaction', () => {
   const eth_getBalance = rpcGet('eth_getBalance');
   const eth_chainId = rpcGet('eth_chainId');
   const eth_gasPrice = rpcGet('eth_gasPrice');
+  const eth_estimateGas = rpcGet('eth_estimateGas');
 
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
@@ -381,14 +382,6 @@ describe('eth_sendRawTransaction', () => {
     api = await ApiPromise.create({ provider: wsProvider });
 
     genesisHash = api.genesisHash.toHex(); // TODO: why EIP-712 salt has to be genesis hash?
-
-    /* -----
-      TODO: 
-      currently eth_gasPrice() only works for EIP-712, since it doesn't go through calcSubstrateTransactionParams
-      legacy and EIP-1559 will get Error: 1010: Invalid Transaction: Transaction would exhaust the block limits
-      since after calcSubstrateTransactionParams gasLmit will become super big
-                                                                                                            ----- */
-    // txGasPrice = BigNumber.from((await eth_gasPrice()).data.result).toHexString();
   });
 
   after(async () => {
@@ -613,6 +606,150 @@ describe('eth_sendRawTransaction', () => {
         // TODO: check sender's balance is correct
         // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+      });
+    });
+  });
+
+  describe('test MetaMask send native ACA token', () => {
+    const ETHDigits = 18;
+    const ACADigits = 12;
+    const queryBalance = async (addr) => BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result);
+    const transferAmount = parseUnits('16.8668', ETHDigits);
+    let partialNativeTransferTX: Partial<AcalaEvmTX>;
+
+    const estimateGas = async (): Promise<{
+      gasPrice: string;
+      gasLimit: string;
+    }> => {
+      const gasPrice = (await eth_gasPrice([])).data.result;
+      const gasLimit = (
+        await eth_estimateGas([
+          {
+            from: account1.evmAddress,
+            to: account2.evmAddress,
+            value: transferAmount,
+            data: null,
+            gasPrice
+          }
+        ])
+      ).data.result;
+
+      /* -----
+        TODO: https://github.com/AcalaNetwork/bodhi.js/issues/209
+        currently eth_gasPrice() is not compatible with eth_estimateGas(), if we use these auto generated
+        gasPrice and gasLimit, calcSubstrateTransactionParams will result with bad substrate gas params.
+        So temporarily use hard coded gasPrice and gasLimit.
+                                                                                                    ----- */
+      const hardCodedGasPrice = txGasPrice;
+      const hardCodedGasLimit = txGasLimit;
+      return {
+        gasPrice: hardCodedGasPrice,
+        gasLimit: hardCodedGasLimit
+      };
+
+      // return {
+      //   gasPrice,
+      //   gasLimit,
+      // }
+    };
+
+    before(() => {
+      partialNativeTransferTX = {
+        chainId,
+        to: account2.evmAddress,
+        data: '0x',
+        value: transferAmount
+      };
+    });
+
+    describe('with legacy EIP-155 signature', () => {
+      it('has correct balance after transfer', async () => {
+        const balance1 = await queryBalance(account1.evmAddress);
+        const balance2 = await queryBalance(account2.evmAddress);
+
+        const transferTX: AcalaEvmTX = {
+          ...partialNativeTransferTX,
+          ...(await estimateGas()),
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result
+        };
+
+        const rawTx = await wallet1.signTransaction(transferTX);
+
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
+
+        const _balance1 = await queryBalance(account1.evmAddress);
+        const _balance2 = await queryBalance(account2.evmAddress);
+
+        // TODO: check sender's balance is correct
+        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+      });
+    });
+
+    describe('with EIP-1559 signature', () => {
+      it('has correct balance after transfer', async () => {
+        const balance1 = await queryBalance(account1.evmAddress);
+        const balance2 = await queryBalance(account2.evmAddress);
+
+        const priorityFee = BigNumber.from(2);
+        const { gasPrice, gasLimit } = await estimateGas();
+        const transferTX: AcalaEvmTX = {
+          ...partialNativeTransferTX,
+          gasLimit,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          gasPrice: undefined,
+          maxPriorityFeePerGas: priorityFee,
+          maxFeePerGas: gasPrice,
+          type: 2
+        };
+
+        const rawTx = await wallet1.signTransaction(transferTX);
+        const parsedTx = parseTransaction(rawTx);
+
+        const res = await eth_sendRawTransaction([rawTx]);
+        expect(res.status).to.equal(200);
+        expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
+
+        const _balance1 = await queryBalance(account1.evmAddress);
+        const _balance2 = await queryBalance(account2.evmAddress);
+
+        // TODO: check sender's balance is correct
+        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+      });
+    });
+
+    describe('with EIP-712 signature', () => {
+      // TODO: EIP-712 doesn't use ETH gasLimit and gasPrice, do we need to support it?
+      it.skip('has correct balance after transfer', async () => {
+        // const balance1 = await queryBalance(account1.evmAddress);
+        // const balance2 = await queryBalance(account2.evmAddress);
+        // const gasLimit = BigNumber.from('0x030dcf');
+        // const validUntil = 10000;
+        // const storageLimit = 100000;
+        // const transferTX: AcalaEvmTX = {
+        //   ...partialNativeTransferTX,
+        //   ...(await estimateGas()),
+        //   nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+        //   salt: genesisHash,
+        //   gasLimit,
+        //   validUntil,
+        //   storageLimit,
+        //   type: 0x60
+        // };
+        // const sig = signTransaction(account1.privateKey, transferTX);
+        // const rawTx = serializeTransaction(transferTX, sig);
+        // const parsedTx = parseTransaction(rawTx);
+        // const res = await eth_sendRawTransaction([rawTx]);
+        // expect(res.status).to.equal(200);
+        // expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
+        // const _balance1 = await queryBalance(account1.evmAddress);
+        // const _balance2 = await queryBalance(account2.evmAddress);
+        // // TODO: check sender's balance is correct
+        // // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        // expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
   });
