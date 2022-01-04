@@ -769,27 +769,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const signatureType = checkSignatureType(rawTx);
     const ethTx = parseTransaction(rawTx);
 
-    logger.info(ethTx, 'ethTx');
-
     if (!ethTx.from) {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
 
     const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
-    logger.info(
-      {
-        storageLimit,
-        validUntil,
-        gasLimit,
-        value: ethTx.value.toString(),
-        data: ethTx.data,
-        act: ethTx.to ? { Call: ethTx.to } : { Create: null },
-        tip: (ethTx.maxPriorityFeePerGas?.toNumber() || 0) * Number(gasLimit),
-        nonce: ethTx.nonce,
-        signatureType
-      },
-      'GASSSSSS'
-    );
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -814,8 +798,6 @@ export abstract class BaseProvider extends AbstractProvider {
       nonce: ethTx.nonce,
       tip
     });
-
-    logger.info(extrinsic.toString(), 'extrinsiccccccccc');
 
     logger.debug(
       {
