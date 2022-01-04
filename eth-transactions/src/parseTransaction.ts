@@ -43,7 +43,6 @@ function _parseEip712Signature(
   tx.r = hexZeroPad(fields[1], 32);
   tx.s = hexZeroPad(fields[2], 32);
 
-  // try {
   tx.from = verifyTransaction(
     {
       chainId: tx.chainId,
@@ -54,13 +53,11 @@ function _parseEip712Signature(
       to: tx.to,
       value: tx.value,
       data: tx.data,
-      validUntil: tx.validUntil
+      validUntil: tx.validUntil,
+      tip: tx.tip
     },
     joinSignature({ r: tx.r, s: tx.s, v: tx.v })
   );
-  // } catch (error) {
-  //   console.log(error);
-  // }
 }
 
 export type SignatureType = 'Ethereum' | 'AcalaEip712' | 'Eip1559';
@@ -69,7 +66,7 @@ export type SignatureType = 'Ethereum' | 'AcalaEip712' | 'Eip1559';
 export function parseEip712(payload: Uint8Array): AcalaEvmTX {
   const transaction = RLP.decode(payload.slice(1));
 
-  if (transaction.length !== 9 && transaction.length !== 12) {
+  if (transaction.length !== 10 && transaction.length !== 13) {
     logger.throwArgumentError('invalid component count for transaction type: 96', 'payload', hexlify(payload));
   }
 
@@ -84,11 +81,12 @@ export function parseEip712(payload: Uint8Array): AcalaEvmTX {
     to: handleAddress(transaction[5]),
     value: handleNumber(transaction[6]),
     data: transaction[7],
-    validUntil: handleNumber(transaction[8])
+    validUntil: handleNumber(transaction[8]),
+    tip: handleNumber(transaction[9])
   };
 
   // Unsigned EIP-712 Transaction
-  if (transaction.length === 9) {
+  if (transaction.length === 10) {
     return tx;
   }
 
@@ -101,10 +99,11 @@ export function parseEip712(payload: Uint8Array): AcalaEvmTX {
     gasLimit: tx.gasLimit,
     to: tx.to,
     value: tx.value,
-    data: tx.data
+    data: tx.data,
+    tip: tx.tip
   });
 
-  _parseEip712Signature(tx, transaction.slice(9), serializeEip712);
+  _parseEip712Signature(tx, transaction.slice(10), serializeEip712);
 
   return tx;
 }

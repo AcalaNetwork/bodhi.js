@@ -16,7 +16,7 @@ function formatNumber(value: BigNumberish, name: string): Uint8Array {
   return result;
 }
 
-// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, eip712sig])
+// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, tip, eip712sig])
 export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: SignatureLike) {
   const fields: any = [
     formatNumber(transaction.chainId || 0, 'chainId'),
@@ -27,7 +27,8 @@ export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: Sig
     transaction.to != null ? getAddress(transaction.to) : '0x',
     formatNumber(transaction.value || 0, 'value'),
     transaction.data || '0x',
-    formatNumber(transaction.validUntil || MAX_UINT256, 'validUntil')
+    formatNumber(transaction.validUntil || MAX_UINT256, 'validUntil'),
+    formatNumber(transaction.tip || 0, 'tip')
   ];
 
   if (signature) {

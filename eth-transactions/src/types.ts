@@ -21,10 +21,12 @@ export interface AcalaEvmTX extends Transaction {
   salt?: BytesLike;
   storageLimit?: BigNumberish;
   validUntil?: BigNumberish;
+  tip?: BigNumberish;
 }
 
 export interface UnsignedAcalaEvmTX extends UnsignedTransaction {
   salt?: BytesLike;
   storageLimit?: BigNumberish;
   validUntil?: BigNumberish;
+  tip?: BigNumberish;
 }
