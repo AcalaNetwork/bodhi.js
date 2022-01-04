@@ -672,25 +672,33 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: bigint;
     storageLimit: bigint;
     validUntil: bigint;
+    tip: bigint;
   } => {
     let gasLimit = 0n;
     let storageLimit = 0n;
     let validUntil = 0n;
+    let tip = 0n;
 
     if (ethTx.type === 96) {
       // EIP-712 transaction
       const _storageLimit = ethTx.storageLimit?.toString();
       const _validUntil = ethTx.validUntil?.toString();
+      const _tip = ethTx.tip?.toString();
+
       if (!_storageLimit) {
         return logger.throwError('expect storageLimit');
       }
       if (!_validUntil) {
         return logger.throwError('expect validUntil');
       }
+      if (!_tip) {
+        return logger.throwError('expect priorityFee');
+      }
 
       gasLimit = ethTx.gasLimit.toBigInt();
       storageLimit = BigInt(_storageLimit);
       validUntil = BigInt(_validUntil);
+      tip = BigInt(_tip);
     } else if (ethTx.type == null || ethTx.type === 0 || ethTx.type === 2) {
       // Legacy, EIP-155, and EIP-1559 transaction
       const storageDepositPerByte = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
@@ -707,6 +715,7 @@ export abstract class BaseProvider extends AbstractProvider {
         gasLimit = params.gasLimit.toBigInt();
         validUntil = params.validUntil.toBigInt();
         storageLimit = params.storageLimit.toBigInt();
+        tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
       } catch {
         logger.throwError('bad gasLimit or gasPrice', Logger.errors.INVALID_ARGUMENT, {
           txGasLimit: ethTx.gasLimit.toBigInt(),
@@ -735,7 +744,8 @@ export abstract class BaseProvider extends AbstractProvider {
     return {
       gasLimit,
       storageLimit,
-      validUntil
+      validUntil,
+      tip
     };
   };
 
@@ -754,7 +764,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
 
-    const { storageLimit, validUntil, gasLimit } = this._getSubstrateGasParams(ethTx);
+    const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -777,7 +787,7 @@ export abstract class BaseProvider extends AbstractProvider {
       specVersion: 0, // ignored
       transactionVersion: 0, // ignored
       nonce: ethTx.nonce,
-      tip: (ethTx.maxPriorityFeePerGas?.toNumber() || 0) * Number(gasLimit)
+      tip
     });
 
     logger.debug(

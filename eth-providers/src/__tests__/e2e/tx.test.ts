@@ -180,6 +180,40 @@ describe('transaction tests', () => {
 
         await provider.sendRawTransaction(rawTx);
       });
+
+      it('eip712 tip', async () => {
+        const gasLimit = BigNumber.from('0x030dcf');
+        const validUntil = 10000;
+        const storageLimit = 100000;
+
+        const unsignEip712Tx: AcalaEvmTX = {
+          ...partialDeployTx,
+          nonce: await wallet1.getTransactionCount(),
+          salt: provider.genesisHash,
+          gasLimit,
+          validUntil,
+          storageLimit,
+          tip: 2,
+          type: 0x60
+        };
+
+        const sig = signTransaction(account1.privateKey, unsignEip712Tx);
+        const rawTx = serializeTransaction(unsignEip712Tx, sig);
+        const parsedTx = parseTransaction(rawTx);
+
+        expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
+        expect(parsedTx.validUntil.eq(validUntil)).equal(true);
+        expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
+
+        expect(parsedTx.tip.eq(2)).equal(true);
+        expect(parsedTx.from).equal(wallet1.address);
+        expect(parsedTx.data).equal(deployHelloWorldData);
+        expect(parsedTx.type).equal(96);
+        expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
+        expect(parsedTx.maxFeePerGas).equal(undefined);
+
+        await provider.sendRawTransaction(rawTx);
+      });
     });
   });
 
