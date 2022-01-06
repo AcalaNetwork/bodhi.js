@@ -747,9 +747,8 @@ describe('eth_sendRawTransaction', () => {
         // expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
         // const _balance1 = await queryBalance(account1.evmAddress);
         // const _balance2 = await queryBalance(account2.evmAddress);
-
         // // TODO: check gasUsed is correct
-        const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
         // expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
