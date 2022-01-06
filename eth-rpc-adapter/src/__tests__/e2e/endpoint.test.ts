@@ -1,4 +1,4 @@
-import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
+import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
 import { getAllLogs, getAllTxReceipts } from '@acala-network/eth-providers/lib/utils';
 import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';
@@ -388,7 +388,7 @@ describe('eth_sendRawTransaction', () => {
     await api.disconnect();
   });
 
-  describe('test deploy contract (hello world)', () => {
+  describe('deploy contract (hello world)', () => {
     const deployHelloWorldData =
       '0x60806040526040518060400160405280600c81526020017f48656c6c6f20576f726c642100000000000000000000000000000000000000008152506000908051906020019061004f929190610062565b5034801561005c57600080fd5b50610166565b82805461006e90610134565b90600052602060002090601f01602090048101928261009057600085556100d7565b82601f106100a957805160ff19168380011785556100d7565b828001600101855582156100d7579182015b828111156100d65782518255916020019190600101906100bb565b5b5090506100e491906100e8565b5090565b5b808211156101015760008160009055506001016100e9565b5090565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000600282049050600182168061014c57607f821691505b602082108114156101605761015f610105565b5b50919050565b61022e806101756000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063c605f76c14610030575b600080fd5b61003861004e565b6040516100459190610175565b60405180910390f35b6000805461005b906101c6565b80601f0160208091040260200160405190810160405280929190818152602001828054610087906101c6565b80156100d45780601f106100a9576101008083540402835291602001916100d4565b820191906000526020600020905b8154815290600101906020018083116100b757829003601f168201915b505050505081565b600081519050919050565b600082825260208201905092915050565b60005b838110156101165780820151818401526020810190506100fb565b83811115610125576000848401525b50505050565b6000601f19601f8301169050919050565b6000610147826100dc565b61015181856100e7565b93506101618185602086016100f8565b61016a8161012b565b840191505092915050565b6000602082019050818103600083015261018f818461013c565b905092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b600060028204905060018216806101de57607f821691505b602082108114156101f2576101f1610197565b5b5091905056fea26469706673582212204d363ed34111d1be492d4fd086e9f2df62b3c625e89ade31f30e63201ed1e24f64736f6c63430008090033';
 
@@ -496,11 +496,11 @@ describe('eth_sendRawTransaction', () => {
     });
   });
 
-  describe('test call contract (transfer ACA)', () => {
+  describe('call contract (transfer ACA)', () => {
     const ETHDigits = 18;
     const ACADigits = 12;
-    const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, wallet1);
-    const iface = new Interface(ACAABI.abi);
+    const acaContract = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1);
+    const iface = new Interface(TokenABI.abi);
     const queryBalance = async (addr) =>
       BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result).div(10 ** (ETHDigits - ACADigits));
     const transferAmount = parseUnits('100', ACADigits);
@@ -536,8 +536,8 @@ describe('eth_sendRawTransaction', () => {
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
-        // TODO: check sender's balance is correct
-        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        // TODO: check gasUsed is correct
+        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
@@ -567,8 +567,8 @@ describe('eth_sendRawTransaction', () => {
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
-        // TODO: check sender's balance is correct
-        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        // TODO: check gasUsed is correct
+        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
@@ -603,14 +603,14 @@ describe('eth_sendRawTransaction', () => {
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
-        // TODO: check sender's balance is correct
-        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        // TODO: check gasUsed is correct
+        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
   });
 
-  describe('test MetaMask send native ACA token', () => {
+  describe('MetaMask send native ACA token', () => {
     const ETHDigits = 18;
     const ACADigits = 12;
     const queryBalance = async (addr) => BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result);
@@ -682,8 +682,8 @@ describe('eth_sendRawTransaction', () => {
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
-        // TODO: check sender's balance is correct
-        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        // TODO: check gasUsed is correct
+        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
@@ -715,8 +715,8 @@ describe('eth_sendRawTransaction', () => {
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
-        // TODO: check sender's balance is correct
-        // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+        // TODO: check gasUsed is correct
+        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
@@ -747,10 +747,79 @@ describe('eth_sendRawTransaction', () => {
         // expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
         // const _balance1 = await queryBalance(account1.evmAddress);
         // const _balance2 = await queryBalance(account2.evmAddress);
-        // // TODO: check sender's balance is correct
-        // // expect(balance1.sub(_balance1).toBigInt()).equal(transferAmount.toBigInt() + gasUsed);
+
+        // // TODO: check gasUsed is correct
+        const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
         // expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
       });
     });
+  });
+});
+
+describe('eth_call', () => {
+  const eth_call = rpcGet('eth_call');
+  const eth_blockNumber = rpcGet('eth_blockNumber');
+
+  type Call = (address: string) => Promise<string | bigint>;
+  const _call =
+    (method: string): Call =>
+    async (address) => {
+      const iface = new Interface(TokenABI.abi);
+
+      const data = iface.encodeFunctionData(method);
+      const blockNumber = (await eth_blockNumber()).data.result;
+      const rawRes = (await eth_call([{ to: address, data }, blockNumber])).data.result;
+      const [res] = iface.decodeFunctionResult(method, rawRes);
+
+      return res;
+    };
+
+  const getName = _call('name');
+  const getSymbol = _call('symbol');
+  const getDecimals = _call('decimals');
+
+  it('get correct procompile token info', async () => {
+    const tokenMetaData = [
+      {
+        address: '0x0000000000000000000100000000000000000000',
+        name: 'Acala',
+        symbol: 'ACA',
+        decimals: 12
+      },
+      {
+        address: '0x0000000000000000000100000000000000000001',
+        name: 'Acala Dollar',
+        symbol: 'AUSD',
+        decimals: 12
+      },
+      {
+        address: '0x0000000000000000000100000000000000000002',
+        name: 'Polkadot',
+        symbol: 'DOT',
+        decimals: 10
+      },
+      {
+        address: '0x0000000000000000000100000000000000000080',
+        name: 'Karura',
+        symbol: 'KAR',
+        decimals: 12
+      }
+    ];
+
+    const tests = tokenMetaData.map(async ({ address, name, symbol, decimals }) => {
+      const _name = await getName(address);
+      const _symbol = await getSymbol(address);
+      const _decimals = await getDecimals(address);
+
+      expect(_name).to.equal(name);
+      expect(_symbol).to.equal(symbol);
+      expect(_decimals).to.equal(decimals);
+    });
+
+    await Promise.all(tests);
+  });
+
+  it.skip('get correct custom token info', async () => {
+    // TODO: deploy custom erc20 and get correct info
   });
 });
