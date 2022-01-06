@@ -457,10 +457,6 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    if (!resolved.transaction.from) {
-      return '0x';
-    }
-
     const callRequest: CallRequest = {
       from: resolved.transaction.from,
       to: resolved.transaction.to,
