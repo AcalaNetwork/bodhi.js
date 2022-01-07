@@ -161,7 +161,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
-      this._cache!.removeTxsAtBlock(header.number.toNumber());
+      this._cache!.handleFinalizedBlock(header.number.toNumber());
     }) as unknown as void;
   };
 

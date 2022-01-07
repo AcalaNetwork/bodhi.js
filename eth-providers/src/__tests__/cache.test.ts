@@ -9,8 +9,9 @@ const mockBlock = (): string[] => Array.from({ length: Math.floor(Math.random() 
 const mockChain = (blocksCount: number = 50): string[][] => Array.from({ length: blocksCount }, () => mockBlock());
 
 describe('UnfinalizedBlockCache', () => {
-  const cache = new UnfinalizedBlockCache();
+  const EXTRA_BLOCK_COUNT = 15;
   const TOTAL_BLOCKS = 80;
+  const cache = new UnfinalizedBlockCache(EXTRA_BLOCK_COUNT);
   const chain = mockChain(TOTAL_BLOCKS);
 
   describe('initialization', () => {
@@ -33,21 +34,24 @@ describe('UnfinalizedBlockCache', () => {
   });
 
   describe('update finalized block', () => {
-    it('correctly remove tx from finalized block', () => {
+    it('correctly remove tx from the (finalized - extra cached) block', () => {
       chain.forEach((transactions, idx) => cache.addTxsAtBlock(idx, transactions));
 
       for (let blockNumber = 0; blockNumber < TOTAL_BLOCKS; blockNumber++) {
-        const curBlock = chain[blockNumber];
-        cache.removeTxsAtBlock(blockNumber);
+        const blockToRemove = blockNumber - EXTRA_BLOCK_COUNT;
+        if (blockToRemove < 0) continue;
+
+        const curRemovingBlock = chain[blockToRemove];
+        cache.handleFinalizedBlock(blockNumber);
 
         // these tx from finalized block should be removed
-        for (const curTx of curBlock) {
+        for (const curTx of curRemovingBlock) {
           expect(cache.getBlockNumber(curTx)).to.equal(undefined);
         }
 
         // these tx from unfinalized block should still be there
         // ufbn => unfinalizeBlockNumber
-        for (let ufbn = blockNumber + 1; ufbn < TOTAL_BLOCKS; ufbn++) {
+        for (let ufbn = blockToRemove + 1; ufbn < TOTAL_BLOCKS; ufbn++) {
           for (const tx of chain[ufbn]) {
             expect(cache.getBlockNumber(tx)).to.equal(ufbn);
           }
