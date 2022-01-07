@@ -7,17 +7,25 @@ interface BlockToHashesMap {
 }
 
 export class UnfinalizedBlockCache {
-  blockTxHashes: BlockToHashesMap = {};
-  allTxHashes: HashToBlockMap = {};
+  blockTxHashes: BlockToHashesMap;
+  allTxHashes: HashToBlockMap;
+  extraBlockCount: number;
+
+  constructor(extraBlockCount: number = 10) {
+    this.blockTxHashes = {};
+    this.allTxHashes = {};
+    this.extraBlockCount = extraBlockCount;
+  }
 
   addTxsAtBlock(blockNumber: number, txHashes: string[]): void {
     txHashes.forEach((h) => (this.allTxHashes[h] = blockNumber));
     this.blockTxHashes[blockNumber] = txHashes;
   }
 
-  removeTxsAtBlock(blockNumber: number): void {
-    this.blockTxHashes[blockNumber]?.forEach((h) => delete this.allTxHashes[h]);
-    delete this.blockTxHashes[blockNumber];
+  handleFinalizedBlock(blockNumber: number): void {
+    const blockToRemove = blockNumber - this.extraBlockCount;
+    this.blockTxHashes[blockToRemove]?.forEach((h) => delete this.allTxHashes[h]);
+    delete this.blockTxHashes[blockToRemove];
   }
 
   getBlockNumber(hash: string): number | undefined {
