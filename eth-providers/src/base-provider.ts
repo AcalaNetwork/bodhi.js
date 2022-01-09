@@ -546,7 +546,7 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     const resources = await this.estimateResources(transaction);
-    return resources.gas.mul(30);     // TODO: this is a temp gas limit, we should optimize gas limit later
+    return resources.gas.mul(30); // TODO: this is a temp gas limit, we should optimize gas limit later
   };
 
   /**
@@ -770,6 +770,17 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
+
+    // TODO: remove this when gas price is more stable
+    logger.info(
+      {
+        storageLimit,
+        validUntil,
+        gasLimit,
+        tip
+      },
+      'TX GAS INFO'
+    );
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
