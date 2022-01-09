@@ -546,7 +546,7 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     const resources = await this.estimateResources(transaction);
-    return resources.gas;
+    return resources.gas.mul(30);     // TODO: this is a temp gas limit, we should optimize gas limit later
   };
 
   /**
