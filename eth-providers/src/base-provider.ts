@@ -1155,7 +1155,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = await this._cache?.getBlockNumber(txHash);
+    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
     if (!targetBlockNumber) return null;
 
     const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
