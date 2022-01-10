@@ -136,8 +136,8 @@ export interface TXReceipt extends partialTX {
 }
 
 export interface GasConsts {
-  storageDepositPerByte: bigint,
-  txFeePerGas: bigint,
+  storageDepositPerByte: bigint;
+  txFeePerGas: bigint;
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -546,7 +546,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getGasConsts = (): GasConsts => ({
     storageDepositPerByte: (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt(),
-    txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt(),
+    txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt()
   });
 
   /**
@@ -556,8 +556,14 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     await this.call(transaction);
+    const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
+    const gasPrice = await transaction.gasPrice || await this.getGasPrice();
+    const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
+    const storageEntryDeposit = BigNumber.from(storageDepositPerByte).mul(64);
+    const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
+
     const resources = await this.estimateResources(transaction);
-    return resources.gas;
+    return resources.gas.add(storageGasLimit);
   };
 
   /**
@@ -596,17 +602,11 @@ export abstract class BaseProvider extends AbstractProvider {
         );
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
-    const gasLimit = BigNumber.from((result.gas as BN).toString());
-
-    const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
-    const storageEntryLimit = (ethTx.gasPrice || await this.getGasPrice()).and(0xffff);
-    const storageEntryDeposit = BigNumber.from(storageDepositPerByte).mul(64);
-    const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
 
     return {
-      gas: gasLimit.add(storageGasLimit),
+      gas: BigNumber.from((result.gas as BN).toString()),
       storage: BigNumber.from((result.storage as BN).toString()),
-      weightFee: BigNumber.from((result.weightFee as BN).toString())
+      weightFee: BigNumber.from((result.weightFee as BN).toString()),
     };
   };
 
