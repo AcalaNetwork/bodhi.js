@@ -545,6 +545,7 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated gas used by this transaction
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
+    await this.call(transaction);
     const resources = await this.estimateResources(transaction);
     return resources.gas;
   };
@@ -770,6 +771,21 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
+
+    // check excuted error
+    if (ethTx.to) {
+      const callRequest: CallRequest = {
+        from: ethTx.from,
+        // @TODO Support create
+        to: ethTx.to,
+        gasLimit: gasLimit,
+        storageLimit: storageLimit,
+        value: ethTx.value.toString(),
+        data: ethTx.data
+      };
+
+      await (this.api.rpc as any).evm.call(callRequest);
+    }
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
