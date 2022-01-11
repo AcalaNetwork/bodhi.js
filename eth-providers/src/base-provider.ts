@@ -557,7 +557,7 @@ export abstract class BaseProvider extends AbstractProvider {
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     await this.call(transaction);
     const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
-    const gasPrice = await transaction.gasPrice || await this.getGasPrice();
+    const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
     const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
     const storageEntryDeposit = BigNumber.from(storageDepositPerByte).mul(64);
     const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
@@ -606,7 +606,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return {
       gas: BigNumber.from((result.gas as BN).toString()),
       storage: BigNumber.from((result.storage as BN).toString()),
-      weightFee: BigNumber.from((result.weightFee as BN).toString()),
+      weightFee: BigNumber.from((result.weightFee as BN).toString())
     };
   };
 
@@ -852,10 +852,10 @@ export abstract class BaseProvider extends AbstractProvider {
   sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
     await this.getNetwork();
     const hexTx = await Promise.resolve(signedTransaction).then((t) => hexlify(t));
-    const tx = this.formatter.transaction(signedTransaction);
+    const tx = parseTransaction(await signedTransaction);
 
-    if (tx.confirmations == null) {
-      tx.confirmations = 0;
+    if ((tx as any).confirmations == null) {
+      (tx as any).confirmations = 0;
     }
 
     try {
