@@ -3,7 +3,7 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api';
 import { hexToString } from '@polkadot/util';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-export function decodeMessage(reason: any, code: string): string {
+export function decodeRevertedMessage(reason: any, code: string): string {
   const reasonString = JSON.stringify(reason).toLowerCase();
   let codeString = `0x${code.substr(138)}`.replace(/0+$/, '');
 
@@ -61,9 +61,12 @@ export function handleTxResponse(
             const failed = createdFailed || executedFailed;
             if (failed) {
               reject(
-                makeError(decodeMessage(failed.event.data[2].toJSON(), failed.event.data[3].toJSON() as string), {
-                  result
-                })
+                makeError(
+                  decodeRevertedMessage(failed.event.data[2].toJSON(), failed.event.data[3].toJSON() as string),
+                  {
+                    result
+                  }
+                )
               );
             }
             resolve({ result });

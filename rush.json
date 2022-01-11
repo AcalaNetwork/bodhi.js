@@ -525,6 +525,12 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "evm-hardhat-examples-linkdrop",
+      "projectFolder": "examples/hardhat/linkdrop",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- truffle examples ---------- */
     {
