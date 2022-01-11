@@ -555,7 +555,10 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated gas used by this transaction
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    await this.call(transaction);
+    // not support create
+    if (transaction.to) {
+      await this.call(transaction);
+    }
     const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
     const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
     const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
