@@ -135,6 +135,11 @@ export interface TXReceipt extends partialTX {
   status?: number;
 }
 
+export interface GasConsts {
+  storageDepositPerByte: bigint;
+  txFeePerGas: bigint;
+}
+
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
@@ -161,7 +166,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
-      this._cache!.removeTxsAtBlock(header.number.toNumber());
+      this._cache!.handleFinalizedBlock(header.number.toNumber());
     }) as unknown as void;
   };
 
@@ -539,6 +544,11 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
+  _getGasConsts = (): GasConsts => ({
+    storageDepositPerByte: (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt(),
+    txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt()
+  });
+
   /**
    * Estimate gas for a transaction.
    * @param transaction The transaction to estimate the gas of
@@ -546,8 +556,14 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     await this.call(transaction);
+    const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
+    const gasPrice = await transaction.gasPrice || await this.getGasPrice();
+    const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
+    const storageEntryDeposit = BigNumber.from(storageDepositPerByte).mul(64);
+    const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
+
     const resources = await this.estimateResources(transaction);
-    return resources.gas;
+    return resources.gas.add(storageGasLimit);
   };
 
   /**
@@ -590,7 +606,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return {
       gas: BigNumber.from((result.gas as BN).toString()),
       storage: BigNumber.from((result.storage as BN).toString()),
-      weightFee: BigNumber.from((result.weightFee as BN).toString())
+      weightFee: BigNumber.from((result.weightFee as BN).toString()),
     };
   };
 
@@ -698,8 +714,7 @@ export abstract class BaseProvider extends AbstractProvider {
       tip = BigInt(_tip);
     } else if (ethTx.type == null || ethTx.type === 0 || ethTx.type === 2) {
       // Legacy, EIP-155, and EIP-1559 transaction
-      const storageDepositPerByte = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
-      const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+      const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
 
       const _getErrInfo = (): any => ({
         txGasLimit: ethTx.gasLimit.toBigInt(),
@@ -1171,7 +1186,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = await this._cache?.getBlockNumber(txHash);
+    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
     if (!targetBlockNumber) return null;
 
     const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);

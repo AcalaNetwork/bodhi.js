@@ -374,8 +374,8 @@ describe('eth_sendRawTransaction', () => {
   before('prepare common variables', async () => {
     chainId = BigNumber.from((await eth_chainId()).data.result).toNumber();
 
-    txGasLimit = BigNumber.from(34132001n);
-    txGasPrice = BigNumber.from(200786445289n);
+    txGasLimit = BigNumber.from(34132001);
+    txGasPrice = BigNumber.from(200786445289);
 
     const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
     const wsProvider = new WsProvider(endpoint);
@@ -634,23 +634,10 @@ describe('eth_sendRawTransaction', () => {
         ])
       ).data.result;
 
-      /* -----
-        TODO: https://github.com/AcalaNetwork/bodhi.js/issues/209
-        currently eth_gasPrice() is not compatible with eth_estimateGas(), if we use these auto generated
-        gasPrice and gasLimit, calcSubstrateTransactionParams will result with bad substrate gas params.
-        So temporarily use hard coded gasPrice and gasLimit.
-                                                                                                    ----- */
-      const hardCodedGasPrice = txGasPrice;
-      const hardCodedGasLimit = txGasLimit;
       return {
-        gasPrice: hardCodedGasPrice,
-        gasLimit: hardCodedGasLimit
+        gasPrice,
+        gasLimit
       };
-
-      // return {
-      //   gasPrice,
-      //   gasLimit,
-      // }
     };
 
     before(() => {
