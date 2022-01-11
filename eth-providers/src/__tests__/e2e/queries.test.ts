@@ -1,6 +1,6 @@
 import { Log } from '@ethersproject/abstract-provider';
 import { expect } from 'chai';
-import { getAllLogs, getAllTxReceipts, getFilteredLogs, getTxReceiptByHash } from '../../utils';
+import { getAllLogs, getAllTxReceipts, getFilteredLogs, getTxReceiptByHash, getIndexerMetadata } from '../../utils';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,6 +10,15 @@ dotenv.config();
 const START_DELAY = process.env.START_DELAY * 1000 || 0;
 
 export const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
+
+describe('getIndexerMetadata', () => {
+  it('returns indexer metadata', async () => {
+    const res = await getIndexerMetadata();
+
+    expect(res.indexerHealthy).to.true;
+    expect(typeof res.lastProcessedHeight).eq('number');
+  });
+});
 
 describe('getTxReceiptByHash', () => {
   it('returns correct result when hash exist', async () => {

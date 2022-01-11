@@ -51,7 +51,8 @@ import {
   throwNotImplemented,
   calcSubstrateTransactionParams,
   getEvmExtrinsicIndexes,
-  findEvmEvent
+  findEvmEvent,
+  getIndexerMetadata
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
@@ -1314,6 +1315,10 @@ export abstract class BaseProvider extends AbstractProvider {
     const filteredLogs = await getFilteredLogs(_filter as Filter);
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
+  };
+
+  getIndexerMetadata = async () => {
+    return getIndexerMetadata();
   };
 
   // ENS

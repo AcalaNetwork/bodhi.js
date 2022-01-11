@@ -158,3 +158,22 @@ export const getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
 
   return _adaptLogs(res.logs!.nodes as LogGQL[]);
 };
+
+export const getIndexerMetadata = async () => {
+  const res = await queryGraphql(`
+    query {
+      _metadata {
+        lastProcessedHeight
+        lastProcessedTimestamp
+        targetHeight
+        chain
+        specName
+        genesisHash
+        indexerHealthy
+        indexerNodeVersion
+      }
+    }
+  `);
+
+  return res._metadata;
+};
