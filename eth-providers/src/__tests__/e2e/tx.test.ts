@@ -149,6 +149,9 @@ describe('transaction tests', () => {
     });
 
     describe('with EIP-712 signature', () => {
+      let rawTx1: string;
+      let rawTx2: string;
+
       it('serialize, parse, and send tx correctly', async () => {
         const gasLimit = BigNumber.from('0x030dcf');
         const validUntil = 10000;
@@ -165,8 +168,8 @@ describe('transaction tests', () => {
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
-        const rawTx = serializeTransaction(unsignEip712Tx, sig);
-        const parsedTx = parseTransaction(rawTx);
+        rawTx1 = serializeTransaction(unsignEip712Tx, sig);
+        const parsedTx = parseTransaction(rawTx1);
 
         expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
         expect(parsedTx.validUntil.eq(validUntil)).equal(true);
@@ -177,8 +180,6 @@ describe('transaction tests', () => {
         expect(parsedTx.type).equal(96);
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
         expect(parsedTx.maxFeePerGas).equal(undefined);
-
-        await provider.sendRawTransaction(rawTx);
       });
 
       it('eip712 tip', async () => {
@@ -188,7 +189,7 @@ describe('transaction tests', () => {
 
         const unsignEip712Tx: AcalaEvmTX = {
           ...partialDeployTx,
-          nonce: await wallet1.getTransactionCount(),
+          nonce: (await wallet1.getTransactionCount()) + 1,
           salt: provider.genesisHash,
           gasLimit,
           validUntil,
@@ -198,8 +199,8 @@ describe('transaction tests', () => {
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
-        const rawTx = serializeTransaction(unsignEip712Tx, sig);
-        const parsedTx = parseTransaction(rawTx);
+        rawTx2 = serializeTransaction(unsignEip712Tx, sig);
+        const parsedTx = parseTransaction(rawTx2);
 
         expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
         expect(parsedTx.validUntil.eq(validUntil)).equal(true);
@@ -211,8 +212,11 @@ describe('transaction tests', () => {
         expect(parsedTx.type).equal(96);
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
         expect(parsedTx.maxFeePerGas).equal(undefined);
+      });
 
-        await provider.sendRawTransaction(rawTx);
+      it('send eip712 tx', async () => {
+        await provider.sendTransaction(rawTx1);
+        await provider.sendTransaction(rawTx2);
       });
     });
   });
@@ -337,7 +341,7 @@ describe('transaction tests', () => {
         const rawTx = serializeTransaction(transferTX, sig);
         const parsedTx = parseTransaction(rawTx);
 
-        await provider.sendRawTransaction(rawTx);
+        await provider.sendTransaction(rawTx);
 
         const _balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);

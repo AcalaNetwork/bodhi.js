@@ -11,13 +11,6 @@ export class EvmRpcProvider extends BaseProvider {
     this.startCache() as unknown as void;
   }
 
-  getTransactionCount = (
-    addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<number> => {
-    return this.getSubstrateNonce(addressOrName, blockTag);
-  };
-
   static from(endpoint: string | string[]): EvmRpcProvider {
     return new EvmRpcProvider(endpoint);
   }
