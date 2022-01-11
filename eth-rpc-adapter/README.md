@@ -23,7 +23,7 @@ rush update
 
 - run the dev server:
 ```
-rushx dev
+yarn dev
 ```
 
 ## Usage
@@ -49,4 +49,21 @@ GET http://localhost:8545
 ```
 
 ## Test
-`rushx test`
+```
+yarn test     # unit tests
+yarn test:dev # all tests
+```
+
+## Metamask Integration
+- start the RPC server: `yarn dev`
+- add a custom network on Metamask:
+  - Network Name: Local Mandala
+  - New RPC URL: http://localhost:8545  (should be the same as the HTTP_PORT value in your `.env`, defaults to 8545)
+  - Chain ID: 595
+  - Currency Symbol: ACA
+- import dev address:
+  - by nmemonic: `fox sight canyon orphan hotel grow hedgehog build bless august weather swarm`
+  - or by private key: `0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f`
+- before sending any transaction:
+  - don't change the default `GasLimit` and `Max Fee`
+  - can change `Max Priority Fee`, manually setting this a small value (such as 0.000001) will significanlty lower the tx gas cost.
