@@ -99,7 +99,8 @@ const _getAddressFilter = (address: string | undefined): string =>
 const _getTopicsFilter = (topics: Array<string | Array<string> | null> | undefined): string => {
   // NOTE: if needed in the future, we can implement actual nested topic filter.
   // Now we just flat all topics
-  const allTopics = topics?.length! > 0 ? topics!.flat() : [];
+  const allTopics = (topics?.length! > 0 ? topics!.flat() : []).filter((t) => t) as string[];
+
   return `
     topics: {
       contains: ${JSON.stringify(allTopics)}
