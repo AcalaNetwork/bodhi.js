@@ -52,6 +52,12 @@ class Eip1193BridgeImpl {
     return 'Acala/v0.0.1';
   }
 
+  // Query the synchronization progress and version information of indexer
+  async net_indexer(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.getIndexerMetadata();
+  }
+
   /**
    * Returns the current network id.
    * @returns ID - The current network id.
