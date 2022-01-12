@@ -907,7 +907,7 @@ export abstract class BaseProvider extends AbstractProvider {
     result.blockHash = startBlockHash;
 
     const apiAt = await this.api.at(result.blockHash);
-    result.timestamp = (await apiAt.query.timestamp.now()).toNumber();
+    result.timestamp = Math.floor((await apiAt.query.timestamp.now()).toNumber() / 1000);
 
     result.wait = async (confirms?: number, timeout?: number) => {
       if (confirms === null || confirms === undefined) {
