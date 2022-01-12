@@ -343,7 +343,7 @@ export abstract class BaseProvider extends AbstractProvider {
       number: blockNumber,
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
-      timestamp: now.toNumber(),
+      timestamp: Math.floor(now.toNumber() / 1000),
       nonce: deafultNonce.toHex(),
       mixHash: deafultMixHash.toHex(),
       difficulty: ZERO,
