@@ -354,8 +354,11 @@ export abstract class BaseProvider extends AbstractProvider {
       author: author,
       extraData: EMPTY_STRING,
 
-      // baseFeePerGas: BIGNUMBER_ZERO,
-      transactions
+      transactions,
+
+      // with this field Metamask will send token with EIP-1559 format
+      // but we want it to send with legacy format
+      // baseFeePerGas: BIGNUMBER_ZERO,   
     };
 
     // @TODO remove ts-ignore
