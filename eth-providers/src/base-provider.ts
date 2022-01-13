@@ -354,7 +354,7 @@ export abstract class BaseProvider extends AbstractProvider {
       author: author,
       extraData: EMPTY_STRING,
 
-      baseFeePerGas: BIGNUMBER_ZERO,
+      // baseFeePerGas: BIGNUMBER_ZERO,
       transactions
     };
 
