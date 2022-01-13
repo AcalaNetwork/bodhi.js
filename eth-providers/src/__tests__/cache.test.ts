@@ -23,7 +23,13 @@ describe('UnfinalizedBlockCache', () => {
 
   describe('add block', () => {
     it('correctly find cached transactions', () => {
-      chain.forEach((transactions, idx) => cache.addTxsAtBlock(idx, transactions));
+      chain.forEach((transactions, idx) => {
+        cache.addTxsAtBlock(idx, transactions);
+
+        const { cachedBlocks } = cache._inspect();
+        expect(Number(cachedBlocks[0])).to.equal(0);
+        expect(Number(cachedBlocks[cachedBlocks.length - 1])).to.equal(idx);
+      });
 
       for (let blockNumber = 0; blockNumber < TOTAL_BLOCKS; blockNumber++) {
         for (const curTx of chain[blockNumber]) {
@@ -56,6 +62,10 @@ describe('UnfinalizedBlockCache', () => {
             expect(cache.getBlockNumber(tx)).to.equal(ufbn);
           }
         }
+
+        const { cachedBlocks } = cache._inspect();
+        expect(Number(cachedBlocks[0])).to.equal(blockNumber - EXTRA_BLOCK_COUNT + 1);
+        expect(Number(cachedBlocks[cachedBlocks.length - 1])).to.equal(TOTAL_BLOCKS - 1);
       }
     });
   });
