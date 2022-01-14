@@ -78,7 +78,7 @@ describe('transaction tests', () => {
         wallet1.sendTransaction({
           type: 0,
           to: wallet2.address,
-          value: 1000000,
+          value: 1000000000n * 10n ** 18n,
           gasLimit: txGasLimit,
           gasPrice: txGasPrice
         })
