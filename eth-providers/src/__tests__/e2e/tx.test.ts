@@ -60,7 +60,7 @@ describe('transaction tests', () => {
     await provider.disconnect();
   });
 
-  describe.only('test the error tx', () => {
+  describe('test the error tx', () => {
     it('InvalidDecimals', async () => {
       await expect(
         wallet1.sendTransaction({
