@@ -58,6 +58,12 @@ class Eip1193BridgeImpl {
     return this.#provider.getIndexerMetadata();
   }
 
+  // query unfinalized cache info for dev debugging use
+  async net_cacheInfo(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.getUnfinalizedCachInfo();
+  }
+
   /**
    * Returns the current network id.
    * @returns ID - The current network id.

@@ -31,4 +31,12 @@ export class UnfinalizedBlockCache {
   getBlockNumber(hash: string): number | undefined {
     return this.allTxHashes[hash];
   }
+
+  _inspect = (): any => ({
+    extraBlockCount: this.extraBlockCount,
+    cachedBlocksCount: Object.keys(this.blockTxHashes).length,
+    cachedBlocks: Object.keys(this.blockTxHashes),
+    allBlockToHash: this.blockTxHashes,
+    allHashToBlock: this.allTxHashes
+  });
 }

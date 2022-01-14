@@ -354,11 +354,11 @@ export abstract class BaseProvider extends AbstractProvider {
       author: author,
       extraData: EMPTY_STRING,
 
-      transactions,
+      transactions
 
       // with this field Metamask will send token with EIP-1559 format
       // but we want it to send with legacy format
-      // baseFeePerGas: BIGNUMBER_ZERO,   
+      // baseFeePerGas: BIGNUMBER_ZERO,
     };
 
     // @TODO remove ts-ignore
@@ -1326,6 +1326,10 @@ export abstract class BaseProvider extends AbstractProvider {
   getIndexerMetadata = async () => {
     return getIndexerMetadata();
   };
+
+  getUnfinalizedCachInfo = (): any => (
+    this._cache?._inspect() || 'no cache running!'
+  );
 
   // ENS
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
