@@ -1,27 +1,25 @@
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
+import { AcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
-import { parseUnits, Interface } from 'ethers/lib/utils';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
-import type { KeyringPair } from '@polkadot/keyring/types';
-import { expect } from 'chai';
+import type { UInt } from '@polkadot/types';
+import chai from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import dotenv from 'dotenv';
+import { Interface, parseUnits } from 'ethers/lib/utils';
 import { EvmRpcProvider } from '../../rpc-provider';
-import { sendTx, calcEthereumTransactionParams } from '../../utils';
+import { calcEthereumTransactionParams, sendTx } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
 import evmAccounts from '../evmAccounts';
-import {
-  serializeTransaction,
-  AcalaEvmTX,
-  parseTransaction,
-  createTransactionPayload,
-  signTransaction
-} from '@acala-network/eth-transactions';
-import type { UInt } from '@polkadot/types';
-import dotenv from 'dotenv';
 
 dotenv.config();
+
+chai.use(chaiAsPromised);
+
+const { expect } = chai;
 
 describe('transaction tests', () => {
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
@@ -29,7 +27,12 @@ describe('transaction tests', () => {
 
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
+  const account3 = evmAccounts[2];
+  const account4 = evmAccounts[3];
   const wallet1 = new Wallet(account1.privateKey).connect(provider as any);
+  const wallet2 = new Wallet(account2.privateKey).connect(provider as any);
+  const wallet3 = new Wallet(account3.privateKey).connect(provider as any);
+  const wallet4 = new Wallet(account4.privateKey).connect(provider as any);
 
   let chainId: number;
   let storageByteDeposit: bigint;
@@ -55,6 +58,44 @@ describe('transaction tests', () => {
 
   after('clean up', async () => {
     await provider.disconnect();
+  });
+
+  describe.only('test the error tx', () => {
+    it('InvalidDecimals', async () => {
+      await expect(
+        wallet1.sendTransaction({
+          type: 0,
+          to: wallet2.address,
+          value: 1000001,
+          gasLimit: txGasLimit,
+          gasPrice: txGasPrice
+        })
+      ).to.be.rejectedWith('InvalidDecimals');
+    });
+
+    it('InsufficientBalance', async () => {
+      await expect(
+        wallet1.sendTransaction({
+          type: 0,
+          to: wallet2.address,
+          value: 1000000,
+          gasLimit: txGasLimit,
+          gasPrice: txGasPrice
+        })
+      ).to.be.rejectedWith('InsufficientBalance');
+    });
+
+    it('ExistentialDeposit', async () => {
+      await expect(
+        wallet3.sendTransaction({
+          type: 0,
+          to: Wallet.createRandom().address,
+          value: 1000000,
+          gasLimit: txGasLimit,
+          gasPrice: txGasPrice
+        })
+      ).to.be.rejectedWith('ExistentialDeposit');
+    });
   });
 
   describe('test deploy contract (hello world)', () => {
