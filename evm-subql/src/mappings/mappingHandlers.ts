@@ -24,9 +24,9 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
 
   const transactionInfo = {
     transactionHash,
-    blockNumber: block.block.header.number.toNumber(),
+    blockNumber: BigInt(block.block.header.number.toNumber()),
     blockHash: block.block.hash.toHex(),
-    transactionIndex
+    transactionIndex: BigInt(transactionIndex)
   };
 
   const receiptId = `${block.block.header.number.toString()}-${event.extrinsic?.idx ?? event.phase.toString()}`;
@@ -47,8 +47,8 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
     gasUsed: ret.gasUsed.toBigInt(),
     logsBloom: ret.logsBloom,
     cumulativeGasUsed: ret.cumulativeGasUsed.toBigInt(),
-    type: ret.type,
-    status: ret.status,
+    type: BigInt(ret.type),
+    status: BigInt(ret.status),
     ...transactionInfo
   });
 
@@ -58,14 +58,14 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
     const log = Log.create({
       id: `${receiptId}-${idx}`,
       transactionHash,
-      blockNumber: block.block.header.number.toNumber(),
+      blockNumber: BigInt(block.block.header.number.toNumber()),
       blockHash: block.block.hash.toHex(),
-      transactionIndex,
+      transactionIndex: BigInt(transactionIndex),
       removed: evmLog.removed,
       address: evmLog.address,
       data: evmLog.data,
       topics: evmLog.topics,
-      logIndex: idx,
+      logIndex: BigInt(idx),
       receiptId,
       ...transactionInfo
     });
