@@ -58,63 +58,6 @@ RUN rush build \
 
 RUN cd evm-subql && yarn build
 
-# =============== waffle-examples =============== #
-FROM node:16-alpine as waffle-examples
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/waffle
-
-RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "build_and_test"]
-
-FROM node:16-alpine as waffle-tutorial-hello-world
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/waffle-tutorials/hello-world
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test"]
-
-FROM node:16-alpine as waffle-tutorial-echo
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/waffle-tutorials/echo
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test"]
-
-FROM node:16-alpine as waffle-tutorial-token
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/waffle-tutorials/token
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test"]
-
-FROM node:16-alpine as waffle-tutorial-nft
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/waffle-tutorials/NFT
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test"]
-
 # =============== feed-tx =============== #
 FROM node:16-alpine as feed-tx
 
@@ -156,8 +99,46 @@ ENV WS_PORT=3331
 
 WORKDIR /app/eth-rpc-adapter
 
-# =============== hardhat-examples =============== #
-FROM node:16-alpine as hardhat-tutorial-hello-world
+# =============== waffle-examples =============== #
+FROM node:16-alpine as waffle-examples
+RUN apk add bash
+RUN npm install -g @microsoft/rush@5.55.0
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/waffle
+
+RUN chmod 777 run.sh
+ENV ENDPOINT_URL=ws://mandala-node:9944
+CMD ["/bin/bash", "run.sh", "build_and_test"]
+
+# =============== waffle-tutorials =============== #
+FROM node:16-alpine as waffle-tutorials
+RUN apk add bash
+RUN npm install -g @microsoft/rush@5.55.0
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/waffle-tutorials
+
+RUN chmod 777 run.sh
+ENV ENDPOINT_URL=ws://mandala-node:9944
+CMD ["/bin/bash", "run.sh", "build_and_test"]
+
+# =============== hardhat-tutorials =============== #
+FROM node:16-alpine as hardhat-tutorials
+RUN apk add bash
+RUN npm install -g @microsoft/rush@5.55.0
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/hardhat-tutorials
+
+RUN chmod 777 run.sh
+CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
+
+# =============== hardhat-tutorials =============== #
+FROM node:16-alpine as loop
 RUN apk add bash
 RUN npm install -g @microsoft/rush@5.55.0
 
@@ -165,83 +146,16 @@ COPY --from=bodhi /app /app
 
 WORKDIR /app/examples/hardhat-tutorials/hello-world
 
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
+RUN rush build -t .
 
-FROM node:16-alpine as hardhat-tutorial-echo
+# =============== truffle-tutorials =============== #
+FROM node:16-alpine as truffle-tutorials
 RUN apk add bash
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
 
-WORKDIR /app/examples/hardhat-tutorials/echo
+WORKDIR /app/examples/truffle-tutorials
 
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
-
-FROM node:16-alpine as hardhat-tutorial-token
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/hardhat-tutorials/token
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
-
-FROM node:16-alpine as hardhat-tutorial-nft
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/hardhat-tutorials/NFT
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
-
-# =============== truffle-examples =============== #
-FROM node:16-alpine as truffle-tutorial-hello-world
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/truffle-tutorials/hello-world
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
-
-FROM node:16-alpine as truffle-tutorial-echo
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/truffle-tutorials/echo
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
-
-FROM node:16-alpine as truffle-tutorial-token
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/truffle-tutorials/token
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
-
-FROM node:16-alpine as truffle-tutorial-nft
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/truffle-tutorials/NFT
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test-mandala"]
+RUN chmod 777 run.sh
+CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
