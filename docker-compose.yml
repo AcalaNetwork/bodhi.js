@@ -124,16 +124,6 @@ services:
       ENDPOINT_URL: ws://mandala-node:9944
     command: yarn test:CI
 
-  # helper for hardhat with instant-sealing node
-  loop:
-    build:
-      context: .
-      dockerfile: bodhi.Dockerfile
-      target: loop
-    depends_on:
-      - eth-rpc-adapter-server
-    command: yarn loop:CI
-
   hardhat-tutorials-test:
     build:
       context: .
@@ -141,9 +131,6 @@ services:
       target: hardhat-tutorials
     depends_on:
       - eth-rpc-adapter-server
-      - loop
-    command: yarn test:CI
-
   truffle-tutorials-test:
     build:
       context: .
@@ -151,8 +138,6 @@ services:
       target: truffle-tutorials
     depends_on:
       - eth-rpc-adapter-server
-    command: yarn test:CI
-
   waffle-tutorials-test:
     build:
       context: .
@@ -160,14 +145,6 @@ services:
       target: waffle-tutorials
     depends_on:
       - mandala-node
-    command: yarn test:CI
 
-  # waffle-examples-test:
-  #   build:
-  #     context: .
-  #     dockerfile: bodhi.Dockerfile
-  #     target: waffle-examples
-  #   depends_on:
-  #     - mandala-node
 # volumes:
 #   postgres:

@@ -99,19 +99,6 @@ ENV WS_PORT=3331
 
 WORKDIR /app/eth-rpc-adapter
 
-# =============== waffle-examples =============== #
-FROM node:16-alpine as waffle-examples
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/waffle
-
-RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "build_and_test"]
-
 # =============== waffle-tutorials =============== #
 FROM node:16-alpine as waffle-tutorials
 RUN apk add bash
@@ -136,17 +123,6 @@ WORKDIR /app/examples/hardhat-tutorials
 
 RUN chmod 777 run.sh
 CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
-
-# =============== hardhat-tutorials =============== #
-FROM node:16-alpine as loop
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/hardhat-tutorials/hello-world
-
-RUN rush build -t .
 
 # =============== truffle-tutorials =============== #
 FROM node:16-alpine as truffle-tutorials

@@ -93,6 +93,9 @@
     "@acala-network/bodhi": [
       "^2.1.2"
     ],
+    "@acala-network/eth-providers": [
+      "^2.1.7",   // tutorials use this fixed version
+    ],
     "ethereum-waffle": [
       "^3.4.0"
     ]
