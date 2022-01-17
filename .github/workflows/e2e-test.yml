@@ -1,9 +1,12 @@
 name: E2E Tests
-on: push
+on:
+  push:
+    paths-ignore:
+      - '**/README.md'
 
 jobs:
   cancel-prev-runs:
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
         # Only cancel non-master branch runs
@@ -13,11 +16,13 @@ jobs:
           access_token: ${{ github.token }}
 
   waffle-examples:
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
@@ -35,11 +40,13 @@ jobs:
         run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
 
   eth-providers:
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
@@ -57,11 +64,13 @@ jobs:
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
 
   eth-rpc-adaptor:
-    runs-on: [self-hosted, linux]
+    runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
@@ -78,12 +87,14 @@ jobs:
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
 
-  hardhat-examples:
-    runs-on: [self-hosted, linux]
+  waffle-tutorials:
+    runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
@@ -98,14 +109,16 @@ jobs:
       - name: check docker info after cleaning
         run: docker ps && docker volume ls
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-examples-test --build -- hardhat-examples-test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
 
-  truffle-examples:
-    runs-on: [self-hosted, linux]
+  hardhat-tutorials:
+    runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
@@ -120,4 +133,28 @@ jobs:
       - name: check docker info after cleaning
         run: docker ps && docker volume ls
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-examples-test --build -- truffle-examples-test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+
+  truffle-tutorials:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
+          docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
