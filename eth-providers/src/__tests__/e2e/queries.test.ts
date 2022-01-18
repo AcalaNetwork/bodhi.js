@@ -24,6 +24,8 @@ describe('getTxReceiptByHash', () => {
     await sleep(START_DELAY);
     const allTxReceipts = await getAllTxReceipts();
 
+    expect(allTxReceipts.length).to.greaterThan(0);
+
     // test first one
     let txR = allTxReceipts[0];
     let res = await getTxReceiptByHash(txR.transactionHash);

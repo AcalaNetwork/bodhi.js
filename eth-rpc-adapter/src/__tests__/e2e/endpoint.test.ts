@@ -41,6 +41,8 @@ describe('eth_getTransactionReceipt', () => {
   it('returns correct result when hash exist', async () => {
     const allTxReceipts = await getAllTxReceipts();
 
+    expect(allTxReceipts.length).to.greaterThan(0);
+
     // test first one
     let txR = allTxReceipts[0];
     let res = await eth_getTransactionReceipt([txR.transactionHash]);
