@@ -559,10 +559,7 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated gas used by this transaction
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    // not support create
-    if (transaction.to) {
-      await this.call(transaction);
-    }
+    await this.call(transaction);
     const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
     const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
     const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
@@ -795,19 +792,17 @@ export abstract class BaseProvider extends AbstractProvider {
     const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
 
     // check excuted error
-    if (ethTx.to) {
-      const callRequest: CallRequest = {
-        from: ethTx.from,
-        // @TODO Support create
-        to: ethTx.to,
-        gasLimit: gasLimit,
-        storageLimit: storageLimit,
-        value: ethTx.value.toString(),
-        data: ethTx.data
-      };
+    const callRequest: CallRequest = {
+      from: ethTx.from,
+      // @TODO Support create
+      to: ethTx.to,
+      gasLimit: gasLimit,
+      storageLimit: storageLimit,
+      value: ethTx.value.toString(),
+      data: ethTx.data
+    };
 
-      await (this.api.rpc as any).evm.call(callRequest);
-    }
+    await (this.api.rpc as any).evm.call(callRequest);
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -1327,9 +1322,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return getIndexerMetadata();
   };
 
-  getUnfinalizedCachInfo = (): any => (
-    this._cache?._inspect() || 'no cache running!'
-  );
+  getUnfinalizedCachInfo = (): any => this._cache?._inspect() || 'no cache running!';
 
   // ENS
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
