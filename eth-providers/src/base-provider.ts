@@ -590,20 +590,45 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { from, to, data, value } = ethTx;
 
-    const extrinsic = !to
-      ? this.api.tx.evm.create(
-          data,
-          value?.toBigInt(),
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt() // storage_limit u32::max
-        )
-      : this.api.tx.evm.call(
-          to,
-          data,
-          value?.toBigInt(),
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt() // storage_limit u32::max
-        );
+    const supportAccessList = this.api.tx.evm.call.meta.args.length === 6;
+
+    let extrinsic: SubmittableExtrinsic<'promise'>;
+
+    if (supportAccessList) {
+      const accessList = ethTx.accessList?.map(({ address, storageKeys }) => [address, storageKeys]);
+
+      extrinsic = !to
+        ? this.api.tx.evm.create(
+            data,
+            value?.toBigInt(),
+            U64MAX.toBigInt(), // gas_limit u64::max
+            U32MAX.toBigInt(), // storage_limit u32::max
+            accessList
+          )
+        : this.api.tx.evm.call(
+            to,
+            data,
+            value?.toBigInt(),
+            U64MAX.toBigInt(), // gas_limit u64::max
+            U32MAX.toBigInt(), // storage_limit u32::max
+            accessList
+          );
+    } else {
+      extrinsic = !to
+        ? this.api.tx.evm.create(
+            data,
+            value?.toBigInt(),
+            U64MAX.toBigInt(), // gas_limit u64::max
+            U32MAX.toBigInt() // storage_limit u32::max
+          )
+        : this.api.tx.evm.call(
+            to,
+            data,
+            value?.toBigInt(),
+            U64MAX.toBigInt(), // gas_limit u64::max
+            U32MAX.toBigInt() // storage_limit u32::max
+          );
+    }
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
 
@@ -690,6 +715,7 @@ export abstract class BaseProvider extends AbstractProvider {
     storageLimit: bigint;
     validUntil: bigint;
     tip: bigint;
+    accessList?: [string, string[]][];
   } => {
     let gasLimit = 0n;
     let storageLimit = 0n;
@@ -766,11 +792,14 @@ export abstract class BaseProvider extends AbstractProvider {
       return throwNotImplemented('EIP-2930 transactions');
     }
 
+    const accessList = ethTx.accessList?.map((set) => [set.address, set.storageKeys] as [string, string[]]);
+
     return {
       gasLimit,
       storageLimit,
       validUntil,
-      tip
+      tip,
+      accessList
     };
   };
 
@@ -789,7 +818,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
 
-    const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
+    const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
 
     // check excuted error
     const callRequest: CallRequest = {
@@ -804,14 +833,30 @@ export abstract class BaseProvider extends AbstractProvider {
 
     await (this.api.rpc as any).evm.call(callRequest);
 
-    const extrinsic = this.api.tx.evm.ethCall(
-      ethTx.to ? { Call: ethTx.to } : { Create: null },
-      ethTx.data,
-      ethTx.value.toString(),
-      gasLimit,
-      storageLimit,
-      validUntil
-    );
+    const supportAccessList = this.api.tx.evm.ethCall.meta.args.length === 7;
+
+    let extrinsic: SubmittableExtrinsic<'promise'>;
+
+    if (supportAccessList) {
+      extrinsic = this.api.tx.evm.ethCall(
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        gasLimit,
+        storageLimit,
+        accessList,
+        validUntil
+      );
+    } else {
+      extrinsic = this.api.tx.evm.ethCall(
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        gasLimit,
+        storageLimit,
+        validUntil
+      );
+    }
 
     const subAddr = await this.getSubstrateAddress(ethTx.from);
 

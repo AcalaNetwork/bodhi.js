@@ -1,6 +1,6 @@
 import { BigNumberish } from '@ethersproject/bignumber';
 import { BytesLike } from '@ethersproject/bytes';
-import { UnsignedTransaction, Transaction } from '@ethersproject/transactions';
+import { UnsignedTransaction, Transaction, AccessListish } from '@ethersproject/transactions';
 
 export type AcalaEvmTXPayload = {
   chainId: BigNumberish;
@@ -14,6 +14,7 @@ export type AcalaEvmTXPayload = {
   value?: BigNumberish;
   gasLimit?: BigNumberish;
   storageLimit?: BigNumberish;
+  accessList?: AccessListish;
   validUntil?: BigNumberish;
 };
 
