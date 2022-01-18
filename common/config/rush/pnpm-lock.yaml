@@ -273,6 +273,7 @@ importers:
       '@ethersproject/transactions': ~5.5.0
       '@ethersproject/wallet': ~5.5.0
       '@metamask/eth-sig-util': ~4.0.0
+      '@polkadot/util-crypto': ~8.1.2
       '@rushstack/eslint-config': ~2.4.2
       '@rushstack/heft': ~0.41.6
       '@types/chai': ~4.2.22
@@ -295,6 +296,7 @@ importers:
       '@ethersproject/signing-key': 5.5.0
       '@ethersproject/transactions': 5.5.0
       '@ethersproject/wallet': 5.5.0
+      '@polkadot/util-crypto': 8.1.2
     devDependencies:
       '@metamask/eth-sig-util': 4.0.0
       '@rushstack/eslint-config': 2.4.5_eslint@7.32.0+typescript@4.4.4
@@ -5632,7 +5634,7 @@ packages:
     resolution: {integrity: sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==}
     deprecated: Critical security vulnerability fixed in v0.21.1. For more information, see https://github.com/axios/axios/pull/3410
     dependencies:
-      follow-redirects: 1.14.6_debug@4.3.3
+      follow-redirects: 1.14.6
     transitivePeerDependencies:
       - debug
     dev: false
@@ -5641,7 +5643,7 @@ packages:
   /axios/0.24.0:
     resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
     dependencies:
-      follow-redirects: 1.14.6_debug@4.3.3
+      follow-redirects: 1.14.6
     transitivePeerDependencies:
       - debug
     dev: false
@@ -9819,7 +9821,7 @@ packages:
     resolution: {integrity: sha1-SiksW8/4s5+mzAyxqFPYbyfu/3s=}
     dev: true
 
-  /follow-redirects/1.14.6_debug@4.3.3:
+  /follow-redirects/1.14.6:
     resolution: {integrity: sha512-fhUl5EwSJbbl8AR+uYL2KQDxLkdSjZGR36xy46AO7cOMTrCMON6Sa28FmAnC2tRTDbd/Uuzz3aJBv7EBN7JH8A==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -9827,8 +9829,6 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
-    dependencies:
-      debug: 4.3.3
 
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
@@ -16456,7 +16456,7 @@ packages:
     dependencies:
       command-exists: 1.2.9
       commander: 3.0.2
-      follow-redirects: 1.14.6_debug@4.3.3
+      follow-redirects: 1.14.6
       fs-extra: 0.30.0
       js-sha3: 0.8.0
       memorystream: 0.3.1
