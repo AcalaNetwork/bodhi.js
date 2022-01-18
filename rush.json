@@ -567,6 +567,12 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "hardhat-tutorial-precompiled-token",
+      "projectFolder": "examples/hardhat-tutorials/precompiled-token",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- truffle examples ---------- */
     {
