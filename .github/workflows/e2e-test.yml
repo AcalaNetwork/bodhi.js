@@ -38,6 +38,9 @@ jobs:
         run: docker ps && docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+      - name: Dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
 
   eth-rpc-adaptor:
     runs-on: ubuntu-latest
@@ -62,6 +65,9 @@ jobs:
         run: docker ps && docker volume ls
       - name: test
         run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
+      - name: Dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
 
   waffle-examples:
     runs-on: ubuntu-latest
