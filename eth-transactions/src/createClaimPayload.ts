@@ -54,7 +54,7 @@ export const createClaimPayload = (tx: ClaimPayload) => {
       salt: hexlify(tx.salt)
     },
     message: {
-      substrateAddress: publicKey
+      substrateAddress: hexlify(publicKey)
     }
   };
 };
