@@ -20,7 +20,7 @@
     "@polkadot/util-crypto": "~8.1.2"
   },
   "dependencies": {
-    "@acala-network/eth-providers": "~2.1.8",
+    "@acala-network/eth-providers": "~2.1.9",
     "@polkadot/api": "~6.11.1",
     "@polkadot/api-derive": "~6.11.1",
     "@polkadot/types": "~6.11.1",
