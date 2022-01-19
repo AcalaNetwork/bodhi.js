@@ -194,7 +194,7 @@ describe('transaction tests', () => {
       let rawTx2: string;
 
       it('serialize, parse, and send tx correctly', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -224,7 +224,7 @@ describe('transaction tests', () => {
       });
 
       it('eip712 tip', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -364,7 +364,7 @@ describe('transaction tests', () => {
         const balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
