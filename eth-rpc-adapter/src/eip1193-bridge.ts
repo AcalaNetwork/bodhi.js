@@ -29,10 +29,10 @@ export class Eip1193Bridge extends EventEmitter {
     return this.isMethodValid(method) && method in this.#impl;
   }
 
-  async send(method: string, params: any[] = []): Promise<any> {
+  async send(method: string, params: any[] = [], cb?: any): Promise<any> {
     if (this.isMethodImplemented(method)) {
       // isMethodImplemented ensuress this cannot be used to access other unrelated methods
-      return this.#impl[method](params);
+      return this.#impl[method](params, cb);
     }
 
     throw new MethodNotFound('Method not available', `The method ${method} is not available.`);
@@ -394,5 +394,10 @@ class Eip1193BridgeImpl {
   async eth_getLogs(params: any[]): Promise<Log[]> {
     validate([{ type: 'object' }], params);
     return this.#provider.getLogs(params[0]);
+  }
+
+  async eth_subscribe(params: any[], cb: any): Promise<any> {
+    validate([{ type: 'eventName' }, { type: 'object?' }], params);
+    return this.#provider.on(params[0], cb);
   }
 }

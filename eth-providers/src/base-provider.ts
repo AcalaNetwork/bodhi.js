@@ -141,9 +141,13 @@ export interface GasConsts {
   txFeePerGas: bigint;
 }
 
+const NEW_HEADS = 'newHeads';
+const SUPPORTED_EVENT_NAMES = NEW_HEADS;
+
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
+  readonly _listeners: any;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
@@ -151,6 +155,7 @@ export abstract class BaseProvider extends AbstractProvider {
   constructor() {
     super();
     this.formatter = new Formatter();
+    this._listeners = {};
   }
 
   startCache = async (): Promise<any> => {
@@ -168,6 +173,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
       this._cache!.handleFinalizedBlock(header.number.toNumber());
+    }) as unknown as void;
+
+    // TODO: factor this out or maybe rename it to start subscription?
+    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      this._listeners[NEW_HEADS]?.forEach((cb: any) => cb(header.toString()));
     }) as unknown as void;
   };
 
@@ -1334,7 +1344,15 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<TransactionReceipt> => throwNotImplemented('waitForTransaction');
 
   // Event Emitter (ish)
-  on = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('on');
+  on = (eventName: EventType, listener: Listener): Provider => {
+    if (typeof eventName !== 'string') throw new Error(`on() eventName must be string! Got ${eventName}`);
+
+    this._listeners[eventName] = this._listeners[eventName] || [];
+    this._listeners[eventName].push(listener as any);
+
+    return '' as any;
+  };
+
   once = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('once');
   emit = (eventName: EventType, ...args: Array<any>): boolean => throwNotImplemented('emit');
   listenerCount = (eventName?: EventType): number => throwNotImplemented('listenerCount');
