@@ -398,6 +398,6 @@ class Eip1193BridgeImpl {
 
   async eth_subscribe(params: any[], cb: any): Promise<any> {
     validate([{ type: 'eventName' }, { type: 'object?' }], params);
-    return this.#provider.on(params[0], cb);
+    return this.#provider.addEventListener(params[0], cb, params[1]);
   }
 }

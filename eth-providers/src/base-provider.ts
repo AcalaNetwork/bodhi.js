@@ -142,7 +142,7 @@ export interface GasConsts {
 }
 
 const NEW_HEADS = 'newHeads';
-const SUPPORTED_EVENT_NAMES = NEW_HEADS;
+const NEW_LOGS = 'logs';
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
@@ -177,7 +177,17 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // TODO: factor this out or maybe rename it to start subscription?
     this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
-      this._listeners[NEW_HEADS]?.forEach((cb: any) => cb(header.toString()));
+      // @ts-ignore
+      this._listeners[NEW_HEADS]?.forEach(({ cb }) => cb(header.toString()));
+
+      // if (this._listeners[NEW_LOGS]) {
+      //   const newLogs = await this.getNewLogs(header);
+      //   this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
+      //     newLogs.forEach(log =>
+      //       this.matchFilter(log, filter) && cb(log.toString());
+      //     );
+      //   });
+      // }
     }) as unknown as void;
   };
 
@@ -1344,15 +1354,14 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<TransactionReceipt> => throwNotImplemented('waitForTransaction');
 
   // Event Emitter (ish)
-  on = (eventName: EventType, listener: Listener): Provider => {
-    if (typeof eventName !== 'string') throw new Error(`on() eventName must be string! Got ${eventName}`);
-
+  addEventListener = (eventName: string, listener: Listener, filter?: any): void => {
     this._listeners[eventName] = this._listeners[eventName] || [];
-    this._listeners[eventName].push(listener as any);
+    this._listeners[eventName].push({ cb: listener, filter });
 
     return '' as any;
   };
 
+  on = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('on');
   once = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('once');
   emit = (eventName: EventType, ...args: Array<any>): boolean => throwNotImplemented('emit');
   listenerCount = (eventName?: EventType): number => throwNotImplemented('listenerCount');

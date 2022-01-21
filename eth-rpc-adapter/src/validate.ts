@@ -106,7 +106,7 @@ export const validate = (schema: Schema, data: unknown[]) => {
   }
 
   for (let i = 0; i < schema.length; i++) {
-    if (data[i] === undefined) {
+    if (data[i] === undefined && !schema[i].type.endsWith('?')) {
       throw new InvalidParams(`missing value for required argument ${i}`);
     }
 
