@@ -400,4 +400,9 @@ class Eip1193BridgeImpl {
     validate([{ type: 'eventName' }, { type: 'object?' }], params);
     return this.#provider.addEventListener(params[0], cb, params[1]);
   }
+
+  async eth_unsubscribe(params: any[], cb: any): Promise<any> {
+    validate([{ type: 'address' }], params);
+    return this.#provider.removeEventListener(params[0]);
+  }
 }

@@ -65,7 +65,16 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.server.close();
   }
 
-  private async webSocketRouterHandler(req: any, respondWith: any): Promise<void> {
+  private async webSocketRouterHandler(req: any, wsSend: any): Promise<void> {
+    const respondWith = (data: any): void =>
+      wsSend(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_subscription',
+          params: data
+        })
+      );
+
     let result = null;
     logger.debug(req, 'incoming request');
     if (req instanceof Array) {
@@ -74,6 +83,6 @@ export default class WebSocketServerTransport extends ServerTransport {
       result = await super.routerHandler(req, respondWith);
     }
     logger.debug(result, 'request completed');
-    respondWith(JSON.stringify(result));
+    wsSend(JSON.stringify(result));
   }
 }

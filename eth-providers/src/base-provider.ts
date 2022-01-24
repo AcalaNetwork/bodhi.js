@@ -12,6 +12,7 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
+import { Wallet } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -141,13 +142,24 @@ export interface GasConsts {
   txFeePerGas: bigint;
 }
 
+export interface EventListener {
+  id: string;
+  cb: (data: any) => void;
+  filter?: any;
+}
+
+export interface EventListeners {
+  [name: string]: EventListener[];
+} 
+
 const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
+const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
-  readonly _listeners: any;
+  readonly _listeners: EventListeners;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
@@ -177,8 +189,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // TODO: factor this out or maybe rename it to start subscription?
     this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
-      // @ts-ignore
-      this._listeners[NEW_HEADS]?.forEach(({ cb }) => cb(header.toString()));
+      if (this._listeners[NEW_HEADS]?.length > 0) {
+        const block = await this.getBlock(header.number.toNumber());
+        this._listeners[NEW_HEADS].forEach(l => l.cb({
+          ...block,
+          number: `0x${block.number.toString(16)}`,
+          timestamp: `0x${block.timestamp.toString(16)}`,
+          difficulty: `0x${block.difficulty.toString(16)}`,
+          gasLimit: `0x${block.gasLimit.toNumber()}`,
+          gasUsed: `0x${block.gasUsed.toNumber()}`,
+          sha3Uncles: header.parentHash,         // TODO: correct value?
+          receiptsRoot: block.transactionsRoot,  // TODO: correct value?
+          logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',     // TODO: ???
+        }));
+      }
 
       // if (this._listeners[NEW_LOGS]) {
       //   const newLogs = await this.getNewLogs(header);
@@ -1354,11 +1378,25 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<TransactionReceipt> => throwNotImplemented('waitForTransaction');
 
   // Event Emitter (ish)
-  addEventListener = (eventName: string, listener: Listener, filter?: any): void => {
-    this._listeners[eventName] = this._listeners[eventName] || [];
-    this._listeners[eventName].push({ cb: listener, filter });
+  addEventListener = (eventName: string, listener: Listener, filter?: any): string => {
+    const id = Wallet.createRandom().address;
+    const eventCallBack = (data: any): void => listener({
+      subscription: id,
+      result: data,
+    });
 
-    return '' as any;
+    this._listeners[eventName] = this._listeners[eventName] || [];
+    this._listeners[eventName].push({ cb: eventCallBack, filter, id });
+
+    return id;
+  };
+
+  removeEventListener = (id: string): boolean => {
+    ALL_EVENTS.forEach(e => {
+      this._listeners[e] = this._listeners[e]?.filter((l: any) => l.id !== id);
+    });
+
+    return true;
   };
 
   on = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('on');
