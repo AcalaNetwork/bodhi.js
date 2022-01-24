@@ -541,6 +541,12 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "waffle-tutorial-precompiled-token",
+      "projectFolder": "examples/waffle-tutorials/precompiled-token",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- hardhat examples ---------- */
     {
