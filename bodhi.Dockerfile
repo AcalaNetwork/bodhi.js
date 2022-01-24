@@ -31,6 +31,7 @@ COPY examples/waffle-tutorials/hello-world/package.json examples/waffle-tutorial
 COPY examples/waffle-tutorials/echo/package.json examples/waffle-tutorials/echo/package.json
 COPY examples/waffle-tutorials/token/package.json examples/waffle-tutorials/token/package.json
 COPY examples/waffle-tutorials/NFT/package.json examples/waffle-tutorials/NFT/package.json
+COPY examples/waffle-tutorials/precompiled-token/package.json examples/waffle-tutorials/precompiled-token/package.json
 
 COPY examples/truffle-tutorials/hello-world/package.json examples/truffle-tutorials/hello-world/package.json
 COPY examples/truffle-tutorials/echo/package.json examples/truffle-tutorials/echo/package.json
