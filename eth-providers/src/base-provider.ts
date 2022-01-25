@@ -53,7 +53,9 @@ import {
   calcSubstrateTransactionParams,
   getEvmExtrinsicIndexes,
   findEvmEvent,
-  getIndexerMetadata
+  getIndexerMetadata,
+  filterLog,
+  toHex
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
@@ -150,7 +152,7 @@ export interface EventListener {
 
 export interface EventListeners {
   [name: string]: EventListener[];
-} 
+}
 
 const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
@@ -191,27 +193,42 @@ export abstract class BaseProvider extends AbstractProvider {
     this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
       if (this._listeners[NEW_HEADS]?.length > 0) {
         const block = await this.getBlock(header.number.toNumber());
-        this._listeners[NEW_HEADS].forEach(l => l.cb({
-          ...block,
-          number: `0x${block.number.toString(16)}`,
-          timestamp: `0x${block.timestamp.toString(16)}`,
-          difficulty: `0x${block.difficulty.toString(16)}`,
-          gasLimit: `0x${block.gasLimit.toNumber()}`,
-          gasUsed: `0x${block.gasUsed.toNumber()}`,
-          sha3Uncles: header.parentHash,         // TODO: correct value?
-          receiptsRoot: block.transactionsRoot,  // TODO: correct value?
-          logsBloom: '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',     // TODO: ???
-        }));
+        this._listeners[NEW_HEADS].forEach((l) =>
+          l.cb({
+            ...block,
+            number: toHex(block.number),
+            timestamp: toHex(block.timestamp),
+            difficulty: toHex(block.difficulty),
+            gasLimit: `0x${block.gasLimit.toNumber()}`,
+            gasUsed: `0x${block.gasUsed.toNumber()}`,
+            sha3Uncles: header.parentHash, // TODO: correct value?
+            receiptsRoot: block.transactionsRoot, // TODO: correct value?
+            logsBloom:
+              '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' // TODO: ???
+          })
+        );
       }
 
-      // if (this._listeners[NEW_LOGS]) {
-      //   const newLogs = await this.getNewLogs(header);
-      //   this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
-      //     newLogs.forEach(log =>
-      //       this.matchFilter(log, filter) && cb(log.toString());
-      //     );
-      //   });
-      // }
+      if (this._listeners[NEW_LOGS]?.length > 0) {
+        const block = await this._getBlock(header.number.toHex(), false);
+        const receipts = await Promise.all(
+          block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, header.number.toHex()))
+        );
+
+        const logs = receipts.map((r) => r.logs).flat();
+
+        this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
+          const filteredLogs = logs.filter((l) => filterLog(l, filter));
+          filteredLogs.forEach((l) =>
+            cb({
+              ...l,
+              transactionIndex: toHex(l.transactionIndex),
+              blockNumber: toHex(l.blockNumber),
+              logIndex: toHex(l.logIndex)
+            })
+          );
+        });
+      }
     }) as unknown as void;
   };
 
@@ -1380,10 +1397,11 @@ export abstract class BaseProvider extends AbstractProvider {
   // Event Emitter (ish)
   addEventListener = (eventName: string, listener: Listener, filter?: any): string => {
     const id = Wallet.createRandom().address;
-    const eventCallBack = (data: any): void => listener({
-      subscription: id,
-      result: data,
-    });
+    const eventCallBack = (data: any): void =>
+      listener({
+        subscription: id,
+        result: data
+      });
 
     this._listeners[eventName] = this._listeners[eventName] || [];
     this._listeners[eventName].push({ cb: eventCallBack, filter, id });
@@ -1392,7 +1410,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   removeEventListener = (id: string): boolean => {
-    ALL_EVENTS.forEach(e => {
+    ALL_EVENTS.forEach((e) => {
       this._listeners[e] = this._listeners[e]?.filter((l: any) => l.id !== id);
     });
 
