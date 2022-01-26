@@ -76,7 +76,7 @@ export default class WebSocketServerTransport extends ServerTransport {
       );
 
     let result = null;
-    logger.debug(req, 'incoming request');
+    logger.debug(req, 'WS incoming request');
     if (req instanceof Array) {
       result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, respondWith)));
     } else {
