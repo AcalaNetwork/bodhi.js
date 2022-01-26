@@ -26,8 +26,7 @@ This includes a Mandala node within Docker.
 ```
 docker-compose down && docker volume prune      # clean docker volume (optional)
 
-docker-compose up                               # linux users
-docker-compose -f macos-docker-compose.yml up   # mac users
+docker-compose up
 ```
 
 Make sure to feed some EVM transactions to acala node, for example we can use [these evm examples](https://github.com/AcalaNetwork/evm-examples).
