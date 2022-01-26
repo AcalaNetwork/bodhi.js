@@ -178,21 +178,17 @@ export abstract class BaseProvider extends AbstractProvider {
     await this.isReady();
 
     this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      // cache
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
       const txHashes = await this._getTxHashesAtBlock(blockHash);
 
       this._cache!.addTxsAtBlock(blockNumber, txHashes);
-    }) as unknown as void;
 
-    this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
-      this._cache!.handleFinalizedBlock(header.number.toNumber());
-    }) as unknown as void;
-
-    // TODO: factor this out or maybe rename it to start subscription?
-    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      // eth_subscribe
+      // TODO: can do some optimizations
       if (this._listeners[NEW_HEADS]?.length > 0) {
-        const block = await this.getBlock(header.number.toNumber());
+        const block = await this.getBlock(blockNumber);
         this._listeners[NEW_HEADS].forEach((l) =>
           l.cb({
             ...block,
@@ -229,6 +225,10 @@ export abstract class BaseProvider extends AbstractProvider {
           );
         });
       }
+    }) as unknown as void;
+
+    this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
+      this._cache!.handleFinalizedBlock(header.number.toNumber());
     }) as unknown as void;
   };
 
