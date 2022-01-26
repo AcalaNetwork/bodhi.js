@@ -20,8 +20,10 @@ export const filterLog = (log: Log, filter: any): boolean => {
       .filter((x: any) => x)
       .map((x: string) => x.toLowerCase());
     for (const t of log.topics) {
-      if (!_targetTopics.includes(t.toLowerCase())) return false;
+      if (_targetTopics.includes(t.toLowerCase())) return true;
     }
+
+    return false;
   }
 
   return true;

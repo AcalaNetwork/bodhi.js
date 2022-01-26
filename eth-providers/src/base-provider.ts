@@ -158,6 +158,8 @@ const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
 const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
 
+const DUMMY_ADDRESS = '0x1111111111333333333355555555558888888888';
+
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
@@ -197,6 +199,8 @@ export abstract class BaseProvider extends AbstractProvider {
             difficulty: toHex(block.difficulty),
             gasLimit: `0x${block.gasLimit.toNumber()}`,
             gasUsed: `0x${block.gasUsed.toNumber()}`,
+            miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
+            author: block.author === '' ? DUMMY_ADDRESS : block.author,
             sha3Uncles: header.parentHash, // TODO: correct value?
             receiptsRoot: block.transactionsRoot, // TODO: correct value?
             logsBloom:
@@ -220,7 +224,8 @@ export abstract class BaseProvider extends AbstractProvider {
               ...l,
               transactionIndex: toHex(l.transactionIndex),
               blockNumber: toHex(l.blockNumber),
-              logIndex: toHex(l.logIndex)
+              logIndex: toHex(l.logIndex),
+              type: 'mined'
             })
           );
         });
