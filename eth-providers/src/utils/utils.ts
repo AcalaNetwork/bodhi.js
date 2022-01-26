@@ -8,7 +8,7 @@ export const filterLog = (log: Log, filter: any): boolean => {
     if (typeof targetAddr === 'string') {
       if (log.address.toLowerCase() !== targetAddr.toLowerCase()) return false;
     } else if (Array.isArray(targetAddr)) {
-      if (!targetAddr.map((x) => x.toLowerCase()).includes(log.address.toLowerCase())) return false;
+      if (!targetAddr.map((x: string) => x.toLowerCase()).includes(log.address.toLowerCase())) return false;
     }
   }
 
@@ -17,8 +17,8 @@ export const filterLog = (log: Log, filter: any): boolean => {
 
     const _targetTopics = targetTopics
       .flat()
-      .filter((x) => x)
-      .map((x) => x.toLowerCase());
+      .filter((x: any) => x)
+      .map((x: string) => x.toLowerCase());
     for (const t of log.topics) {
       if (!_targetTopics.includes(t.toLowerCase())) return false;
     }
