@@ -159,6 +159,12 @@ const NEW_LOGS = 'logs';
 const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
 
 const DUMMY_ADDRESS = '0x1111111111333333333355555555558888888888';
+const DUMMY_LOGS_BLOOM =
+  '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+const DUMMY_V = '0x25';
+const DUMMY_R = '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea';
+const DUMMY_S = '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c';
+const EMTPY_UNCLE_HASH = '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347';
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
@@ -201,10 +207,9 @@ export abstract class BaseProvider extends AbstractProvider {
             gasUsed: `0x${block.gasUsed.toNumber()}`,
             miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
             author: block.author === '' ? DUMMY_ADDRESS : block.author,
-            sha3Uncles: header.parentHash, // TODO: correct value?
+            sha3Uncles: EMTPY_UNCLE_HASH,
             receiptsRoot: block.transactionsRoot, // TODO: correct value?
-            logsBloom:
-              '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' // TODO: ???
+            logsBloom: DUMMY_LOGS_BLOOM // TODO: ???
           })
         );
       }
@@ -354,7 +359,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const deafultNonce = this.api.registry.createType('u64', 0);
     const deafultMixHash = this.api.registry.createType('u256', 0);
 
-    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : EMPTY_STRING;
+    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : DUMMY_ADDRESS;
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
 
@@ -390,6 +395,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
         // @TODO Missing data
         return {
+          gasPrice: '0x1', // TODO: get correct value
+          gas: '0x1', // TODO: get correct value
+          input: '', // TODO: get correct value
+          v: DUMMY_V,
+          r: DUMMY_R,
+          s: DUMMY_S,
           blockHash,
           blockNumber,
           transactionIndex,
@@ -419,6 +430,9 @@ export abstract class BaseProvider extends AbstractProvider {
       miner: author,
       author: author,
       extraData: EMPTY_STRING,
+      sha3Uncles: EMTPY_UNCLE_HASH,
+      receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
+      logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
 
       transactions
 
