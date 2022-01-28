@@ -590,7 +590,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { from, to, data, value } = ethTx;
 
-    const supportAccessList = this.api.tx.evm.call.meta.args.length === 6;
+    const supportAccessList = !!this.api.tx.evm.call.meta.args.find((x) => x.name.toString() === 'accessList');
 
     let extrinsic: SubmittableExtrinsic<'promise'>;
 
@@ -833,7 +833,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     await (this.api.rpc as any).evm.call(callRequest);
 
-    const supportAccessList = this.api.tx.evm.ethCall.meta.args.length === 7;
+    const supportAccessList = !!this.api.tx.evm.ethCall.meta.args.find((x) => x.name.toString() === 'accessList');
 
     let extrinsic: SubmittableExtrinsic<'promise'>;
 
