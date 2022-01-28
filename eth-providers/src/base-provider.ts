@@ -181,7 +181,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startCache = async (): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache();
+    this._cache = new UnfinalizedBlockCache(200);
 
     await this.isReady();
 
