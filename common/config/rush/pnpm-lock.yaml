@@ -79,7 +79,7 @@ importers:
   ../../eth-providers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
-      '@acala-network/contracts': ~4.0.1
+      '@acala-network/contracts': ~4.0.2
       '@acala-network/eth-transactions': workspace:*
       '@acala-network/types': ~3.0.3-3
       '@ethersproject/abstract-provider': ~5.5.0
@@ -142,7 +142,7 @@ importers:
       graphql: 16.0.1
       graphql-request: 3.6.1_graphql@16.0.1
     devDependencies:
-      '@acala-network/contracts': 4.0.1
+      '@acala-network/contracts': 4.0.2
       '@ethersproject/address': 5.5.0
       '@ethersproject/contracts': 5.5.0
       '@ethersproject/wallet': 5.5.0
@@ -388,7 +388,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~2.0.0
+      '@acala-network/contracts': ~2.0.1
       '@openzeppelin/contracts': ~3.4.2
       '@polkadot/api': ~6.11.1
       '@polkadot/keyring': ~8.1.2
@@ -405,7 +405,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 2.0.0
+      '@acala-network/contracts': 2.0.1
       '@polkadot/api': 6.11.1
       '@polkadot/keyring': 8.1.2
       '@uniswap/v2-core': 1.0.1
@@ -425,7 +425,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.0.1
+      '@acala-network/contracts': ~4.0.2
       '@polkadot/api': ~6.11.1
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -438,7 +438,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.0.1
+      '@acala-network/contracts': 4.0.2
       '@polkadot/api': 6.11.1
     devDependencies:
       '@types/chai': 4.2.22
@@ -454,7 +454,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.0.1
+      '@acala-network/contracts': ~4.0.2
       '@polkadot/api': ~6.11.1
       '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
@@ -468,7 +468,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.0.1
+      '@acala-network/contracts': 4.0.2
       '@polkadot/api': 6.11.1
       '@polkadot/keyring': 8.1.2
     devDependencies:
@@ -485,7 +485,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.0.1
+      '@acala-network/contracts': ~4.0.2
       '@openzeppelin/contracts': ~4.3.2
       '@polkadot/api': ~6.11.1
       '@polkadot/keyring': ~8.1.2
@@ -500,7 +500,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.0.1
+      '@acala-network/contracts': 4.0.2
       '@polkadot/api': 6.11.1
       '@polkadot/keyring': 8.1.2
     devDependencies:
@@ -541,7 +541,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.0.1
+      '@acala-network/contracts': ~4.0.2
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -553,7 +553,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.0.1
+      '@acala-network/contracts': 4.0.2
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -568,7 +568,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~2.0.0
+      '@acala-network/contracts': ~2.0.1
       '@openzeppelin/contracts': ~3.4.2
       '@polkadot/api': ~6.11.1
       '@polkadot/keyring': ~8.1.2
@@ -583,7 +583,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 2.0.0
+      '@acala-network/contracts': 2.0.1
       '@polkadot/api': 6.11.1
       '@polkadot/keyring': 8.1.2
     devDependencies:
@@ -601,7 +601,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.0.1
+      '@acala-network/contracts': ~4.0.2
       '@polkadot/api': ~6.11.1
       '@polkadot/keyring': ~8.1.2
       '@types/chai': ~4.2.22
@@ -615,7 +615,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.0.1
+      '@acala-network/contracts': 4.0.2
       '@polkadot/api': 6.11.1
       '@polkadot/keyring': 8.1.2
     devDependencies:
@@ -632,7 +632,7 @@ importers:
     specifiers:
       '@acala-network/api': ~3.0.3-3
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.0.1
+      '@acala-network/contracts': ~4.0.2
       '@openzeppelin/contracts': ~4.3.2
       '@polkadot/api': ~6.11.1
       '@polkadot/keyring': ~8.1.2
@@ -647,7 +647,7 @@ importers:
     dependencies:
       '@acala-network/api': 3.0.3-16
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.0.1
+      '@acala-network/contracts': 4.0.2
       '@polkadot/api': 6.11.1
       '@polkadot/keyring': 8.1.2
     devDependencies:
@@ -716,12 +716,12 @@ packages:
       - '@polkadot/typegen'
       - supports-color
 
-  /@acala-network/contracts/2.0.0:
-    resolution: {integrity: sha512-6kZbJtg8LHbCjtrzCZsgf/y/UMz43anxeinWXAJj4BJFI2GgrVuW8zHChB91+tMEZz6t4cVd3xXYh4eRuJknGQ==}
+  /@acala-network/contracts/2.0.1:
+    resolution: {integrity: sha512-TPaB8Gp6k5ViiskNelBvA3KBJaoynNJExrqAycCHvuPnS5IahxHSJ7V7gH3H+kjDXDZKOXtuooiFwb1coZ6YQA==}
     dev: false
 
-  /@acala-network/contracts/4.0.1:
-    resolution: {integrity: sha512-T9wiPbSFeGS+jcPyvBx7wxP9lrhCEhB8ZJVKTWGC8mKfqUvHbi56g5U9nMslqORd8EQ60+Jlt13anUa19V445w==}
+  /@acala-network/contracts/4.0.2:
+    resolution: {integrity: sha512-IYYRbZwvA/bRfp/nV6oiPDkR68eyxYY+jevby+mDHIt4vrlMDgPjKNhLrPnVkGSymOYuosZjeO4jMEhXtisL4g==}
 
   /@acala-network/type-definitions/3.0.3-16:
     resolution: {integrity: sha512-qraf5JapinDQvLxT5H/8HycyYzb+B/e9n7A5cCMXyML2Qe9nbPk7JiH9dVocIB87Z7his/yrUOExqh6L4CShXQ==}
@@ -5634,7 +5634,7 @@ packages:
     resolution: {integrity: sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==}
     deprecated: Critical security vulnerability fixed in v0.21.1. For more information, see https://github.com/axios/axios/pull/3410
     dependencies:
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
     transitivePeerDependencies:
       - debug
     dev: false
@@ -5643,7 +5643,7 @@ packages:
   /axios/0.24.0:
     resolution: {integrity: sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==}
     dependencies:
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
     transitivePeerDependencies:
       - debug
     dev: false
@@ -9821,7 +9821,7 @@ packages:
     resolution: {integrity: sha1-SiksW8/4s5+mzAyxqFPYbyfu/3s=}
     dev: true
 
-  /follow-redirects/1.14.6:
+  /follow-redirects/1.14.6_debug@4.3.3:
     resolution: {integrity: sha512-fhUl5EwSJbbl8AR+uYL2KQDxLkdSjZGR36xy46AO7cOMTrCMON6Sa28FmAnC2tRTDbd/Uuzz3aJBv7EBN7JH8A==}
     engines: {node: '>=4.0'}
     peerDependencies:
@@ -9829,6 +9829,8 @@ packages:
     peerDependenciesMeta:
       debug:
         optional: true
+    dependencies:
+      debug: 4.3.3
 
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
@@ -16456,7 +16458,7 @@ packages:
     dependencies:
       command-exists: 1.2.9
       commander: 3.0.2
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
       fs-extra: 0.30.0
       js-sha3: 0.8.0
       memorystream: 0.3.1
