@@ -65,15 +65,24 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.server.close();
   }
 
-  private async webSocketRouterHandler(req: any, respondWith: any) {
+  private async webSocketRouterHandler(req: any, wsSend: any): Promise<void> {
+    const respondWith = (data: any): void =>
+      wsSend(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_subscription',
+          params: data
+        })
+      );
+
     let result = null;
-    logger.debug(req.body, 'incoming request');
+    logger.debug(req, 'WS incoming request');
     if (req instanceof Array) {
-      result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r)));
+      result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, respondWith)));
     } else {
-      result = await super.routerHandler(req);
+      result = await super.routerHandler(req, respondWith);
     }
     logger.debug(result, 'request completed');
-    respondWith(JSON.stringify(result));
+    wsSend(JSON.stringify(result));
   }
 }

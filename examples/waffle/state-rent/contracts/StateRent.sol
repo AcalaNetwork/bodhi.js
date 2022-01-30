@@ -23,11 +23,27 @@ contract StateRent is ADDRESS {
         return stateRent.developerDeposit();
     }
 
-    function deploymentFee() public view returns (uint256) {
-        return stateRent.deploymentFee();
+    function publicationFee() public view returns (uint256) {
+        return stateRent.publicationFee();
     }
 
     function transferMaintainer(address contract_address, address new_maintainer) public returns (bool) {
         return stateRent.transferMaintainer(contract_address, new_maintainer);
+    }
+
+    function developerEnable() public returns (bool) {
+        return stateRent.developerEnable();
+    }
+
+    function developerDisable() public returns (bool) {
+        return stateRent.developerDisable();
+    }
+
+    function developerStatus(address developer) public view returns (bool) {
+        return stateRent.developerStatus(developer);
+    }
+
+    function publishContract(address contract_address) public returns (bool) {
+        return stateRent.publishContract(contract_address);
     }
 }

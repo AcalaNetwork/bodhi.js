@@ -8,11 +8,11 @@ export const MAX_UINT256 = '0xffffffff';
 
 export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
   if (!tx.salt) {
-    logger.throwError('eip712tx missing salt');
+    return logger.throwError('eip712tx missing salt');
   }
 
   if (!tx.chainId) {
-    logger.throwError('eip712tx missing chainId');
+    return logger.throwError('eip712tx missing chainId');
   }
 
   return {
