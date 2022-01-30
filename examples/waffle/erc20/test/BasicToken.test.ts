@@ -50,7 +50,7 @@ describe('BasicToken', () => {
   it('Can not transfer from empty account', async () => {
     if (!process.argv.includes('--with-ethereum-compatibility')) {
       // If it is not called by the maintainer, developer, or contract, it needs to be deployed first
-      await provider.api.tx.evm.deploy(token.address).signAndSend(testPairs.alice.address);
+      await provider.api.tx.evm.publishContract(token.address).signAndSend(testPairs.alice.address);
     }
 
     const tokenFromOtherWallet = token.connect(emptyWallet);
