@@ -47,21 +47,15 @@ describe('Dex', () => {
   });
 
   it('getSwapTargetAmount should not works', async () => {
-    try {
-      await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.RENBTC, ADDRESS.LDOT], 1000);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("Dex get_swap_target_amount failed")');
-    }
-    try {
-      await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("Dex get_swap_target_amount failed")');
-    }
-    try {
-      await dex.getSwapTargetAmount([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000);
-    } catch (error) {
-      expect(error.message).to.contain('Other("invalid currency id")');
-    }
+    await expect(
+      dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.RENBTC, ADDRESS.LDOT], 1000)
+    ).to.be.revertedWith('Dex get_swap_target_amount failed');
+    await expect(
+      dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
+    ).to.be.revertedWith('Dex get_swap_target_amount failed');
+    await expect(
+      dex.getSwapTargetAmount([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000)
+    ).to.be.revertedWith('invalid currency id');
   });
 
   it('getSwapSupplyAmount works', async () => {
@@ -70,21 +64,13 @@ describe('Dex', () => {
   });
 
   it('getSwapSupplyAmount should not works', async () => {
-    try {
-      await dex.getSwapSupplyAmount([ADDRESS.ACA], 1000);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("Dex get_swap_supply_amount failed")');
-    }
-    try {
-      await dex.getSwapSupplyAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("Dex get_swap_supply_amount failed")');
-    }
-    try {
-      await dex.getSwapSupplyAmount([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000);
-    } catch (error) {
-      expect(error.message).to.contain('Other("invalid currency id")');
-    }
+    await expect(dex.getSwapSupplyAmount([ADDRESS.ACA], 1000)).to.be.revertedWith('Dex get_swap_supply_amount failed');
+    await expect(
+      dex.getSwapSupplyAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
+    ).to.be.revertedWith('Dex get_swap_supply_amount failed');
+    await expect(
+      dex.getSwapSupplyAmount([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000)
+    ).to.be.revertedWith('invalid currency id');
   });
 
   it('swapWithExactSupply works', async () => {
@@ -111,21 +97,13 @@ describe('Dex', () => {
   });
 
   it('swapWithExactSupply should not works', async () => {
-    try {
-      await dex.swapWithExactSupply([ADDRESS.ACA], 1000, 1);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("InvalidTradingPathLength")');
-    }
-    try {
-      await dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000, 1);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("InvalidTradingPathLength")');
-    }
-    try {
-      await dex.swapWithExactSupply([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000, 1);
-    } catch (error) {
-      expect(error.message).to.contain('Other("invalid currency id")');
-    }
+    await expect(dex.swapWithExactSupply([ADDRESS.ACA], 1000, 1)).to.be.revertedWith('InvalidTradingPathLength');
+    await expect(
+      dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000, 1)
+    ).to.be.revertedWith('InvalidTradingPathLength');
+    await expect(
+      dex.swapWithExactSupply([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000, 1)
+    ).to.be.revertedWith('invalid currency id');
   });
 
   it('swapWithExactTarget works', async () => {
@@ -152,21 +130,13 @@ describe('Dex', () => {
   });
 
   it('swapWithExactTarget should not works', async () => {
-    try {
-      await dex.swapWithExactTarget([ADDRESS.ACA], 1, 1000);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("InvalidTradingPathLength")');
-    }
-    try {
-      await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1, 1000);
-    } catch (error) {
-      expect(error.message).to.contain('execution revert: Other("InvalidTradingPathLength")');
-    }
-    try {
-      await dex.swapWithExactTarget([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1, 1000);
-    } catch (error) {
-      expect(error.message).to.contain('Other("invalid currency id")');
-    }
+    await expect(dex.swapWithExactTarget([ADDRESS.ACA], 1, 1000)).to.be.revertedWith('InvalidTradingPathLength');
+    await expect(
+      dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1, 1000)
+    ).to.be.revertedWith('InvalidTradingPathLength');
+    await expect(
+      dex.swapWithExactTarget([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1, 1000)
+    ).to.be.revertedWith('invalid currency id');
   });
 
   it('addLiquidity and removeLiquidity works', async () => {
