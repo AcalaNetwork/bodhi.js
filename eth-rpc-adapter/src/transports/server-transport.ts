@@ -18,7 +18,7 @@ export abstract class ServerTransport {
     throw new Error('Transport missing start implementation');
   }
 
-  protected async routerHandler({ id, method, params }: JSONRPCRequest): Promise<JSONRPCResponse> {
+  protected async routerHandler({ id, method, params }: JSONRPCRequest, cb?: any): Promise<JSONRPCResponse> {
     if (id === null || id === undefined) {
       const error = new InvalidRequest();
       return {
@@ -57,7 +57,7 @@ export abstract class ServerTransport {
     } else {
       res = {
         ...res,
-        ...(await routerForMethod.call(method, params as any))
+        ...(await routerForMethod.call(method, params as any, cb))
       };
     }
 

@@ -26,8 +26,7 @@ This includes a Mandala node within Docker.
 ```
 docker-compose down && docker volume prune      # clean docker volume (optional)
 
-docker-compose up                               # linux users
-docker-compose -f macos-docker-compose.yml up   # mac users
+docker-compose up
 ```
 
 Make sure to feed some EVM transactions to acala node, for example we can use [these evm examples](https://github.com/AcalaNetwork/evm-examples).
@@ -40,7 +39,7 @@ npm i -g @subql/node @subql/query
 
 - run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 (in terminal 1)
 ```
-docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:95c483d7 --dev --ws-external=true --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe --tmp -levm=debug [--instant-sealing]
+docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:01a2dea6 --dev --ws-external=true --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe --tmp -levm=debug [--instant-sealing]
 ```
 
 - feed some EVM transactions to Acala node (this step is *REQUIRED* if run acala node with `--instant-sealing`, otherwise it is optional)

@@ -174,7 +174,7 @@ describe('Schedule', () => {
     });
     if (!process.argv.includes('--with-ethereum-compatibility')) {
       // If it is not called by the maintainer, developer, or contract, it needs to be deployed first
-      await provider.api.tx.evm.deploy(subscription.address).signAndSend(testPairs.alice.address);
+      await provider.api.tx.evm.publishContract(subscription.address).signAndSend(testPairs.alice.address);
     }
 
     expect((await subscription.balanceOf(subscriber.getAddress())).toString()).to.equal('0');

@@ -2,6 +2,13 @@ import { BigNumberish } from '@ethersproject/bignumber';
 import { BytesLike } from '@ethersproject/bytes';
 import { UnsignedTransaction, Transaction, AccessListish } from '@ethersproject/transactions';
 
+export type ClaimPayload = {
+  chainId: BigNumberish;
+  salt: BytesLike;
+
+  substrateAddress?: string | Uint8Array | null;
+};
+
 export type AcalaEvmTXPayload = {
   chainId: BigNumberish;
   salt?: BytesLike;
