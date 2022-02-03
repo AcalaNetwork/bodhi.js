@@ -205,7 +205,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -236,7 +237,8 @@ describe('transaction tests', () => {
           validUntil,
           storageLimit,
           tip: 2,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -375,7 +377,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, transferTX);

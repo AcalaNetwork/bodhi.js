@@ -59,6 +59,7 @@ import {
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
+import { AccessListish } from 'ethers/lib/utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -106,6 +107,7 @@ export interface CallRequest {
   storageLimit?: BigNumberish;
   value?: BigNumberish;
   data?: string;
+  accessList?: AccessListish;
 }
 
 export interface partialTX {
@@ -552,7 +554,8 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: resolved.transaction.gasLimit?.toBigInt(),
       storageLimit: undefined,
       value: resolved.transaction.value?.toBigInt(),
-      data: resolved.transaction.data
+      data: resolved.transaction.data,
+      accessList: resolved.transaction.accessList
     };
 
     const data = resolved.blockHash
@@ -670,45 +673,24 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { from, to, data, value } = ethTx;
 
-    const supportAccessList = !!this.api.tx.evm.call.meta.args.find((x) => x.name.toString() === 'accessList');
+    const accessList = ethTx.accessList?.map(({ address, storageKeys }) => [address, storageKeys]) || [];
 
-    let extrinsic: SubmittableExtrinsic<'promise'>;
-
-    if (supportAccessList) {
-      const accessList = ethTx.accessList?.map(({ address, storageKeys }) => [address, storageKeys]);
-
-      extrinsic = !to
-        ? this.api.tx.evm.create(
-            data,
-            value?.toBigInt(),
-            U64MAX.toBigInt(), // gas_limit u64::max
-            U32MAX.toBigInt(), // storage_limit u32::max
-            accessList
-          )
-        : this.api.tx.evm.call(
-            to,
-            data,
-            value?.toBigInt(),
-            U64MAX.toBigInt(), // gas_limit u64::max
-            U32MAX.toBigInt(), // storage_limit u32::max
-            accessList
-          );
-    } else {
-      extrinsic = !to
-        ? this.api.tx.evm.create(
-            data,
-            value?.toBigInt(),
-            U64MAX.toBigInt(), // gas_limit u64::max
-            U32MAX.toBigInt() // storage_limit u32::max
-          )
-        : this.api.tx.evm.call(
-            to,
-            data,
-            value?.toBigInt(),
-            U64MAX.toBigInt(), // gas_limit u64::max
-            U32MAX.toBigInt() // storage_limit u32::max
-          );
-    }
+    const extrinsic = !to
+      ? this.api.tx.evm.create(
+          data,
+          value?.toBigInt(),
+          U64MAX.toBigInt(), // gas_limit u64::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
+        )
+      : this.api.tx.evm.call(
+          to,
+          data,
+          value?.toBigInt(),
+          U64MAX.toBigInt(), // gas_limit u64::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
+        );
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
 
@@ -908,35 +890,21 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: gasLimit,
       storageLimit: storageLimit,
       value: ethTx.value.toString(),
-      data: ethTx.data
+      data: ethTx.data,
+      accessList: ethTx.accessList
     };
 
     await (this.api.rpc as any).evm.call(callRequest);
 
-    const supportAccessList = !!this.api.tx.evm.ethCall.meta.args.find((x) => x.name.toString() === 'accessList');
-
-    let extrinsic: SubmittableExtrinsic<'promise'>;
-
-    if (supportAccessList) {
-      extrinsic = this.api.tx.evm.ethCall(
-        ethTx.to ? { Call: ethTx.to } : { Create: null },
-        ethTx.data,
-        ethTx.value.toString(),
-        gasLimit,
-        storageLimit,
-        accessList,
-        validUntil
-      );
-    } else {
-      extrinsic = this.api.tx.evm.ethCall(
-        ethTx.to ? { Call: ethTx.to } : { Create: null },
-        ethTx.data,
-        ethTx.value.toString(),
-        gasLimit,
-        storageLimit,
-        validUntil
-      );
-    }
+    let extrinsic = this.api.tx.evm.ethCall(
+      ethTx.to ? { Call: ethTx.to } : { Create: null },
+      ethTx.data,
+      ethTx.value.toString(),
+      gasLimit,
+      storageLimit,
+      accessList || [],
+      validUntil
+    );
 
     const subAddr = await this.getSubstrateAddress(ethTx.from);
 

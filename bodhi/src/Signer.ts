@@ -249,19 +249,24 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
 
     let extrinsic: SubmittableExtrinsic<'promise'>;
 
-    let args: any[] = [tx.data, toBN(tx.value), toBN(gasLimit), toBN(storageLimit.isNegative() ? 0 : storageLimit)];
-
-    const supportAccessList = !!this.provider.api.tx.evm.call.meta.args.find((x) => x.name.toString() === 'accessList');
-
-    if (supportAccessList) {
-      args.push(tx.accessList || []);
-    }
-
     // @TODO create contract
     if (!tx.to) {
-      extrinsic = this.provider.api.tx.evm.create(...args);
+      extrinsic = this.provider.api.tx.evm.create(
+        tx.data,
+        toBN(tx.value),
+        toBN(gasLimit),
+        toBN(storageLimit.isNegative() ? 0 : storageLimit),
+        tx.accessList || []
+      );
     } else {
-      extrinsic = this.provider.api.tx.evm.call(tx.to, ...args);
+      extrinsic = this.provider.api.tx.evm.call(
+        tx.to,
+        tx.data,
+        toBN(tx.value),
+        toBN(gasLimit),
+        toBN(storageLimit.isNegative() ? 0 : storageLimit),
+        tx.accessList || []
+      );
     }
 
     await extrinsic.signAsync(signerAddress);
