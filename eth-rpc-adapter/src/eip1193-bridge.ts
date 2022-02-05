@@ -393,7 +393,7 @@ class Eip1193BridgeImpl {
 
   async eth_getLogs(params: any[]): Promise<Log[]> {
     validate([{ type: 'object' }], params);
-    return this.#provider.getLogs(params[0]);
+    return hexlifyRpcResult(this.#provider.getLogs(params[0]));
   }
 
   async eth_subscribe(params: any[], cb: any): Promise<any> {
