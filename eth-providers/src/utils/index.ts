@@ -6,3 +6,4 @@ export * from './queries';
 export * from './handleTxResponse';
 export * from './sendTx';
 export * from './transactionHelper';
+export * from './utils';

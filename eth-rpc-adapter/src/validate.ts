@@ -11,9 +11,17 @@ export type Schema = {
     | 'position'
     | 'transactionData'
     | 'object'
+    | 'object?'
     | 'message'
-    | 'hexNumber';
+    | 'hexNumber'
+    | 'eventName';
 }[];
+
+export const validateEventName = (value: any) => {
+  if (!['newHeads', 'logs', 'newPendingTransactions'].includes(value)) {
+    throw new Error('expected type eventName');
+  }
+};
 
 export const validateString = (value: any) => {
   if (typeof value !== 'string') {
@@ -98,7 +106,7 @@ export const validate = (schema: Schema, data: unknown[]) => {
   }
 
   for (let i = 0; i < schema.length; i++) {
-    if (data[i] === undefined) {
+    if (data[i] === undefined && !schema[i].type.endsWith('?')) {
       throw new InvalidParams(`missing value for required argument ${i}`);
     }
 
@@ -140,12 +148,20 @@ export const validate = (schema: Schema, data: unknown[]) => {
           validateObject(data[i]);
           break;
         }
+        case 'object?': {
+          data[i] && validateObject(data[i]);
+          break;
+        }
         case 'message': {
           validateString(data[i]);
           break;
         }
         case 'hexNumber': {
           validateHexNumber(data[i] as any);
+          break;
+        }
+        case 'eventName': {
+          validateEventName(data[i] as any);
           break;
         }
         default:

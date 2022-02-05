@@ -56,9 +56,9 @@
      * (in addition to whatever "usual" version is being used by other projects in the repo):
      */
     "@acala-network/contracts": [
-      "~2.0.0",
-      "~4.0.1"
-    ],
+      "~2.0.1",
+      "~4.0.2"
+    ]
     "@acala-network/bodhi": [
       "^2.1.2"
     ],

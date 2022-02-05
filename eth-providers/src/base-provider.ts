@@ -12,6 +12,7 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
+import { Wallet } from 'ethers';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -52,7 +53,9 @@ import {
   calcSubstrateTransactionParams,
   getEvmExtrinsicIndexes,
   findEvmEvent,
-  getIndexerMetadata
+  getIndexerMetadata,
+  filterLog,
+  toHex
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
@@ -141,9 +144,32 @@ export interface GasConsts {
   txFeePerGas: bigint;
 }
 
+export interface EventListener {
+  id: string;
+  cb: (data: any) => void;
+  filter?: any;
+}
+
+export interface EventListeners {
+  [name: string]: EventListener[];
+}
+
+const NEW_HEADS = 'newHeads';
+const NEW_LOGS = 'logs';
+const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
+
+const DUMMY_ADDRESS = '0x1111111111333333333355555555558888888888';
+const DUMMY_LOGS_BLOOM =
+  '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
+const DUMMY_V = '0x25';
+const DUMMY_R = '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea';
+const DUMMY_S = '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c';
+const EMTPY_UNCLE_HASH = '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347';
+
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
+  readonly _listeners: EventListeners;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
@@ -151,19 +177,64 @@ export abstract class BaseProvider extends AbstractProvider {
   constructor() {
     super();
     this.formatter = new Formatter();
+    this._listeners = {};
   }
 
   startCache = async (): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache();
+    this._cache = new UnfinalizedBlockCache(200);
 
     await this.isReady();
 
     this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      // cache
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
       const txHashes = await this._getTxHashesAtBlock(blockHash);
 
       this._cache!.addTxsAtBlock(blockNumber, txHashes);
+
+      // eth_subscribe
+      // TODO: can do some optimizations
+      if (this._listeners[NEW_HEADS]?.length > 0) {
+        const block = await this.getBlock(blockNumber);
+        this._listeners[NEW_HEADS].forEach((l) =>
+          l.cb({
+            ...block,
+            number: toHex(block.number),
+            timestamp: toHex(block.timestamp),
+            difficulty: toHex(block.difficulty),
+            gasLimit: `0x${block.gasLimit.toNumber()}`,
+            gasUsed: `0x${block.gasUsed.toNumber()}`,
+            miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
+            author: block.author === '' ? DUMMY_ADDRESS : block.author,
+            sha3Uncles: EMTPY_UNCLE_HASH,
+            receiptsRoot: block.transactionsRoot, // TODO: correct value?
+            logsBloom: DUMMY_LOGS_BLOOM // TODO: ???
+          })
+        );
+      }
+
+      if (this._listeners[NEW_LOGS]?.length > 0) {
+        const block = await this._getBlock(header.number.toHex(), false);
+        const receipts = await Promise.all(
+          block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, header.number.toHex()))
+        );
+
+        const logs = receipts.map((r) => r.logs).flat();
+
+        this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
+          const filteredLogs = logs.filter((l) => filterLog(l, filter));
+          filteredLogs.forEach((l) =>
+            cb({
+              ...l,
+              transactionIndex: toHex(l.transactionIndex),
+              blockNumber: toHex(l.blockNumber),
+              logIndex: toHex(l.logIndex),
+              type: 'mined'
+            })
+          );
+        });
+      }
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
@@ -288,7 +359,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const deafultNonce = this.api.registry.createType('u64', 0);
     const deafultMixHash = this.api.registry.createType('u256', 0);
 
-    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : EMPTY_STRING;
+    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : DUMMY_ADDRESS;
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
 
@@ -324,6 +395,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
         // @TODO Missing data
         return {
+          gasPrice: '0x1', // TODO: get correct value
+          gas: '0x1', // TODO: get correct value
+          input: '', // TODO: get correct value
+          v: DUMMY_V,
+          r: DUMMY_R,
+          s: DUMMY_S,
           blockHash,
           blockNumber,
           transactionIndex,
@@ -353,6 +430,9 @@ export abstract class BaseProvider extends AbstractProvider {
       miner: author,
       author: author,
       extraData: EMPTY_STRING,
+      sha3Uncles: EMTPY_UNCLE_HASH,
+      receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
+      logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
 
       transactions
 
@@ -1334,6 +1414,28 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<TransactionReceipt> => throwNotImplemented('waitForTransaction');
 
   // Event Emitter (ish)
+  addEventListener = (eventName: string, listener: Listener, filter?: any): string => {
+    const id = Wallet.createRandom().address;
+    const eventCallBack = (data: any): void =>
+      listener({
+        subscription: id,
+        result: data
+      });
+
+    this._listeners[eventName] = this._listeners[eventName] || [];
+    this._listeners[eventName].push({ cb: eventCallBack, filter, id });
+
+    return id;
+  };
+
+  removeEventListener = (id: string): boolean => {
+    ALL_EVENTS.forEach((e) => {
+      this._listeners[e] = this._listeners[e]?.filter((l: any) => l.id !== id);
+    });
+
+    return true;
+  };
+
   on = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('on');
   once = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('once');
   emit = (eventName: EventType, ...args: Array<any>): boolean => throwNotImplemented('emit');
