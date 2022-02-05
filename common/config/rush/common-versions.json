@@ -58,7 +58,7 @@
     "@acala-network/contracts": [
       "~2.0.1",
       "~4.0.2"
-    ]
+    ],
     "@acala-network/bodhi": [
       "^2.1.2"
     ],
@@ -95,6 +95,6 @@
     ],
     "ethers": [
       "^5.5.1"
-    ],
+    ]
   }
 }
