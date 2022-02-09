@@ -1,6 +1,6 @@
 services:
   mandala-node:
-    image: acala/mandala-node:01a2dea6
+    image: acala/mandala-node:e361c534
     ports:
       - 9944:9944
     command:
