@@ -73,7 +73,7 @@ describe('transaction tests', () => {
       ).to.be.rejectedWith('InvalidDecimals');
     });
 
-    it('InsufficientBalance', async () => {
+    it('OutOfFund', async () => {
       await expect(
         wallet1.sendTransaction({
           type: 0,
@@ -82,7 +82,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice
         })
-      ).to.be.rejectedWith('InsufficientBalance');
+      ).to.be.rejectedWith('OutOfFund');
     });
 
     it('ExistentialDeposit', async () => {
@@ -205,7 +205,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -236,7 +237,8 @@ describe('transaction tests', () => {
           validUntil,
           storageLimit,
           tip: 2,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -375,7 +377,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, transferTX);
