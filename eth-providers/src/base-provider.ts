@@ -622,8 +622,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getFeeData = async (): Promise<FeeData> => {
     return {
-      maxFeePerGas: MAX_FEE_PER_GAS,
-      maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+      maxFeePerGas: null,
+      maxPriorityFeePerGas: null,
       gasPrice: await this.getGasPrice()
     };
   };
