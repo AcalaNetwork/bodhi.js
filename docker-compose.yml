@@ -70,14 +70,6 @@ services:
       - --playground
       - --indexer=http://subquery-node:3000
 
-  waffle-examples-test:
-    build:
-      context: .
-      dockerfile: bodhi.Dockerfile
-      target: waffle-examples
-    depends_on:
-      - mandala-node
-
   feed-tx:
     build:
       context: .
@@ -132,33 +124,35 @@ services:
       ENDPOINT_URL: ws://mandala-node:9944
     command: yarn test:CI
 
-  # helper for hardhat with instant-sealing node
-  loop:
+  waffle-examples-test:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
-      target: hardhat-examples
+      target: waffle-examples
     depends_on:
-      - eth-rpc-adapter-server
-    command: yarn loop:CI
+      - mandala-node
 
-  hardhat-examples-test:
+  waffle-tutorials-test:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
-      target: hardhat-examples
+      target: waffle-tutorials
+    depends_on:
+      - mandala-node
+  hardhat-tutorials-test:
+    build:
+      context: .
+      dockerfile: bodhi.Dockerfile
+      target: hardhat-tutorials
     depends_on:
       - eth-rpc-adapter-server
-      - loop
-    command: yarn test:CI
+  truffle-tutorials-test:
+    build:
+      context: .
+      dockerfile: bodhi.Dockerfile
+      target: truffle-tutorials
+    depends_on:
+      - eth-rpc-adapter-server
 
-  truffle-examples-test:
-    build:
-      context: .
-      dockerfile: bodhi.Dockerfile
-      target: truffle-examples
-    depends_on:
-      - eth-rpc-adapter-server
-    command: yarn test:CI
 # volumes:
 #   postgres:

@@ -24,6 +24,8 @@ describe('getTxReceiptByHash', () => {
     await sleep(START_DELAY);
     const allTxReceipts = await getAllTxReceipts();
 
+    expect(allTxReceipts.length).to.greaterThan(0);
+
     // test first one
     let txR = allTxReceipts[0];
     let res = await getTxReceiptByHash(txR.transactionHash);
@@ -56,6 +58,8 @@ describe('getFilteredLogs', () => {
   describe('when no filter', () => {
     it('returns all logs', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       const filteredLogs = await getFilteredLogs({});
 
       expect(logsEq(filteredLogs, allLogs)).to.equal(true);
@@ -65,6 +69,8 @@ describe('getFilteredLogs', () => {
   describe('filter by address', () => {
     it('returns correct logs', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];
       const log3 = allLogs[Math.floor(allLogs.length / 2)];
@@ -94,6 +100,8 @@ describe('getFilteredLogs', () => {
     it('returns correct logs', async () => {
       const BIG_NUMBER = 88888888;
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       let filteredLogs;
       let expectedLogs;
 
@@ -134,6 +142,8 @@ describe('getFilteredLogs', () => {
   describe('filter by topics', () => {
     it('returns correct logs', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];
       const log3 = allLogs[Math.floor(allLogs.length / 2)];
