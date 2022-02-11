@@ -172,7 +172,7 @@
    * and set projectFolderMaxDepth to a large number.
    */
   // "projectFolderMinDepth": 2,
-  "projectFolderMaxDepth": 5,
+  "projectFolderMaxDepth": 3,
 
   /**
    * Today the npmjs.com registry enforces fairly strict naming rules for packages, but in the early
@@ -517,91 +517,19 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
-    {
-      "packageName": "waffle-tutorial-hello-world",
-      "projectFolder": "examples/waffle-tutorials/hello-world",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "waffle-tutorial-echo",
-      "projectFolder": "examples/waffle-tutorials/echo",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "waffle-tutorial-token",
-      "projectFolder": "examples/waffle-tutorials/token",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "waffle-tutorial-nft",
-      "projectFolder": "examples/waffle-tutorials/NFT",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "waffle-tutorial-precompiled-token",
-      "projectFolder": "examples/waffle-tutorials/precompiled-token",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    }, 
 
     /* ---------- hardhat examples ---------- */
     {
-      "packageName": "hardhat-tutorial-hello-world",
-      "projectFolder": "examples/hardhat-tutorials/hello-world",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "hardhat-tutorial-echo",
-      "projectFolder": "examples/hardhat-tutorials/echo",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "hardhat-tutorial-token",
-      "projectFolder": "examples/hardhat-tutorials/token",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "hardhat-tutorial-nft",
-      "projectFolder": "examples/hardhat-tutorials/NFT",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "hardhat-tutorial-precompiled-token",
-      "projectFolder": "examples/hardhat-tutorials/precompiled-token",
+      "packageName": "evm-hardhat-examples",
+      "projectFolder": "examples/hardhat",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
 
     /* ---------- truffle examples ---------- */
     {
-      "packageName": "truffle-tutorial-hello-world",
-      "projectFolder": "examples/truffle-tutorials/hello-world",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "truffle-tutorial-echo",
-      "projectFolder": "examples/truffle-tutorials/echo",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "truffle-tutorial-token",
-      "projectFolder": "examples/truffle-tutorials/token",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "truffle-tutorial-nft",
-      "projectFolder": "examples/truffle-tutorials/NFT",
+      "packageName": "evm-truffle-examples",
+      "projectFolder": "examples/truffle",
       "reviewCategory": "tests",
       "shouldPublish": false
     }
