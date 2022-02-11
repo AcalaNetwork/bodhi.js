@@ -257,8 +257,8 @@ class Eip1193BridgeImpl {
   }
 
   async eth_getEthGas(params: any[]): Promise<{
-    gasPrice: number;
-    gasLimit: number;
+    gasPrice: string;
+    gasLimit: string;
   }> {
     const res = await this.#provider._getEthGas(params[0], params[1], params[2]);
     return {
