@@ -7,8 +7,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -31,8 +29,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -53,8 +49,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -75,8 +69,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -97,8 +89,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -122,8 +112,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -136,18 +124,6 @@ jobs:
       - name: build
         run: node common/scripts/install-run-rush.js build
 
-      - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-hello-world
-
-      - name: build echo
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-echo
-
-      - name: build token
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-token
-
-      - name: build nft
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-nft
-
       - name: test
         run: echo "TODO" # use public mandala for testing
 
@@ -156,8 +132,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -167,17 +141,8 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
-      - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-hello-world
-
-      - name: build echo
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-echo
-
-      - name: build token
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-token
-
-      - name: build nft
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-nft
+      - name: build
+        run: node common/scripts/install-run-rush.js build -t evm-hardhat-examples
 
       - name: test
         run: echo "TODO" # use public mandala for testing
@@ -187,8 +152,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          submodules: recursive
 
       - name: setup node env
         uses: actions/setup-node@v2
@@ -198,17 +161,8 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
-      - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-hello-world
-
-      - name: build echo
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-echo
-
-      - name: build token
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-token
-
-      - name: build nft
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-nft
+      - name: build
+        run: node common/scripts/install-run-rush.js build -t evm-truffle-examples
 
       - name: test
         run: echo "TODO" # use public mandala for testing

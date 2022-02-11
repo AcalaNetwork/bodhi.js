@@ -13,31 +13,15 @@ RUN ln -s /usr/bin/python3 /usr/bin/python && \
 ### install rush. should match version in rush.json
 RUN npm install -g @microsoft/rush@5.55.0
 
-### install all dependencies first before copying in favor of caching
+# install all dependencies first before copying in favor of caching
 COPY rush.json .
 COPY common ./common
 COPY bodhi/package.json bodhi/package.json
 COPY eth-providers/package.json eth-providers/package.json
 COPY eth-rpc-adapter/package.json eth-rpc-adapter/package.json
 COPY eth-transactions/package.json eth-transactions/package.json
-
-COPY examples/hardhat-tutorials/hello-world/package.json examples/hardhat-tutorials/hello-world/package.json
-COPY examples/hardhat-tutorials/echo/package.json examples/hardhat-tutorials/echo/package.json
-COPY examples/hardhat-tutorials/token/package.json examples/hardhat-tutorials/token/package.json
-COPY examples/hardhat-tutorials/NFT/package.json examples/hardhat-tutorials/NFT/package.json
-COPY examples/hardhat-tutorials/precompiled-token/package.json examples/hardhat-tutorials/precompiled-token/package.json
-
-COPY examples/waffle-tutorials/hello-world/package.json examples/waffle-tutorials/hello-world/package.json
-COPY examples/waffle-tutorials/echo/package.json examples/waffle-tutorials/echo/package.json
-COPY examples/waffle-tutorials/token/package.json examples/waffle-tutorials/token/package.json
-COPY examples/waffle-tutorials/NFT/package.json examples/waffle-tutorials/NFT/package.json
-COPY examples/waffle-tutorials/precompiled-token/package.json examples/waffle-tutorials/precompiled-token/package.json
-
-COPY examples/truffle-tutorials/hello-world/package.json examples/truffle-tutorials/hello-world/package.json
-COPY examples/truffle-tutorials/echo/package.json examples/truffle-tutorials/echo/package.json
-COPY examples/truffle-tutorials/token/package.json examples/truffle-tutorials/token/package.json
-COPY examples/truffle-tutorials/NFT/package.json examples/truffle-tutorials/NFT/package.json
-
+COPY examples/hardhat/package.json examples/hardhat/package.json
+COPY examples/truffle/package.json examples/truffle/package.json
 COPY examples/waffle/arbitrager/package.json examples/waffle/arbitrager/package.json
 COPY examples/waffle/dex/package.json examples/waffle/dex/package.json
 COPY examples/waffle/e2e/package.json examples/waffle/e2e/package.json
@@ -64,6 +48,19 @@ RUN rush build \
 
 RUN cd evm-subql && yarn build
 
+# =============== waffle-examples =============== #
+FROM node:16-alpine as waffle-examples
+RUN apk add bash
+RUN npm install -g @microsoft/rush@5.55.0
+
+COPY --from=bodhi /app /app
+
+WORKDIR /app/examples/waffle
+
+RUN chmod 777 run.sh
+ENV ENDPOINT_URL=ws://mandala-node:9944
+CMD ["/bin/bash", "run.sh", "build_and_test"]
+
 # =============== feed-tx =============== #
 FROM node:16-alpine as feed-tx
 
@@ -87,7 +84,7 @@ ENV START_DELAY=10
 CMD ["yarn", "test:CI"]
 
 # =============== subql-node =============== #
-FROM onfinality/subql-node:v0.25.4-7 as subql-node
+FROM onfinality/subql-node:latest as subql-node
 
 COPY --from=bodhi /app /app
 
@@ -105,52 +102,22 @@ ENV WS_PORT=3331
 
 WORKDIR /app/eth-rpc-adapter
 
-# =============== waffle-examples =============== #
-FROM node:16-alpine as waffle-examples
-RUN apk add bash
+# =============== hardhat-examples =============== #
+FROM node:16-alpine as hardhat-examples
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
 
-WORKDIR /app/examples/waffle
+WORKDIR /app/examples/hardhat
 
-RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "build_and_test"]
+RUN rush build -t .
 
-# =============== waffle-tutorials =============== #
-FROM node:16-alpine as waffle-tutorials
-RUN apk add bash
+# =============== truffle-examples =============== #
+FROM node:16-alpine as truffle-examples
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
 
-WORKDIR /app/examples/waffle-tutorials
+WORKDIR /app/examples/truffle
 
-RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "build_and_test"]
-
-# =============== hardhat-tutorials =============== #
-FROM node:16-alpine as hardhat-tutorials
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/hardhat-tutorials
-
-RUN chmod 777 run.sh
-CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
-
-# =============== truffle-tutorials =============== #
-FROM node:16-alpine as truffle-tutorials
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY --from=bodhi /app /app
-
-WORKDIR /app/examples/truffle-tutorials
-
-RUN chmod 777 run.sh
-CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
+RUN rush build -t .

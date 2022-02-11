@@ -62,26 +62,11 @@ docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}')
 
 - run tests
 ```
-### run any test
+# run any test, where xxx ∈ { waffle-examples-test, eth-providers-test, eth-rpc-adapter-test, hardhat-examples-test, truffle-examples-test }
 docker-compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
 
-where xxx ∈ {
-  eth-providers-test,
-  eth-rpc-adapter-test,
-  waffle-examples-test,
-  waffle-tutorials-test,
-  hardhat-tutorials-test,
-  truffle-tutorials-test,
-}
-
-### run all tests (not recommended since log will be too messy)
+# run all tests (not recommended since log will be too messy)
 docker-compose up
-```
-
-we can grep container logs by
-```
-docker-compose logs --tail=0 --follow   # all logs
-docker logs -f <container_id>           # logs for specific container
 ```
 
 
