@@ -708,8 +708,8 @@ export abstract class BaseProvider extends AbstractProvider {
     storageLimit: BigNumberish,
     _validUntil: BigNumberish,
   ): Promise<{
-    gasPrice: number;
-    gasLimit: number;
+    gasPrice: BigNumber;
+    gasLimit: BigNumber;
   }> => {
     const validUntil = _validUntil || (await this.getBlockNumber()) + 100;
     const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
@@ -724,8 +724,8 @@ export abstract class BaseProvider extends AbstractProvider {
     });
 
     return {
-      gasLimit: txGasLimit.toNumber(),
-      gasPrice: txGasPrice.toNumber(),
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice,
     };
   };
 

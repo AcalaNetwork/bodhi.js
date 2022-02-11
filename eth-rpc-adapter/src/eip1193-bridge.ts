@@ -260,7 +260,11 @@ class Eip1193BridgeImpl {
     gasPrice: number;
     gasLimit: number;
   }> {
-    return this.#provider._getEthGas(params[0], params[1], params[2]);
+    const res = await this.#provider._getEthGas(params[0], params[1], params[2]);
+    return {
+      gasPrice: res.gasPrice.toNumber(),
+      gasLimit: res.gasLimit.toNumber(),
+    }
   }
 
   async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 20, interval: number = 1000): Promise<T> {
