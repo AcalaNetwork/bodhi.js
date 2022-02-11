@@ -262,8 +262,8 @@ class Eip1193BridgeImpl {
   }> {
     const res = await this.#provider._getEthGas(params[0], params[1], params[2]);
     return {
-      gasPrice: res.gasPrice.toNumber(),
-      gasLimit: res.gasLimit.toNumber(),
+      gasPrice: res.gasPrice.toString(),
+      gasLimit: res.gasLimit.toString(),
     }
   }
 
