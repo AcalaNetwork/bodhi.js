@@ -256,6 +256,13 @@ class Eip1193BridgeImpl {
     return hexValue(val);
   }
 
+  async eth_getEthGas(params: any[]): Promise<{
+    gasPrice: number;
+    gasLimit: number;
+  }> {
+    return this.#provider._getEthGas(params[0], params[1], params[2]);
+  }
+
   async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 20, interval: number = 1000): Promise<T> {
     let res;
     let tries = 0;

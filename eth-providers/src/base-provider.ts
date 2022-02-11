@@ -703,15 +703,11 @@ export abstract class BaseProvider extends AbstractProvider {
    * helper to get ETH gas when don't know the whole transaction
    * @returns The gas used by eth transaction
   */
-  getEthGas = async ({
-    gasLimit,
-    storageLimit,
-    _validUntil,
-  }: {
-    gasLimit: BigNumberish;
-    storageLimit: BigNumberish;
-    _validUntil?: BigNumberish;
-  }): Promise<{
+  _getEthGas = async (
+    gasLimit: BigNumberish,
+    storageLimit: BigNumberish,
+    _validUntil: BigNumberish,
+  ): Promise<{
     gasPrice: number;
     gasLimit: number;
   }> => {
