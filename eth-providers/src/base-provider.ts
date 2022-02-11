@@ -711,7 +711,7 @@ export abstract class BaseProvider extends AbstractProvider {
     gasPrice: BigNumber;
     gasLimit: BigNumber;
   }> => {
-    const validUntil = _validUntil || (await this.getBlockNumber()) + 100;
+    const validUntil = _validUntil || (await this.getBlockNumber()) + 150; // default 150 * 12 / 60 = 30min
     const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
     const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
 
