@@ -37,13 +37,6 @@ rush add -p <package> --all             # for all projects
 cd <project> && rush add -p <package>   # for this project only
 ```
 
-## use with docker
-### build and run `eth-rpc-adaptor`
-```
-docker build -f eth-rpc-adapter/Dockerfile . -t eth-rpc-adapter
-docker run -it -p 8545:8545 [--env-file=eth-rpc-adapter/.env] eth-rpc-adapter yarn dev
-```
-
 ### run tests with docker
 - clean up
 ```
@@ -88,20 +81,13 @@ rush publish -p --set-access-level public -n <paste_npm_token_here>
 ```
 
 ### CI
-In order to trigger a auto release, we need to tag the commit with 'v*', any other commit won't trigger the auto publish. Also, remember to update the `version` fields in `package.json`, otherwise publishing will fail.
+Each commit to master will trigger a CI publish. However, if the version in `package.json` didn't change, publish won't actuall go to npm ,which is fine, so we don't want a new version for each commit. So if we want an actual publish, simply change to version in `package.json`, then push to master.
 
-For example
 ```
-git commit -m "bump version to v2.0.8-beta"
-git tag v2.0.8-beta
-
-# push code, this won't trigger CI
-# if this creates a pull request, make sure to merge it before push tag
-git push
-
-# push the tag, this will trigger CI auto release
-# do this after the code is actually merged
-git push origin v2.0.8-beta
+## first modify package.json's version to v2.x.x
+git commit -m "bump version v2.x.x"
+git tag v2.x.x
+git push origin v2.x.x
 ```
 
 
