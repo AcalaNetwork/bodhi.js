@@ -896,7 +896,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     await (this.api.rpc as any).evm.call(callRequest);
 
-    let extrinsic = this.api.tx.evm.ethCall(
+    const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
       ethTx.data,
       ethTx.value.toString(),
