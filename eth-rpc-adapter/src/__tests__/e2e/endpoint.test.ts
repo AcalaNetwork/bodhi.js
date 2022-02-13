@@ -819,7 +819,7 @@ describe('eth_getEthGas', () => {
     const validUntil = 1000000;
     const res = (await eth_getEthGas([gasLimit, storageLimit, validUntil])).data.result;
     
-    expect(res.gasLimit).to.equal('33064010');
-    expect(res.gasPrice).to.equal('202184524778');
+    expect(parseInt(res.gasLimit, 16)).to.equal(33064010);
+    expect(parseInt(res.gasPrice)).to.equal(202184524778);
   });
 });
