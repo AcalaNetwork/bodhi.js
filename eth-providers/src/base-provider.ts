@@ -700,6 +700,36 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   /**
+   * helper to get ETH gas when don't know the whole transaction
+   * @returns The gas used by eth transaction
+  */
+  _getEthGas = async (
+    gasLimit: BigNumberish,
+    storageLimit: BigNumberish,
+    _validUntil: BigNumberish,
+  ): Promise<{
+    gasPrice: BigNumber;
+    gasLimit: BigNumber;
+  }> => {
+    const validUntil = _validUntil || (await this.getBlockNumber()) + 150; // default 150 * 12 / 60 = 30min
+    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+
+    const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
+      gasLimit,
+      storageLimit,
+      validUntil, 
+      storageByteDeposit,
+      txFeePerGas,
+    });
+
+    return {
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice,
+    };
+  };
+
+  /**
    * Validate substrate transaction parameters
    */
   validSubstrateResources = ({
