@@ -173,22 +173,50 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
+  readonly safeMode: boolean;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
 
-  constructor() {
+  constructor(safeMode: boolean = false) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
+    this.safeMode = safeMode;
+
+    logger.info(`safe mode: ${safeMode}`);
+    safeMode &&
+      logger.warn(`
+      ------------------------- WARNING ---------------------------
+      SafeMode is enabled, unfinalized TX and logs will be ignored!
+      To go back to normal mode, set SAFE_MODE=0
+      -------------------------------------------------------------
+    `);
   }
 
-  startCache = async (): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache(200);
+  startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
+    this._cache = new UnfinalizedBlockCache(maxCachedSize);
+
+    if (maxCachedSize < 0) {
+      return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
+    } else {
+      logger.info(`max cached blocks: ${maxCachedSize}`);
+      maxCachedSize > 2000 &&
+        logger.warn(`
+        ------------------- WARNING -------------------
+        Max cached blocks is big, please be cautious!
+        If memory exploded, try decrease MAX_CACHE_SIZE
+        -----------------------------------------------
+      `);
+    }
 
     await this.isReady();
 
-    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+    const subscriptionMethod = this.safeMode
+      ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
+      : this.api.rpc.chain.subscribeNewHeads.bind(this);
+
+    subscriptionMethod(async (header: Header) => {
       // cache
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
@@ -977,7 +1005,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const ethTx = parseTransaction(rawTx);
 
     if (!ethTx.from) {
-      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
+      return logger.throwError('missing from address', Logger.errors.INVALID_ARGUMENT, ethTx);
     }
 
     const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
