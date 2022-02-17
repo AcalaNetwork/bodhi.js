@@ -59,7 +59,7 @@ import {
   calcEthereumTransactionParams
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
-import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
+import { BlockCache } from './utils/blockCache';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -174,7 +174,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly safeMode: boolean;
 
   _network?: Promise<Network>;
-  _cache?: UnfinalizedBlockCache;
+  _cache?: BlockCache;
 
   constructor(safeMode: boolean = false) {
     super();
@@ -193,13 +193,13 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache(maxCachedSize);
+    this._cache = new BlockCache(maxCachedSize);
 
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
       logger.info(`max cached blocks: ${maxCachedSize}`);
-      maxCachedSize > 2000 &&
+      maxCachedSize > 9999 &&
         logger.warn(`
         ------------------- WARNING -------------------
         Max cached blocks is big, please be cautious!

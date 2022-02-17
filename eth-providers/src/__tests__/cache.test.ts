@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { it } from 'mocha';
-import { UnfinalizedBlockCache } from '../utils/unfinalizedBlockCache';
+import { BlockCache } from '../utils/blockCache';
 
 const randFakeHash = (): string => Math.floor(Math.random() * 66666666).toString(16);
 
@@ -8,10 +8,10 @@ const mockBlock = (): string[] => Array.from({ length: Math.floor(Math.random() 
 
 const mockChain = (blocksCount: number = 50): string[][] => Array.from({ length: blocksCount }, () => mockBlock());
 
-describe('UnfinalizedBlockCache', () => {
+describe('BlockCache', () => {
   const EXTRA_BLOCK_COUNT = 15;
   const TOTAL_BLOCKS = 80;
-  const cache = new UnfinalizedBlockCache(EXTRA_BLOCK_COUNT);
+  const cache = new BlockCache(EXTRA_BLOCK_COUNT);
   const chain = mockChain(TOTAL_BLOCKS);
 
   describe('initialization', () => {
