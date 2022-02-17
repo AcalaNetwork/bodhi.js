@@ -7,13 +7,17 @@ A node service that allows existing Ethereum dApp to be able to interact with [A
   - **SUBQL_URL**: subquery service url
   - **HTTP_PORT**: HTTP port for requests
   - **WS_PORT**: WS port for requests
+  - **MAX_CACHE_SIZE**: max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network)
+  - **SAFE_MODE**: if enabled, TX and logs can only be found after they are finalized
 
 for example checkout `.env.sample`:
 ```
 ENDPOINT_URL=ws://localhost:9944 # default WS port that acala node exposes
 SUBQL_URL=http://localhost:3001  # default http port that subquery exposes
-HTTP_PORT=8545                   # default http port that hardhat looks for
-WS_PORT=3331
+HTTP_PORT=8545                   # default http port for ETH RPC methods
+WS_PORT=3331                    
+MAX_CACHE_SIZE=200               
+SAFE_MODE=0                      # disabled by default
 ```
 
 - install dependencies

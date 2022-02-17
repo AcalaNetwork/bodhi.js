@@ -195,7 +195,7 @@ export abstract class BaseProvider extends AbstractProvider {
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
     this._cache = new UnfinalizedBlockCache(maxCachedSize);
 
-    if (maxCachedSize < 0) {
+    if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
       logger.info(`max cached blocks: ${maxCachedSize}`);
