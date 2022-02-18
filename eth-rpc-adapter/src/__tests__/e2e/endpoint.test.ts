@@ -809,3 +809,17 @@ describe('eth_call', () => {
     // TODO: deploy custom erc20 and get correct info
   });
 });
+
+describe('eth_getEthGas', () => {
+  const eth_getEthGas = rpcGet('eth_getEthGas');
+
+  it('get correct eth gas params', async () => {
+    const gasLimit = 1000010;
+    const storageLimit = 64100;
+    const validUntil = 1000000;
+    const res = (await eth_getEthGas([gasLimit, storageLimit, validUntil])).data.result;
+
+    expect(parseInt(res.gasLimit, 16)).to.equal(33064010);
+    expect(parseInt(res.gasPrice)).to.equal(202184524778);
+  });
+});

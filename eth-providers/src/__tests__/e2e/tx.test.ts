@@ -60,6 +60,54 @@ describe('transaction tests', () => {
     await provider.disconnect();
   });
 
+  describe('test eth gas', () => {
+    it('getEthResources', async () => {
+      const randomWallet = Wallet.createRandom().connect(provider);
+
+      const amount = '1000000000000000000';
+      const resources = await provider.getEthResources({
+        type: 0,
+        from: wallet3.address,
+        to: randomWallet.address,
+        value: BigNumber.from(amount)
+      });
+
+      await wallet3.sendTransaction({
+        type: 0,
+        to: randomWallet.address,
+        value: BigNumber.from(amount),
+        ...resources
+      });
+
+      expect((await randomWallet.getBalance()).toString()).eq(amount);
+    });
+
+    it('getPrice', async () => {
+      const randomWallet = Wallet.createRandom().connect(provider);
+
+      const amount = '1000000000000000000';
+
+      const params = await wallet3.populateTransaction({
+        type: 0,
+        to: randomWallet.address,
+        value: BigNumber.from(amount)
+      });
+
+      const data = provider.validSubstrateResources({
+        gasLimit: params.gasLimit,
+        gasPrice: params.gasPrice
+      });
+
+      console.log({
+        gasLimit: data.gasLimit.toString(),
+        storageLimit: data.storageLimit.toString(),
+        validUntil: data.validUntil.toString()
+      });
+
+      // expect((await randomWallet.getBalance()).toString()).eq(amount);
+    });
+  });
+
   describe('test the error tx', () => {
     it('InvalidDecimals', async () => {
       await expect(

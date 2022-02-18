@@ -55,7 +55,8 @@ import {
   findEvmEvent,
   getIndexerMetadata,
   filterLog,
-  toHex
+  toHex,
+  calcEthereumTransactionParams
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
@@ -625,8 +626,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getFeeData = async (): Promise<FeeData> => {
     return {
-      maxFeePerGas: MAX_FEE_PER_GAS,
-      maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+      maxFeePerGas: null,
+      maxPriorityFeePerGas: null,
       gasPrice: await this.getGasPrice()
     };
   };
@@ -654,6 +655,109 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   /**
+   * Get the gas for eth transactions
+   * @returns The gas used by eth transaction
+   */
+  getEthResources = async (
+    transaction: Deferrable<TransactionRequest>,
+    {
+      gasLimit,
+      storageLimit,
+      validUntil
+    }: {
+      gasLimit?: BigNumberish;
+      storageLimit?: BigNumberish;
+      validUntil?: BigNumberish;
+    } = {}
+  ): Promise<{
+    gasPrice: BigNumber;
+    gasLimit: BigNumber;
+  }> => {
+    if (!gasLimit || !storageLimit) {
+      const { gas, storage } = await this.estimateResources(transaction);
+      gasLimit = gasLimit ?? gas;
+      storageLimit = storageLimit ?? storage;
+    }
+
+    if (!validUntil) {
+      const blockNumber = await this.getBlockNumber();
+      // Expires after 100 blocks by default
+      validUntil = blockNumber + 100;
+    }
+
+    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+
+    const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
+      gasLimit,
+      storageLimit,
+      validUntil,
+      storageByteDeposit,
+      txFeePerGas
+    });
+
+    return {
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice
+    };
+  };
+
+  /**
+   * helper to get ETH gas when don't know the whole transaction
+   * @returns The gas used by eth transaction
+   */
+  _getEthGas = async (
+    gasLimit: BigNumberish,
+    storageLimit: BigNumberish,
+    _validUntil: BigNumberish
+  ): Promise<{
+    gasPrice: BigNumber;
+    gasLimit: BigNumber;
+  }> => {
+    const validUntil = _validUntil || (await this.getBlockNumber()) + 150; // default 150 * 12 / 60 = 30min
+    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+
+    const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
+      gasLimit,
+      storageLimit,
+      validUntil,
+      storageByteDeposit,
+      txFeePerGas
+    });
+
+    return {
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice
+    };
+  };
+
+  /**
+   * Validate substrate transaction parameters
+   */
+  validSubstrateResources = ({
+    gasLimit,
+    gasPrice
+  }: {
+    gasLimit: BigNumberish;
+    gasPrice: BigNumberish;
+  }): {
+    gasLimit: BigNumber;
+    storageLimit: BigNumber;
+    validUntil: BigNumber;
+  } => {
+    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+
+    return calcSubstrateTransactionParams({
+      txGasPrice: gasPrice,
+      txGasLimit: gasLimit,
+      storageByteDeposit,
+      txFeePerGas
+    });
+  };
+
+  /**
    * Estimate resources for a transaction.
    * @param transaction The transaction to estimate the resources of
    * @returns The estimated resources used by this transaction
@@ -666,10 +770,6 @@ export abstract class BaseProvider extends AbstractProvider {
     weightFee: BigNumber;
   }> => {
     const ethTx = await this._getTransactionRequest(transaction);
-
-    if (!ethTx.from) {
-      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
-    }
 
     const { from, to, data, value } = ethTx;
 
