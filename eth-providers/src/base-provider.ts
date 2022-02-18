@@ -187,10 +187,10 @@ export abstract class BaseProvider extends AbstractProvider {
     logger.info(`safe mode: ${safeMode}`);
     safeMode &&
       logger.warn(`
-      ------------------------- WARNING ---------------------------
-      SafeMode is enabled, unfinalized TX and logs will be ignored!
+      ------------------------- WARNING ------------------------------
+      SafeMode is enabled, unfinalized TX/logs/blocks will be ignored!
       To go back to normal mode, set SAFE_MODE=0
-      -------------------------------------------------------------
+      ----------------------------------------------------------------
     `);
   }
 
@@ -234,8 +234,8 @@ export abstract class BaseProvider extends AbstractProvider {
             number: toHex(block.number),
             timestamp: toHex(block.timestamp),
             difficulty: toHex(block.difficulty),
-            gasLimit: `0x${block.gasLimit.toNumber()}`,
-            gasUsed: `0x${block.gasUsed.toNumber()}`,
+            gasLimit: `0x${block.gasLimit.toNumber()}`, // TODO: this is dummy wrong value
+            gasUsed: `0x${block.gasUsed.toNumber()}`, // TODO: this is dummy wrong value
             miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
             author: block.author === '' ? DUMMY_ADDRESS : block.author,
             sha3Uncles: EMTPY_UNCLE_HASH,
@@ -348,25 +348,20 @@ export abstract class BaseProvider extends AbstractProvider {
     return header.number.toNumber();
   };
 
-  getBlock = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>,
-    full?: boolean | Promise<boolean>
-  ): Promise<RichBlock> => {
+  getBlock = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean | Promise<boolean>): Promise<RichBlock> => {
     return this._getBlock(blockTag, true) as Promise<RichBlock>;
   };
 
-  getBlockWithTransactions = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>
-  ): Promise<BlockWithTransactions> => {
+  getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
     return this._getBlock(blockTag, true) as Promise<BlockWithTransactions>;
   };
 
   _getBlock = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>,
+    blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock | BlockWithTransactions> => {
     await this.getNetwork();
-    await this._ensureFinalizationInSafeMode(blockTag);
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { fullTx, header } = await resolveProperties({
       header: this._getBlockHeader(blockTag),
@@ -484,6 +479,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<BigNumber> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -546,6 +542,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -572,6 +569,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag); // TODO: do we need this check for call?
 
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
@@ -601,6 +599,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     // @TODO resolvedPosition
     const { address, blockHash, resolvedPosition } = await resolveProperties({
@@ -867,6 +866,8 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> => {
+    await this._ensureSafeModeFinalization(blockTag);
+
     // pending tag
     const resolvedBlockTag = await blockTag;
     if (resolvedBlockTag === 'pending') {
@@ -1247,7 +1248,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  _isBlockFinalized = async (blockTag: BlockTag): boolean => {
+  _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
     const [finalizedHead, verifyingBlockHash] = await Promise.all([
       this.api.rpc.chain.getFinalizedHead(),
       this._getBlockHash(blockTag)
@@ -1259,13 +1260,15 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
 
-    return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash === verifyingBlockHash;
+    return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash.toString() === verifyingBlockHash;
   };
 
-  _ensureFinalizationInSafeMode = async (blockTag: BlockTag): void => {
-    if (this.safeMode && !this._isBlockFinalized(blockTag)) {
-      logger.throwError('target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
-    }
+  _ensureSafeModeFinalization = async (blockTag: BlockTag | Promise<BlockTag> | undefined): Promise<void> => {
+    if (!this.safeMode || !blockTag) return;
+
+    const isBlockFinalized = await this._isBlockFinalized(await blockTag);
+    !isBlockFinalized &&
+      logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
@@ -1355,9 +1358,9 @@ export abstract class BaseProvider extends AbstractProvider {
   // @TODO Testing
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
-    blockTag: BlockTag | string | Promise<BlockTag | string>
+    blockTag: BlockTag | Promise<BlockTag>
   ): Promise<TransactionReceipt> => {
-    await this._ensureFinalizationInSafeMode(blockTag);
+    await this._ensureSafeModeFinalization(blockTag);
 
     hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);
