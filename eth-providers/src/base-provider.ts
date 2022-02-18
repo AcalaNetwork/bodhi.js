@@ -1246,6 +1246,21 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
+  _isBlockFinalized = async (blockTag: BlockTag): boolean => {
+    const [finalizedHead, verifyingBlockHash] = await Promise.all([
+      this.api.rpc.chain.getFinalizedHead(),
+      this._getBlockHash(blockTag)
+    ]);
+
+    const [finalizedBlockNumber, verifyingBlockNumber] = (
+      await Promise.all([this.api.rpc.chain.getHeader(finalizedHead), this.api.rpc.chain.getHeader(verifyingBlockHash)])
+    ).map((header) => header.number.toNumber());
+
+    const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
+
+    return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash === verifyingBlockHash;
+  };
+
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
     const blockHash = await this._getBlockHash(blockTag);
 
