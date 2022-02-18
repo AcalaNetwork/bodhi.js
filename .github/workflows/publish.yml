@@ -1,11 +1,13 @@
 name: Publish
 on:
   push:
-    branches:
-      - master
+    tags:
+      - v*
 
 jobs:
   publish:
+    name: 'Publish To NPM'
+    if: github.event.base_ref=='refs/heads/master' # only trigger on master
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -35,3 +37,13 @@ jobs:
         run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch master --add-commit-details --set-access-level public -n ${{ secrets.NPM_AUTH_TOKEN }}
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+  tagged-release:
+    name: 'Tagged Release'
+    if: github.event.base_ref=='refs/heads/master' # only trigger on master
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          prerelease: false
