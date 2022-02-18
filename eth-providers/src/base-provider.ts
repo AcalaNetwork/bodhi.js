@@ -366,6 +366,7 @@ export abstract class BaseProvider extends AbstractProvider {
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock | BlockWithTransactions> => {
     await this.getNetwork();
+    await this._ensureFinalizationInSafeMode(blockTag);
 
     const { fullTx, header } = await resolveProperties({
       header: this._getBlockHeader(blockTag),
@@ -1261,6 +1262,12 @@ export abstract class BaseProvider extends AbstractProvider {
     return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash === verifyingBlockHash;
   };
 
+  _ensureFinalizationInSafeMode = async (blockTag: BlockTag): void => {
+    if (this.safeMode && !this._isBlockFinalized(blockTag)) {
+      logger.throwError('target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
+    }
+  };
+
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
     const blockHash = await this._getBlockHash(blockTag);
 
@@ -1350,6 +1357,8 @@ export abstract class BaseProvider extends AbstractProvider {
     hashOrNumber: number | string | Promise<string>,
     blockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<TransactionReceipt> => {
+    await this._ensureFinalizationInSafeMode(blockTag);
+
     hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
