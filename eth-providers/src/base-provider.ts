@@ -60,6 +60,7 @@ import {
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
+import { AccessListish } from 'ethers/lib/utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -107,6 +108,7 @@ export interface CallRequest {
   storageLimit?: BigNumberish;
   value?: BigNumberish;
   data?: string;
+  accessList?: AccessListish;
 }
 
 export interface partialTX {
@@ -553,7 +555,8 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: resolved.transaction.gasLimit?.toBigInt(),
       storageLimit: undefined,
       value: resolved.transaction.value?.toBigInt(),
-      data: resolved.transaction.data
+      data: resolved.transaction.data,
+      accessList: resolved.transaction.accessList
     };
 
     const data = resolved.blockHash
@@ -702,11 +705,11 @@ export abstract class BaseProvider extends AbstractProvider {
   /**
    * helper to get ETH gas when don't know the whole transaction
    * @returns The gas used by eth transaction
-  */
+   */
   _getEthGas = async (
     gasLimit: BigNumberish,
     storageLimit: BigNumberish,
-    _validUntil: BigNumberish,
+    _validUntil: BigNumberish
   ): Promise<{
     gasPrice: BigNumber;
     gasLimit: BigNumber;
@@ -718,14 +721,14 @@ export abstract class BaseProvider extends AbstractProvider {
     const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
       gasLimit,
       storageLimit,
-      validUntil, 
+      validUntil,
       storageByteDeposit,
-      txFeePerGas,
+      txFeePerGas
     });
 
     return {
       gasLimit: txGasLimit,
-      gasPrice: txGasPrice,
+      gasPrice: txGasPrice
     };
   };
 
@@ -770,19 +773,23 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { from, to, data, value } = ethTx;
 
+    const accessList = ethTx.accessList?.map(({ address, storageKeys }) => [address, storageKeys]) || [];
+
     const extrinsic = !to
       ? this.api.tx.evm.create(
           data,
           value?.toBigInt(),
           U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt() // storage_limit u32::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
         )
       : this.api.tx.evm.call(
           to,
           data,
           value?.toBigInt(),
           U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt() // storage_limit u32::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
         );
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
@@ -870,6 +877,7 @@ export abstract class BaseProvider extends AbstractProvider {
     storageLimit: bigint;
     validUntil: bigint;
     tip: bigint;
+    accessList?: [string, string[]][];
   } => {
     let gasLimit = 0n;
     let storageLimit = 0n;
@@ -946,11 +954,14 @@ export abstract class BaseProvider extends AbstractProvider {
       return throwNotImplemented('EIP-2930 transactions');
     }
 
+    const accessList = ethTx.accessList?.map((set) => [set.address, set.storageKeys] as [string, string[]]);
+
     return {
       gasLimit,
       storageLimit,
       validUntil,
-      tip
+      tip,
+      accessList
     };
   };
 
@@ -969,7 +980,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwArgumentError('missing from address', 'transaction', ethTx);
     }
 
-    const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
+    const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
 
     // check excuted error
     const callRequest: CallRequest = {
@@ -979,7 +990,8 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: gasLimit,
       storageLimit: storageLimit,
       value: ethTx.value.toString(),
-      data: ethTx.data
+      data: ethTx.data,
+      accessList: ethTx.accessList
     };
 
     await (this.api.rpc as any).evm.call(callRequest);
@@ -990,6 +1002,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ethTx.value.toString(),
       gasLimit,
       storageLimit,
+      accessList || [],
       validUntil
     );
 

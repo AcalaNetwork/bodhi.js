@@ -121,7 +121,7 @@ describe('transaction tests', () => {
       ).to.be.rejectedWith('InvalidDecimals');
     });
 
-    it('InsufficientBalance', async () => {
+    it('OutOfFund', async () => {
       await expect(
         wallet1.sendTransaction({
           type: 0,
@@ -130,7 +130,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice
         })
-      ).to.be.rejectedWith('InsufficientBalance');
+      ).to.be.rejectedWith('OutOfFund');
     });
 
     it('ExistentialDeposit', async () => {
@@ -242,7 +242,7 @@ describe('transaction tests', () => {
       let rawTx2: string;
 
       it('serialize, parse, and send tx correctly', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -253,7 +253,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -272,7 +273,7 @@ describe('transaction tests', () => {
       });
 
       it('eip712 tip', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -284,7 +285,8 @@ describe('transaction tests', () => {
           validUntil,
           storageLimit,
           tip: 2,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -412,7 +414,7 @@ describe('transaction tests', () => {
         const balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -423,7 +425,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, transferTX);

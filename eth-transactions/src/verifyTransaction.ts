@@ -8,6 +8,7 @@ export const verifyTransaction = (tx: AcalaEvmTXPayload, signature: string): str
   return verifyTypedData(
     payload.domain,
     {
+      AccessList: payload.types.AccessList,
       Transaction: payload.types.Transaction
     },
     payload.message,

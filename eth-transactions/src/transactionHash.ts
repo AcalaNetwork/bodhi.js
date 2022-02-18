@@ -8,6 +8,7 @@ export const transactionHash = (tx: AcalaEvmTXPayload): string => {
   return _TypedDataEncoder.hash(
     payload.domain,
     {
+      AccessList: payload.types.AccessList,
       Transaction: payload.types.Transaction
     },
     payload.message

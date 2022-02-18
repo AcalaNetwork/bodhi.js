@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mandala-node:
-    image: acala/mandala-node:01a2dea6
+    image: acala/mandala-node:e361c534
     ports:
       - 9944:9944
     command:
@@ -28,7 +28,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: onfinality/subql-node:latest
+    image: onfinality/subql-node:v0.25.4-7
     depends_on:
       - postgres
       - mandala-node
@@ -50,7 +50,7 @@ services:
       - --log-level=debug
 
   graphql-engine:
-    image: onfinality/subql-query:latest
+    image: onfinality/subql-query:v0.8.1-4
     ports:
       - 3001:3001
     depends_on:

@@ -255,7 +255,8 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
         tx.data,
         toBN(tx.value),
         toBN(gasLimit),
-        toBN(storageLimit.isNegative() ? 0 : storageLimit)
+        toBN(storageLimit.isNegative() ? 0 : storageLimit),
+        tx.accessList || []
       );
     } else {
       extrinsic = this.provider.api.tx.evm.call(
@@ -263,7 +264,8 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
         tx.data,
         toBN(tx.value),
         toBN(gasLimit),
-        toBN(storageLimit.isNegative() ? 0 : storageLimit)
+        toBN(storageLimit.isNegative() ? 0 : storageLimit),
+        tx.accessList || []
       );
     }
 
