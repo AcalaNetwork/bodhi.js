@@ -84,7 +84,7 @@ ENV START_DELAY=10
 CMD ["yarn", "test:CI"]
 
 # =============== subql-node =============== #
-FROM onfinality/subql-node:latest as subql-node
+FROM onfinality/subql-node:v0.25.4-7 as subql-node
 
 COPY --from=bodhi /app /app
 
