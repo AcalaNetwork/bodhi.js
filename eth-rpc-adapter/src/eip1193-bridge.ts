@@ -151,9 +151,14 @@ class Eip1193BridgeImpl {
       const block = await this.#provider.getBlock(params[0], params[1]);
       return hexlifyRpcResult(block);
     } catch (error) {
-      if (typeof error === 'object' && (error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND) {
+      if (
+        typeof error === 'object' &&
+        ((error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND ||
+          error!.toString().includes('Unable to retrieve header'))
+      ) {
         return null;
       }
+
       throw error;
     }
   }
@@ -170,9 +175,14 @@ class Eip1193BridgeImpl {
       const block = await this.#provider.getBlock(params[0], params[1]);
       return hexlifyRpcResult(block);
     } catch (error) {
-      if (typeof error === 'object' && (error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND) {
+      if (
+        typeof error === 'object' &&
+        ((error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND ||
+          error!.toString().includes('Unable to retrieve header'))
+      ) {
         return null;
       }
+
       throw error;
     }
   }

@@ -187,10 +187,10 @@ export abstract class BaseProvider extends AbstractProvider {
     logger.info(`safe mode: ${safeMode}`);
     safeMode &&
       logger.warn(`
-      ------------------------- WARNING ------------------------------
-      SafeMode is enabled, unfinalized TX/logs/blocks will be ignored!
+      ----------------------------- WARNING ---------------------------------
+      SafeMode is enabled, a unfinalized block behaves like it doesn't exist!
       To go back to normal mode, set SAFE_MODE=0
-      ----------------------------------------------------------------
+      -----------------------------------------------------------------------
     `);
   }
 
@@ -1264,9 +1264,12 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _ensureSafeModeFinalization = async (blockTag: BlockTag | Promise<BlockTag> | undefined): Promise<void> => {
+    console.log('checking:', await blockTag)
     if (!this.safeMode || !blockTag) return;
 
     const isBlockFinalized = await this._isBlockFinalized(await blockTag);
+
+    // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
     !isBlockFinalized &&
       logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
   };
