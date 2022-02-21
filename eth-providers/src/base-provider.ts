@@ -185,10 +185,9 @@ export abstract class BaseProvider extends AbstractProvider {
     this.safeMode = safeMode;
 
     logger.info(`safe mode: ${safeMode}`);
-    safeMode &&
-      logger.warn(`
+    safeMode && logger.warn(`
       ----------------------------- WARNING ---------------------------------
-      SafeMode is enabled, a unfinalized block behaves like it doesn't exist!
+      SafeMode is enabled, unfinalized blocks behave like they don't exist!
       To go back to normal mode, set SAFE_MODE=0
       -----------------------------------------------------------------------
     `);
@@ -201,8 +200,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
       logger.info(`max cached blocks: ${maxCachedSize}`);
-      maxCachedSize > 2000 &&
-        logger.warn(`
+      maxCachedSize > 2000 && logger.warn(`
         ------------------- WARNING -------------------
         Max cached blocks is big, please be cautious!
         If memory exploded, try decrease MAX_CACHE_SIZE
@@ -348,7 +346,10 @@ export abstract class BaseProvider extends AbstractProvider {
     return header.number.toNumber();
   };
 
-  getBlock = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean | Promise<boolean>): Promise<RichBlock> => {
+  getBlock = async (
+    blockTag: BlockTag | Promise<BlockTag>,
+    full?: boolean | Promise<boolean>
+  ): Promise<RichBlock> => {
     return this._getBlock(blockTag, true) as Promise<RichBlock>;
   };
 
@@ -1255,23 +1256,31 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
 
     const [finalizedBlockNumber, verifyingBlockNumber] = (
-      await Promise.all([this.api.rpc.chain.getHeader(finalizedHead), this.api.rpc.chain.getHeader(verifyingBlockHash)])
+      await Promise.all([
+        this.api.rpc.chain.getHeader(finalizedHead),
+        this.api.rpc.chain.getHeader(verifyingBlockHash),
+      ])
     ).map((header) => header.number.toNumber());
 
     const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
 
-    return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash.toString() === verifyingBlockHash;
+    return (
+      finalizedBlockNumber >= verifyingBlockNumber &&
+      canonicalHash.toString() === verifyingBlockHash
+    );
   };
 
   _ensureSafeModeFinalization = async (blockTag: BlockTag | Promise<BlockTag> | undefined): Promise<void> => {
-    console.log('checking:', await blockTag)
     if (!this.safeMode || !blockTag) return;
 
     const isBlockFinalized = await this._isBlockFinalized(await blockTag);
 
     // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
-    !isBlockFinalized &&
-      logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
+    !isBlockFinalized && logger.throwError(
+      'SAFE MODE ERROR: target block is not finalized',
+      Logger.errors.UNKNOWN_ERROR,
+      { blockTag }
+    );
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
