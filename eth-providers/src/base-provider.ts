@@ -200,7 +200,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
       logger.info(`max cached blocks: ${maxCachedSize}`);
-      maxCachedSize > 2000 && logger.warn(`
+      maxCachedSize > 9999 && logger.warn(`
         ------------------- WARNING -------------------
         Max cached blocks is big, please be cautious!
         If memory exploded, try decrease MAX_CACHE_SIZE

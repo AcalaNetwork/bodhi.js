@@ -15,7 +15,7 @@ export async function start() {
   const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL, {
-    safemode: SAFE_MODE,
+    safeMode: SAFE_MODE,
     maxCacheSize: MAX_CACHE_SIZE
   });
 
