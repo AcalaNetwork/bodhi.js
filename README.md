@@ -81,7 +81,7 @@ rush publish -p --set-access-level public -n <paste_npm_token_here>
 ```
 
 ### CI
-Each commit to master will trigger a CI publish. However, if the version in `package.json` didn't change, publish won't actuall go to npm ,which is fine, so we don't want a new version for each commit. So if we want an actual publish, simply change to version in `package.json`, then push to master.
+Each commit to master will trigger a CI publish. However, if the version in `package.json` didn't change, publish won't actually go to npm ,which is fine, so we don't want a new version for each commit. So if we want an actual publish, simply change to version in `package.json`, then push to master.
 
 ```
 ## first modify package.json's version to v2.x.x

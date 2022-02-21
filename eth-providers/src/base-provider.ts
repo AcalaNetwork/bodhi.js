@@ -173,22 +173,48 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
+  readonly safeMode: boolean;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
 
-  constructor() {
+  constructor(safeMode: boolean = false) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
+    this.safeMode = safeMode;
+
+    logger.info(`safe mode: ${safeMode}`);
+    safeMode && logger.warn(`
+      ----------------------------- WARNING ---------------------------------
+      SafeMode is enabled, unfinalized blocks behave like they don't exist!
+      To go back to normal mode, set SAFE_MODE=0
+      -----------------------------------------------------------------------
+    `);
   }
 
-  startCache = async (): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache(200);
+  startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
+    this._cache = new UnfinalizedBlockCache(maxCachedSize);
+
+    if (maxCachedSize < 1) {
+      return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
+    } else {
+      logger.info(`max cached blocks: ${maxCachedSize}`);
+      maxCachedSize > 9999 && logger.warn(`
+        ------------------- WARNING -------------------
+        Max cached blocks is big, please be cautious!
+        If memory exploded, try decrease MAX_CACHE_SIZE
+        -----------------------------------------------
+      `);
+    }
 
     await this.isReady();
 
-    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+    const subscriptionMethod = this.safeMode
+      ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
+      : this.api.rpc.chain.subscribeNewHeads.bind(this);
+
+    subscriptionMethod(async (header: Header) => {
       // cache
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
@@ -206,8 +232,8 @@ export abstract class BaseProvider extends AbstractProvider {
             number: toHex(block.number),
             timestamp: toHex(block.timestamp),
             difficulty: toHex(block.difficulty),
-            gasLimit: `0x${block.gasLimit.toNumber()}`,
-            gasUsed: `0x${block.gasUsed.toNumber()}`,
+            gasLimit: `0x${block.gasLimit.toNumber()}`, // TODO: this is dummy wrong value
+            gasUsed: `0x${block.gasUsed.toNumber()}`, // TODO: this is dummy wrong value
             miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
             author: block.author === '' ? DUMMY_ADDRESS : block.author,
             sha3Uncles: EMTPY_UNCLE_HASH,
@@ -321,23 +347,22 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getBlock = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>,
+    blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock> => {
     return this._getBlock(blockTag, true) as Promise<RichBlock>;
   };
 
-  getBlockWithTransactions = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>
-  ): Promise<BlockWithTransactions> => {
+  getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
     return this._getBlock(blockTag, true) as Promise<BlockWithTransactions>;
   };
 
   _getBlock = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>,
+    blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock | BlockWithTransactions> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { fullTx, header } = await resolveProperties({
       header: this._getBlockHeader(blockTag),
@@ -455,6 +480,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<BigNumber> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -517,6 +543,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -543,6 +570,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag); // TODO: do we need this check for call?
 
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
@@ -572,6 +600,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     // @TODO resolvedPosition
     const { address, blockHash, resolvedPosition } = await resolveProperties({
@@ -838,6 +867,8 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> => {
+    await this._ensureSafeModeFinalization(blockTag);
+
     // pending tag
     const resolvedBlockTag = await blockTag;
     if (resolvedBlockTag === 'pending') {
@@ -977,7 +1008,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const ethTx = parseTransaction(rawTx);
 
     if (!ethTx.from) {
-      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
+      return logger.throwError('missing from address', Logger.errors.INVALID_ARGUMENT, ethTx);
     }
 
     const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
@@ -1218,6 +1249,40 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
+  _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
+    const [finalizedHead, verifyingBlockHash] = await Promise.all([
+      this.api.rpc.chain.getFinalizedHead(),
+      this._getBlockHash(blockTag)
+    ]);
+
+    const [finalizedBlockNumber, verifyingBlockNumber] = (
+      await Promise.all([
+        this.api.rpc.chain.getHeader(finalizedHead),
+        this.api.rpc.chain.getHeader(verifyingBlockHash),
+      ])
+    ).map((header) => header.number.toNumber());
+
+    const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
+
+    return (
+      finalizedBlockNumber >= verifyingBlockNumber &&
+      canonicalHash.toString() === verifyingBlockHash
+    );
+  };
+
+  _ensureSafeModeFinalization = async (blockTag: BlockTag | Promise<BlockTag> | undefined): Promise<void> => {
+    if (!this.safeMode || !blockTag) return;
+
+    const isBlockFinalized = await this._isBlockFinalized(await blockTag);
+
+    // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
+    !isBlockFinalized && logger.throwError(
+      'SAFE MODE ERROR: target block is not finalized',
+      Logger.errors.UNKNOWN_ERROR,
+      { blockTag }
+    );
+  };
+
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
     const blockHash = await this._getBlockHash(blockTag);
 
@@ -1305,8 +1370,10 @@ export abstract class BaseProvider extends AbstractProvider {
   // @TODO Testing
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
-    blockTag: BlockTag | string | Promise<BlockTag | string>
+    blockTag: BlockTag | Promise<BlockTag>
   ): Promise<TransactionReceipt> => {
+    await this._ensureSafeModeFinalization(blockTag);
+
     hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
