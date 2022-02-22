@@ -141,6 +141,7 @@ COPY --from=bodhi /app /app
 WORKDIR /app/examples/hardhat-tutorials
 
 RUN chmod 777 run.sh
+ENV ENDPOINT_URL=ws://mandala-node:9944
 CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
 
 # =============== truffle-tutorials =============== #
