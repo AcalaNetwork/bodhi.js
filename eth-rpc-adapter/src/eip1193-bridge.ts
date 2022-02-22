@@ -151,9 +151,14 @@ class Eip1193BridgeImpl {
       const block = await this.#provider.getBlock(params[0], params[1]);
       return hexlifyRpcResult(block);
     } catch (error) {
-      if (typeof error === 'object' && (error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND) {
+      if (
+        typeof error === 'object' &&
+        ((error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND ||
+          error!.toString().includes('Unable to retrieve header'))
+      ) {
         return null;
       }
+
       throw error;
     }
   }
@@ -170,9 +175,14 @@ class Eip1193BridgeImpl {
       const block = await this.#provider.getBlock(params[0], params[1]);
       return hexlifyRpcResult(block);
     } catch (error) {
-      if (typeof error === 'object' && (error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND) {
+      if (
+        typeof error === 'object' &&
+        ((error as any).code === PROVIDER_ERRORS.HEADER_NOT_FOUND ||
+          error!.toString().includes('Unable to retrieve header'))
+      ) {
         return null;
       }
+
       throw error;
     }
   }
@@ -254,6 +264,17 @@ class Eip1193BridgeImpl {
     validate([{ type: 'transaction' }], params);
     const val = await this.#provider.estimateGas(params[0]);
     return hexValue(val);
+  }
+
+  async eth_getEthGas(params: any[]): Promise<{
+    gasPrice: string;
+    gasLimit: string;
+  }> {
+    const res = await this.#provider._getEthGas(params[0], params[1], params[2]);
+    return {
+      gasPrice: hexValue(res.gasPrice),
+      gasLimit: hexValue(res.gasLimit)
+    };
   }
 
   async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 20, interval: number = 1000): Promise<T> {
@@ -393,7 +414,8 @@ class Eip1193BridgeImpl {
 
   async eth_getLogs(params: any[]): Promise<Log[]> {
     validate([{ type: 'object' }], params);
-    return this.#provider.getLogs(params[0]);
+    const result = await this.#provider.getLogs(params[0]);
+    return hexlifyRpcResult(result);
   }
 
   async eth_subscribe(params: any[], cb: any): Promise<any> {

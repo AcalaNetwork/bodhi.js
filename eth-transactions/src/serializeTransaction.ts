@@ -3,10 +3,14 @@ import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { hexConcat, SignatureLike, splitSignature, stripZeros } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
 import * as RLP from '@ethersproject/rlp';
-import { serialize, UnsignedTransaction } from '@ethersproject/transactions';
+import { serialize, AccessListish, accessListify } from '@ethersproject/transactions';
 import { MAX_UINT256 } from './createTransactionPayload';
 import { logger } from './logger';
 import { UnsignedAcalaEvmTX } from './types';
+
+function formatAccessList(value: AccessListish): Array<[string, Array<string>]> {
+  return accessListify(value).map((set) => [set.address, set.storageKeys]);
+}
 
 function formatNumber(value: BigNumberish, name: string): Uint8Array {
   const result = stripZeros(BigNumber.from(value).toHexString());
@@ -16,7 +20,7 @@ function formatNumber(value: BigNumberish, name: string): Uint8Array {
   return result;
 }
 
-// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, tip, eip712sig])
+// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, tip, accessList, eip712sig])
 export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: SignatureLike) {
   const fields: any = [
     formatNumber(transaction.chainId || 0, 'chainId'),
@@ -28,7 +32,8 @@ export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: Sig
     formatNumber(transaction.value || 0, 'value'),
     transaction.data || '0x',
     formatNumber(transaction.validUntil || MAX_UINT256, 'validUntil'),
-    formatNumber(transaction.tip || 0, 'tip')
+    formatNumber(transaction.tip || 0, 'tip'),
+    formatAccessList(transaction.accessList || [])
   ];
 
   if (signature) {

@@ -45,8 +45,12 @@ export const validateAddress = (data: any) => {
 };
 
 export const validateBlock = (data: any) => {
+  if (typeof data === 'number') {
+    return Number.isInteger(data) && data >= 0;
+  }
+
   if (typeof data !== 'string') {
-    throw new Error(`invalid block tag, expected type String`);
+    throw new Error(`invalid block tag, expected type String or number`);
   }
 
   if (!['latest', 'earliest', 'pending'].includes(data)) {

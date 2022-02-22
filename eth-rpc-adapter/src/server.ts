@@ -11,8 +11,13 @@ export async function start() {
   const ENDPOINT_URL = process.env.ENDPOINT_URL || 'ws://0.0.0.0::9944';
   const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
   const WS_PORT = Number(process.env.WS_PORT || 3331);
+  const MAX_CACHE_SIZE = Number(process.env.MAX_CACHE_SIZE || 200);
+  const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
 
-  const provider = EvmRpcProvider.from(ENDPOINT_URL);
+  const provider = EvmRpcProvider.from(ENDPOINT_URL, {
+    safeMode: SAFE_MODE,
+    maxCacheSize: MAX_CACHE_SIZE
+  });
 
   const bridge = new Eip1193Bridge(provider);
 

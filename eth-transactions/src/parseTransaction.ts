@@ -4,12 +4,14 @@ import { arrayify, BytesLike, hexlify, hexZeroPad, joinSignature } from '@ethers
 import { Zero } from '@ethersproject/constants';
 import { Logger } from '@ethersproject/logger';
 import * as RLP from '@ethersproject/rlp';
-import { parse } from '@ethersproject/transactions';
+import { parse, accessListify } from '@ethersproject/transactions';
 import { logger } from './logger';
 import { serializeEip712 } from './serializeTransaction';
 import { transactionHash } from './transactionHash';
 import { AcalaEvmTX, UnsignedAcalaEvmTX } from './types';
 import { verifyTransaction } from './verifyTransaction';
+
+const EIP712_PARAMS_LENGTH = 10;
 
 function handleNumber(value: string): BigNumber {
   if (value === '0x') {
@@ -54,7 +56,8 @@ function _parseEip712Signature(
       value: tx.value,
       data: tx.data,
       validUntil: tx.validUntil,
-      tip: tx.tip
+      tip: tx.tip,
+      accessList: tx.accessList
     },
     joinSignature({ r: tx.r, s: tx.s, v: tx.v })
   );
@@ -62,11 +65,11 @@ function _parseEip712Signature(
 
 export type SignatureType = 'Ethereum' | 'AcalaEip712' | 'Eip1559';
 
-// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, eip712sig])
+// rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, tip, accessList, eip712sig])
 export function parseEip712(payload: Uint8Array): AcalaEvmTX {
   const transaction = RLP.decode(payload.slice(1));
 
-  if (transaction.length !== 10 && transaction.length !== 13) {
+  if (transaction.length !== EIP712_PARAMS_LENGTH + 1 && transaction.length !== EIP712_PARAMS_LENGTH + 4) {
     logger.throwArgumentError('invalid component count for transaction type: 96', 'payload', hexlify(payload));
   }
 
@@ -82,11 +85,12 @@ export function parseEip712(payload: Uint8Array): AcalaEvmTX {
     value: handleNumber(transaction[6]),
     data: transaction[7],
     validUntil: handleNumber(transaction[8]),
-    tip: handleNumber(transaction[9])
+    tip: handleNumber(transaction[9]),
+    accessList: accessListify(transaction[10])
   };
 
   // Unsigned EIP-712 Transaction
-  if (transaction.length === 10) {
+  if (transaction.length === EIP712_PARAMS_LENGTH + 1) {
     return tx;
   }
 
@@ -100,10 +104,11 @@ export function parseEip712(payload: Uint8Array): AcalaEvmTX {
     to: tx.to,
     value: tx.value,
     data: tx.data,
-    tip: tx.tip
+    tip: tx.tip,
+    accessList: tx.accessList
   });
 
-  _parseEip712Signature(tx, transaction.slice(10), serializeEip712);
+  _parseEip712Signature(tx, transaction.slice(EIP712_PARAMS_LENGTH + 1), serializeEip712);
 
   return tx;
 }

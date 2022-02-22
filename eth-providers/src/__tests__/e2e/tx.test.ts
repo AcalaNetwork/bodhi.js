@@ -60,6 +60,54 @@ describe('transaction tests', () => {
     await provider.disconnect();
   });
 
+  describe('test eth gas', () => {
+    it('getEthResources', async () => {
+      const randomWallet = Wallet.createRandom().connect(provider);
+
+      const amount = '1000000000000000000';
+      const resources = await provider.getEthResources({
+        type: 0,
+        from: wallet3.address,
+        to: randomWallet.address,
+        value: BigNumber.from(amount)
+      });
+
+      await wallet3.sendTransaction({
+        type: 0,
+        to: randomWallet.address,
+        value: BigNumber.from(amount),
+        ...resources
+      });
+
+      expect((await randomWallet.getBalance()).toString()).eq(amount);
+    });
+
+    it('getPrice', async () => {
+      const randomWallet = Wallet.createRandom().connect(provider);
+
+      const amount = '1000000000000000000';
+
+      const params = await wallet3.populateTransaction({
+        type: 0,
+        to: randomWallet.address,
+        value: BigNumber.from(amount)
+      });
+
+      const data = provider.validSubstrateResources({
+        gasLimit: params.gasLimit,
+        gasPrice: params.gasPrice
+      });
+
+      console.log({
+        gasLimit: data.gasLimit.toString(),
+        storageLimit: data.storageLimit.toString(),
+        validUntil: data.validUntil.toString()
+      });
+
+      // expect((await randomWallet.getBalance()).toString()).eq(amount);
+    });
+  });
+
   describe('test the error tx', () => {
     it('InvalidDecimals', async () => {
       await expect(
@@ -73,7 +121,7 @@ describe('transaction tests', () => {
       ).to.be.rejectedWith('InvalidDecimals');
     });
 
-    it('InsufficientBalance', async () => {
+    it('OutOfFund', async () => {
       await expect(
         wallet1.sendTransaction({
           type: 0,
@@ -82,7 +130,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice
         })
-      ).to.be.rejectedWith('InsufficientBalance');
+      ).to.be.rejectedWith('OutOfFund');
     });
 
     it('ExistentialDeposit', async () => {
@@ -194,7 +242,7 @@ describe('transaction tests', () => {
       let rawTx2: string;
 
       it('serialize, parse, and send tx correctly', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -205,7 +253,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -224,7 +273,7 @@ describe('transaction tests', () => {
       });
 
       it('eip712 tip', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -236,7 +285,8 @@ describe('transaction tests', () => {
           validUntil,
           storageLimit,
           tip: 2,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -364,7 +414,7 @@ describe('transaction tests', () => {
         const balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -375,7 +425,8 @@ describe('transaction tests', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
+          accessList: []
         };
 
         const sig = signTransaction(account1.privateKey, transferTX);

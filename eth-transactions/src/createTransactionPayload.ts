@@ -2,6 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { hexlify } from '@ethersproject/bytes';
 import { logger } from './logger';
 import { AcalaEvmTXPayload } from './types';
+import { accessListify } from '@ethersproject/transactions';
 
 export const MAX_UINT256 = '0xffffffff';
 
@@ -34,6 +35,10 @@ export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
           type: 'bytes32'
         }
       ],
+      AccessList: [
+        { name: 'address', type: 'address' },
+        { name: 'storageKeys', type: 'uint256[]' }
+      ],
       Transaction: [
         { name: 'action', type: 'string' },
         { name: 'to', type: 'address' },
@@ -43,6 +48,7 @@ export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
         { name: 'value', type: 'uint256' },
         { name: 'gasLimit', type: 'uint256' },
         { name: 'storageLimit', type: 'uint256' },
+        { name: 'accessList', type: 'AccessList[]' },
         { name: 'validUntil', type: 'uint256' }
       ]
     },
@@ -62,6 +68,7 @@ export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
       value: BigNumber.from(tx.value || 0).toString(),
       gasLimit: BigNumber.from(tx.gasLimit || 0).toString(),
       storageLimit: BigNumber.from(tx.storageLimit || 0).toString(),
+      accessList: tx.accessList ? accessListify(tx.accessList) : [],
       validUntil: BigNumber.from(tx.validUntil || MAX_UINT256).toString()
     }
   };

@@ -55,10 +55,12 @@ import {
   findEvmEvent,
   getIndexerMetadata,
   filterLog,
-  toHex
+  toHex,
+  calcEthereumTransactionParams
 } from './utils';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
+import { AccessListish } from 'ethers/lib/utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -106,6 +108,7 @@ export interface CallRequest {
   storageLimit?: BigNumberish;
   value?: BigNumberish;
   data?: string;
+  accessList?: AccessListish;
 }
 
 export interface partialTX {
@@ -170,22 +173,48 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
+  readonly safeMode: boolean;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
 
-  constructor() {
+  constructor(safeMode: boolean = false) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
+    this.safeMode = safeMode;
+
+    logger.info(`safe mode: ${safeMode}`);
+    safeMode && logger.warn(`
+      ----------------------------- WARNING ---------------------------------
+      SafeMode is enabled, unfinalized blocks behave like they don't exist!
+      To go back to normal mode, set SAFE_MODE=0
+      -----------------------------------------------------------------------
+    `);
   }
 
-  startCache = async (): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache(200);
+  startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
+    this._cache = new UnfinalizedBlockCache(maxCachedSize);
+
+    if (maxCachedSize < 1) {
+      return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
+    } else {
+      logger.info(`max cached blocks: ${maxCachedSize}`);
+      maxCachedSize > 9999 && logger.warn(`
+        ------------------- WARNING -------------------
+        Max cached blocks is big, please be cautious!
+        If memory exploded, try decrease MAX_CACHE_SIZE
+        -----------------------------------------------
+      `);
+    }
 
     await this.isReady();
 
-    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+    const subscriptionMethod = this.safeMode
+      ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
+      : this.api.rpc.chain.subscribeNewHeads.bind(this);
+
+    subscriptionMethod(async (header: Header) => {
       // cache
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
@@ -203,8 +232,8 @@ export abstract class BaseProvider extends AbstractProvider {
             number: toHex(block.number),
             timestamp: toHex(block.timestamp),
             difficulty: toHex(block.difficulty),
-            gasLimit: `0x${block.gasLimit.toNumber()}`,
-            gasUsed: `0x${block.gasUsed.toNumber()}`,
+            gasLimit: `0x${block.gasLimit.toNumber()}`, // TODO: this is dummy wrong value
+            gasUsed: `0x${block.gasUsed.toNumber()}`, // TODO: this is dummy wrong value
             miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
             author: block.author === '' ? DUMMY_ADDRESS : block.author,
             sha3Uncles: EMTPY_UNCLE_HASH,
@@ -318,23 +347,22 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getBlock = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>,
+    blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock> => {
     return this._getBlock(blockTag, true) as Promise<RichBlock>;
   };
 
-  getBlockWithTransactions = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>
-  ): Promise<BlockWithTransactions> => {
+  getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
     return this._getBlock(blockTag, true) as Promise<BlockWithTransactions>;
   };
 
   _getBlock = async (
-    blockTag: BlockTag | string | Promise<BlockTag | string>,
+    blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock | BlockWithTransactions> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { fullTx, header } = await resolveProperties({
       header: this._getBlockHeader(blockTag),
@@ -452,6 +480,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<BigNumber> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -514,6 +543,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -540,6 +570,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag); // TODO: do we need this check for call?
 
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
@@ -552,7 +583,8 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: resolved.transaction.gasLimit?.toBigInt(),
       storageLimit: undefined,
       value: resolved.transaction.value?.toBigInt(),
-      data: resolved.transaction.data
+      data: resolved.transaction.data,
+      accessList: resolved.transaction.accessList
     };
 
     const data = resolved.blockHash
@@ -568,6 +600,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
+    await this._ensureSafeModeFinalization(blockTag);
 
     // @TODO resolvedPosition
     const { address, blockHash, resolvedPosition } = await resolveProperties({
@@ -622,8 +655,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getFeeData = async (): Promise<FeeData> => {
     return {
-      maxFeePerGas: MAX_FEE_PER_GAS,
-      maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+      maxFeePerGas: null,
+      maxPriorityFeePerGas: null,
       gasPrice: await this.getGasPrice()
     };
   };
@@ -651,6 +684,109 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   /**
+   * Get the gas for eth transactions
+   * @returns The gas used by eth transaction
+   */
+  getEthResources = async (
+    transaction: Deferrable<TransactionRequest>,
+    {
+      gasLimit,
+      storageLimit,
+      validUntil
+    }: {
+      gasLimit?: BigNumberish;
+      storageLimit?: BigNumberish;
+      validUntil?: BigNumberish;
+    } = {}
+  ): Promise<{
+    gasPrice: BigNumber;
+    gasLimit: BigNumber;
+  }> => {
+    if (!gasLimit || !storageLimit) {
+      const { gas, storage } = await this.estimateResources(transaction);
+      gasLimit = gasLimit ?? gas;
+      storageLimit = storageLimit ?? storage;
+    }
+
+    if (!validUntil) {
+      const blockNumber = await this.getBlockNumber();
+      // Expires after 100 blocks by default
+      validUntil = blockNumber + 100;
+    }
+
+    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+
+    const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
+      gasLimit,
+      storageLimit,
+      validUntil,
+      storageByteDeposit,
+      txFeePerGas
+    });
+
+    return {
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice
+    };
+  };
+
+  /**
+   * helper to get ETH gas when don't know the whole transaction
+   * @returns The gas used by eth transaction
+   */
+  _getEthGas = async (
+    gasLimit: BigNumberish,
+    storageLimit: BigNumberish,
+    _validUntil: BigNumberish
+  ): Promise<{
+    gasPrice: BigNumber;
+    gasLimit: BigNumber;
+  }> => {
+    const validUntil = _validUntil || (await this.getBlockNumber()) + 150; // default 150 * 12 / 60 = 30min
+    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+
+    const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
+      gasLimit,
+      storageLimit,
+      validUntil,
+      storageByteDeposit,
+      txFeePerGas
+    });
+
+    return {
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice
+    };
+  };
+
+  /**
+   * Validate substrate transaction parameters
+   */
+  validSubstrateResources = ({
+    gasLimit,
+    gasPrice
+  }: {
+    gasLimit: BigNumberish;
+    gasPrice: BigNumberish;
+  }): {
+    gasLimit: BigNumber;
+    storageLimit: BigNumber;
+    validUntil: BigNumber;
+  } => {
+    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
+    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+
+    return calcSubstrateTransactionParams({
+      txGasPrice: gasPrice,
+      txGasLimit: gasLimit,
+      storageByteDeposit,
+      txFeePerGas
+    });
+  };
+
+  /**
    * Estimate resources for a transaction.
    * @param transaction The transaction to estimate the resources of
    * @returns The estimated resources used by this transaction
@@ -664,25 +800,25 @@ export abstract class BaseProvider extends AbstractProvider {
   }> => {
     const ethTx = await this._getTransactionRequest(transaction);
 
-    if (!ethTx.from) {
-      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
-    }
-
     const { from, to, data, value } = ethTx;
+
+    const accessList = ethTx.accessList?.map(({ address, storageKeys }) => [address, storageKeys]) || [];
 
     const extrinsic = !to
       ? this.api.tx.evm.create(
           data,
           value?.toBigInt(),
           U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt() // storage_limit u32::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
         )
       : this.api.tx.evm.call(
           to,
           data,
           value?.toBigInt(),
           U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt() // storage_limit u32::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
         );
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
@@ -731,6 +867,8 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> => {
+    await this._ensureSafeModeFinalization(blockTag);
+
     // pending tag
     const resolvedBlockTag = await blockTag;
     if (resolvedBlockTag === 'pending') {
@@ -770,6 +908,7 @@ export abstract class BaseProvider extends AbstractProvider {
     storageLimit: bigint;
     validUntil: bigint;
     tip: bigint;
+    accessList?: [string, string[]][];
   } => {
     let gasLimit = 0n;
     let storageLimit = 0n;
@@ -846,11 +985,14 @@ export abstract class BaseProvider extends AbstractProvider {
       return throwNotImplemented('EIP-2930 transactions');
     }
 
+    const accessList = ethTx.accessList?.map((set) => [set.address, set.storageKeys] as [string, string[]]);
+
     return {
       gasLimit,
       storageLimit,
       validUntil,
-      tip
+      tip,
+      accessList
     };
   };
 
@@ -866,10 +1008,10 @@ export abstract class BaseProvider extends AbstractProvider {
     const ethTx = parseTransaction(rawTx);
 
     if (!ethTx.from) {
-      return logger.throwArgumentError('missing from address', 'transaction', ethTx);
+      return logger.throwError('missing from address', Logger.errors.INVALID_ARGUMENT, ethTx);
     }
 
-    const { storageLimit, validUntil, gasLimit, tip } = this._getSubstrateGasParams(ethTx);
+    const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
 
     // check excuted error
     const callRequest: CallRequest = {
@@ -879,7 +1021,8 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: gasLimit,
       storageLimit: storageLimit,
       value: ethTx.value.toString(),
-      data: ethTx.data
+      data: ethTx.data,
+      accessList: ethTx.accessList
     };
 
     await (this.api.rpc as any).evm.call(callRequest);
@@ -890,6 +1033,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ethTx.value.toString(),
       gasLimit,
       storageLimit,
+      accessList || [],
       validUntil
     );
 
@@ -1105,6 +1249,40 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
+  _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
+    const [finalizedHead, verifyingBlockHash] = await Promise.all([
+      this.api.rpc.chain.getFinalizedHead(),
+      this._getBlockHash(blockTag)
+    ]);
+
+    const [finalizedBlockNumber, verifyingBlockNumber] = (
+      await Promise.all([
+        this.api.rpc.chain.getHeader(finalizedHead),
+        this.api.rpc.chain.getHeader(verifyingBlockHash),
+      ])
+    ).map((header) => header.number.toNumber());
+
+    const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
+
+    return (
+      finalizedBlockNumber >= verifyingBlockNumber &&
+      canonicalHash.toString() === verifyingBlockHash
+    );
+  };
+
+  _ensureSafeModeFinalization = async (blockTag: BlockTag | Promise<BlockTag> | undefined): Promise<void> => {
+    if (!this.safeMode || !blockTag) return;
+
+    const isBlockFinalized = await this._isBlockFinalized(await blockTag);
+
+    // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
+    !isBlockFinalized && logger.throwError(
+      'SAFE MODE ERROR: target block is not finalized',
+      Logger.errors.UNKNOWN_ERROR,
+      { blockTag }
+    );
+  };
+
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
     const blockHash = await this._getBlockHash(blockTag);
 
@@ -1192,8 +1370,10 @@ export abstract class BaseProvider extends AbstractProvider {
   // @TODO Testing
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
-    blockTag: BlockTag | string | Promise<BlockTag | string>
+    blockTag: BlockTag | Promise<BlockTag>
   ): Promise<TransactionReceipt> => {
+    await this._ensureSafeModeFinalization(blockTag);
+
     hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();

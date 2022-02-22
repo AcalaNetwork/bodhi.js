@@ -16,7 +16,8 @@ const value = {
   to: undefined,
   value: 0,
   data: '0xcfae3217',
-  type: 96
+  type: 96,
+  accessList: []
 };
 
 const privateKey = '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269acd85c';
@@ -33,6 +34,7 @@ describe('SignTypedData', () => {
       verifyTypedData(
         payload.domain,
         {
+          AccessList: payload.types.AccessList,
           Transaction: payload.types.Transaction
         },
         payload.message,
