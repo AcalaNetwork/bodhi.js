@@ -9,6 +9,7 @@ import { InvalidParams, MethodNotFound } from './errors';
 import { hexlifyRpcResult, sleep } from './utils';
 import { validate } from './validate';
 
+const HEX_ZERO = '0x0';
 export class Eip1193Bridge extends EventEmitter {
   readonly #impl: Eip1193BridgeImpl;
 
@@ -372,21 +373,29 @@ class Eip1193BridgeImpl {
     return hexlifyRpcResult(res);
   }
 
-  // async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
+  async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
+    validate([{ type: 'blockHash' }], params);
 
-  // }
+    return HEX_ZERO;
+  }
 
-  // async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
+  async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
+    validate([{ type: 'block' }], params);
 
-  // }
+    return HEX_ZERO;
+  }
 
-  // async eth_getUncleByBlockHashAndIndex(params: any[]): Promise<any> {
+  async eth_getUncleByBlockHashAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'blockHash' }, { type: 'hexNumber' }], params);
 
-  // }
+    return null;
+  }
 
-  // async eth_getUncleByBlockNumberAndIndex(params: any[]): Promise<any> {
+  async eth_getUncleByBlockNumberAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'block' }, { type: 'hexNumber' }], params);
 
-  // }
+    return null;
+  }
 
   // async eth_newFilter(params: any[]): Promise<any> {
 
