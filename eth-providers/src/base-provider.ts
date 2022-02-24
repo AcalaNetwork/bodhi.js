@@ -379,7 +379,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
 
-    const blockNumber = headerExtended.number.toHex();
+    const blockNumber = toHex(headerExtended.number.toNumber());
 
     const deafultNonce = this.api.registry.createType('u64', 0);
     const deafultMixHash = this.api.registry.createType('u256', 0);
@@ -407,7 +407,7 @@ export abstract class BaseProvider extends AbstractProvider {
             blockNumber,
             transactionIndex,
             hash: extrinsic.hash.toHex(),
-            nonce: extrinsic.nonce.toHex(),
+            nonce: toHex(extrinsic.nonce.toNumber()),
             // @TODO get tx value
             value: 0
           };
@@ -430,7 +430,7 @@ export abstract class BaseProvider extends AbstractProvider {
           blockNumber,
           transactionIndex,
           hash: extrinsic.hash.toHex(),
-          nonce: extrinsic.nonce.toHex(),
+          nonce: toHex(extrinsic.nonce.toNumber()),
           from: from,
           to: to,
           // @TODO get tx value
