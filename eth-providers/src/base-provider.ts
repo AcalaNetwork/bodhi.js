@@ -399,6 +399,7 @@ export abstract class BaseProvider extends AbstractProvider {
       transactions = evmExtrinsicIndexes.map((extrinsicIndex, transactionIndex) => {
         const extrinsic = block.block.extrinsics[extrinsicIndex];
         const evmEvent = findEvmEvent(events);
+        const ex = extrinsic.method.toJSON();
 
         if (!evmEvent) {
           return {
@@ -407,8 +408,7 @@ export abstract class BaseProvider extends AbstractProvider {
             transactionIndex,
             hash: extrinsic.hash.toHex(),
             nonce: hexValue(extrinsic.nonce.toNumber()),
-            // @TODO get tx value
-            value: 0
+            value: ex.value,
           };
         }
 
@@ -417,11 +417,13 @@ export abstract class BaseProvider extends AbstractProvider {
           ? null
           : evmEvent.event.data[1].toString();
 
+        // @TODO eip2930, eip1559
+
         // @TODO Missing data
         return {
           gasPrice: '0x1', // TODO: get correct value
-          gas: '0x1', // TODO: get correct value
-          input: '', // TODO: get correct value
+          gas: ex.gas_limit,
+          input: ex.input,
           v: DUMMY_V,
           r: DUMMY_R,
           s: DUMMY_S,
@@ -432,8 +434,7 @@ export abstract class BaseProvider extends AbstractProvider {
           nonce: hexValue(extrinsic.nonce.toNumber()),
           from: from,
           to: to,
-          // @TODO get tx value
-          value: 0
+          value: ex.value,
         };
       });
     }
