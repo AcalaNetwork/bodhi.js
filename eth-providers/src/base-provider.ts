@@ -379,7 +379,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
 
-    const blockNumber = headerExtended.number.toNumber();
+    const blockNumber = headerExtended.number.toHex();
 
     const deafultNonce = this.api.registry.createType('u64', 0);
     const deafultMixHash = this.api.registry.createType('u256', 0);
@@ -442,7 +442,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const data = {
       hash: blockHash,
       parentHash: headerExtended.parentHash.toHex(),
-      number: hexValue(blockNumber),
+      number: blockNumber,
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: Math.floor(now.toNumber() / 1000),
