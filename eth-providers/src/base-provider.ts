@@ -407,7 +407,7 @@ export abstract class BaseProvider extends AbstractProvider {
             blockNumber,
             transactionIndex,
             hash: extrinsic.hash.toHex(),
-            nonce: extrinsic.nonce.toNumber(),
+            nonce: extrinsic.nonce.toHex(),
             // @TODO get tx value
             value: 0
           };
@@ -430,7 +430,7 @@ export abstract class BaseProvider extends AbstractProvider {
           blockNumber,
           transactionIndex,
           hash: extrinsic.hash.toHex(),
-          nonce: extrinsic.nonce.toNumber(),
+          nonce: extrinsic.nonce.toHex(),
           from: from,
           to: to,
           // @TODO get tx value
@@ -442,7 +442,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const data = {
       hash: blockHash,
       parentHash: headerExtended.parentHash.toHex(),
-      number: blockNumber,
+      number: hexValue(blockNumber),
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: Math.floor(now.toNumber() / 1000),
