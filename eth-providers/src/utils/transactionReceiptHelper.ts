@@ -37,6 +37,7 @@ export interface PartialTransactionReceipt {
   contractAddress?: string;
   root?: string;
   logsBloom: string;
+  byzantium: boolean;
   type: number;
   gasUsed: BigNumber;
   cumulativeGasUsed: BigNumber;
@@ -51,6 +52,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
   // @TODO
   const defaultValue = {
     logsBloom: DUMMY_LOGS_BLOOM,
+    byzantium: false,
     // @TODO EIP712
     type: 0,
     gasUsed: BIGNUMBER_ZERO,

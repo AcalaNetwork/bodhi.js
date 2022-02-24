@@ -1432,6 +1432,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // to and contractAddress may be undefined
     return this.formatter.receipt({
+      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
       logs: partialTransactionReceipt.logs.map((log) => ({
@@ -1527,6 +1528,7 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: EFFECTIVE_GAS_PRICE,
+      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
     });
   };
 

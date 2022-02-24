@@ -318,6 +318,10 @@ class Eip1193BridgeImpl {
     validate([{ type: 'blockHash' }], params);
 
     const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, params);
+    // @ts-ignore
+    delete res.byzantium;
+    // @ts-ignore
+    delete res.confirmations;
     return hexlifyRpcResult(res);
   }
 
