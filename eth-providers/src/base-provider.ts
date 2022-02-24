@@ -42,6 +42,8 @@ import {
   DUMMY_S,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
+  DUMMY_BLOCK_NONCE,
+  DUMMY_BLOCK_MIX_HASH,
 } from './consts';
 import {
   computeDefaultEvmAddress,
@@ -379,10 +381,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
 
-    const blockNumber = toHex(headerExtended.number.toNumber());
-
-    const deafultNonce = this.api.registry.createType('u64', 0);
-    const deafultMixHash = this.api.registry.createType('u256', 0);
+    const blockNumber = hexValue(headerExtended.number.toNumber());
 
     const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : DUMMY_ADDRESS;
 
@@ -407,7 +406,7 @@ export abstract class BaseProvider extends AbstractProvider {
             blockNumber,
             transactionIndex,
             hash: extrinsic.hash.toHex(),
-            nonce: toHex(extrinsic.nonce.toNumber()),
+            nonce: hexValue(extrinsic.nonce.toNumber()),
             // @TODO get tx value
             value: 0
           };
@@ -430,7 +429,7 @@ export abstract class BaseProvider extends AbstractProvider {
           blockNumber,
           transactionIndex,
           hash: extrinsic.hash.toHex(),
-          nonce: toHex(extrinsic.nonce.toNumber()),
+          nonce: hexValue(extrinsic.nonce.toNumber()),
           from: from,
           to: to,
           // @TODO get tx value
@@ -446,8 +445,8 @@ export abstract class BaseProvider extends AbstractProvider {
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: Math.floor(now.toNumber() / 1000),
-      nonce: deafultNonce.toHex(),
-      mixHash: deafultMixHash.toHex(),
+      nonce: DUMMY_BLOCK_NONCE,
+      mixHash: DUMMY_BLOCK_MIX_HASH,
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
