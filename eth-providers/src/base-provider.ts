@@ -408,7 +408,7 @@ export abstract class BaseProvider extends AbstractProvider {
             transactionIndex,
             hash: extrinsic.hash.toHex(),
             nonce: hexValue(extrinsic.nonce.toNumber()),
-            value: ex.value,
+            value: ex.args.value,
           };
         }
 
@@ -422,8 +422,8 @@ export abstract class BaseProvider extends AbstractProvider {
         // @TODO Missing data
         return {
           gasPrice: '0x1', // TODO: get correct value
-          gas: ex.gas_limit,
-          input: ex.input,
+          gas: ex.args.gas_limit,
+          input: ex.args.input,
           v: DUMMY_V,
           r: DUMMY_R,
           s: DUMMY_S,
@@ -434,7 +434,7 @@ export abstract class BaseProvider extends AbstractProvider {
           nonce: hexValue(extrinsic.nonce.toNumber()),
           from: from,
           to: to,
-          value: ex.value,
+          value: ex.args.value,
         };
       });
     }
