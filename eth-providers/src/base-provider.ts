@@ -408,7 +408,7 @@ export abstract class BaseProvider extends AbstractProvider {
             transactionIndex,
             hash: extrinsic.hash.toHex(),
             nonce: hexValue(extrinsic.nonce.toNumber()),
-            value: ex.args.value,
+            value: hexValue(ex.args.value),
           };
         }
 
@@ -434,7 +434,7 @@ export abstract class BaseProvider extends AbstractProvider {
           nonce: hexValue(extrinsic.nonce.toNumber()),
           from: from,
           to: to,
-          value: ex.args.value,
+          value: hexValue(ex.args.value),
         };
       });
     }
