@@ -102,7 +102,8 @@ services:
         condition: service_started
       graphql-engine:
         condition: service_started
-    command: yarn dev
+    restart: always
+    command: yarn start
   eth-rpc-adapter-test:
     build:
       context: .
@@ -128,7 +129,8 @@ services:
       - 8545:8545
     depends_on:
       - mandala-node
-    command: yarn dev
+    restart: always
+    command: yarn start
 
   waffle-examples-test:
     build:
