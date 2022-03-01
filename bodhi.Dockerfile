@@ -118,11 +118,13 @@ COPY --from=bodhi /app /app
 
 WORKDIR /app
 COPY eth-rpc-adapter ./eth-rpc-adapter
-COPY evm-subql/package.json ./evm-subql/package.json 
-COPY evm-subql/yarn.lock ./evm-subql/yarn.lock 
 
-WORKDIR /evm-subql
+WORKDIR /app/evm-subql
+COPY evm-subql/package.json .
+COPY evm-subql/yarn.lock .
 RUN yarn
+
+COPY evm-subql .
 RUN yarn build
 
 WORKDIR /app/eth-rpc-adapter
