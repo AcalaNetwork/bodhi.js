@@ -84,14 +84,7 @@ services:
       dockerfile: bodhi.Dockerfile
       target: eth-providers
     depends_on:
-      feed-tx:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_started
-      subquery-node:
-        condition: service_started
-      graphql-engine:
-        condition: service_started
+      - mandala-node
 
   eth-rpc-adapter-server-with-subql:
     build:
