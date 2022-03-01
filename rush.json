@@ -579,6 +579,12 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "hardhat-tutorial-dex",
+      "projectFolder": "examples/hardhat-tutorials/DEX",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- truffle examples ---------- */
     {
@@ -602,6 +608,18 @@
     {
       "packageName": "truffle-tutorial-nft",
       "projectFolder": "examples/truffle-tutorials/NFT",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-precompiled-token",
+      "projectFolder": "examples/truffle-tutorials/precompiled-token",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-dex",
+      "projectFolder": "examples/truffle-tutorials/DEX",
       "reviewCategory": "tests",
       "shouldPublish": false
     }
