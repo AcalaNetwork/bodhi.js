@@ -1,6 +1,6 @@
 services:
   mandala-node:
-    image: acala/mandala-node:e361c534
+    image: acala/mandala-node:f3434935
     ports:
       - 9944:9944
     command:
@@ -78,14 +78,6 @@ services:
     depends_on:
       - mandala-node
 
-  eth-providers-test:
-    build:
-      context: .
-      dockerfile: bodhi.Dockerfile
-      target: eth-providers
-    depends_on:
-      - mandala-node
-
   eth-rpc-adapter-server-with-subql:
     build:
       context: .
@@ -120,6 +112,13 @@ services:
   # ---------------------------------------------------------- #
   # ---------- functionality tests below (no subql) ---------- #
   # ---------------------------------------------------------- #
+  eth-providers-test:
+    build:
+      context: .
+      dockerfile: bodhi.Dockerfile
+      target: eth-providers
+    depends_on:
+      - mandala-node
   eth-rpc-adapter-server:
     build:
       context: .
