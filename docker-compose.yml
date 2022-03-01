@@ -1,6 +1,6 @@
 services:
   mandala-node:
-    image: acala/mandala-node:e361c534
+    image: acala/mandala-node:f3434935
     ports:
       - 9944:9944
     command:
@@ -93,7 +93,7 @@ services:
       graphql-engine:
         condition: service_started
 
-  eth-rpc-adapter-server:
+  eth-rpc-adapter-server-with-subql:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
@@ -110,19 +110,32 @@ services:
       graphql-engine:
         condition: service_started
     command: yarn dev
-
   eth-rpc-adapter-test:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
       target: eth-rpc-adapter
     depends_on:
-      - eth-rpc-adapter-server
+      - eth-rpc-adapter-server-with-subql
       - mandala-node
     environment:
       RPC_URL: http://eth-rpc-adapter-server:8545
       ENDPOINT_URL: ws://mandala-node:9944
     command: yarn test:CI
+
+  # ---------------------------------------------------------- #
+  # ---------- functionality tests below (no subql) ---------- #
+  # ---------------------------------------------------------- #
+  eth-rpc-adapter-server:
+    build:
+      context: .
+      dockerfile: bodhi.Dockerfile
+      target: eth-rpc-adapter
+    ports:
+      - 8545:8545
+    depends_on:
+      - mandala-node
+    command: yarn dev
 
   waffle-examples-test:
     build:

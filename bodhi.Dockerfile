@@ -53,19 +53,21 @@ COPY examples/waffle/uniswap/package.json examples/waffle/uniswap/package.json
 
 RUN rush update
 
-COPY evm-subql/package.json evm-subql/package.json 
-COPY evm-subql/yarn.lock evm-subql/yarn.lock 
-RUN cd evm-subql && yarn
+# COPY evm-subql/package.json evm-subql/package.json 
+# COPY evm-subql/yarn.lock evm-subql/yarn.lock 
+# RUN cd evm-subql && yarn
 
-### copy files and build common packages
-COPY . .
+### copy common packages
+COPY bodhi ./bodhi
+COPY eth-providers ./eth-providers
+COPY eth-transactions ./eth-transactions
+COPY eth-rpc-adapter ./eth-rpc-adapter
 
 RUN rush build \
     -t @acala-network/eth-providers \
-    -t @acala-network/bodhi \
-    -t evm-waffle-example-dex
+    -t @acala-network/bodhi
 
-RUN cd evm-subql && yarn build
+# RUN cd evm-subql && yarn build
 
 # =============== feed-tx =============== #
 FROM node:16-alpine as feed-tx
@@ -114,6 +116,10 @@ RUN apk add bash
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
+WORKDIR /app
+COPY examples/waffle ./examples/waffle
+COPY rush.json .
+COPY common ./common
 
 WORKDIR /app/examples/waffle
 
@@ -127,6 +133,10 @@ RUN apk add bash
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
+WORKDIR /app
+COPY examples/waffle-tutorials examples/waffle-tutorials
+COPY rush.json .
+COPY common ./common
 
 WORKDIR /app/examples/waffle-tutorials
 
@@ -140,6 +150,10 @@ RUN apk add bash
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
+WORKDIR /app
+COPY examples/hardhat-tutorials examples/hardhat-tutorials
+COPY rush.json .
+COPY common ./common
 
 WORKDIR /app/examples/hardhat-tutorials
 
@@ -153,6 +167,10 @@ RUN apk add bash
 RUN npm install -g @microsoft/rush@5.55.0
 
 COPY --from=bodhi /app /app
+WORKDIR /app
+COPY examples/truffle-tutorials examples/truffle-tutorials
+COPY rush.json .
+COPY common ./common
 
 WORKDIR /app/examples/truffle-tutorials
 
