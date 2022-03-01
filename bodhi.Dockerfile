@@ -26,6 +26,7 @@ COPY examples/hardhat-tutorials/echo/package.json examples/hardhat-tutorials/ech
 COPY examples/hardhat-tutorials/token/package.json examples/hardhat-tutorials/token/package.json
 COPY examples/hardhat-tutorials/NFT/package.json examples/hardhat-tutorials/NFT/package.json
 COPY examples/hardhat-tutorials/precompiled-token/package.json examples/hardhat-tutorials/precompiled-token/package.json
+COPY examples/hardhat-tutorials/DEX/package.json examples/hardhat-tutorials/DEX/package.json
 
 COPY examples/waffle-tutorials/hello-world/package.json examples/waffle-tutorials/hello-world/package.json
 COPY examples/waffle-tutorials/echo/package.json examples/waffle-tutorials/echo/package.json
@@ -37,6 +38,8 @@ COPY examples/truffle-tutorials/hello-world/package.json examples/truffle-tutori
 COPY examples/truffle-tutorials/echo/package.json examples/truffle-tutorials/echo/package.json
 COPY examples/truffle-tutorials/token/package.json examples/truffle-tutorials/token/package.json
 COPY examples/truffle-tutorials/NFT/package.json examples/truffle-tutorials/NFT/package.json
+COPY examples/truffle-tutorials/precompiled-token/package.json examples/truffle-tutorials/precompiled-token/package.json
+COPY examples/truffle-tutorials/DEX/package.json examples/truffle-tutorials/DEX/package.json
 
 COPY examples/waffle/arbitrager/package.json examples/waffle/arbitrager/package.json
 COPY examples/waffle/dex/package.json examples/waffle/dex/package.json
