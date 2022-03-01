@@ -3,7 +3,7 @@ import { isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
 import type { GenericExtrinsic } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
-import type { EvmLog, H160 } from '@polkadot/types/interfaces/types';
+import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { BIGNUMBER_ZERO, EFFECTIVE_GAS_PRICE } from '../consts';
 import { logger } from './logger';
@@ -43,6 +43,7 @@ export interface PartialTransactionReceipt {
   cumulativeGasUsed: BigNumber;
   effectiveGasPrice: BigNumber;
   status?: number;
+  exitReason?: string;
 }
 
 const DUMMY_LOGS_BLOOM =
@@ -86,7 +87,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
       };
     }
     case 'CreatedFailed': {
-      const [source, evmAddress, _exitReason, logs] = event.event.data as unknown as [H160, H160, unknown, EvmLog[]];
+      const [source, evmAddress, _exitReason, logs] = event.event.data as unknown as [H160, H160, ExitReason, EvmLog[]];
 
       return {
         to: undefined,
@@ -94,6 +95,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         contractAddress: evmAddress.toString(),
         logs: getPartialLogs(logs),
         status: 0,
+        exitReason: _exitReason.toString(),
         ...defaultValue
       };
     }
@@ -101,7 +103,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
       const [source, evmAddress, _exitReason, _output, logs] = event.event.data as unknown as [
         H160,
         H160,
-        unknown,
+        ExitReason,
         unknown,
         EvmLog[]
       ];
@@ -111,6 +113,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         from: source.toHex(),
         contractAddress: undefined,
         status: 0,
+        exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
         ...defaultValue
       };

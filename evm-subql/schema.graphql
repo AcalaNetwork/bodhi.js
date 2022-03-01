@@ -27,4 +27,5 @@ type TransactionReceipt @entity {
   cumulativeGasUsed: BigInt!
   type: BigInt
   status: BigInt!
+  exitReason: String
 }

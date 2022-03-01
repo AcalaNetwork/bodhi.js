@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",

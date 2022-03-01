@@ -545,6 +545,8 @@ export abstract class BaseProvider extends AbstractProvider {
     await this.getNetwork();
     await this._ensureSafeModeFinalization(blockTag);
 
+    if ((await blockTag) === 'pending') return '0x';
+
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockHash(blockTag)
