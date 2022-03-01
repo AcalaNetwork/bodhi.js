@@ -82,7 +82,7 @@ services:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
-      target: eth-rpc-adapter
+      target: eth-rpc-adapter-with-subql
     ports:
       - 8545:8545
     depends_on:
@@ -95,7 +95,6 @@ services:
       graphql-engine:
         condition: service_started
     restart: always
-    command: yarn start
   eth-rpc-adapter-test:
     build:
       context: .
@@ -129,7 +128,6 @@ services:
     depends_on:
       - mandala-node
     restart: always
-    command: yarn start
 
   waffle-examples-test:
     build:
