@@ -55,6 +55,9 @@
      * For example, allow some projects to use an older TypeScript compiler
      * (in addition to whatever "usual" version is being used by other projects in the repo):
      */
+
+    // these are mostly alternative versions used by tutorials
+    // TODO: uniform these versions as much as possible
     "@acala-network/contracts": [
       "~2.0.1",
       "~4.0.2",
@@ -98,6 +101,8 @@
     "ethers": [
       "^5.5.1"
     ],
-    "@polkadot/api": ["^7.9.1"]
+     "@polkadot/api": [
+       "^7.9.1",
+    ],
   }
 }

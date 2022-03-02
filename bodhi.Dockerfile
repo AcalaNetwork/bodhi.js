@@ -192,6 +192,24 @@ COPY examples/hardhat-tutorials examples/hardhat-tutorials
 COPY rush.json .
 COPY common ./common
 
+# ~~~~~~~~~~ TODO: ~~~~~~~~~ #
+# current yarn way is a temp workaround
+# should change back to rush after upgrading bodhi to latest packages
+WORKDIR /app/examples/hardhat-tutorials/hello-world
+RUN yarn
+WORKDIR /app/examples/hardhat-tutorials/echo
+RUN yarn
+WORKDIR /app/examples/hardhat-tutorials/token
+RUN yarn
+WORKDIR /app/examples/hardhat-tutorials/NFT
+RUN yarn
+WORKDIR /app/examples/hardhat-tutorials/precompiled-token
+RUN yarn
+WORKDIR /app/examples/hardhat-tutorials/DEX
+RUN yarn
+
+# ~~~~~~~~ end todo ~~~~~~~~ #
+
 WORKDIR /app/examples/hardhat-tutorials
 RUN chmod 777 run.sh
 ENV ENDPOINT_URL=ws://mandala-node:9944
