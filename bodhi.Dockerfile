@@ -83,7 +83,7 @@ ENV ENDPOINT_URL=ws://mandala-node:9944
 CMD ["yarn", "test"]
 
 # =============== eth-providers-test =============== #
-FROM node:16-alpine as eth-providers
+FROM node:16-alpine as eth-providers-test
 COPY --from=bodhi /app /app
 
 WORKDIR /app

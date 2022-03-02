@@ -112,7 +112,10 @@ services:
       dockerfile: bodhi.Dockerfile
       target: eth-providers-test
     depends_on:
-      - mandala-node
+      - feed-tx
+      # mandala-node is the actual dependency, this is just a work around to delay start
+      # so to make sure mandala node is up and *running* before tests start
+      # - mandala-node
   eth-rpc-adapter-server:
     build:
       context: .
