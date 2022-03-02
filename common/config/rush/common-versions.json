@@ -62,7 +62,7 @@
       "^4.0.0",
     ],
     "@acala-network/bodhi": [
-      "^2.1.2"
+      "^2.2.2"
     ],
     "@acala-network/eth-providers": [
       "^2.1.7",   // tutorials use this fixed version

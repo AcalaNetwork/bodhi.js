@@ -526,7 +526,7 @@ importers:
   ../../examples/waffle-tutorials/NFT:
     specifiers:
       '@acala-network/api': ^3.0.2
-      '@acala-network/bodhi': ^2.1.2
+      '@acala-network/bodhi': ^2.2.2
       '@openzeppelin/contracts': ^4.4.0
       '@types/chai': ^4.2.22
       '@types/mocha': ^9.0.0
@@ -537,7 +537,7 @@ importers:
       typescript: ^4.5.2
     dependencies:
       '@acala-network/api': 3.0.2
-      '@acala-network/bodhi': 2.1.11
+      '@acala-network/bodhi': 2.2.2
     devDependencies:
       '@openzeppelin/contracts': 4.4.2
       '@types/chai': 4.2.22
@@ -551,7 +551,7 @@ importers:
   ../../examples/waffle-tutorials/echo:
     specifiers:
       '@acala-network/api': ^3.0.2
-      '@acala-network/bodhi': ^2.1.2
+      '@acala-network/bodhi': ^2.2.2
       '@types/chai': ^4.2.22
       '@types/mocha': ^9.0.0
       chai: ^4.3.4
@@ -561,7 +561,7 @@ importers:
       typescript: ^4.5.2
     dependencies:
       '@acala-network/api': 3.0.2
-      '@acala-network/bodhi': 2.1.11
+      '@acala-network/bodhi': 2.2.2
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -574,7 +574,7 @@ importers:
   ../../examples/waffle-tutorials/hello-world:
     specifiers:
       '@acala-network/api': ^3.0.2
-      '@acala-network/bodhi': ^2.1.2
+      '@acala-network/bodhi': ^2.2.2
       '@types/chai': ^4.2.22
       '@types/mocha': ^9.0.0
       chai: ^4.3.4
@@ -584,7 +584,7 @@ importers:
       typescript: ^4.5.2
     dependencies:
       '@acala-network/api': 3.0.2
-      '@acala-network/bodhi': 2.1.11
+      '@acala-network/bodhi': 2.2.2
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -597,7 +597,7 @@ importers:
   ../../examples/waffle-tutorials/precompiled-token:
     specifiers:
       '@acala-network/api': ^3.0.2
-      '@acala-network/bodhi': ^2.1.2
+      '@acala-network/bodhi': ^2.2.2
       '@acala-network/contracts': ^3.0.0
       '@openzeppelin/contracts': ^4.4.0
       '@types/chai': ^4.2.22
@@ -609,7 +609,7 @@ importers:
       typescript: ^4.5.2
     dependencies:
       '@acala-network/api': 3.0.2
-      '@acala-network/bodhi': 2.1.11
+      '@acala-network/bodhi': 2.2.2
     devDependencies:
       '@acala-network/contracts': 3.0.1
       '@openzeppelin/contracts': 4.4.2
@@ -624,7 +624,7 @@ importers:
   ../../examples/waffle-tutorials/token:
     specifiers:
       '@acala-network/api': ^3.0.2
-      '@acala-network/bodhi': ^2.1.2
+      '@acala-network/bodhi': ^2.2.2
       '@openzeppelin/contracts': ^4.4.0
       '@types/chai': ^4.2.22
       '@types/mocha': ^9.0.0
@@ -635,7 +635,7 @@ importers:
       typescript: ^4.5.2
     dependencies:
       '@acala-network/api': 3.0.2
-      '@acala-network/bodhi': 2.1.11
+      '@acala-network/bodhi': 2.2.2
     devDependencies:
       '@openzeppelin/contracts': 4.4.2
       '@types/chai': 4.2.22
@@ -1007,10 +1007,10 @@ packages:
       - '@polkadot/typegen'
       - supports-color
 
-  /@acala-network/bodhi/2.1.11:
-    resolution: {integrity: sha512-fObz5dtSeOPZ945JQrwBQOARHWldBFFW5GDwHLISmSTaSxf7Iow1/YnXdtKurxlqQZJ8Tcvc/IZGQ2ShZBu1Lg==}
+  /@acala-network/bodhi/2.2.2:
+    resolution: {integrity: sha512-XZtg8gtGccroZQtz34mUTMuroq3dmWMagI01vdLBmXh3lastRTfTDCRbITr4tgm/nfT3Dbq7GZjtIOdsrcLi5g==}
     dependencies:
-      '@acala-network/eth-providers': 2.1.11
+      '@acala-network/eth-providers': 2.2.2
       '@acala-network/types': 3.0.3-16
       '@ethersproject/abstract-provider': 5.5.1
       '@ethersproject/abstract-signer': 5.5.0
@@ -1081,6 +1081,39 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
+    dev: true
+
+  /@acala-network/eth-providers/2.2.2:
+    resolution: {integrity: sha512-DhZuoQR49cFzrV7zUcCt5W5VooBQg6TMh9juRrfnSqZ3Y7LOx97XA/qMqk1x0FVtz/XwZuMTbz/pWq6veeE8AA==}
+    dependencies:
+      '@acala-network/api': 3.0.3-16_@polkadot+types@6.11.1
+      '@acala-network/eth-transactions': 2.2.2
+      '@acala-network/types': 3.0.3-16
+      '@ethersproject/abstract-provider': 5.5.1
+      '@ethersproject/bignumber': 5.5.0
+      '@ethersproject/bytes': 5.5.0
+      '@ethersproject/logger': 5.5.0
+      '@ethersproject/networks': 5.5.1
+      '@ethersproject/properties': 5.5.0
+      '@ethersproject/providers': 5.5.1
+      '@ethersproject/transactions': 5.5.0
+      '@graphql-codegen/typescript': 2.3.0_graphql@16.0.1
+      '@polkadot/api': 6.11.1
+      '@polkadot/api-derive': 6.11.1
+      '@polkadot/types': 6.11.1
+      '@polkadot/util': 8.1.2
+      '@polkadot/util-crypto': 8.1.2
+      bn.js: 4.12.0
+      dotenv: 10.0.0
+      ethers: 5.4.7
+      graphql: 16.0.1
+      graphql-request: 3.6.1_graphql@16.0.1
+    transitivePeerDependencies:
+      - '@polkadot/typegen'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+    dev: false
 
   /@acala-network/eth-transactions/2.1.11:
     resolution: {integrity: sha512-usCg3CRzCYLQNBnZoaSVQH7GOBWdc+IuM0EBiNA8IP+ee40Ju5yu8e4qyd2DnR3CbMqDRQtXHvO1p7FaXRvPGw==}
@@ -1098,6 +1131,25 @@ packages:
       '@ethersproject/transactions': 5.5.0
       '@ethersproject/wallet': 5.5.0
       '@polkadot/util-crypto': 8.1.2
+    dev: true
+
+  /@acala-network/eth-transactions/2.2.2:
+    resolution: {integrity: sha512-POgZcC0hnJ11cYOKaFFOZuPauB9gYda3LegS8/GJX/4j2ACplR14avqGW13JpeZrcsw2V2bRIiFO2tcdJmvuzA==}
+    dependencies:
+      '@ethersproject/address': 5.5.0
+      '@ethersproject/bignumber': 5.5.0
+      '@ethersproject/bytes': 5.5.0
+      '@ethersproject/constants': 5.5.0
+      '@ethersproject/hash': 5.5.0
+      '@ethersproject/keccak256': 5.5.0
+      '@ethersproject/logger': 5.5.0
+      '@ethersproject/properties': 5.5.0
+      '@ethersproject/rlp': 5.5.0
+      '@ethersproject/signing-key': 5.5.0
+      '@ethersproject/transactions': 5.5.0
+      '@ethersproject/wallet': 5.5.0
+      '@polkadot/util-crypto': 8.1.2
+    dev: false
 
   /@acala-network/type-definitions/3.0.3-16:
     resolution: {integrity: sha512-qraf5JapinDQvLxT5H/8HycyYzb+B/e9n7A5cCMXyML2Qe9nbPk7JiH9dVocIB87Z7his/yrUOExqh6L4CShXQ==}
