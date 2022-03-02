@@ -82,7 +82,7 @@ RUN rush build -o .
 ENV ENDPOINT_URL=ws://mandala-node:9944
 CMD ["yarn", "test"]
 
-# =============== eth-providers =============== #
+# =============== eth-providers-test =============== #
 FROM node:16-alpine as eth-providers
 COPY --from=bodhi /app /app
 
@@ -95,9 +95,11 @@ CMD ["yarn", "test:CI"]
 
 # =============== subql-node =============== #
 FROM onfinality/subql-node:v0.25.4-7 as subql-node
-COPY --from=bodhi /app /app
+COPY evm-subql /app/evm-subql
 
 WORKDIR /app/evm-subql
+RUN yarn
+RUN yarn build
 
 # =============== eth-rpc-adapter =============== #
 FROM node:16-alpine as eth-rpc-adapter
@@ -133,6 +135,19 @@ ENV SUBQL_URL=http://graphql-engine:3001
 ENV HTTP_PORT=8545
 ENV WS_PORT=3331
 CMD ["yarn", "start"]
+
+# =============== eth-rpc-adapter-test =============== #
+FROM node:16-alpine as eth-rpc-adapter-test
+COPY --from=bodhi /app /app
+
+WORKDIR /app
+COPY eth-rpc-adapter ./eth-rpc-adapter
+
+WORKDIR /app/eth-rpc-adapter
+ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV SUBQL_URL=http://graphql-engine:3001
+ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
+CMD ["yarn", "test:CI"]
 
 # =============== waffle-examples =============== #
 FROM node:16-alpine as waffle-examples

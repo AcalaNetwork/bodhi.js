@@ -99,14 +99,9 @@ services:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
-      target: eth-rpc-adapter
+      target: eth-rpc-adapter-test
     depends_on:
       - eth-rpc-adapter-server-with-subql
-      - mandala-node
-    environment:
-      RPC_URL: http://eth-rpc-adapter-server:8545
-      ENDPOINT_URL: ws://mandala-node:9944
-    command: yarn test:CI
 
   # ---------------------------------------------------------- #
   # ---------- functionality tests below (no subql) ---------- #
@@ -115,7 +110,7 @@ services:
     build:
       context: .
       dockerfile: bodhi.Dockerfile
-      target: eth-providers
+      target: eth-providers-test
     depends_on:
       - mandala-node
   eth-rpc-adapter-server:
