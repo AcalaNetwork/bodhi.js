@@ -120,7 +120,7 @@ services:
   eth-rpc-adapter-server:
     build:
       context: .
-      dockerfile: docker/bodhi.Dockerfile
+      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
       target: eth-rpc-adapter
     ports:
       - 8545:8545
