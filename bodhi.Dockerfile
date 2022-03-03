@@ -65,39 +65,39 @@ RUN rush build \
     -t @acala-network/eth-rpc-adapter
 
 # =============== feed-tx =============== #
-FROM node:16-alpine as feed-tx
-COPY --from=bodhi /app /app
-RUN npm install -g @microsoft/rush@5.55.0
+# FROM node:16-alpine as feed-tx
+# COPY --from=bodhi /app /app
+# RUN npm install -g @microsoft/rush@5.55.0
 
-WORKDIR /app
-COPY examples/waffle ./examples/waffle
-COPY rush.json .
-COPY common ./common
+# WORKDIR /app
+# COPY examples/waffle ./examples/waffle
+# COPY rush.json .
+# COPY common ./common
 
-WORKDIR /app/examples/waffle/dex
-RUN rush build -o .
+# WORKDIR /app/examples/waffle/dex
+# RUN rush build -o .
 
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test"]
+# ENV ENDPOINT_URL=ws://mandala-node:9944
+# CMD ["yarn", "test"]
 
-# =============== eth-providers-test =============== #
-FROM node:16-alpine as eth-providers-test
-COPY --from=bodhi /app /app
+# # =============== eth-providers-test =============== #
+# FROM node:16-alpine as eth-providers-test
+# COPY --from=bodhi /app /app
 
-WORKDIR /app
-COPY eth-providers ./eth-providers
+# WORKDIR /app
+# COPY eth-providers ./eth-providers
 
-WORKDIR /app/eth-providers
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test:CI"]
+# WORKDIR /app/eth-providers
+# ENV ENDPOINT_URL=ws://mandala-node:9944
+# CMD ["yarn", "test:CI"]
 
-# =============== subql-node =============== #
-FROM onfinality/subql-node:v0.25.4-7 as subql-node
-COPY evm-subql /app/evm-subql
+# # =============== subql-node =============== #
+# FROM onfinality/subql-node:v0.25.4-7 as subql-node
+# COPY evm-subql /app/evm-subql
 
-WORKDIR /app/evm-subql
-RUN yarn
-RUN yarn build
+# WORKDIR /app/evm-subql
+# RUN yarn
+# RUN yarn build
 
 # =============== eth-rpc-adapter =============== #
 FROM node:16-alpine as eth-rpc-adapter
@@ -112,72 +112,72 @@ ENV HTTP_PORT=8545
 ENV WS_PORT=3331
 CMD ["yarn", "start"]
 
-# =============== eth-rpc-adapter with subql =============== #
-FROM node:16-alpine as eth-rpc-adapter-with-subql
-COPY --from=bodhi /app /app
+# # =============== eth-rpc-adapter with subql =============== #
+# FROM node:16-alpine as eth-rpc-adapter-with-subql
+# COPY --from=bodhi /app /app
 
-WORKDIR /app
-COPY eth-rpc-adapter ./eth-rpc-adapter
+# WORKDIR /app
+# COPY eth-rpc-adapter ./eth-rpc-adapter
 
-WORKDIR /app/evm-subql
-COPY evm-subql/package.json .
-COPY evm-subql/yarn.lock .
-RUN yarn
+# WORKDIR /app/evm-subql
+# COPY evm-subql/package.json .
+# COPY evm-subql/yarn.lock .
+# RUN yarn
 
-COPY evm-subql .
-RUN yarn build
+# COPY evm-subql .
+# RUN yarn build
 
-WORKDIR /app/eth-rpc-adapter
-ENV ENDPOINT_URL=ws://mandala-node:9944
-ENV SUBQL_URL=http://graphql-engine:3001
-ENV HTTP_PORT=8545
-ENV WS_PORT=3331
-CMD ["yarn", "start"]
+# WORKDIR /app/eth-rpc-adapter
+# ENV ENDPOINT_URL=ws://mandala-node:9944
+# ENV SUBQL_URL=http://graphql-engine:3001
+# ENV HTTP_PORT=8545
+# ENV WS_PORT=3331
+# CMD ["yarn", "start"]
 
-# =============== eth-rpc-adapter-test =============== #
-FROM node:16-alpine as eth-rpc-adapter-test
-COPY --from=bodhi /app /app
+# # =============== eth-rpc-adapter-test =============== #
+# FROM node:16-alpine as eth-rpc-adapter-test
+# COPY --from=bodhi /app /app
 
-WORKDIR /app
-COPY eth-rpc-adapter ./eth-rpc-adapter
+# WORKDIR /app
+# COPY eth-rpc-adapter ./eth-rpc-adapter
 
-WORKDIR /app/eth-rpc-adapter
-ENV ENDPOINT_URL=ws://mandala-node:9944
-ENV SUBQL_URL=http://graphql-engine:3001
-ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
-CMD ["yarn", "test:CI"]
+# WORKDIR /app/eth-rpc-adapter
+# ENV ENDPOINT_URL=ws://mandala-node:9944
+# ENV SUBQL_URL=http://graphql-engine:3001
+# ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
+# CMD ["yarn", "test:CI"]
 
-# =============== waffle-examples =============== #
-FROM node:16-alpine as waffle-examples
-COPY --from=bodhi /app /app
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
+# # =============== waffle-examples =============== #
+# FROM node:16-alpine as waffle-examples
+# COPY --from=bodhi /app /app
+# RUN apk add bash
+# RUN npm install -g @microsoft/rush@5.55.0
 
-WORKDIR /app
-COPY examples/waffle ./examples/waffle
-COPY rush.json .
-COPY common ./common
+# WORKDIR /app
+# COPY examples/waffle ./examples/waffle
+# COPY rush.json .
+# COPY common ./common
 
-WORKDIR /app/examples/waffle
-RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "build_and_test"]
+# WORKDIR /app/examples/waffle
+# RUN chmod 777 run.sh
+# ENV ENDPOINT_URL=ws://mandala-node:9944
+# CMD ["/bin/bash", "run.sh", "build_and_test"]
 
-# =============== waffle-tutorials =============== #
-FROM node:16-alpine as waffle-tutorials
-COPY --from=bodhi /app /app
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
+# # =============== waffle-tutorials =============== #
+# FROM node:16-alpine as waffle-tutorials
+# COPY --from=bodhi /app /app
+# RUN apk add bash
+# RUN npm install -g @microsoft/rush@5.55.0
 
-WORKDIR /app
-COPY examples/waffle-tutorials examples/waffle-tutorials
-COPY rush.json .
-COPY common ./common
+# WORKDIR /app
+# COPY examples/waffle-tutorials examples/waffle-tutorials
+# COPY rush.json .
+# COPY common ./common
 
-WORKDIR /app/examples/waffle-tutorials
-RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "build_and_test"]
+# WORKDIR /app/examples/waffle-tutorials
+# RUN chmod 777 run.sh
+# ENV ENDPOINT_URL=ws://mandala-node:9944
+# CMD ["/bin/bash", "run.sh", "build_and_test"]
 
 # =============== hardhat-tutorials =============== #
 FROM node:16-alpine as hardhat-tutorials
