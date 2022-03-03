@@ -193,20 +193,24 @@ COPY rush.json .
 COPY common ./common
 
 # ~~~~~~~~~~ TODO: ~~~~~~~~~ #
-# current yarn way is a temp workaround
-# should change back to rush after upgrading bodhi to latest packages
+# yarn overrides is a temp workaround for incompatible packages
+# can remove this chunk after upgrading bodhi to latest packages
+
+COPY .git ./.git
+RUN apk add git
+
 WORKDIR /app/examples/hardhat-tutorials/hello-world
-RUN yarn
+RUN rm -rf node_modules && yarn cache clean && yarn install
 WORKDIR /app/examples/hardhat-tutorials/echo
-RUN yarn
+RUN rm -rf node_modules && yarn cache clean && yarn install
 WORKDIR /app/examples/hardhat-tutorials/token
-RUN yarn
+RUN rm -rf node_modules && yarn cache clean && yarn install
 WORKDIR /app/examples/hardhat-tutorials/NFT
-RUN yarn
+RUN rm -rf node_modules && yarn cache clean && yarn install
 WORKDIR /app/examples/hardhat-tutorials/precompiled-token
-RUN yarn
+RUN rm -rf node_modules && yarn cache clean && yarn install
 WORKDIR /app/examples/hardhat-tutorials/DEX
-RUN yarn
+RUN rm -rf node_modules && yarn cache clean && yarn install
 
 # ~~~~~~~~ end todo ~~~~~~~~ #
 
