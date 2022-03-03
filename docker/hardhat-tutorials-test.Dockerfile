@@ -88,9 +88,10 @@ COPY examples/hardhat-tutorials examples/hardhat-tutorials
 COPY rush.json .
 COPY common ./common
 
-# ~~~~~~~~~~ TODO: ~~~~~~~~~ #
+# ++++++++++ TODO: ++++++++++ #
 # yarn overrides is a temp workaround for incompatible packages
 # can remove this chunk after upgrading bodhi to latest packages
+# https://github.com/AcalaNetwork/bodhi.js/issues/295
 RUN true
 COPY .git ./.git
 RUN apk add git
@@ -108,7 +109,7 @@ RUN rm -rf node_modules && yarn cache clean && yarn install
 WORKDIR /app/examples/hardhat-tutorials/DEX
 RUN rm -rf node_modules && yarn cache clean && yarn install
 
-# ~~~~~~~~ end todo ~~~~~~~~ #
+# ++++++++++ end todo ++++++++++ #
 
 WORKDIR /app/examples/hardhat-tutorials
 RUN chmod 777 run.sh

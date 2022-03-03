@@ -114,7 +114,3 @@ ENV ENDPOINT_URL=ws://mandala-node:9944
 ENV SUBQL_URL=http://graphql-engine:3001
 ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
 CMD ["yarn", "test:CI"]
-
-
-
-

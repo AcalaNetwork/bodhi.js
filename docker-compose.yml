@@ -1,10 +1,11 @@
 services:
+  # -------------------------------- #
+  # ---------- Subql Land ---------- #
+  # -------------------------------- #
   postgres:
     image: postgres:12-alpine
     ports:
       - 5432:5432
-    # volumes:
-    #   - postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgres
 
@@ -25,8 +26,6 @@ services:
       DB_DATABASE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
-    # volumes:
-    #   - ./:/app
     command:
       - -f=./
       - --network-endpoint=ws://mandala-node:9944
@@ -79,9 +78,9 @@ services:
     depends_on:
       - eth-rpc-adapter-server-with-subql
 
-  # ----------------------------------------------- #
-  # ---------- welcome to no subql realm ---------- #
-  # ----------------------------------------------- #
+  # ------------------------------------ #
+  # ---------- No Subql Realm ---------- #
+  # ------------------------------------ #
   mandala-node:
     image: acala/mandala-node:e361c534
     ports:
@@ -157,6 +156,3 @@ services:
       target: truffle-tutorials
     depends_on:
       - eth-rpc-adapter-server
-
-# volumes:
-#   postgres:
