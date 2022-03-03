@@ -191,6 +191,7 @@ jobs:
 
   bodhi:
     runs-on: ubuntu-latest
+    needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -215,6 +216,7 @@ jobs:
 
   eth-transactions:
     runs-on: ubuntu-latest
+    needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
