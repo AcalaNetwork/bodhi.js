@@ -64,8 +64,6 @@ RUN rush build \
     -t @acala-network/bodhi \
     -t @acala-network/eth-rpc-adapter
 
-# RUN cd evm-subql && yarn build
-
 # =============== feed-tx =============== #
 FROM node:16-alpine as feed-tx
 COPY --from=bodhi /app /app
