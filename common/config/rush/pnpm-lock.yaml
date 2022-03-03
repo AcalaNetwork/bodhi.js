@@ -325,7 +325,7 @@ importers:
       hardhat: 2.8.0
     devDependencies:
       '@acala-network/contracts': 4.0.2
-      '@acala-network/eth-providers': 2.1.11
+      '@acala-network/eth-providers': 2.2.2
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.2+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_b5edb2070812aa32af4b3ffe4f4a52ce
       '@openzeppelin/contracts': 4.4.2
@@ -348,7 +348,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/eth-providers': 2.1.11
+      '@acala-network/eth-providers': 2.2.2
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.2+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_b5edb2070812aa32af4b3ffe4f4a52ce
       '@openzeppelin/contracts': 4.4.2
@@ -370,7 +370,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/eth-providers': 2.1.11
+      '@acala-network/eth-providers': 2.2.2
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.2+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_b5edb2070812aa32af4b3ffe4f4a52ce
       '@polkadot/api': 7.10.1
@@ -391,7 +391,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/eth-providers': 2.1.11
+      '@acala-network/eth-providers': 2.2.2
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.2+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_b5edb2070812aa32af4b3ffe4f4a52ce
       '@polkadot/api': 7.10.1
@@ -436,7 +436,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/eth-providers': 2.1.11
+      '@acala-network/eth-providers': 2.2.2
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.2+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_b5edb2070812aa32af4b3ffe4f4a52ce
       '@openzeppelin/contracts': 4.4.2
@@ -1051,38 +1051,6 @@ packages:
   /@acala-network/contracts/4.0.2:
     resolution: {integrity: sha512-IYYRbZwvA/bRfp/nV6oiPDkR68eyxYY+jevby+mDHIt4vrlMDgPjKNhLrPnVkGSymOYuosZjeO4jMEhXtisL4g==}
 
-  /@acala-network/eth-providers/2.1.11:
-    resolution: {integrity: sha512-BLyWTLVlAtdWNmufI8TzvgXTgYZ0vqq9H4eQyexPTPsa5BlkSTm7ZUahrYzeKmrtmgZEYIax3fqNC66wxFx98w==}
-    dependencies:
-      '@acala-network/api': 3.0.3-16_@polkadot+types@6.11.1
-      '@acala-network/eth-transactions': 2.1.11
-      '@acala-network/types': 3.0.3-16
-      '@ethersproject/abstract-provider': 5.5.1
-      '@ethersproject/bignumber': 5.5.0
-      '@ethersproject/bytes': 5.5.0
-      '@ethersproject/logger': 5.5.0
-      '@ethersproject/networks': 5.5.1
-      '@ethersproject/properties': 5.5.0
-      '@ethersproject/providers': 5.5.1
-      '@ethersproject/transactions': 5.5.0
-      '@graphql-codegen/typescript': 2.3.0_graphql@16.0.1
-      '@polkadot/api': 6.11.1
-      '@polkadot/api-derive': 6.11.1
-      '@polkadot/types': 6.11.1
-      '@polkadot/util': 8.1.2
-      '@polkadot/util-crypto': 8.1.2
-      bn.js: 4.12.0
-      dotenv: 10.0.0
-      ethers: 5.4.7
-      graphql: 16.0.1
-      graphql-request: 3.6.1_graphql@16.0.1
-    transitivePeerDependencies:
-      - '@polkadot/typegen'
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-    dev: true
-
   /@acala-network/eth-providers/2.2.2:
     resolution: {integrity: sha512-DhZuoQR49cFzrV7zUcCt5W5VooBQg6TMh9juRrfnSqZ3Y7LOx97XA/qMqk1x0FVtz/XwZuMTbz/pWq6veeE8AA==}
     dependencies:
@@ -1113,25 +1081,6 @@ packages:
       - bufferutil
       - supports-color
       - utf-8-validate
-    dev: false
-
-  /@acala-network/eth-transactions/2.1.11:
-    resolution: {integrity: sha512-usCg3CRzCYLQNBnZoaSVQH7GOBWdc+IuM0EBiNA8IP+ee40Ju5yu8e4qyd2DnR3CbMqDRQtXHvO1p7FaXRvPGw==}
-    dependencies:
-      '@ethersproject/address': 5.5.0
-      '@ethersproject/bignumber': 5.5.0
-      '@ethersproject/bytes': 5.5.0
-      '@ethersproject/constants': 5.5.0
-      '@ethersproject/hash': 5.5.0
-      '@ethersproject/keccak256': 5.5.0
-      '@ethersproject/logger': 5.5.0
-      '@ethersproject/properties': 5.5.0
-      '@ethersproject/rlp': 5.5.0
-      '@ethersproject/signing-key': 5.5.0
-      '@ethersproject/transactions': 5.5.0
-      '@ethersproject/wallet': 5.5.0
-      '@polkadot/util-crypto': 8.1.2
-    dev: true
 
   /@acala-network/eth-transactions/2.2.2:
     resolution: {integrity: sha512-POgZcC0hnJ11cYOKaFFOZuPauB9gYda3LegS8/GJX/4j2ACplR14avqGW13JpeZrcsw2V2bRIiFO2tcdJmvuzA==}
@@ -1149,7 +1098,6 @@ packages:
       '@ethersproject/transactions': 5.5.0
       '@ethersproject/wallet': 5.5.0
       '@polkadot/util-crypto': 8.1.2
-    dev: false
 
   /@acala-network/type-definitions/3.0.3-16:
     resolution: {integrity: sha512-qraf5JapinDQvLxT5H/8HycyYzb+B/e9n7A5cCMXyML2Qe9nbPk7JiH9dVocIB87Z7his/yrUOExqh6L4CShXQ==}
@@ -1160,7 +1108,7 @@ packages:
     resolution: {integrity: sha512-7yZqHzjH+ovve02F/30N4kJEhaZEsc8V3oNIxAo1QKOGpGqN+G/EC7T2QwyK6vf4TaHvPf/AfHGfUoFZTb7ZCQ==}
     dependencies:
       '@acala-network/type-definitions': 3.0.3-16
-      '@babel/runtime': 7.16.5
+      '@babel/runtime': 7.17.2
       '@open-web3/api-mobx': 1.0.2-2_@polkadot+api@6.11.1
       '@open-web3/orml-types': 1.0.2-2_440a23f3295cdcd32d4065cd4f81074f
       '@polkadot/api': 6.11.1
@@ -3511,7 +3459,7 @@ packages:
     dependencies:
       '@babel/core': 7.16.5
       '@babel/register': 7.16.5_@babel+core@7.16.5
-      '@babel/runtime': 7.16.5
+      '@babel/runtime': 7.17.2
       '@polkadot/api': 6.11.1
       '@polkadot/rpc-provider': 6.11.1
       '@polkadot/types': 6.11.1
@@ -3563,18 +3511,18 @@ packages:
     resolution: {integrity: sha512-jOOKCHSNDmRVCfJ0f7ZM3Oys+XOW84CHJpcaxl+oQF42J1w8nDLjyykibJC1c4xoRKEEDDUtQErKVpf1ulzVmw==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@babel/runtime': 7.16.5
+      '@babel/runtime': 7.17.2
       '@polkadot/util': 8.1.2
 
   /@polkadot/types/6.11.1:
     resolution: {integrity: sha512-utdAL7XrZmKWTk7iT/cUdr1FD4oaDT9OhZ1yRxilEiMk58QZg4Ntm8POH1Sq/l8/JvLcheE0qy1uZhxK3FS0Rw==}
     engines: {node: '>=14.0.0'}
     dependencies:
-      '@babel/runtime': 7.16.5
+      '@babel/runtime': 7.17.2
       '@polkadot/types-known': 6.11.1
       '@polkadot/util': 8.1.2
       '@polkadot/util-crypto': 8.1.2
-      rxjs: 7.5.1
+      rxjs: 7.5.4
 
   /@polkadot/util-crypto/8.1.2:
     resolution: {integrity: sha512-sqyz4zLyBleBmoaNkGaAQsNXVktqmHJ3XiuYgt9KJ7hIZjP7wjJMLZWzyOKVaL1w5/hUNTRzVuTGiA8GD62ByA==}
@@ -15642,7 +15590,6 @@ packages:
     resolution: {integrity: sha512-h5M3Hk78r6wAheJF0a5YahB1yRQKCsZ4MsGdZ5O9ETbVtjPcScGfrMmoOq7EBsCRzd4BDkvDJ7ogP8Sz5tTFiQ==}
     dependencies:
       tslib: 2.3.1
-    dev: true
 
   /safe-buffer/5.1.2:
     resolution: {integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==}
