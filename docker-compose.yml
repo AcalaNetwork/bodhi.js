@@ -28,7 +28,7 @@ services:
   subquery-node:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/subql-node.Dockerfile
       target: subql-node
     depends_on:
       - postgres
@@ -73,7 +73,7 @@ services:
   feed-tx:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/eth-providers-test.Dockerfile
       target: feed-tx
     depends_on:
       - mandala-node
@@ -81,7 +81,7 @@ services:
   eth-rpc-adapter-server-with-subql:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: eth-rpc-adapter-with-subql
     ports:
       - 8545:8545
@@ -98,7 +98,7 @@ services:
   eth-rpc-adapter-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: eth-rpc-adapter-test
     depends_on:
       - eth-rpc-adapter-server-with-subql
@@ -109,7 +109,7 @@ services:
   eth-providers-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/eth-providers-test.Dockerfile
       target: eth-providers-test
     depends_on:
       feed-tx:
@@ -120,7 +120,7 @@ services:
   eth-rpc-adapter-server:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/bodhi.Dockerfile
       target: eth-rpc-adapter
     ports:
       - 8545:8545
@@ -131,7 +131,7 @@ services:
   waffle-examples-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/waffle-examples-test.Dockerfile
       target: waffle-examples
     depends_on:
       - mandala-node
@@ -139,21 +139,21 @@ services:
   waffle-tutorials-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/waffle-tutorials-test.Dockerfile
       target: waffle-tutorials
     depends_on:
       - mandala-node
   hardhat-tutorials-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/hardhat-tutorials-test.Dockerfile
       target: hardhat-tutorials
     depends_on:
       - eth-rpc-adapter-server
   truffle-tutorials-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/truffle-tutorials-test.Dockerfile
       target: truffle-tutorials
     depends_on:
       - eth-rpc-adapter-server

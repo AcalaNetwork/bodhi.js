@@ -15,86 +15,86 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  # eth-providers:
-  #   runs-on: ubuntu-latest
-  #   needs: cancel-prev-runs
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v2
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: check docker info before cleaning
-  #       run: docker ps && docker volume ls
-  #     - name: clean up docker process and volumes
-  #       run: |
-  #         docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
-  #         docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
-  #     - name: check docker info after cleaning
-  #       run: docker ps && docker volume ls
-  #     - name: test
-  #       run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v1
+  eth-providers:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
+          docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
 
-  # eth-rpc-adaptor:
-  #   runs-on: ubuntu-latest
-  #   needs: cancel-prev-runs
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v2
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: check docker info before cleaning
-  #       run: docker ps && docker volume ls
-  #     - name: clean up docker process and volumes
-  #       run: |
-  #         docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
-  #         docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
-  #     - name: check docker info after cleaning
-  #       run: docker ps && docker volume ls
-  #     - name: test
-  #       run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v1
+  eth-rpc-adaptor:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
+          docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
 
-  # waffle-examples:
-    # runs-on: ubuntu-latest
-    # needs: cancel-prev-runs
-    # steps:
-    #   - name: checkout
-    #     uses: actions/checkout@v2
-    #     with:
-    #       submodules: 'recursive'
-    #   - name: check docker info before cleaning
-    #     run: docker ps && docker volume ls
-    #   - name: clean up docker process and volumes
-    #     run: |
-    #       docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
-    #       docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
-    #       docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
-    #       docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
-    #       docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
-    #       docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
-    #       docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
-    #   - name: check docker info after cleaning
-    #     run: docker ps && docker volume ls
-    #   - name: test
-    #     run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
-    #   - name: dump docker logs on failure
-    #     if: failure()
-    #     uses: jwalton/gh-docker-logs@v1
+  waffle-examples:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
+          docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
 
   # waffle-tutorials:
   #   runs-on: ubuntu-latest
@@ -150,29 +150,29 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v1
 
-  # truffle-tutorials:
-  #   runs-on: ubuntu-latest
-  #   needs: cancel-prev-runs
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v2
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: check docker info before cleaning
-  #       run: docker ps && docker volume ls
-  #     - name: clean up docker process and volumes
-  #       run: |
-  #         docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
-  #         docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
-  #         docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
-  #     - name: check docker info after cleaning
-  #       run: docker ps && docker volume ls
-  #     - name: test
-  #       run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v1
+  truffle-tutorials:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: |
+          docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')  || true
+          docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true 
+          docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}') || true
+          docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: test
+        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
