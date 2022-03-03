@@ -173,31 +173,32 @@ jobs:
             -t waffle-tutorial-nft \
             -t waffle-tutorial-precompiled-token
   
-  test-hardhat-tutorials:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+  ### TODO: add this back after upgrading bodhi packages
+  # test-hardhat-tutorials:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
 
-      - name: setup node env
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14.16.0'
+  #     - name: setup node env
+  #       uses: actions/setup-node@v2
+  #       with:
+  #         node-version: '14.16.0'
 
-      - name: install dependencies
-        run: node common/scripts/install-run-rush.js update
+  #     - name: install dependencies
+  #       run: node common/scripts/install-run-rush.js update
 
-      - name: build
-        run: |
-          node common/scripts/install-run-rush.js build \
-            -t hardhat-tutorial-hello-world \
-            -t hardhat-tutorial-echo \
-            -t hardhat-tutorial-token \
-            -t hardhat-tutorial-nft \
-            -t hardhat-tutorial-precompiled-token \
-            -t hardhat-tutorial-dex
+  #     - name: build
+  #       run: |
+  #         node common/scripts/install-run-rush.js build \
+  #           -t hardhat-tutorial-hello-world \
+  #           -t hardhat-tutorial-echo \
+  #           -t hardhat-tutorial-token \
+  #           -t hardhat-tutorial-nft \
+  #           -t hardhat-tutorial-precompiled-token \
+  #           -t hardhat-tutorial-dex
 
   test-truffle-tutorials:
     runs-on: ubuntu-latest
