@@ -120,7 +120,7 @@ jobs:
       - name: test
         run: cd evm-subql && yarn test
 
-  test-evm-waffle-examples:
+  test-waffle-examples:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -137,24 +137,18 @@ jobs:
         run: node common/scripts/install-run-rush.js update
 
       - name: build
-        run: node common/scripts/install-run-rush.js build
+        run: |
+          node common/scripts/install-run-rush.js build \
+            -t evm-waffle-example-hello-world \
+            -t evm-waffle-example-dex \
+            -t evm-waffle-example-e2e \
+            -t evm-waffle-example-erc20 \
+            -t evm-waffle-example-oracle \
+            -t evm-waffle-example-state-rent \
+            -t evm-waffle-example-arbitrager \
+            -t evm-waffle-example-scheduler
 
-      - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-hello-world
-
-      - name: build echo
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-echo
-
-      - name: build token
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-token
-
-      - name: build nft
-        run: node common/scripts/install-run-rush.js build -t waffle-tutorial-nft
-
-      - name: test
-        run: echo "TODO" # use public mandala for testing
-
-  test-evm-hardhat-examples:
+  test-waffle-tutorials:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -170,22 +164,16 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
-      - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-hello-world
-
-      - name: build echo
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-echo
-
-      - name: build token
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-token
-
-      - name: build nft
-        run: node common/scripts/install-run-rush.js build -t hardhat-tutorial-nft
-
-      - name: test
-        run: echo "TODO" # use public mandala for testing
-
-  test-evm-truffle-examples:
+      - name: build
+        run: |
+          node common/scripts/install-run-rush.js build \
+            -t waffle-tutorial-hello-world \
+            -t waffle-tutorial-echo \
+            -t waffle-tutorial-token \
+            -t waffle-tutorial-nft \
+            -t waffle-tutorial-precompiled-token
+  
+  test-hardhat-tutorials:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -201,17 +189,38 @@ jobs:
       - name: install dependencies
         run: node common/scripts/install-run-rush.js update
 
-      - name: build hello world
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-hello-world
+      - name: build
+        run: |
+          node common/scripts/install-run-rush.js build \
+            -t hardhat-tutorial-hello-world \
+            -t hardhat-tutorial-echo \
+            -t hardhat-tutorial-token \
+            -t hardhat-tutorial-nft \
+            -t hardhat-tutorial-precompiled-token \
+            -t hardhat-tutorial-dex
 
-      - name: build echo
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-echo
+  test-truffle-tutorials:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
-      - name: build token
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-token
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.16.0'
 
-      - name: build nft
-        run: node common/scripts/install-run-rush.js build -t truffle-tutorial-nft
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
 
-      - name: test
-        run: echo "TODO" # use public mandala for testing
+      - name: build
+        run: |
+          node common/scripts/install-run-rush.js build \
+            -t truffle-tutorial-hello-world \
+            -t truffle-tutorial-echo \
+            -t truffle-tutorial-token \
+            -t truffle-tutorial-nft \
+            -t truffle-tutorial-precompiled-token \
+            -t truffle-tutorial-dex
