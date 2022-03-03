@@ -1,21 +1,4 @@
 services:
-  mandala-node:
-    image: acala/mandala-node:e361c534
-    ports:
-      - 9944:9944
-    command:
-      - --dev
-      # - -lruntime=debug
-      # - -levm=debug
-      - --ws-port=9944
-      - --ws-external=true
-      - --rpc-port=9933
-      - --rpc-external=true
-      - --rpc-cors=all
-      - --rpc-methods=unsafe
-      - --instant-sealing
-      - --tmp
-
   postgres:
     image: postgres:12-alpine
     ports:
@@ -70,14 +53,6 @@ services:
       - --playground
       - --indexer=http://subquery-node:3000
 
-  feed-tx:
-    build:
-      context: .
-      dockerfile: docker/eth-providers-test.Dockerfile
-      target: feed-tx
-    depends_on:
-      - mandala-node
-
   eth-rpc-adapter-server-with-subql:
     build:
       context: .
@@ -95,6 +70,7 @@ services:
       graphql-engine:
         condition: service_started
     restart: always
+
   eth-rpc-adapter-test:
     build:
       context: .
@@ -103,9 +79,33 @@ services:
     depends_on:
       - eth-rpc-adapter-server-with-subql
 
-  # ---------------------------------------------------------- #
-  # ---------- functionality tests below (no subql) ---------- #
-  # ---------------------------------------------------------- #
+  # ----------------------------------------------- #
+  # ---------- welcome to no subql realm ---------- #
+  # ----------------------------------------------- #
+  mandala-node:
+    image: acala/mandala-node:e361c534
+    ports:
+      - 9944:9944
+    command:
+      - --dev
+      # - -lruntime=debug
+      # - -levm=debug
+      - --ws-port=9944
+      - --ws-external=true
+      - --rpc-port=9933
+      - --rpc-external=true
+      - --rpc-cors=all
+      - --rpc-methods=unsafe
+      - --instant-sealing
+      - --tmp
+
+  feed-tx:
+    build:
+      context: .
+      dockerfile: docker/eth-providers-test.Dockerfile
+      target: feed-tx
+    depends_on:
+      - mandala-node
   eth-providers-test:
     build:
       context: .
