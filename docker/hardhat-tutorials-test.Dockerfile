@@ -107,7 +107,7 @@ COPY common ./common
 # ~~~~~~~~~~ TODO: ~~~~~~~~~ #
 # yarn overrides is a temp workaround for incompatible packages
 # can remove this chunk after upgrading bodhi to latest packages
-
+RUN true
 COPY .git ./.git
 RUN apk add git
 
