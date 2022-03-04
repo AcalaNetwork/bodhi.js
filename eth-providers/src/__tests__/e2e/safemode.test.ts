@@ -18,7 +18,7 @@ const newBlock = async (finalize: boolean): Promise<void> => {
   await sleep(100);
 };
 
-describe('query latest tag in safe mode', () => {
+describe('safe mode', () => {
   before(async () => {
     await Promise.all([
       safeProvider.isReady(),
@@ -35,7 +35,7 @@ describe('query latest tag in safe mode', () => {
 
   beforeEach(async () => await newBlock(true));
 
-  it.skip('getBlockNumber', async () => {
+  it('getBlockNumber', async () => {
     // make sure latest finalized block and latest block are even
     const [curBlock, curFinalizedBlock] = await Promise.all([
       provider.getBlockNumber(),
@@ -67,7 +67,7 @@ describe('query latest tag in safe mode', () => {
     expect((await safeProvider._getBlock()).number).to.equal(curBlock.number);
   });
 
-  it.skip('_ensureSafeModeBlockTagFinalization', async () => {
+  it('_ensureSafeModeBlockTagFinalization', async () => {
     // make sure latest finalized block and latest block are even
     const [curBlock, curFinalizedBlock] = await Promise.all([
       provider._getBlock(),
@@ -94,11 +94,11 @@ describe('query latest tag in safe mode', () => {
     expect(await provider._ensureSafeModeBlockTagFinalization('whatever')).to.equal('whatever');
 
     /* --------------------------
-      in safe mode:
-      - "latest" should point to latest finalized block
-      - finalized block / no tag should so nothing and return the same tag
-      - unfinalized block should throw error
-                                                  -------------------------- */
+        in safe mode:
+        - "latest" should point to latest finalized block
+        - finalized block / no tag should so nothing and return the same tag
+        - unfinalized block should throw error
+                                                   -------------------------- */
     expect(await safeProvider._ensureSafeModeBlockTagFinalization(undefined)).to.equal(undefined);
     expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(safeProvider.latestFinalizedBlockHash);
     expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(curFinalizedBlock.hash);
