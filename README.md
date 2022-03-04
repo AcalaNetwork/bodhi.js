@@ -8,6 +8,11 @@ Packages:
 - [examples](./examples)
 
 ## Getting Started
+- initialize submodules (only need to do once after git clone)
+```
+git submodule update --init --recursive
+```
+
 - install all dependencies
 ```
 rush update
