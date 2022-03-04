@@ -3,7 +3,6 @@ import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
 import { EvmRpcProvider } from '../../rpc-provider';
-import { sleep } from '../../utils';
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai)
