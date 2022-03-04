@@ -1282,12 +1282,13 @@ export abstract class BaseProvider extends AbstractProvider {
     );
   };
 
-  _ensureSafeModeBlockTagFinalization = async (blockTag: BlockTagish): Promise<BlockTagish> => {
-    if (!this.safeMode || !blockTag) return blockTag;
+  _ensureSafeModeBlockTagFinalization = async (_blockTag: BlockTagish): Promise<BlockTagish> => {
+    if (!this.safeMode || !_blockTag) return _blockTag;
 
+    const blockTag = await _blockTag;
     if (blockTag === 'latest') return this.latestFinalizedBlockHash;
 
-    const isBlockFinalized = await this._isBlockFinalized(await blockTag);
+    const isBlockFinalized = await this._isBlockFinalized(blockTag);
 
     return isBlockFinalized
       ? blockTag
