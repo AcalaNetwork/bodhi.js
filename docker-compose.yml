@@ -1,34 +1,18 @@
 services:
-  mandala-node:
-    image: acala/mandala-node:e361c534
-    ports:
-      - 9944:9944
-    command:
-      - --dev
-      # - -lruntime=debug
-      # - -levm=debug
-      - --ws-port=9944
-      - --ws-external=true
-      - --rpc-port=9933
-      - --rpc-external=true
-      - --rpc-cors=all
-      - --rpc-methods=unsafe
-      - --instant-sealing
-      - --tmp
-
+  # -------------------------------- #
+  # ---------- Subql Land ---------- #
+  # -------------------------------- #
   postgres:
     image: postgres:12-alpine
     ports:
       - 5432:5432
-    # volumes:
-    #   - postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
+      dockerfile: docker/subql-node.Dockerfile
       target: subql-node
     depends_on:
       - postgres
@@ -42,8 +26,6 @@ services:
       DB_DATABASE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
-    # volumes:
-    #   - ./:/app
     command:
       - -f=./
       - --network-endpoint=ws://mandala-node:9944
@@ -70,42 +52,11 @@ services:
       - --playground
       - --indexer=http://subquery-node:3000
 
-  waffle-examples-test:
+  eth-rpc-adapter-server-with-subql:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
-      target: waffle-examples
-    depends_on:
-      - mandala-node
-
-  feed-tx:
-    build:
-      context: .
-      dockerfile: bodhi.Dockerfile
-      target: feed-tx
-    depends_on:
-      - mandala-node
-
-  eth-providers-test:
-    build:
-      context: .
-      dockerfile: bodhi.Dockerfile
-      target: eth-providers
-    depends_on:
-      feed-tx:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_started
-      subquery-node:
-        condition: service_started
-      graphql-engine:
-        condition: service_started
-
-  eth-rpc-adapter-server:
-    build:
-      context: .
-      dockerfile: bodhi.Dockerfile
-      target: eth-rpc-adapter
+      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
+      target: eth-rpc-adapter-with-subql
     ports:
       - 8545:8545
     depends_on:
@@ -117,48 +68,91 @@ services:
         condition: service_started
       graphql-engine:
         condition: service_started
-    command: yarn dev
+    restart: always
 
   eth-rpc-adapter-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
-      target: eth-rpc-adapter
+      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
+      target: eth-rpc-adapter-test
     depends_on:
-      - eth-rpc-adapter-server
+      - eth-rpc-adapter-server-with-subql
+
+  # ------------------------------------ #
+  # ---------- No Subql Realm ---------- #
+  # ------------------------------------ #
+  mandala-node:
+    image: acala/mandala-node:e361c534
+    ports:
+      - 9944:9944
+    command:
+      - --dev
+      # - -lruntime=debug
+      # - -levm=debug
+      - --ws-port=9944
+      - --ws-external=true
+      - --rpc-port=9933
+      - --rpc-external=true
+      - --rpc-cors=all
+      - --rpc-methods=unsafe
+      - --instant-sealing
+      - --tmp
+
+  feed-tx:
+    build:
+      context: .
+      dockerfile: docker/eth-providers-test.Dockerfile
+      target: feed-tx
+    depends_on:
       - mandala-node
-    environment:
-      RPC_URL: http://eth-rpc-adapter-server:8545
-      ENDPOINT_URL: ws://mandala-node:9944
-    command: yarn test:CI
-
-  # helper for hardhat with instant-sealing node
-  loop:
+  eth-providers-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
-      target: hardhat-examples
+      dockerfile: docker/eth-providers-test.Dockerfile
+      target: eth-providers-test
     depends_on:
-      - eth-rpc-adapter-server
-    command: yarn loop:CI
-
-  hardhat-examples-test:
+      feed-tx:
+        condition: service_completed_successfully
+      # mandala-node is the actual dependency, this is just a work around to delay start
+      # so to make sure mandala node is up and *running* before tests start
+      # - mandala-node
+  eth-rpc-adapter-server:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
-      target: hardhat-examples
+      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
+      target: eth-rpc-adapter
+    ports:
+      - 8545:8545
     depends_on:
-      - eth-rpc-adapter-server
-      - loop
-    command: yarn test:CI
+      - mandala-node
+    restart: always
 
-  truffle-examples-test:
+  waffle-examples-test:
     build:
       context: .
-      dockerfile: bodhi.Dockerfile
-      target: truffle-examples
+      dockerfile: docker/waffle-examples-test.Dockerfile
+      target: waffle-examples
+    depends_on:
+      - mandala-node
+
+  waffle-tutorials-test:
+    build:
+      context: .
+      dockerfile: docker/waffle-tutorials-test.Dockerfile
+      target: waffle-tutorials
+    depends_on:
+      - mandala-node
+  hardhat-tutorials-test:
+    build:
+      context: .
+      dockerfile: docker/hardhat-tutorials-test.Dockerfile
+      target: hardhat-tutorials
     depends_on:
       - eth-rpc-adapter-server
-    command: yarn test:CI
-# volumes:
-#   postgres:
+  truffle-tutorials-test:
+    build:
+      context: .
+      dockerfile: docker/truffle-tutorials-test.Dockerfile
+      target: truffle-tutorials
+    depends_on:
+      - eth-rpc-adapter-server

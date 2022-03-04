@@ -46,6 +46,8 @@ describe('eth_getTransactionReceipt', () => {
   it('returns correct result when hash exist', async () => {
     const allTxReceipts = await getAllTxReceipts();
 
+    expect(allTxReceipts.length).to.greaterThan(0);
+
     // test first one
     let txR = allTxReceipts[0];
     let res = await eth_getTransactionReceipt([txR.transactionHash]);
@@ -95,6 +97,8 @@ describe('eth_getLogs', () => {
   describe('filter by address', () => {
     it('returns correct logs', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];
       const log3 = allLogs[Math.floor(allLogs.length / 2)];
@@ -128,6 +132,8 @@ describe('eth_getLogs', () => {
       const BIG_NUMBER = 88888888;
       const BIG_NUMBER_HEX = '0x54C5638';
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       let res;
       let expectedLogs;
 
@@ -184,6 +190,8 @@ describe('eth_getLogs', () => {
   describe('filter by block tag', () => {
     it('returns correct logs for valid tag', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       let res;
       let expectedLogs;
 
@@ -260,6 +268,8 @@ describe('eth_getLogs', () => {
   describe('filter by topics', () => {
     it('returns correct logs', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];
       const log3 = allLogs[Math.floor(allLogs.length / 2)];
