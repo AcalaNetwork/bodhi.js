@@ -3,6 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
 import { EvmRpcProvider } from '../../rpc-provider';
+import { sleep } from '../../utils';
 
 chai.use(chaiAsPromised);
 chai.use(sinonChai)
@@ -14,7 +15,7 @@ const provider = EvmRpcProvider.from(endpoint, { safeMode: false });
 
 const newBlock = async (finalize: boolean): Promise<void> => {
   await provider.api.rpc.engine.createBlock(true /* create empty */, finalize);
-  await sleep(100);
+  await sleep(300);
 };
 
 describe('safe mode', () => {
@@ -41,7 +42,6 @@ describe('safe mode', () => {
       safeProvider.getBlockNumber(),
     ]);
     expect(curBlock).to.equal(curFinalizedBlock);
-    expect(curBlock).to.equal(safeProvider.latestFinalizedBlockHash);
 
     // real test
     await newBlock(false);
@@ -94,13 +94,16 @@ describe('safe mode', () => {
 
     /* --------------------------
         in safe mode:
-        - "latest" should point to latest finalized block
-        - finalized block / no tag should so nothing and return the same tag
-        - unfinalized block should throw error
-                                                   -------------------------- */
-    expect(await safeProvider._ensureSafeModeBlockTagFinalization(undefined)).to.equal(undefined);
+        - ① "latest" should point to latest finalized block
+        - ② finalized block / no tag should do nothing and return the same tag
+        - ③ unfinalized block should throw error
+                                                      -------------------------- */
+    // ①
     expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(safeProvider.latestFinalizedBlockHash);
     expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(curFinalizedBlock.hash);
+
+    // ② 
+    expect(await safeProvider._ensureSafeModeBlockTagFinalization(undefined)).to.equal(undefined);
     expect(await safeProvider._ensureSafeModeBlockTagFinalization(curFinalizedBlock.hash)).to.equal(curFinalizedBlock.hash);
 
     for (let i = 1; i < curFinalizedBlock.number; i++) {
@@ -109,6 +112,7 @@ describe('safe mode', () => {
       expect(await safeProvider._ensureSafeModeBlockTagFinalization(hash)).to.equal(hash);
     }
 
+    // ③
     await expect(
       safeProvider._ensureSafeModeBlockTagFinalization(nextBlock.hash)
     ).to.be.rejectedWith('SAFE MODE ERROR: target block is not finalized');
