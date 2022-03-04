@@ -56,6 +56,8 @@
     "@ethersproject/contracts": "~5.5.0",
     "@ethersproject/wallet": "~5.5.0",
     "chai-as-promised": "~7.1.1",
-    "@types/chai-as-promised": "~7.1.4"
+    "@types/chai-as-promised": "~7.1.4",
+    "sinon-chai": "~3.7.0",
+    "sinon": "~13.0.1"
   }
 }
