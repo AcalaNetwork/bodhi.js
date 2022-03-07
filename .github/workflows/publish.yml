@@ -26,7 +26,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: install dependencies
-        run: node common/scripts/install-run-rush.js install
+        run: node common/scripts/install-run-rush.js update
 
       - name: build packages
         run: node common/scripts/install-run-rush.js build --verbose --to @acala-network/bodhi
