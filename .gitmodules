@@ -1,9 +1,9 @@
 [submodule "hardhat"]
 	path = examples/hardhat-tutorials
-	url = git@github.com:AcalaNetwork/hardhat-tutorials.git
+	url = https://github.com/AcalaNetwork/hardhat-tutorials.git
 [submodule "truffle"]
 	path = examples/truffle-tutorials
-	url = git@github.com:AcalaNetwork/truffle-tutorials.git
+	url = https://github.com/AcalaNetwork/truffle-tutorials.git
 [submodule "waffle"]
 	path = examples/waffle-tutorials
-	url = git@github.com:AcalaNetwork/waffle-tutorials.git
+	url = https://github.com/AcalaNetwork/waffle-tutorials.git
