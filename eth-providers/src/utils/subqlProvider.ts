@@ -1,98 +1,12 @@
-import { BlockTag, Filter, Log } from '@ethersproject/abstract-provider';
+import { Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
 import { Query, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
-
-const LOGS_NODES = `
-  nodes {
-    blockNumber,
-    blockHash,
-    transactionIndex,
-    removed,
-    address,
-    data,
-    topics,
-    transactionHash,
-    logIndex,
-  }
-`;
-
-const TX_RECEIPT_NODES = `
-  nodes {
-    id
-    to
-    from
-    contractAddress
-    transactionIndex
-    gasUsed
-    logsBloom
-    blockHash
-    transactionHash
-    blockNumber
-    cumulativeGasUsed
-    type
-    status
-    logs {
-      ${LOGS_NODES}
-    }
-  }
-`;
-
-const isDefined = (x: any): boolean => x !== undefined && x !== null;
-const isAnyDefined = (arr: any[]): boolean => arr.some((a) => isDefined(a));
-
-const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTag | undefined): string => {
-  const fromBlockFilter = isDefined(fromBlock) ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
-  const toBlockFilter = isDefined(toBlock) ? `lessThanOrEqualTo: "${toBlock}"` : '';
-
-  return !!fromBlockFilter || !!toBlockFilter
-    ? `blockNumber: {
-    ${fromBlockFilter}
-    ${toBlockFilter}
-  }`
-    : '';
-};
-
-const _getAddressFilter = (address: string | undefined): string =>
-  address ? `address: { in: ${JSON.stringify(Array.isArray(address) ? address : [address])}}` : '';
-
-const _getTopicsFilter = (topics: Array<string | Array<string> | null> | undefined): string => {
-  // NOTE: if needed in the future, we can implement actual nested topic filter.
-  // Now we just flat all topics
-  const allTopics = (topics?.length! > 0 ? topics!.flat() : []).filter((t) => t) as string[];
-
-  return `
-    topics: {
-      contains: ${JSON.stringify(allTopics)}
-    }
-  `;
-};
-
-const getLogsQueryFilter = (filter: Filter): string => {
-  const { fromBlock, toBlock, address, topics } = filter;
-  if (!isAnyDefined([fromBlock, toBlock, address, topics])) {
-    return '';
-  }
-
-  const addressFilter = _getAddressFilter(address);
-  const blockNumberFilter = _getBlockNumberFilter(fromBlock, toBlock);
-  const topicsFilter = _getTopicsFilter(topics);
-
-  const queryFilter = `(filter: {
-    ${addressFilter}
-    ${blockNumberFilter}
-    ${topicsFilter}
-  })`;
-
-  return queryFilter;
-};
-
-// adapt logs from graphql to provider compatible types
-const _adaptLogs = (logs: LogGQL[]): Log[] =>
-  logs.map((log) => ({
-    ...log,
-    data: log.data || ''
-  }));
-  
+import {
+  getLogsQueryFilter,
+  adaptLogs,
+  LOGS_NODES,
+  TX_RECEIPT_NODES,
+} from './logs';
 export class SubqlProvider {
   readonly url: string;
 
@@ -142,7 +56,7 @@ export class SubqlProvider {
       }
     `);
 
-    return _adaptLogs(res.logs!.nodes as LogGQL[]);
+    return adaptLogs(res.logs!.nodes as LogGQL[]);
   };
 
   getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
@@ -156,7 +70,7 @@ export class SubqlProvider {
       }
     `);
 
-    return _adaptLogs(res.logs!.nodes as LogGQL[]);
+    return adaptLogs(res.logs!.nodes as LogGQL[]);
   };
 
   getIndexerMetadata = async (): Promise<any> => {
