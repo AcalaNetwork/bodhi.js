@@ -9,6 +9,7 @@ dotenv.config();
 
 export async function start() {
   const ENDPOINT_URL = process.env.ENDPOINT_URL || 'ws://0.0.0.0::9944';
+  const SUBQL_URL = process.env.SUBQL_URL || 'http://0.0.0.0:3001';
   const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
   const WS_PORT = Number(process.env.WS_PORT || 3331);
   const MAX_CACHE_SIZE = Number(process.env.MAX_CACHE_SIZE || 200);
@@ -16,7 +17,8 @@ export async function start() {
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL, {
     safeMode: SAFE_MODE,
-    maxCacheSize: MAX_CACHE_SIZE
+    maxCacheSize: MAX_CACHE_SIZE,
+    subqlUrl: SUBQL_URL,
   });
 
   const bridge = new Eip1193Bridge(provider);

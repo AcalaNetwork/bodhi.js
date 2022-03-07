@@ -1,19 +1,6 @@
 import { BlockTag, Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
-import dotenv from 'dotenv';
 import { Query, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
-
-dotenv.config();
-
-const URL = process.env.SUBQL_URL || 'http://localhost:3001';
-
-const queryGraphql = (query: string): Promise<Query> =>
-  request(
-    URL,
-    gql`
-      ${query}
-    `
-  );
 
 const LOGS_NODES = `
   nodes {
@@ -50,34 +37,6 @@ const TX_RECEIPT_NODES = `
   }
 `;
 
-export const getAllTxReceipts = async (): Promise<TXReceiptGQL[]> => {
-  const res = await queryGraphql(`
-    query {
-      transactionReceipts {
-        ${TX_RECEIPT_NODES}
-      }
-    }
-  `);
-
-  return res.transactionReceipts!.nodes as TXReceiptGQL[];
-};
-
-export const getTxReceiptByHash = async (hash: string): Promise<TXReceiptGQL | null> => {
-  const res = await queryGraphql(`
-    query {
-      transactionReceipts(filter: {
-        transactionHash:{
-          equalTo: "${hash}"
-        }
-      }) {
-        ${TX_RECEIPT_NODES}
-      }
-    }
-  `);
-
-  return res.transactionReceipts!.nodes[0] || null;
-};
-
 const isDefined = (x: any): boolean => x !== undefined && x !== null;
 const isAnyDefined = (arr: any[]): boolean => arr.some((a) => isDefined(a));
 
@@ -108,7 +67,7 @@ const _getTopicsFilter = (topics: Array<string | Array<string> | null> | undefin
   `;
 };
 
-export const getLogsQueryFilter = (filter: Filter): string => {
+const getLogsQueryFilter = (filter: Filter): string => {
   const { fromBlock, toBlock, address, topics } = filter;
   if (!isAnyDefined([fromBlock, toBlock, address, topics])) {
     return '';
@@ -133,48 +92,89 @@ const _adaptLogs = (logs: LogGQL[]): Log[] =>
     ...log,
     data: log.data || ''
   }));
+  
+export class SubqlProvider {
+  readonly url: string;
 
-export const getAllLogs = async (): Promise<Log[]> => {
-  const res = await queryGraphql(`
-    query {
-      logs {
-        ${LOGS_NODES}
+  constructor(url: string) {
+    this.url = url;
+  }
+
+  queryGraphql = (query: string): Promise<Query> => request(
+    this.url,
+    gql`${query}`
+  );
+
+  getAllTxReceipts = async (): Promise<TXReceiptGQL[]> => {
+    const res = await this.queryGraphql(`
+      query {
+        transactionReceipts {
+          ${TX_RECEIPT_NODES}
+        }
       }
-    }
-  `);
+    `);
 
-  return _adaptLogs(res.logs!.nodes as LogGQL[]);
-};
+    return res.transactionReceipts!.nodes as TXReceiptGQL[];
+  };
 
-export const getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
-  const queryFilter = getLogsQueryFilter(filter);
-
-  const res = await queryGraphql(`
-    query {
-      logs${queryFilter} {
-        ${LOGS_NODES}
+  getTxReceiptByHash = async (hash: string): Promise<TXReceiptGQL | null> => {
+    const res = await this.queryGraphql(`
+      query {
+        transactionReceipts(filter: {
+          transactionHash:{
+            equalTo: "${hash}"
+          }
+        }) {
+          ${TX_RECEIPT_NODES}
+        }
       }
-    }
-  `);
+    `);
 
-  return _adaptLogs(res.logs!.nodes as LogGQL[]);
-};
+    return res.transactionReceipts!.nodes[0] || null;
+  };
 
-export const getIndexerMetadata = async () => {
-  const res = await queryGraphql(`
-    query {
-      _metadata {
-        lastProcessedHeight
-        lastProcessedTimestamp
-        targetHeight
-        chain
-        specName
-        genesisHash
-        indexerHealthy
-        indexerNodeVersion
+  getAllLogs = async (): Promise<Log[]> => {
+    const res = await this.queryGraphql(`
+      query {
+        logs {
+          ${LOGS_NODES}
+        }
       }
-    }
-  `);
+    `);
 
-  return res._metadata;
+    return _adaptLogs(res.logs!.nodes as LogGQL[]);
+  };
+
+  getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
+    const queryFilter = getLogsQueryFilter(filter);
+
+    const res = await this.queryGraphql(`
+      query {
+        logs${queryFilter} {
+          ${LOGS_NODES}
+        }
+      }
+    `);
+
+    return _adaptLogs(res.logs!.nodes as LogGQL[]);
+  };
+
+  getIndexerMetadata = async (): Promise<any> => {
+    const res = await this.queryGraphql(`
+      query {
+        _metadata {
+          lastProcessedHeight
+          lastProcessedTimestamp
+          targetHeight
+          chain
+          specName
+          genesisHash
+          indexerHealthy
+          indexerNodeVersion
+        }
+      }
+    `);
+
+    return res._metadata;
+  };
 };
