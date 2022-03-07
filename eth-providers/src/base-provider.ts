@@ -157,6 +157,8 @@ export interface EventListeners {
   [name: string]: EventListener[];
 }
 
+export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
+
 const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
 const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
@@ -177,19 +179,21 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
+  latestFinalizedBlockHash: string | undefined;
 
   constructor(safeMode: boolean = false) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
     this.safeMode = safeMode;
+    this.latestFinalizedBlockHash = undefined;
 
     logger.info(`safe mode: ${safeMode}`);
     safeMode && logger.warn(`
-      ----------------------------- WARNING ---------------------------------
-      SafeMode is enabled, unfinalized blocks behave like they don't exist!
-      To go back to normal mode, set SAFE_MODE=0
-      -----------------------------------------------------------------------
+      ----------------------------- WARNING ----------------------------
+      SafeMode is ON, and RPCs behave very differently than usual world!
+                  To go back to normal mode, set SAFE_MODE=0
+      ------------------------------------------------------------------
     `);
   }
 
@@ -267,7 +271,16 @@ export abstract class BaseProvider extends AbstractProvider {
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
-      this._cache!.handleFinalizedBlock(header.number.toNumber());
+      const blockNumber = header.number.toNumber();
+
+      // safe mode related
+      if (this.safeMode) {
+        const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
+        this.latestFinalizedBlockHash = blockHash;
+      }
+
+      // cache related
+      this._cache!.handleFinalizedBlock(blockNumber);
     }) as unknown as void;
   };
 
@@ -358,11 +371,11 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getBlock = async (
-    blockTag: BlockTag | Promise<BlockTag>,
+    _blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock | BlockWithTransactions> => {
     await this.getNetwork();
-    await this._ensureSafeModeFinalization(blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     const { fullTx, header } = await resolveProperties({
       header: this._getBlockHeader(blockTag),
@@ -477,10 +490,10 @@ export abstract class BaseProvider extends AbstractProvider {
   // @TODO free
   getBalance = async (
     addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<BigNumber> => {
     await this.getNetwork();
-    await this._ensureSafeModeFinalization(blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -540,10 +553,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getCode = async (
     addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
-    await this._ensureSafeModeFinalization(blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     if ((await blockTag) === 'pending') return '0x';
 
@@ -569,10 +582,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   call = async (
     transaction: Deferrable<TransactionRequest>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
-    await this._ensureSafeModeFinalization(blockTag); // TODO: do we need this check for call?
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
@@ -599,10 +612,10 @@ export abstract class BaseProvider extends AbstractProvider {
   getStorageAt = async (
     addressOrName: string | Promise<string>,
     position: BigNumberish | Promise<BigNumberish>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     await this.getNetwork();
-    await this._ensureSafeModeFinalization(blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     // @TODO resolvedPosition
     const { address, blockHash, resolvedPosition } = await resolveProperties({
@@ -740,7 +753,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _getEthGas = async (
     gasLimit: BigNumberish,
     storageLimit: BigNumberish,
-    _validUntil: BigNumberish
+    _validUntil?: BigNumberish
   ): Promise<{
     gasPrice: BigNumber;
     gasLimit: BigNumber;
@@ -867,9 +880,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
   queryAccountInfo = async (
     addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> => {
-    await this._ensureSafeModeFinalization(blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     // pending tag
     const resolvedBlockTag = await blockTag;
@@ -1200,20 +1213,17 @@ export abstract class BaseProvider extends AbstractProvider {
     return result;
   };
 
-  _getBlockHash = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
-    blockTag = await blockTag;
-
-    if (blockTag === undefined) {
-      blockTag = 'latest';
-    }
+  _getBlockHash = async (_blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
+    const blockTag = (await _blockTag) || 'latest';
 
     switch (blockTag) {
       case 'pending': {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
-        const hash = await this.api.rpc.chain.getBlockHash();
-        return hash.toHex();
+        return this.safeMode
+          ? this.latestFinalizedBlockHash!
+          : (await this.api.rpc.chain.getBlockHash()).toHex();
       }
       case 'earliest': {
         const hash = this.api.genesisHash;
@@ -1272,17 +1282,22 @@ export abstract class BaseProvider extends AbstractProvider {
     );
   };
 
-  _ensureSafeModeFinalization = async (blockTag: BlockTag | Promise<BlockTag> | undefined): Promise<void> => {
-    if (!this.safeMode || !blockTag) return;
+  _ensureSafeModeBlockTagFinalization = async (_blockTag: BlockTagish): Promise<BlockTagish> => {
+    if (!this.safeMode || !_blockTag) return _blockTag;
 
-    const isBlockFinalized = await this._isBlockFinalized(await blockTag);
+    const blockTag = await _blockTag;
+    if (blockTag === 'latest') return this.latestFinalizedBlockHash;
 
-    // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
-    !isBlockFinalized && logger.throwError(
-      'SAFE MODE ERROR: target block is not finalized',
-      Logger.errors.UNKNOWN_ERROR,
-      { blockTag }
-    );
+    const isBlockFinalized = await this._isBlockFinalized(blockTag);
+
+    return isBlockFinalized
+      ? blockTag
+      // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
+      : logger.throwError(
+        'SAFE MODE ERROR: target block is not finalized',
+        Logger.errors.UNKNOWN_ERROR,
+        { blockTag }
+      );
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
@@ -1372,9 +1387,9 @@ export abstract class BaseProvider extends AbstractProvider {
   // @TODO Testing
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
-    blockTag: BlockTag | Promise<BlockTag>
+    _blockTag: BlockTag | Promise<BlockTag>
   ): Promise<TransactionReceipt> => {
-    await this._ensureSafeModeFinalization(blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);
