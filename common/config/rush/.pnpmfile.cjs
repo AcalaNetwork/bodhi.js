@@ -28,6 +28,7 @@ const polkadotDeps = {
   "@polkadot/keyring": "~8.1.2",
   "@polkadot/util": "~8.1.2",
   "@polkadot/util-crypto": "~8.1.2",
+  "@acala-network/types": "3.0.3-16",   // 3.0.3-25 won't build eth-providers somehow. TODO: update to latest
 }
 
 const fixedDeps = {

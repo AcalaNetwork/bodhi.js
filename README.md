@@ -8,6 +8,11 @@ Packages:
 - [examples](./examples)
 
 ## Getting Started
+- initialize submodules (only need to do once after git clone)
+```
+git submodule update --init --recursive
+```
+
 - install all dependencies
 ```
 rush update
@@ -55,11 +60,26 @@ docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}')
 
 - run tests
 ```
-# run any test, where xxx ∈ { waffle-examples-test, eth-providers-test, eth-rpc-adapter-test, hardhat-examples-test, truffle-examples-test }
+### run any test
 docker-compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
 
-# run all tests (not recommended since log will be too messy)
+where xxx ∈ {
+  eth-providers-test,
+  eth-rpc-adapter-test,
+  waffle-examples-test,
+  waffle-tutorials-test,
+  hardhat-tutorials-test,
+  truffle-tutorials-test,
+}
+
+### run all tests (not recommended since log will be too messy)
 docker-compose up
+```
+
+we can grep container logs by
+```
+docker-compose logs --tail=0 --follow   # all logs
+docker logs -f <container_id>           # logs for specific container
 ```
 
 

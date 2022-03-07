@@ -24,13 +24,13 @@
     "@polkadot/api" "^6.5.2"
     "@polkadot/rpc-core" "^6.5.2"
 
-"@acala-network/eth-providers@~2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@acala-network/eth-providers/-/eth-providers-2.1.7.tgz#13c859f95c7e4071b61361731f4eed03ccf4f323"
-  integrity sha512-ZIp5Hfb9y47Z4TP74N2baheGwI9c84WxEZkcAWrGFu0oXERJKDhusrg8gamT4n6dAKjNlIoc0uQVeW1oyvJUmQ==
+"@acala-network/eth-providers@~2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@acala-network/eth-providers/-/eth-providers-2.2.2.tgz#5f33f56d421f447447e385f7bd7ee40bc7eb9186"
+  integrity sha512-DhZuoQR49cFzrV7zUcCt5W5VooBQg6TMh9juRrfnSqZ3Y7LOx97XA/qMqk1x0FVtz/XwZuMTbz/pWq6veeE8AA==
   dependencies:
     "@acala-network/api" "~3.0.3-3"
-    "@acala-network/eth-transactions" "2.1.7"
+    "@acala-network/eth-transactions" "2.2.2"
     "@acala-network/types" "~3.0.3-3"
     "@ethersproject/abstract-provider" "~5.5.0"
     "@ethersproject/bignumber" "~5.5.0"
@@ -52,10 +52,10 @@
     graphql "~16.0.1"
     graphql-request "~3.6.1"
 
-"@acala-network/eth-transactions@2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@acala-network/eth-transactions/-/eth-transactions-2.1.7.tgz#4e63f7970cfa90592412cd259919c6230127b16e"
-  integrity sha512-97rkuIDB6ZKK7KijD31t9H5RVy0EP6s7GZmtFwLlal/wlDeJ+k1kzwBaiIwU6WyQcMkVVgK2iMz1n3YfazVrug==
+"@acala-network/eth-transactions@2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@acala-network/eth-transactions/-/eth-transactions-2.2.2.tgz#40ec5ebe372707e1d8fabfc4ca7df385b859127b"
+  integrity sha512-POgZcC0hnJ11cYOKaFFOZuPauB9gYda3LegS8/GJX/4j2ACplR14avqGW13JpeZrcsw2V2bRIiFO2tcdJmvuzA==
   dependencies:
     "@ethersproject/address" "~5.5.0"
     "@ethersproject/bignumber" "~5.5.0"
@@ -69,6 +69,7 @@
     "@ethersproject/signing-key" "~5.5.0"
     "@ethersproject/transactions" "~5.5.0"
     "@ethersproject/wallet" "~5.5.0"
+    "@polkadot/util-crypto" "~8.1.2"
 
 "@acala-network/type-definitions@3.0.2":
   version "3.0.2"

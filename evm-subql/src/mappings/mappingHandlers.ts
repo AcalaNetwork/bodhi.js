@@ -49,6 +49,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
     cumulativeGasUsed: ret.cumulativeGasUsed.toBigInt(),
     type: ret.type,
     status: ret.status,
+    exitReason: ret.exitReason,
     ...transactionInfo
   });
 

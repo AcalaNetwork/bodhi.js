@@ -15,10 +15,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const RPC_URL = process.env.RPC_URL || 'ws://127.0.0.1:8545';
-const rpcGet =
-  (
-    method: string // eslint-disable-line
-  ) =>
+const rpcGet = (method: string) => (
   (params: any): any =>
     axios.get(RPC_URL, {
       data: {
@@ -27,7 +24,8 @@ const rpcGet =
         method,
         params
       }
-    });
+    })
+);
 
 export const logsEq = (a: Log[], b: Log[]): boolean =>
   a.length === b.length &&
@@ -35,11 +33,20 @@ export const logsEq = (a: Log[], b: Log[]): boolean =>
     b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
   );
 
+describe('env setup', () => {
+  it('has tx in the chain', async () => {
+    const res = await rpcGet('eth_blockNumber')();
+    expect(Number(res.data.result)).to.greaterThan(0);
+  });
+});
+
 describe('eth_getTransactionReceipt', () => {
   const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
 
   it('returns correct result when hash exist', async () => {
     const allTxReceipts = await getAllTxReceipts();
+
+    expect(allTxReceipts.length).to.greaterThan(0);
 
     // test first one
     let txR = allTxReceipts[0];
@@ -90,6 +97,8 @@ describe('eth_getLogs', () => {
   describe('filter by address', () => {
     it('returns correct logs', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];
       const log3 = allLogs[Math.floor(allLogs.length / 2)];
@@ -123,6 +132,8 @@ describe('eth_getLogs', () => {
       const BIG_NUMBER = 88888888;
       const BIG_NUMBER_HEX = '0x54C5638';
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       let res;
       let expectedLogs;
 
@@ -179,6 +190,8 @@ describe('eth_getLogs', () => {
   describe('filter by block tag', () => {
     it('returns correct logs for valid tag', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       let res;
       let expectedLogs;
 
@@ -255,6 +268,8 @@ describe('eth_getLogs', () => {
   describe('filter by topics', () => {
     it('returns correct logs', async () => {
       const allLogs = await getAllLogs();
+      expect(allLogs.length).to.greaterThan(0);
+
       const log1 = allLogs[0];
       const log2 = allLogs[allLogs.length - 1];
       const log3 = allLogs[Math.floor(allLogs.length / 2)];
@@ -821,5 +836,40 @@ describe('eth_getEthGas', () => {
 
     expect(parseInt(res.gasLimit, 16)).to.equal(33064010);
     expect(parseInt(res.gasPrice)).to.equal(202184524778);
+  });
+});
+
+describe('eth_getCode', () => {
+  const eth_getCode = rpcGet('eth_getCode');
+
+  const preCompileAddresses = [
+    '0x0000000000000000000100000000000000000001',   // AUSD
+    '0x0000000000000000000200000000000000000001',   // LP_ACA_AUSD
+    '0x0000000000000000000000000000000000000804',   // DEX
+  ];
+
+  const tags = [
+    'latest',
+    'earliest',
+  ];
+
+  it('get correct precompile token code', async () => {
+    for (const addr of preCompileAddresses) {
+      for (const t of tags) {
+        const res = (await eth_getCode([addr, t])).data.result;
+        expect(res.length).to.greaterThan(2);
+      }
+    }
+  });
+
+  it.skip('get correct user deployed contract code', async () => {
+  });
+
+  it('returns empty for pending tag or non-exist contract address', async () => {
+    const randAddr = '0x1ebEc3D7fd088d9eE4B6d8272788f028e5122218';
+    for (const t of [...tags, 'pending']) {
+      const res = (await eth_getCode([randAddr, t])).data.result;
+      expect(res).to.equal('0x');
+    }
   });
 });
