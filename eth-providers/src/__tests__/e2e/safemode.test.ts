@@ -35,6 +35,11 @@ describe('safe mode', () => {
 
   beforeEach(async () => await newBlock(true));
 
+  it('isSafeMode', async () => {
+    expect(await provider.isSafeMode).to.equal(false);
+    expect(await safeProvider.isSafeMode).to.equal(true);
+  });
+
   it('getBlockNumber', async () => {
     // make sure latest finalized block and latest block are even
     const [curBlock, curFinalizedBlock] = await Promise.all([

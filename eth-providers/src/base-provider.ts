@@ -308,6 +308,10 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.api.registry.chainDecimals[0] || 10;
   }
 
+  get isSafeMode(): boolean {
+    return this.safeMode;
+  }
+
   isReady = (): Promise<Network> => {
     if (!this._network) {
       const _getNetwork = async () => {
