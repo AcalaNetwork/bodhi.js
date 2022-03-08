@@ -64,6 +64,11 @@ class Eip1193BridgeImpl {
     return this.#provider.getUnfinalizedCachInfo();
   }
 
+  async net_isSafeMode(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.isSafeMode;
+  }
+
   /**
    * Returns the current network id.
    * @returns ID - The current network id.
