@@ -1,12 +1,18 @@
 import { Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
-import { Query, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
+import {
+  Query,
+  _Metadata,
+  TransactionReceipt as TXReceiptGQL,
+  Log as LogGQL,
+} from './gqlTypes';
 import {
   getLogsQueryFilter,
   adaptLogs,
   LOGS_NODES,
   TX_RECEIPT_NODES,
 } from './logs';
+
 export class SubqlProvider {
   readonly url: string;
 
@@ -73,7 +79,7 @@ export class SubqlProvider {
     return adaptLogs(res.logs!.nodes as LogGQL[]);
   };
 
-  getIndexerMetadata = async (): Promise<any> => {
+  getIndexerMetadata = async (): Promise<_Metadata> => {
     const res = await this.queryGraphql(`
       query {
         _metadata {
@@ -89,6 +95,6 @@ export class SubqlProvider {
       }
     `);
 
-    return res._metadata;
+    return res._metadata!;
   };
 };
