@@ -55,6 +55,12 @@
      * For example, allow some projects to use an older TypeScript compiler
      * (in addition to whatever "usual" version is being used by other projects in the repo):
      */
+    "@acala-network/bodhi": [
+      "^2.2.2"
+    ],
+    "@acala-network/eth-providers": [
+      "^2.1.7",   // tutorials use this fixed version
+    ],
 
     // these are mostly alternative versions used by tutorials
     // TODO: uniform these versions as much as possible
@@ -63,15 +69,6 @@
       "~4.0.2",
       "^4.0.2",
       "^4.0.0",
-    ],
-    "@acala-network/bodhi": [
-      "^2.2.2"
-    ],
-    "@acala-network/eth-providers": [
-      "^2.1.7",   // tutorials use this fixed version
-    ],
-    "@acala-network/api": [
-      "^3.0.2"
     ],
     "@openzeppelin/contracts": [
       "~3.4.2",
@@ -97,12 +94,6 @@
     ],
     "ethereum-waffle": [
       "^3.4.0"
-    ],
-    "ethers": [
-      "^5.5.1"
-    ],
-     "@polkadot/api": [
-       "^7.9.1",
     ],
   }
 }
