@@ -19,16 +19,16 @@ module.exports = {
 };
 
 const polkadotDeps = {
-  "@polkadot/api": "~6.11.1",
-  "@polkadot/api-derive": "~6.11.1",
-  "@polkadot/types": "~6.11.1",
-  "@polkadot/rpc-core": "~6.11.1",
-  "@polkadot/types-known": "~6.11.1",
-  "@polkadot/rpc-provider": "~6.11.1",
-  "@polkadot/keyring": "~8.1.2",
-  "@polkadot/util": "~8.1.2",
-  "@polkadot/util-crypto": "~8.1.2",
-  "@acala-network/types": "3.0.3-16",   // 3.0.3-25 won't build eth-providers somehow. TODO: update to latest
+  // "@polkadot/api": "~6.11.1",
+  // "@polkadot/api-derive": "~6.11.1",
+  // "@polkadot/types": "~6.11.1",
+  // "@polkadot/rpc-core": "~6.11.1",
+  // "@polkadot/types-known": "~6.11.1",
+  // "@polkadot/rpc-provider": "~6.11.1",
+  // "@polkadot/keyring": "~8.1.2",
+  // "@polkadot/util": "~8.1.2",
+  // "@polkadot/util-crypto": "~8.1.2",
+  // "@acala-network/types": "3.0.3-16",   // 3.0.3-25 won't build eth-providers somehow. TODO: update to latest
 }
 
 const fixedDeps = {
