@@ -1,6 +1,6 @@
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
-import { getAllLogs, getAllTxReceipts } from '@acala-network/eth-providers/lib/utils';
+import { SubqlProvider } from '@acala-network/eth-providers/lib/utils/subqlProvider';
 import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { Log } from '@ethersproject/abstract-provider';
 import { Contract } from '@ethersproject/contracts';
@@ -15,6 +15,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const RPC_URL = process.env.RPC_URL || 'ws://127.0.0.1:8545';
+const SUBQL_URL = process.env.SUBQL_URL || 'ws://127.0.0.1:3001';
+
+const subql = new SubqlProvider(SUBQL_URL);
+
 const rpcGet = (method: string) => (
   (params: any): any =>
     axios.get(RPC_URL, {
@@ -44,7 +48,7 @@ describe('eth_getTransactionReceipt', () => {
   const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
 
   it('returns correct result when hash exist', async () => {
-    const allTxReceipts = await getAllTxReceipts();
+    const allTxReceipts = await subql.getAllTxReceipts();
 
     expect(allTxReceipts.length).to.greaterThan(0);
 
@@ -96,7 +100,7 @@ describe('eth_getLogs', () => {
 
   describe('filter by address', () => {
     it('returns correct logs', async () => {
-      const allLogs = await getAllLogs();
+      const allLogs = await subql.getAllLogs();
       expect(allLogs.length).to.greaterThan(0);
 
       const log1 = allLogs[0];
@@ -131,7 +135,7 @@ describe('eth_getLogs', () => {
     it('returns correct logs', async () => {
       const BIG_NUMBER = 88888888;
       const BIG_NUMBER_HEX = '0x54C5638';
-      const allLogs = await getAllLogs();
+      const allLogs = await subql.getAllLogs();
       expect(allLogs.length).to.greaterThan(0);
 
       let res;
@@ -189,7 +193,7 @@ describe('eth_getLogs', () => {
 
   describe('filter by block tag', () => {
     it('returns correct logs for valid tag', async () => {
-      const allLogs = await getAllLogs();
+      const allLogs = await subql.getAllLogs();
       expect(allLogs.length).to.greaterThan(0);
 
       let res;
@@ -267,7 +271,7 @@ describe('eth_getLogs', () => {
 
   describe('filter by topics', () => {
     it('returns correct logs', async () => {
-      const allLogs = await getAllLogs();
+      const allLogs = await subql.getAllLogs();
       expect(allLogs.length).to.greaterThan(0);
 
       const log1 = allLogs[0];
@@ -308,7 +312,7 @@ describe('eth_getTransactionByHash', () => {
   const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
 
   it('finds correct tx when hash exist', async () => {
-    const allTxReceipts = await getAllTxReceipts();
+    const allTxReceipts = await subql.getAllTxReceipts();
     const tx1 = allTxReceipts[0];
     const tx2 = allTxReceipts[allTxReceipts.length - 1];
     const tx3 = allTxReceipts[Math.floor(allTxReceipts.length / 2)];

@@ -35,8 +35,7 @@
     "graphql": "~16.0.1",
     "graphql-request": "~3.6.1",
     "@graphql-codegen/typescript": "2.3.0",
-    "@ethersproject/providers": "~5.5.0",
-    "dotenv": "~10.0.0"
+    "@ethersproject/providers": "~5.5.0"
   },
   "devDependencies": {
     "@types/chai": "~4.2.22",

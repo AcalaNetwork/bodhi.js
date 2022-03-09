@@ -32,8 +32,6 @@ import {
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
   GAS_PRICE,
-  MAX_FEE_PER_GAS,
-  MAX_PRIORITY_FEE_PER_GAS,
   U32MAX,
   U64MAX,
   ZERO
@@ -42,10 +40,8 @@ import {
   computeDefaultEvmAddress,
   computeDefaultSubstrateAddress,
   convertNativeToken,
-  getFilteredLogs,
   getPartialTransactionReceipt,
   getTransactionIndexAndHash,
-  getTxReceiptByHash,
   logger,
   PROVIDER_ERRORS,
   sendTx,
@@ -53,11 +49,11 @@ import {
   calcSubstrateTransactionParams,
   getEvmExtrinsicIndexes,
   findEvmEvent,
-  getIndexerMetadata,
   filterLog,
   toHex,
   calcEthereumTransactionParams
 } from './utils';
+import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
 import { AccessListish } from 'ethers/lib/utils';
@@ -176,12 +172,19 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
+  readonly subql?: SubqlProvider;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
   latestFinalizedBlockHash: string | undefined;
 
-  constructor(safeMode: boolean = false) {
+  constructor({
+    safeMode = false,
+    subqlUrl,
+  }: {
+    safeMode?: boolean,
+    subqlUrl?: string,
+  } = {}) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
@@ -195,6 +198,12 @@ export abstract class BaseProvider extends AbstractProvider {
                   To go back to normal mode, set SAFE_MODE=0
       ------------------------------------------------------------------
     `);
+
+    if (subqlUrl) {
+      this.subql = new SubqlProvider(subqlUrl);
+    } else {
+      logger.warn(`no subql url provided`)
+    }
   }
 
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
@@ -1485,7 +1494,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (txFromCache) return txFromCache;
 
     try {
-      const txFromSubql = await getTxReceiptByHash(txHash);
+      const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
 
       return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     } catch {
@@ -1582,6 +1591,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   // Bloom-filter Queries
   getLogs = async (filter: Filter): Promise<Log[]> => {
+    if (!this.subql) {
+      return logger.throwError('missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.');
+    }
+
     const { fromBlock = 'latest', toBlock = 'latest' } = filter;
     const _filter = { ...filter };
 
@@ -1594,13 +1607,13 @@ export abstract class BaseProvider extends AbstractProvider {
       _filter.toBlock = toBlockNumber;
     }
 
-    const filteredLogs = await getFilteredLogs(_filter as Filter);
+    const filteredLogs = await this.subql.getFilteredLogs(_filter as Filter);
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
-  getIndexerMetadata = async () => {
-    return getIndexerMetadata();
+  getIndexerMetadata = async (): Promise<any> => {
+    return this.subql?.getIndexerMetadata();
   };
 
   getUnfinalizedCachInfo = (): any => this._cache?._inspect() || 'no cache running!';
