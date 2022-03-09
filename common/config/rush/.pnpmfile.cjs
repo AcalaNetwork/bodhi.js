@@ -23,12 +23,13 @@ const polkadotDeps = {
   "@polkadot/api-derive": "~7.11.1",
   '@polkadot/api-augment': "~7.11.1",
   "@polkadot/types": "~7.11.1",
-  "@polkadot/rpc-core": "~7.11.1",
   "@polkadot/types-known": "~7.11.1",
+  "@polkadot/rpc-core": "~7.11.1",
   "@polkadot/rpc-provider": "~7.11.1",
   "@polkadot/keyring": "~8.4.1",
   "@polkadot/util": "~8.4.1",
   "@polkadot/util-crypto": "~8.4.1",
+  "@acala-network/types": "~4.0.1",
 }
 
 const fixedDeps = {
