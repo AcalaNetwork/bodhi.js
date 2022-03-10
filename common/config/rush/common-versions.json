@@ -55,11 +55,13 @@
      * For example, allow some projects to use an older TypeScript compiler
      * (in addition to whatever "usual" version is being used by other projects in the repo):
      */
+
+    // tutorials use these public versions instead of workspace:*
     "@acala-network/bodhi": [
       "^2.2.2"
     ],
     "@acala-network/eth-providers": [
-      "^2.1.7",   // tutorials use this fixed version
+      "^2.2.3",
     ],
 
     // these are mostly alternative versions used by tutorials
