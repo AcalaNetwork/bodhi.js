@@ -37,7 +37,6 @@
     "@ethersproject/transactions": "~5.5.0",
     "@ethersproject/wallet": "~5.5.0",
     "@ethersproject/hash": "~5.5.0",
-    "@acala-network/types": "~4.0.1",
     "@polkadot/util-crypto": "~8.4.1"
   }
 }
