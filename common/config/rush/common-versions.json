@@ -68,7 +68,6 @@
     // TODO: uniform these versions as much as possible
     "@acala-network/contracts": [
       "~2.0.1",
-      "~4.0.2",
       "^4.0.2",
       "^4.0.0",
     ],
