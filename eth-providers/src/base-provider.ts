@@ -1,3 +1,4 @@
+import '@polkadot/api-augment';
 import { checkSignatureType, AcalaEvmTX, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
@@ -12,7 +13,8 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
-import { Wallet } from 'ethers';
+import { Wallet, BigNumber, BigNumberish } from 'ethers';
+import { AccessListish } from 'ethers/lib/utils';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -26,7 +28,6 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
-import { BigNumber, BigNumberish } from 'ethers';
 import {
   BIGNUMBER_ZERO,
   EFFECTIVE_GAS_PRICE,
@@ -56,7 +57,6 @@ import {
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
-import { AccessListish } from 'ethers/lib/utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';

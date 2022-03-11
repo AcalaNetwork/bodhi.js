@@ -37,6 +37,6 @@
     "@ethersproject/transactions": "~5.5.0",
     "@ethersproject/wallet": "~5.5.0",
     "@ethersproject/hash": "~5.5.0",
-    "@polkadot/util-crypto": "~8.1.2"
+    "@polkadot/util-crypto": "~8.4.1"
   }
 }
