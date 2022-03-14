@@ -885,6 +885,14 @@ describe('eth_getEthGas', () => {
     expect(parseInt(gas.gasLimit, 16)).to.equal(27353678);
     expect(parseInt(gas.gasPrice)).to.equal(201914843605);
   });
+
+  it('throws error when params are not valid', async () => {
+    const res = await eth_getEthGas([{ anyParam: 12345 }]);
+
+    expect(res.status).to.equal(200);
+    expect(res.data.error.code).to.equal(-32602);
+    expect(res.data.error.message).to.contain(`parameter can only be 'storageLimit' | 'gasLimit' | 'validUntil'`);
+  });
 });
 
 describe('eth_getCode', () => {

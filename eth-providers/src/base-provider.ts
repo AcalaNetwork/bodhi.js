@@ -191,7 +191,6 @@ export abstract class BaseProvider extends AbstractProvider {
     this.safeMode = safeMode;
     this.latestFinalizedBlockHash = undefined;
 
-    logger.info(`safe mode: ${safeMode}`);
     safeMode && logger.warn(`
       ----------------------------- WARNING ----------------------------
       SafeMode is ON, and RPCs behave very differently than usual world!
@@ -212,7 +211,6 @@ export abstract class BaseProvider extends AbstractProvider {
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
-      logger.info(`max cached blocks: ${maxCachedSize}`);
       maxCachedSize > 9999 && logger.warn(`
         ------------------- WARNING -------------------
         Max cached blocks is big, please be cautious!
@@ -761,6 +759,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   /**
    * helper to get ETH gas when don't know the whole transaction
+   * default to return big enough gas for contract deployment
    * @returns The gas used by eth transaction
    */
   _getEthGas = async({
