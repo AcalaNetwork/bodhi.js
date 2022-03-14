@@ -837,6 +837,7 @@ describe('eth_getEthGas', () => {
     const storageLimit = 64100;
     const validUntil = 1000000;
 
+    // correspond to validUntil = 1000000
     const defaultResults1 = await Promise.all([
       eth_getEthGas([{ gasLimit, storageLimit, validUntil }]),
       eth_getEthGas([{ gasLimit, validUntil }]),
@@ -851,6 +852,7 @@ describe('eth_getEthGas', () => {
       expect(parseInt(gas.gasPrice)).to.equal(202184524778);
     }
 
+    // correspond to validUntil = curBlock + 150
     const defaultResults2 = await Promise.all([
       eth_getEthGas([{ gasLimit }]),
       eth_getEthGas([{ storageLimit }]),
