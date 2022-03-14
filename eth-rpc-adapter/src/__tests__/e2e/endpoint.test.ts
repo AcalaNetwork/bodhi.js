@@ -831,6 +831,7 @@ describe('eth_call', () => {
 
 describe('eth_getEthGas', () => {
   const eth_getEthGas = rpcGet('eth_getEthGas');
+  const eth_blockNumber = rpcGet('eth_blockNumber');
 
   it('get correct default contract deployment eth gas params', async () => {
     const gasLimit = 21000000;
@@ -853,6 +854,11 @@ describe('eth_getEthGas', () => {
     }
 
     // correspond to validUntil = curBlock + 150
+    const curBlock = parseInt((await eth_blockNumber()).data.result, 16);
+    const expectedGasPrice = parseInt((await eth_getEthGas([{
+      validUntil: curBlock + 150,
+    }])).data.result.gasPrice, 16);
+
     const defaultResults2 = await Promise.all([
       eth_getEthGas([{ gasLimit }]),
       eth_getEthGas([{ storageLimit }]),
@@ -865,7 +871,7 @@ describe('eth_getEthGas', () => {
       const gas = res.data.result;
 
       expect(parseInt(gas.gasLimit, 16)).to.equal(53064000);
-      expect(parseInt(gas.gasPrice)).to.equal(200007418858);
+      expect(parseInt(gas.gasPrice)).to.equal(expectedGasPrice);
     }
   });
 
