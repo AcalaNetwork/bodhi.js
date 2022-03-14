@@ -46,9 +46,9 @@ export async function start() {
   await provider.isReady();
 
   console.log(`-------- 🚀 SERVER STARTED 🚀 --------`);
-  console.log(`endpoint url :  ${ENDPOINT_URL}`);
-  console.log(`subquery url :  ${SUBQL_URL}`);
-  console.log(`listening to :  http ${HTTP_PORT} | ws ${WS_PORT}`);
+  console.log(`endpoint url : ${ENDPOINT_URL}`);
+  console.log(`subquery url : ${SUBQL_URL}`);
+  console.log(`listening to : http ${HTTP_PORT} | ws ${WS_PORT}`);
   console.log(`max cacheSize: ${MAX_CACHE_SIZE}`);
   console.log(`safe mode    : ${SAFE_MODE}`);
   console.log(`--------------------------------------`);
