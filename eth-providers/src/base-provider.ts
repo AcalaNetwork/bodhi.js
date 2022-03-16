@@ -396,7 +396,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockNumber = hexValue(headerExtended.number.toNumber());
 
-    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : DUMMY_ADDRESS;
+    // blockscout need `toLowerCase`
+    const author = headerExtended.author ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase() : DUMMY_ADDRESS;
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
 
@@ -412,7 +413,6 @@ export abstract class BaseProvider extends AbstractProvider {
       transactions = evmExtrinsicIndexes.map((extrinsicIndex, transactionIndex) => {
         const extrinsic = block.block.extrinsics[extrinsicIndex];
         const evmEvent = findEvmEvent(events);
-        const ex = extrinsic.method.toJSON();
 
         if (!evmEvent) {
           return {
@@ -421,22 +421,59 @@ export abstract class BaseProvider extends AbstractProvider {
             transactionIndex,
             hash: extrinsic.hash.toHex(),
             nonce: hexValue(extrinsic.nonce.toNumber()),
-            value: hexValue(ex.args.value),
+            value: hexValue(0),
           };
         }
 
+        logger.info(extrinsic.method.toHuman());
+        logger.info(extrinsic.method);
+
+        let gas;
+        let value;
+        let input;
         const from = evmEvent.event.data[0].toString();
         const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
           ? null
           : evmEvent.event.data[1].toString();
+
+        switch (extrinsic.method.section.toUpperCase()) {
+          case 'EVM': {
+            const evmExtrinsic: any = extrinsic.method.toJSON();
+            value = evmExtrinsic?.args?.value;
+            gas = evmExtrinsic?.args?.gas_limit;
+            // only work on mandala and karura-testnet
+            // https://github.com/AcalaNetwork/Acala/pull/1965
+            input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
+            break;
+          }
+          case 'SUDO': {
+            const evmExtrinsic: any = extrinsic.method.toJSON();
+            value = evmExtrinsic?.args?.call?.args?.value;
+            gas = evmExtrinsic?.args?.call?.args?.gas_limit;
+            input = evmExtrinsic?.args?.call?.args?.input || evmExtrinsic?.args?.call?.args?.init;
+            break;
+          }
+          // @TODO support proxy
+          case 'PROXY': {
+            return logger.throwError('Unspport proxy', Logger.errors.UNSUPPORTED_OPERATION);
+          }
+          // @TODO support utility
+          case 'UTILITY': {
+            return logger.throwError('Unspport utility', Logger.errors.UNSUPPORTED_OPERATION);
+          }
+          default: {
+            return logger.throwError('Unspport ' + extrinsic.method.section.toUpperCase(), Logger.errors.UNSUPPORTED_OPERATION);
+          }
+        };
+
 
         // @TODO eip2930, eip1559
 
         // @TODO Missing data
         return {
           gasPrice: '0x1', // TODO: get correct value
-          gas: ex.args.gas_limit,
-          input: ex.args.input,
+          gas,
+          input,
           v: DUMMY_V,
           r: DUMMY_R,
           s: DUMMY_S,
@@ -447,7 +484,7 @@ export abstract class BaseProvider extends AbstractProvider {
           nonce: hexValue(extrinsic.nonce.toNumber()),
           from: from,
           to: to,
-          value: hexValue(ex.args.value),
+          value: hexValue(value),
         };
       });
     }
@@ -820,20 +857,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const extrinsic = !to
       ? this.api.tx.evm.create(
-          data,
-          value?.toBigInt(),
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt(), // storage_limit u32::max
-          accessList
-        )
+        data,
+        value?.toBigInt(),
+        U64MAX.toBigInt(), // gas_limit u64::max
+        U32MAX.toBigInt(), // storage_limit u32::max
+        accessList
+      )
       : this.api.tx.evm.call(
-          to,
-          data,
-          value?.toBigInt(),
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt(), // storage_limit u32::max
-          accessList
-        );
+        to,
+        data,
+        value?.toBigInt(),
+        U64MAX.toBigInt(), // gas_limit u64::max
+        U32MAX.toBigInt(), // storage_limit u32::max
+        accessList
+      );
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
 
