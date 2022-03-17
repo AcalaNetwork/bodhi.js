@@ -1,4 +1,4 @@
-import { Signer, TestAccountSigningKey, evmChai } from '@acala-network/bodhi';
+import { Signer, AccountSigningKey, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';

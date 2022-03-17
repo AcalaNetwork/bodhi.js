@@ -1,4 +1,4 @@
-import { TestProvider, TestAccountSigningKey, Provider, Signer } from '@acala-network/bodhi';
+import { TestProvider, AccountSigningKey, Provider, Signer } from '@acala-network/bodhi';
 import { WsProvider, Keyring } from '@polkadot/api';
 import { ApiOptions, KeyringPair } from '@polkadot/api/types';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
@@ -39,7 +39,7 @@ export const setup = async (urlOverwrite?: string) => {
     pair = testPairs.alice;
   }
 
-  const signingKey = new TestAccountSigningKey(provider.api.registry);
+  const signingKey = new AccountSigningKey(provider.api.registry);
   signingKey.addKeyringPair(pair);
 
   const wallet = new Signer(provider, pair.address, signingKey);

@@ -5,7 +5,7 @@ import type { SigningKey, SigningKeyResult, SigningPayloadJSON } from './Signing
 
 let id = 0;
 
-export class TestAccountSigningKey implements SigningKey {
+export class AccountSigningKey implements SigningKey {
   #keyringPairs: KeyringPair[];
   readonly #registry: Registry;
 

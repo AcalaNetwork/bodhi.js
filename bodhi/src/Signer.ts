@@ -22,7 +22,7 @@ import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-cr
 import { SigningKey } from './SigningKey';
 import { dataToString, toBN } from './utils';
 
-const logger = new Logger('bodhi/0.0.1');
+const logger = new Logger('bodhi/2.3.0');
 
 export class Signer extends Abstractsigner implements TypedDataSigner {
   // @ts-ignore

@@ -70,7 +70,7 @@ wallet.claimEvmAccounts()
 ```javascript
 import { deployContract } from "ethereum-waffle";
 import ERC20Abi from "../build/ERC20Abi.json";
-import { TestAccountSigningKey, Provider, Signer } from "@acala-network/bodhi";
+import { AccountSigningKey, Provider, Signer } from "@acala-network/bodhi";
 import { WsProvider } from "@polkadot/api";
 import { createTestPairs } from "@polkadot/keyring/testingPairs";
 
@@ -80,7 +80,7 @@ const provider = new Provider({
 
 const testPairs = createTestPairs();
 
-const signingKey = new TestAccountSigningKey(provider.api.registry);
+const signingKey = new AccountSigningKey(provider.api.registry);
 
 signingKey.addKeyringPair(Object.values(testPairs));
 

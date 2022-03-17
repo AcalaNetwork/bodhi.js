@@ -3,7 +3,7 @@ import { WsProvider } from '@polkadot/api';
 import { ApiOptions } from '@polkadot/api/types';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { Signer } from './Signer';
-import { TestAccountSigningKey } from './TestAccountSigningKey';
+import { AccountSigningKey } from './AccountSigningKey';
 
 export class TestProvider extends SignerProvider {
   constructor(_apiOptions?: ApiOptions) {
@@ -17,7 +17,7 @@ export class TestProvider extends SignerProvider {
 
     const pairs = [alice, alice_stash, bob, bob_stash];
 
-    const signingKey = new TestAccountSigningKey(this.api.registry);
+    const signingKey = new AccountSigningKey(this.api.registry);
 
     signingKey.addKeyringPair(pairs);
 
