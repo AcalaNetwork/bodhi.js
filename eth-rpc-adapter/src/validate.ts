@@ -14,7 +14,8 @@ export type Schema = {
     | 'object?'
     | 'message'
     | 'hexNumber'
-    | 'eventName';
+    | 'eventName'
+    | 'substrateGasParams?';
 }[];
 
 export const validateEventName = (value: any) => {
@@ -102,6 +103,18 @@ export const validateObject = (data: any) => {
   }
 };
 
+export const validateSubstrateGasParams = (data: any) => {
+  if (data.constructor !== Object) {
+    throw new Error(`invalid args, expected Object`);
+  }
+
+  for (const k of Object.keys(data)) {
+    if (!['storageLimit', 'gasLimit', 'validUntil'].includes(k)) {
+      throw new Error(`parameter can only be 'storageLimit' | 'gasLimit' | 'validUntil'`);
+    }
+  }
+};
+
 export const validate = (schema: Schema, data: unknown[]) => {
   const maxArg = schema.length;
 
@@ -166,6 +179,10 @@ export const validate = (schema: Schema, data: unknown[]) => {
         }
         case 'eventName': {
           validateEventName(data[i] as any);
+          break;
+        }
+        case 'substrateGasParams?': {
+          data[i] && validateSubstrateGasParams(data[i] as any);
           break;
         }
         default:

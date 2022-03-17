@@ -1,3 +1,4 @@
+import '@polkadot/api-augment';
 import { checkSignatureType, AcalaEvmTX, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
@@ -12,7 +13,8 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
-import { Wallet } from 'ethers';
+import { Wallet, BigNumber, BigNumberish } from 'ethers';
+import { AccessListish } from 'ethers/lib/utils';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -26,7 +28,6 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header } from '@polkadot/types/interfaces';
 import type BN from 'bn.js';
-import { BigNumber, BigNumberish } from 'ethers';
 import {
   BIGNUMBER_ZERO,
   EFFECTIVE_GAS_PRICE,
@@ -49,10 +50,8 @@ import {
   computeDefaultEvmAddress,
   computeDefaultSubstrateAddress,
   convertNativeToken,
-  getFilteredLogs,
   getPartialTransactionReceipt,
   getTransactionIndexAndHash,
-  getTxReceiptByHash,
   logger,
   PROVIDER_ERRORS,
   sendTx,
@@ -60,14 +59,13 @@ import {
   calcSubstrateTransactionParams,
   getEvmExtrinsicIndexes,
   findEvmEvent,
-  getIndexerMetadata,
   filterLog,
   toHex,
   calcEthereumTransactionParams
 } from './utils';
+import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
-import { AccessListish } from 'ethers/lib/utils';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -175,25 +173,37 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
+  readonly subql?: SubqlProvider;
 
   _network?: Promise<Network>;
   _cache?: UnfinalizedBlockCache;
   latestFinalizedBlockHash: string | undefined;
 
-  constructor(safeMode: boolean = false) {
+  constructor({
+    safeMode = false,
+    subqlUrl,
+  }: {
+    safeMode?: boolean,
+    subqlUrl?: string,
+  } = {}) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
     this.safeMode = safeMode;
     this.latestFinalizedBlockHash = undefined;
 
-    logger.info(`safe mode: ${safeMode}`);
     safeMode && logger.warn(`
       ----------------------------- WARNING ----------------------------
       SafeMode is ON, and RPCs behave very differently than usual world!
                   To go back to normal mode, set SAFE_MODE=0
       ------------------------------------------------------------------
     `);
+
+    if (subqlUrl) {
+      this.subql = new SubqlProvider(subqlUrl);
+    } else {
+      logger.warn(`no subql url provided`)
+    }
   }
 
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
@@ -202,7 +212,6 @@ export abstract class BaseProvider extends AbstractProvider {
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
-      logger.info(`max cached blocks: ${maxCachedSize}`);
       maxCachedSize > 9999 && logger.warn(`
         ------------------- WARNING -------------------
         Max cached blocks is big, please be cautious!
@@ -305,6 +314,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   get chainDecimal(): number {
     return this.api.registry.chainDecimals[0] || 10;
+  }
+
+  get isSafeMode(): boolean {
+    return this.safeMode;
   }
 
   isReady = (): Promise<Network> => {
@@ -790,13 +803,18 @@ export abstract class BaseProvider extends AbstractProvider {
 
   /**
    * helper to get ETH gas when don't know the whole transaction
+   * default to return big enough gas for contract deployment
    * @returns The gas used by eth transaction
    */
-  _getEthGas = async (
-    gasLimit: BigNumberish,
-    storageLimit: BigNumberish,
-    _validUntil?: BigNumberish
-  ): Promise<{
+  _getEthGas = async({
+    gasLimit = 21000000,
+    storageLimit = 64100,
+    validUntil: _validUntil,
+  }: {
+    gasLimit?: BigNumberish;
+    storageLimit?: BigNumberish;
+    validUntil?: BigNumberish;
+  } = {}): Promise<{
     gasPrice: BigNumber;
     gasLimit: BigNumber;
   }> => {
@@ -1523,7 +1541,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (txFromCache) return txFromCache;
 
     try {
-      const txFromSubql = await getTxReceiptByHash(txHash);
+      const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
 
       return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     } catch {
@@ -1620,6 +1638,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   // Bloom-filter Queries
   getLogs = async (filter: Filter): Promise<Log[]> => {
+    if (!this.subql) {
+      return logger.throwError('missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.');
+    }
+
     const { fromBlock = 'latest', toBlock = 'latest' } = filter;
     const _filter = { ...filter };
 
@@ -1632,13 +1654,13 @@ export abstract class BaseProvider extends AbstractProvider {
       _filter.toBlock = toBlockNumber;
     }
 
-    const filteredLogs = await getFilteredLogs(_filter as Filter);
+    const filteredLogs = await this.subql.getFilteredLogs(_filter as Filter);
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
-  getIndexerMetadata = async () => {
-    return getIndexerMetadata();
+  getIndexerMetadata = async (): Promise<any> => {
+    return this.subql?.getIndexerMetadata();
   };
 
   getUnfinalizedCachInfo = (): any => this._cache?._inspect() || 'no cache running!';

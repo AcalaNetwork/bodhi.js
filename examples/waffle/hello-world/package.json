@@ -19,7 +19,7 @@
     "deploy": "ts-node --transpile-only src/deploy.ts"
   },
   "dependencies": {
-    "@acala-network/api": "~3.0.3-3",
+    "@acala-network/api": "~4.0.1",
     "@acala-network/bodhi": "workspace:*"
   }
 }

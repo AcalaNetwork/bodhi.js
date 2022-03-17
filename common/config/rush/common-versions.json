@@ -56,22 +56,20 @@
      * (in addition to whatever "usual" version is being used by other projects in the repo):
      */
 
-    // these are mostly alternative versions used by tutorials
-    // TODO: uniform these versions as much as possible
-    "@acala-network/contracts": [
-      "~2.0.1",
-      "~4.0.2",
-      "^4.0.2",
-      "^4.0.0",
-    ],
+    // tutorials use these public versions instead of workspace:*
     "@acala-network/bodhi": [
       "^2.2.2"
     ],
     "@acala-network/eth-providers": [
-      "^2.1.7",   // tutorials use this fixed version
+      "^2.2.3",
     ],
-    "@acala-network/api": [
-      "^3.0.2"
+
+    // these are mostly alternative versions used by tutorials
+    // TODO: uniform these versions as much as possible
+    "@acala-network/contracts": [
+      "~2.0.1",
+      "^4.0.2",
+      "^4.0.0",
     ],
     "@openzeppelin/contracts": [
       "~3.4.2",
@@ -97,12 +95,6 @@
     ],
     "ethereum-waffle": [
       "^3.4.0"
-    ],
-    "ethers": [
-      "^5.5.1"
-    ],
-     "@polkadot/api": [
-       "^7.9.1",
     ],
   }
 }
