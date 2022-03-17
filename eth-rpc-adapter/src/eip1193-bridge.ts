@@ -275,7 +275,10 @@ class Eip1193BridgeImpl {
     gasPrice: string;
     gasLimit: string;
   }> {
-    const res = await this.#provider._getEthGas(params[0], params[1], params[2]);
+    validate([{ type: 'substrateGasParams?' }], params);
+
+    const res = await this.#provider._getEthGas(params[0]);
+
     return {
       gasPrice: hexValue(res.gasPrice),
       gasLimit: hexValue(res.gasLimit)

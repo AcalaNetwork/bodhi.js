@@ -8,6 +8,8 @@ import { Router } from './router';
 dotenv.config();
 
 export async function start() {
+  console.log('starting server ...');
+
   const ENDPOINT_URL = process.env.ENDPOINT_URL || 'ws://0.0.0.0::9944';
   const SUBQL_URL = process.env.SUBQL_URL || 'http://0.0.0.0:3001';
   const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
@@ -41,11 +43,13 @@ export async function start() {
   HTTPTransport.start();
   WebSocketTransport.start();
 
-  console.log('starting server ...');
-
   await provider.isReady();
 
-  console.log(`server started with ${ENDPOINT_URL}`);
-  console.log(`subquery url: ${process.env.SUBQL_URL || 'http://localhost:3001'}`);
-  console.log(`listening to: HTTP ${HTTP_PORT}, WS: ${WS_PORT}`);
+  console.log(`-------- 🚀 SERVER STARTED 🚀 --------`);
+  console.log(`endpoint url : ${ENDPOINT_URL}`);
+  console.log(`subquery url : ${SUBQL_URL}`);
+  console.log(`listening to : http ${HTTP_PORT} | ws ${WS_PORT}`);
+  console.log(`max cacheSize: ${MAX_CACHE_SIZE}`);
+  console.log(`safe mode    : ${SAFE_MODE}`);
+  console.log(`--------------------------------------`);
 }
