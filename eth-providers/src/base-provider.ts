@@ -74,7 +74,7 @@ export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
 export interface _Block {
   hash: string;
   parentHash: string;
-  number: number;
+  number: string;
 
   timestamp: number;
   nonce: string;
@@ -438,8 +438,8 @@ export abstract class BaseProvider extends AbstractProvider {
           };
         }
 
-	// logger.info(extrinsic.method.toHuman());
-	// logger.info(extrinsic.method);
+        // logger.info(extrinsic.method.toHuman());
+        // logger.info(extrinsic.method);
 
         let gas;
         let value;
