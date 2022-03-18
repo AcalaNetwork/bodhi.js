@@ -6,6 +6,7 @@ import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
+import { sleep } from './utils';
 import { validate } from './validate';
 
 const HEX_ZERO = '0x0';
