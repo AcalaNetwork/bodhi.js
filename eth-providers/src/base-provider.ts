@@ -240,9 +240,9 @@ export abstract class BaseProvider extends AbstractProvider {
         const block = await this.getBlock(blockNumber);
         const response = hexlifyRpcResult(block);
         this._listeners[NEW_HEADS].forEach((l) =>
-          l.cb({
+          l.cb(
             response
-          })
+          )
         );
       }
 
@@ -257,10 +257,10 @@ export abstract class BaseProvider extends AbstractProvider {
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
           const response = hexlifyRpcResult(filteredLogs);
-          response.forEach((l: any) =>
+          response.forEach((log: any) =>
             cb({
+              ...log,
               type: 'mined',
-              l,
             })
           );
         });
