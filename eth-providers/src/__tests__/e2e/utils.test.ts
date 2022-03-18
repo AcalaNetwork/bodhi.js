@@ -1,6 +1,6 @@
 import { hexValue } from '@ethersproject/bytes';
 import { expect } from 'chai';
-import { hexlifyRpcResult, sleep } from '../utils';
+import { hexlifyRpcResult } from '../../utils';
 
 describe('utils', () => {
   it('connect chain', async () => {
