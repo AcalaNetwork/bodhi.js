@@ -74,7 +74,7 @@ export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
 export interface _Block {
   hash: string;
   parentHash: string;
-  number: string;
+  number: number;
 
   timestamp: number;
   nonce: string;
@@ -407,7 +407,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
 
-    const blockNumber = hexValue(headerExtended.number.toNumber());
+    const blockNumber = headerExtended.number.toNumber();
 
     // blockscout need `toLowerCase`
     const author = headerExtended.author ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase() : DUMMY_ADDRESS;
@@ -433,8 +433,8 @@ export abstract class BaseProvider extends AbstractProvider {
             blockNumber,
             transactionIndex,
             hash: extrinsic.hash.toHex(),
-            nonce: hexValue(extrinsic.nonce.toNumber()),
-            value: hexValue(0),
+            nonce: extrinsic.nonce.toNumber(),
+            value: 0,
           };
         }
 
@@ -500,10 +500,10 @@ export abstract class BaseProvider extends AbstractProvider {
           blockNumber,
           transactionIndex,
           hash: extrinsic.hash.toHex(),
-          nonce: hexValue(extrinsic.nonce.toNumber()),
+          nonce: extrinsic.nonce.toNumber(),
           from: from,
           to: to,
-          value: hexValue(value),
+          value: value,
         };
       });
     }
