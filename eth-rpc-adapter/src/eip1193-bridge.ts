@@ -1,4 +1,4 @@
-import { EvmRpcProvider, TX, TXReceipt } from '@acala-network/eth-providers';
+import { EvmRpcProvider, TX, TXReceipt, hexlifyRpcResult } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -6,7 +6,6 @@ import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
-import { hexlifyRpcResult, sleep } from './utils';
 import { validate } from './validate';
 
 const HEX_ZERO = '0x0';

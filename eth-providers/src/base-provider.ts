@@ -27,6 +27,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header } from '@polkadot/types/interfaces';
+import { hexlifyRpcResult } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
@@ -237,18 +238,10 @@ export abstract class BaseProvider extends AbstractProvider {
       // TODO: can do some optimizations
       if (this._listeners[NEW_HEADS]?.length > 0) {
         const block = await this.getBlock(blockNumber);
+        const response = hexlifyRpcResult(block);
         this._listeners[NEW_HEADS].forEach((l) =>
           l.cb({
-            ...block,
-            number: toHex(block.number),
-            timestamp: toHex(block.timestamp),
-            difficulty: toHex(block.difficulty),
-            gasLimit: `0x${block.gasLimit.toNumber()}`, // TODO: this is dummy wrong value
-            gasUsed: `0x${block.gasUsed.toNumber()}`, // TODO: this is dummy wrong value
-            miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
-            sha3Uncles: EMTPY_UNCLE_HASH,
-            receiptsRoot: block.transactionsRoot, // TODO: correct value?
-            logsBloom: DUMMY_LOGS_BLOOM // TODO: ???
+            response
           })
         );
       }
@@ -263,13 +256,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
-          filteredLogs.forEach((l) =>
+          const response = hexlifyRpcResult(filteredLogs);
+          response.forEach((l: any) =>
             cb({
-              ...l,
-              transactionIndex: toHex(l.transactionIndex),
-              blockNumber: toHex(l.blockNumber),
-              logIndex: toHex(l.logIndex),
-              type: 'mined'
+              type: 'mined',
+              l,
             })
           );
         });
@@ -426,14 +417,8 @@ export abstract class BaseProvider extends AbstractProvider {
         const evmEvent = findEvmEvent(events);
 
         if (!evmEvent) {
-          return {
-            blockHash,
-            blockNumber,
-            transactionIndex,
-            hash: extrinsic.hash.toHex(),
-            nonce: extrinsic.nonce.toNumber(),
-            value: 0,
-          };
+          return logger.throwError('findEvmEvent failed. blockNumber' + blockNumber + 'transactionIndex: '
+            + transactionIndex, Logger.errors.UNSUPPORTED_OPERATION);
         }
 
         // logger.info(extrinsic.method.toHuman());
@@ -804,7 +789,7 @@ export abstract class BaseProvider extends AbstractProvider {
    * default to return big enough gas for contract deployment
    * @returns The gas used by eth transaction
    */
-  _getEthGas = async({
+  _getEthGas = async ({
     gasLimit = 21000000,
     storageLimit = 64100,
     validUntil: _validUntil,
