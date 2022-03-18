@@ -94,7 +94,6 @@ export interface _Block {
 export interface _RichBlock extends _Block {
   stateRoot: string;
   transactionsRoot: string;
-  author: string;
   mixHash: string;
 }
 
@@ -247,7 +246,6 @@ export abstract class BaseProvider extends AbstractProvider {
             gasLimit: `0x${block.gasLimit.toNumber()}`, // TODO: this is dummy wrong value
             gasUsed: `0x${block.gasUsed.toNumber()}`, // TODO: this is dummy wrong value
             miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
-            author: block.author === '' ? DUMMY_ADDRESS : block.author,
             sha3Uncles: EMTPY_UNCLE_HASH,
             receiptsRoot: block.transactionsRoot, // TODO: correct value?
             logsBloom: DUMMY_LOGS_BLOOM // TODO: ???
@@ -503,7 +501,7 @@ export abstract class BaseProvider extends AbstractProvider {
           nonce: extrinsic.nonce.toNumber(),
           from: from,
           to: to,
-          value: value,
+          value: hexValue(value),
         };
       });
     }

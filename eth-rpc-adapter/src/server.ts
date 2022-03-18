@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Router } from './router';
-var pjson = require('./package.json');
+const pjson = require('../package.json')
 
 dotenv.config();
 
