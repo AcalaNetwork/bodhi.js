@@ -258,10 +258,9 @@ export abstract class BaseProvider extends AbstractProvider {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
           const response = hexlifyRpcResult(filteredLogs);
           response.forEach((log: any) =>
-            cb({
-              ...log,
-              type: 'mined',
-            })
+            cb(
+              log,
+            )
           );
         });
       }
