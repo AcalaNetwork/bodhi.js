@@ -1,0 +1,81 @@
+networks:
+  default:
+    name: bodhi-karura-safe
+services:
+  postgres-karura-safe:
+    image: postgres:12-alpine
+    container_name: 'bodhi-postgres-karura-safe'
+    ports:
+      - 15432:5432
+    volumes:
+      - bodhi-postgres-karura-safe:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+  subquery-node-karura-safe:
+    build:
+      context: .
+      dockerfile: docker/subql-node.Dockerfile
+      target: subql-node
+    container_name: 'bodhi-subquery-karura-safe'
+    depends_on:
+      - postgres-karura-safe
+    ports:
+      - 13000:3000
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: postgres-karura-safe
+      DB_PORT: 5432
+    command:
+      - -f=./
+      - --network-endpoint=ws://103.253.145.222:9947
+      - --subquery-name=acala-evm
+      - --log-level=debug
+
+  graphql-engine-karura-safe:
+    image: onfinality/subql-query:v0.8.1-4
+    container_name: 'bodhi-graphql-karura-safe'
+    ports:
+      - 13001:3001
+    depends_on:
+      - postgres-karura-safe
+      - subquery-node-karura-safe
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: postgres-karura-safe
+      DB_PORT: 5432
+      PORT: 3001
+    command:
+      - --name=acala-evm
+      - --playground
+      - --indexer=http://subquery-node-karura-safe:3000
+
+  eth-rpc-adapter-server-karura-safe:
+    build:
+      context: .
+      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
+      target: eth-rpc-adapter
+    container_name: 'bodhi-eth-rpc-adapter-karura-safe'
+    ports:
+      - 18545:8545
+      - 13331:3331
+    depends_on:
+      postgres-karura-safe:
+        condition: service_started
+      subquery-node-karura-safe:
+        condition: service_started
+      graphql-engine-karura-safe:
+        condition: service_started
+    environment:
+      - ENDPOINT_URL=ws://103.253.145.222:9947
+      - SUBQL_URL=http://graphql-engine-karura-safe:3001
+      - SAFE_MODE=1
+    command: yarn start
+volumes:
+  bodhi-postgres-karura-safe:
