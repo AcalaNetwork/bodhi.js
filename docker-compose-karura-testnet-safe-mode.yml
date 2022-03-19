@@ -62,9 +62,6 @@ services:
       dockerfile: docker/eth-rpc-adapter-server.Dockerfile
       target: eth-rpc-adapter
     container_name: 'bodhi-eth-rpc-adapter-karura-safe'
-    ports:
-      - 18545:8545
-      - 13331:3331
     depends_on:
       postgres-karura-safe:
         condition: service_started
@@ -72,6 +69,10 @@ services:
         condition: service_started
       graphql-engine-karura-safe:
         condition: service_started
+    ports:
+      - 18545:8545
+      - 13331:3331
+    restart: always
     environment:
       - ENDPOINT_URL=ws://103.253.145.222:9947
       - SUBQL_URL=http://graphql-engine-karura-safe:3001

@@ -4,6 +4,7 @@ networks:                                                                       
 services:
   postgres-mandala:
     image: postgres:12-alpine
+    container_name: 'bodhi-postgres-mandala'
     ports:
       - 25432:5432
     volumes:
@@ -30,7 +31,7 @@ services:
       DB_PORT: 5432
     command:
       - -f=./
-      - --network-endpoint=wss://node-6874894268421574656.jm.onfinality.io/ws?apikey=2407fcb5-3dd5-4301-bd5c-46a917b18bfa
+      - --network-endpoint=wss://node-6870830370282213376.rz.onfinality.io/ws?apikey=0f273197-e4d5-45e2-b23e-03b015cb7000
       - --subquery-name=acala-evm
       - --log-level=debug
 
@@ -61,9 +62,6 @@ services:
       dockerfile: docker/eth-rpc-adapter-server.Dockerfile
       target: eth-rpc-adapter
     container_name: 'bodhi-eth-rpc-adapter-mandala'
-    ports:
-      - 28545:8545
-      - 23331:3331
     depends_on:
       postgres-mandala:
         condition: service_started
@@ -71,8 +69,12 @@ services:
         condition: service_started
       graphql-engine-mandala:
         condition: service_started
+    ports:
+      - 28545:8545
+      - 23331:3331
+    restart: always
     environment:
-      - ENDPOINT_URL=wss://node-6874894268421574656.jm.onfinality.io/ws?apikey=2407fcb5-3dd5-4301-bd5c-46a917b18bfa
+      - ENDPOINT_URL=wss://node-6870830370282213376.rz.onfinality.io/ws?apikey=0f273197-e4d5-45e2-b23e-03b015cb7000
       - SUBQL_URL=http://graphql-engine-mandala:3001
     command: yarn start
 volumes:
