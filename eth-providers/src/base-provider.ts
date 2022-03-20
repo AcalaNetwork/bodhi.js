@@ -282,12 +282,16 @@ export abstract class BaseProvider extends AbstractProvider {
       }
     }) as unknown as void;
 
-    // for getTXhashFromNextBlock
-    this.api.rpc.chain.subscribeNewHeads((header: Header) => {
+    this.api.rpc.chain.subscribeNewHeads(async (header: Header) => {
+      // flush callbacks for getTXhashFromNextBlock
       this._newBlockListeners.forEach(cb => {
         try { cb(header) } catch { /* swallow */ }
       });
       this._newBlockListeners = [];
+
+      // update pending extrinsics in cache
+      const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+      this._cache?.setPendingExtrinsics(pendingExtrinsics);
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
@@ -1502,16 +1506,16 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
-  _isTXPending = async (txHash: string): Promise<boolean> => {
-    // TODO: can optimize this and other operations related to pendingExtrinsics in the future
-    // by "caching" pendingExtrinsics: save them to provider in every block
-    const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
-    for (const e of pendingExtrinsics) {
-      if (e.hash.toHex() === txHash) return true;
-    }
+  // _isTXPending = async (txHash: string): Promise<boolean> => {
+  //   // TODO: can optimize this and other operations related to pendingExtrinsics in the future
+  //   // by "caching" pendingExtrinsics: save them to provider in every block
+  //   const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+  //   for (const e of pendingExtrinsics) {
+  //     if (e.hash.toHex() === txHash) return true;
+  //   }
 
-    return false;
-  };
+  //   return false;
+  // };
 
   _getTXReceiptFromNextBlock = async (txHash: string, timeout = 20000): Promise<TransactionReceipt | null> => {
     return await Promise.race([
@@ -1534,19 +1538,30 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    while (await this._isTXPending(txHash)) {
+    // TODO: should probably move cache initialization to constructor so cache always exist
+    while (await this._cache?.isTXPending(txHash)) {
+      console.log(`
+        ---------------------------------------------
+                           PENDING
+        ---------------------------------------------
+      `)
       const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
       if (txFromNextBlock) return txFromNextBlock;
     }
 
     const txFromCache = await this._getTxReceiptFromCache(txHash);
+    txFromCache && console.log(`
+        ---------------------------------------------
+                           txFromCache
+        ---------------------------------------------
+      `)
     if (txFromCache) return txFromCache;
 
     try {
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
       return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     } catch (e) {
-      return logger.throwError(`subql error when querying transaction. `, Logger.errors.UNKNOWN_ERROR, { txHash, error: (e as any).message });
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
   };
 
