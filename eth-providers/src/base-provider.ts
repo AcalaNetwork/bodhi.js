@@ -13,7 +13,7 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
-import { Wallet, BigNumber, BigNumberish } from 'ethers';
+import { ethers, Wallet, BigNumber, BigNumberish } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
@@ -46,6 +46,7 @@ import {
   EMTPY_UNCLE_HASH,
   DUMMY_BLOCK_NONCE,
   DUMMY_BLOCK_MIX_HASH,
+  ERC20_ABI,
 } from './consts';
 import {
   computeDefaultEvmAddress,
@@ -411,7 +412,7 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     } else {
       // full
-      transactions = evmExtrinsicIndexes.map((extrinsicIndex, transactionIndex) => {
+      transactions = await Promise.all(evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
         const extrinsic = block.block.extrinsics[extrinsicIndex];
         const evmEvent = findEvmEvent(events);
 
@@ -439,6 +440,17 @@ export abstract class BaseProvider extends AbstractProvider {
             // only work on mandala and karura-testnet
             // https://github.com/AcalaNetwork/Acala/pull/1965
             input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
+            break;
+          }
+          case 'CURRENCIES': {
+            // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+            const evmExtrinsic: any = extrinsic.method.toJSON();
+            value = 0;
+            gas = 2_100_000;
+            const contract = evmExtrinsic?.args?.currency_id?.erc20;
+            const erc20 = new ethers.Contract(contract, ERC20_ABI);
+            const amount = evmExtrinsic?.args?.amount;
+            input = (await erc20.populateTransaction.transfer(to, amount))?.data;
             break;
           }
           case 'SUDO': {
@@ -487,7 +499,7 @@ export abstract class BaseProvider extends AbstractProvider {
           to: to,
           value: hexValue(value),
         };
-      });
+      }));
     }
 
     const data = {
