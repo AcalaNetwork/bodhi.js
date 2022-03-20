@@ -285,7 +285,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // for getTXhashFromNextBlock
     this.api.rpc.chain.subscribeNewHeads((header: Header) => {
       this._newBlockListeners.forEach(cb => {
-        try { cb(header) } catch { /* swallow */ } 
+        try { cb(header) } catch { /* swallow */ }
       });
       this._newBlockListeners = [];
     }) as unknown as void;
@@ -1521,7 +1521,7 @@ export abstract class BaseProvider extends AbstractProvider {
           const nextBlockHash = nextHeader.hash.toHex() as string;
           try {
             const res = await this.getTransactionReceiptAtBlock(txHash, nextBlockHash);
-            resolve(res);            
+            resolve(res);
           } catch (error) {
             // swallow the error and treat this as tx not found in next block
             resolve(null);
@@ -1537,7 +1537,7 @@ export abstract class BaseProvider extends AbstractProvider {
     while (await this._isTXPending(txHash)) {
       const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
       if (txFromNextBlock) return txFromNextBlock;
-    } 
+    }
 
     const txFromCache = await this._getTxReceiptFromCache(txHash);
     if (txFromCache) return txFromCache;
