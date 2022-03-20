@@ -6,7 +6,7 @@ interface BlockToHashesMap {
   [block: string]: string[];
 }
 
-export class UnfinalizedBlockCache {
+export class BlockCache {
   blockTxHashes: BlockToHashesMap;
   allTxHashes: HashToBlockMap;
   extraBlockCount: number;

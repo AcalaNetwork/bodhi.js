@@ -57,7 +57,7 @@ import {
 } from './utils';
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
-import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
+import { BlockCache } from './utils/BlockCache';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -179,7 +179,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
-  _cache?: UnfinalizedBlockCache;
+  _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
 
   constructor({
@@ -211,7 +211,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache(maxCachedSize);
+    this._cache = new BlockCache(maxCachedSize);
 
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
