@@ -6,4 +6,5 @@ export * from './handleTxResponse';
 export * from './sendTx';
 export * from './transactionHelper';
 export * from './logs';
+export * from './hexlifyRpcResult';
 export * from './utils';

@@ -1,4 +1,4 @@
-import { EvmRpcProvider, TX, TXReceipt } from '@acala-network/eth-providers';
+import { EvmRpcProvider, TX, TXReceipt, hexlifyRpcResult } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -6,9 +6,10 @@ import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
-import { hexlifyRpcResult, sleep } from './utils';
+import { sleep } from './utils';
 import { validate } from './validate';
 
+const HEX_ZERO = '0x0';
 export class Eip1193Bridge extends EventEmitter {
   readonly #impl: Eip1193BridgeImpl;
 
@@ -325,6 +326,10 @@ class Eip1193BridgeImpl {
     validate([{ type: 'blockHash' }], params);
 
     const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, params);
+    // @ts-ignore
+    delete res.byzantium;
+    // @ts-ignore
+    delete res.confirmations;
     return hexlifyRpcResult(res);
   }
 
@@ -380,21 +385,29 @@ class Eip1193BridgeImpl {
     return hexlifyRpcResult(res);
   }
 
-  // async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
+  async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
+    validate([{ type: 'blockHash' }], params);
 
-  // }
+    return HEX_ZERO;
+  }
 
-  // async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
+  async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
+    validate([{ type: 'block' }], params);
 
-  // }
+    return HEX_ZERO;
+  }
 
-  // async eth_getUncleByBlockHashAndIndex(params: any[]): Promise<any> {
+  async eth_getUncleByBlockHashAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'blockHash' }, { type: 'hexNumber' }], params);
 
-  // }
+    return null;
+  }
 
-  // async eth_getUncleByBlockNumberAndIndex(params: any[]): Promise<any> {
+  async eth_getUncleByBlockNumberAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'block' }, { type: 'hexNumber' }], params);
 
-  // }
+    return null;
+  }
 
   // async eth_newFilter(params: any[]): Promise<any> {
 

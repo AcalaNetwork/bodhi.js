@@ -13,7 +13,7 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
-import { Wallet, BigNumber, BigNumberish } from 'ethers';
+import { ethers, Wallet, BigNumber, BigNumberish } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
@@ -27,6 +27,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header } from '@polkadot/types/interfaces';
+import { hexlifyRpcResult } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
@@ -35,7 +36,18 @@ import {
   GAS_PRICE,
   U32MAX,
   U64MAX,
-  ZERO
+  ZERO,
+  DUMMY_ADDRESS,
+  DUMMY_LOGS_BLOOM,
+  DUMMY_V,
+  DUMMY_R,
+  DUMMY_S,
+  EMTPY_UNCLES,
+  EMTPY_UNCLE_HASH,
+  DUMMY_BLOCK_NONCE,
+  DUMMY_BLOCK_MIX_HASH,
+  ERC20_ABI,
+  MIRRORED_TOKEN_CONTRACT,
 } from './consts';
 import {
   computeDefaultEvmAddress,
@@ -85,7 +97,6 @@ export interface _Block {
 export interface _RichBlock extends _Block {
   stateRoot: string;
   transactionsRoot: string;
-  author: string;
   mixHash: string;
 }
 
@@ -159,14 +170,6 @@ const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
 const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
 
-const DUMMY_ADDRESS = '0x1111111111333333333355555555558888888888';
-const DUMMY_LOGS_BLOOM =
-  '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
-const DUMMY_V = '0x25';
-const DUMMY_R = '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea';
-const DUMMY_S = '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c';
-const EMTPY_UNCLE_HASH = '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347';
-
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
@@ -237,20 +240,11 @@ export abstract class BaseProvider extends AbstractProvider {
       // TODO: can do some optimizations
       if (this._listeners[NEW_HEADS]?.length > 0) {
         const block = await this.getBlock(blockNumber);
+        const response = hexlifyRpcResult(block);
         this._listeners[NEW_HEADS].forEach((l) =>
-          l.cb({
-            ...block,
-            number: toHex(block.number),
-            timestamp: toHex(block.timestamp),
-            difficulty: toHex(block.difficulty),
-            gasLimit: `0x${block.gasLimit.toNumber()}`, // TODO: this is dummy wrong value
-            gasUsed: `0x${block.gasUsed.toNumber()}`, // TODO: this is dummy wrong value
-            miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
-            author: block.author === '' ? DUMMY_ADDRESS : block.author,
-            sha3Uncles: EMTPY_UNCLE_HASH,
-            receiptsRoot: block.transactionsRoot, // TODO: correct value?
-            logsBloom: DUMMY_LOGS_BLOOM // TODO: ???
-          })
+          l.cb(
+            response
+          )
         );
       }
 
@@ -264,14 +258,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
-          filteredLogs.forEach((l) =>
-            cb({
-              ...l,
-              transactionIndex: toHex(l.transactionIndex),
-              blockNumber: toHex(l.blockNumber),
-              logIndex: toHex(l.logIndex),
-              type: 'mined'
-            })
+          const response = hexlifyRpcResult(filteredLogs);
+          response.forEach((log: any) =>
+            cb(
+              log,
+            )
           );
         });
       }
@@ -408,10 +399,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockNumber = headerExtended.number.toNumber();
 
-    const deafultNonce = this.api.registry.createType('u64', 0);
-    const deafultMixHash = this.api.registry.createType('u256', 0);
-
-    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : DUMMY_ADDRESS;
+    // blockscout need `toLowerCase`
+    const author = headerExtended.author ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase() : DUMMY_ADDRESS;
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
 
@@ -424,32 +413,83 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     } else {
       // full
-      transactions = evmExtrinsicIndexes.map((extrinsicIndex, transactionIndex) => {
+      transactions = await Promise.all(evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
         const extrinsic = block.block.extrinsics[extrinsicIndex];
         const evmEvent = findEvmEvent(events);
 
         if (!evmEvent) {
-          return {
-            blockHash,
-            blockNumber,
-            transactionIndex,
-            hash: extrinsic.hash.toHex(),
-            nonce: extrinsic.nonce.toNumber(),
-            // @TODO get tx value
-            value: 0
-          };
+          return logger.throwError('findEvmEvent failed. blockNumber' + blockNumber + 'transactionIndex: '
+            + transactionIndex, Logger.errors.UNSUPPORTED_OPERATION);
         }
 
+        // logger.info(extrinsic.method.toHuman());
+        // logger.info(extrinsic.method);
+
+        let gas;
+        let value;
+        let input;
         const from = evmEvent.event.data[0].toString();
         const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
           ? null
           : evmEvent.event.data[1].toString();
 
+        switch (extrinsic.method.section.toUpperCase()) {
+          case 'EVM': {
+            const evmExtrinsic: any = extrinsic.method.toJSON();
+            value = evmExtrinsic?.args?.value;
+            gas = evmExtrinsic?.args?.gas_limit;
+            // @TODO remove
+            // only work on mandala and karura-testnet
+            // https://github.com/AcalaNetwork/Acala/pull/1965
+            input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
+            break;
+          }
+          case 'CURRENCIES': {
+            // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+            const evmExtrinsic: any = extrinsic.method.toJSON();
+            value = 0;
+            gas = 2_100_000;
+            const contract = evmExtrinsic?.args?.currency_id?.erc20;
+            const erc20 = new ethers.Contract(contract, ERC20_ABI);
+            const amount = evmExtrinsic?.args?.amount;
+            input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+            break;
+          }
+          case 'SUDO': {
+            const evmExtrinsic: any = extrinsic.method.toJSON();
+            value = evmExtrinsic?.args?.call?.args?.value;
+            gas = evmExtrinsic?.args?.call?.args?.gas_limit;
+            input = evmExtrinsic?.args?.call?.args?.input || evmExtrinsic?.args?.call?.args?.init;
+            // @TODO remove
+            // only work on mandala and karura-testnet
+            // https://github.com/AcalaNetwork/Acala/pull/1971
+            if (input === "0x") {
+              // return token contracts
+              input = MIRRORED_TOKEN_CONTRACT
+            }
+            break;
+          }
+          // @TODO support proxy
+          case 'PROXY': {
+            return logger.throwError('Unspport proxy', Logger.errors.UNSUPPORTED_OPERATION);
+          }
+          // @TODO support utility
+          case 'UTILITY': {
+            return logger.throwError('Unspport utility', Logger.errors.UNSUPPORTED_OPERATION);
+          }
+          default: {
+            return logger.throwError('Unspport ' + extrinsic.method.section.toUpperCase(), Logger.errors.UNSUPPORTED_OPERATION);
+          }
+        };
+
+
+        // @TODO eip2930, eip1559
+
         // @TODO Missing data
         return {
           gasPrice: '0x1', // TODO: get correct value
-          gas: '0x1', // TODO: get correct value
-          input: '', // TODO: get correct value
+          gas,
+          input,
           v: DUMMY_V,
           r: DUMMY_R,
           s: DUMMY_S,
@@ -460,10 +500,9 @@ export abstract class BaseProvider extends AbstractProvider {
           nonce: extrinsic.nonce.toNumber(),
           from: from,
           to: to,
-          // @TODO get tx value
-          value: 0
+          value: hexValue(value),
         };
-      });
+      }));
     }
 
     const data = {
@@ -473,18 +512,20 @@ export abstract class BaseProvider extends AbstractProvider {
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: Math.floor(now.toNumber() / 1000),
-      nonce: deafultNonce.toHex(),
-      mixHash: deafultMixHash.toHex(),
+      nonce: DUMMY_BLOCK_NONCE,
+      mixHash: DUMMY_BLOCK_MIX_HASH,
       difficulty: ZERO,
+      totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
       gasUsed: BIGNUMBER_ZERO,
 
       miner: author,
-      author: author,
       extraData: EMPTY_STRING,
       sha3Uncles: EMTPY_UNCLE_HASH,
       receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
+      size: 0x0, // TODO: ???
+      uncles: EMTPY_UNCLES,
 
       transactions
 
@@ -762,7 +803,7 @@ export abstract class BaseProvider extends AbstractProvider {
    * default to return big enough gas for contract deployment
    * @returns The gas used by eth transaction
    */
-  _getEthGas = async({
+  _getEthGas = async ({
     gasLimit = 21000000,
     storageLimit = 64100,
     validUntil: _validUntil,
@@ -837,20 +878,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const extrinsic = !to
       ? this.api.tx.evm.create(
-          data,
-          value?.toBigInt(),
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt(), // storage_limit u32::max
-          accessList
-        )
+        data,
+        value?.toBigInt(),
+        U64MAX.toBigInt(), // gas_limit u64::max
+        U32MAX.toBigInt(), // storage_limit u32::max
+        accessList
+      )
       : this.api.tx.evm.call(
-          to,
-          data,
-          value?.toBigInt(),
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt(), // storage_limit u32::max
-          accessList
-        );
+        to,
+        data,
+        value?.toBigInt(),
+        U64MAX.toBigInt(), // gas_limit u64::max
+        U32MAX.toBigInt(), // storage_limit u32::max
+        accessList
+      );
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
 
