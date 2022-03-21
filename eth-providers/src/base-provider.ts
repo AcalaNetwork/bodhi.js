@@ -1521,7 +1521,7 @@ export abstract class BaseProvider extends AbstractProvider {
             const res = await this.getTransactionReceiptAtBlock(txHash, nextBlockHash);
             resolve(res);
           } catch (error) {
-            // swallow the error and treat this as tx not found in next block
+            // `getTransactionReceiptAtBlock` throwing error means tx not found in next block
             resolve(null);
           }
         };
@@ -1531,12 +1531,8 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
   };
 
-  _getTXReceipt = async (txHash: string, maxWaitBlocks = 3): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    let curWaitBlocks = 0;
-    while (
-      curWaitBlocks++ < maxWaitBlocks &&
-      await this._isTXPending(txHash)
-    ) {
+  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
+    if (await this._isTXPending(txHash)) {
       const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
       if (txFromNextBlock) return txFromNextBlock;
     }
