@@ -211,7 +211,6 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
-    // TODO: should probably move this cache initialization to constructor so cache always exist
     this._cache = new BlockCache(maxCachedSize);
 
     if (maxCachedSize < 1) {
@@ -1539,12 +1538,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    const MAX_WAIT_BLOCKS = 5;
-    let curWaitBlocks = 0;
-    while (
-      await this._cache?.isTXPending(txHash) &&
-      curWaitBlocks++ < MAX_WAIT_BLOCKS
-    ) {
+    // TODO: should probably move cache initialization to constructor so cache always exist
+    while (await this._cache?.isTXPending(txHash)) {
       console.log(`
         ---------------------------------------------
                            PENDING
