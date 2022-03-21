@@ -1503,8 +1503,6 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _isTXPending = async (txHash: string): Promise<boolean> => {
-    // TODO: can optimize this and other operations related to pendingExtrinsics in the future
-    // by "caching" pendingExtrinsics: save them to provider in every block
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     for (const e of pendingExtrinsics) {
       if (e.hash.toHex() === txHash) return true;
@@ -1533,8 +1531,12 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
   };
 
-  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    while (await this._isTXPending(txHash)) {
+  _getTXReceipt = async (txHash: string, maxWaitBlocks = 3): Promise<TransactionReceipt | TransactionReceiptGQL> => {
+    let curWaitBlocks = 0;
+    while (
+      curWaitBlocks++ < maxWaitBlocks &&
+      await this._isTXPending(txHash)
+    ) {
       const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
       if (txFromNextBlock) return txFromNextBlock;
     }
@@ -1546,7 +1548,7 @@ export abstract class BaseProvider extends AbstractProvider {
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
       return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     } catch (e) {
-      return logger.throwError(`subql error when querying transaction. `, Logger.errors.UNKNOWN_ERROR, { txHash, error: (e as any).message });
+      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
   };
 
