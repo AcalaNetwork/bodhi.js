@@ -322,10 +322,14 @@ class Eip1193BridgeImpl {
    * @param DATA, 32 Bytes - hash of a transaction
    * @returns TransactionReceipt, A transaction receipt object, or null when no receipt was found:
    */
-  async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
+  async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt | null> {
     validate([{ type: 'blockHash' }], params);
 
     const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, params);
+    if (res === null || res === undefined) {
+      return null;
+    }
+
     // @ts-ignore
     delete res.byzantium;
     // @ts-ignore
