@@ -1,7 +1,5 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider';
-import { BaseProvider, BlockTag } from './base-provider';
+import { BaseProvider } from './base-provider';
 import { createApi } from './chain-api';
-import { throwNotImplemented } from './utils';
 
 export interface BaseProviderOptions {
   safeMode?: boolean;
