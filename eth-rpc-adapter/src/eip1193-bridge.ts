@@ -286,7 +286,7 @@ class Eip1193BridgeImpl {
     };
   }
 
-  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 3, interval: number = 1000): Promise<T> {
+  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 1, interval: number = 1000): Promise<T> {
     let res;
     let tries = 0;
 

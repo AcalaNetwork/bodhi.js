@@ -65,11 +65,13 @@ import {
   filterLog,
   toHex,
   calcEthereumTransactionParams,
-  sleep
+  sleep,
+  decodeMessage
 } from './utils';
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { BlockCache } from './utils/BlockCache';
+import { ISubmittableResult } from '@polkadot/types/types';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -1155,9 +1157,33 @@ export abstract class BaseProvider extends AbstractProvider {
   sendRawTransaction = async (rawTx: string): Promise<string> => {
     const { extrinsic } = await this.prepareTransaction(rawTx);
 
-    await extrinsic.send();
+    const res = await new Promise<ISubmittableResult>((resolve, reject) => {
+      extrinsic.send(result => {
+        if (!result.txIndex) return;    // ignore the first callback before tx is included in block
 
-    return extrinsic.hash.toHex();
+        const createdFailed = result.findRecord('evm', 'CreatedFailed');
+        const executedFailed = result.findRecord('evm', 'ExecutedFailed');
+        const failed = createdFailed || executedFailed;
+
+        if (failed) {
+          const err = decodeMessage(
+            failed.event.data[2].toJSON(),
+            failed.event.data[3].toJSON() as string,
+          );
+          reject(err);
+        }
+
+        resolve(result);
+      }).catch(e => {
+        console.log('!!!!!!!!!!', e);
+        reject(e)
+      }) as unknown as void;
+    }).catch(e => {
+      console.log('@@@@@@@@@@@@@@', e, typeof e)
+      return logger.throwError('transaction failed', Logger.errors.CALL_EXCEPTION, { error: e.toString() })
+    });
+
+    return res.txHash.toHex() as string;
   };
 
   sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
@@ -1572,20 +1598,21 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
   };
 
-  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    if (await this._isTXPending(txHash)) {
-      const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
-      if (txFromNextBlock) return txFromNextBlock;
-    }
-
-    const txFromCache = await this._getTxReceiptFromCache(txHash);
-    if (txFromCache) return txFromCache;
-
+  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
+    // TODO: potentially these 3 can go in parallel
     try {
+      if (await this._isTXPending(txHash)) {
+        const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
+        if (txFromNextBlock) return txFromNextBlock;
+      }
+
+      const txFromCache = await this._getTxReceiptFromCache(txHash);
+      if (txFromCache) return txFromCache;
+
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-      return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+      return txFromSubql || null;
     } catch {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+      return null;
     }
   };
 
