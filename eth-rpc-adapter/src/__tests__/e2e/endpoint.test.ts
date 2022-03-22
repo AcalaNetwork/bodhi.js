@@ -71,7 +71,7 @@ describe('eth_getTransactionReceipt', () => {
     expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
   });
 
-  it('return correct error code and messge', async () => {
+  it('return correct error or null', async () => {
     let res;
 
     /* ---------- invalid hex address ---------- */
@@ -83,8 +83,7 @@ describe('eth_getTransactionReceipt', () => {
     /* ---------- hash not found ---------- */
     res = await eth_getTransactionReceipt(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
     expect(res.status).to.equal(200);
-    expect(res.data.error.code).to.equal(6969);
-    expect(res.data.error.message).to.contain('transaction hash not found');
+    expect(res.data.result).to.equal(null);
   });
 });
 
