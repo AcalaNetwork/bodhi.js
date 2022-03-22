@@ -524,7 +524,7 @@ export abstract class BaseProvider extends AbstractProvider {
       sha3Uncles: EMTPY_UNCLE_HASH,
       receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
-      size: 0x0, // TODO: ???
+      size: block.size,
       uncles: EMTPY_UNCLES,
 
       transactions
