@@ -1007,7 +1007,7 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit = BigInt(_storageLimit);
       validUntil = BigInt(_validUntil);
       tip = BigInt(_tip);
-    } else if (ethTx.type === null || ethTx.type === 0 || ethTx.type === 2) {
+    } else if (ethTx.type === null || ethTx.type === undefined || ethTx.type === 0 || ethTx.type === 2) {
       // Legacy, EIP-155, and EIP-1559 transaction
       const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
 
@@ -1152,7 +1152,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const hexTx = await Promise.resolve(signedTransaction).then((t) => hexlify(t));
     const tx = parseTransaction(await signedTransaction);
 
-    if ((tx as any).confirmations === null) {
+    if ((tx as any).confirmations === null || (tx as any).confirmations === undefined) {
       (tx as any).confirmations = 0;
     }
 
@@ -1180,7 +1180,7 @@ export abstract class BaseProvider extends AbstractProvider {
     startBlock: number,
     startBlockHash: string
   ): Promise<TransactionResponse> => {
-    if (hash !== null && hexDataLength(hash) !== 32) {
+    if (hash !== null && hash !== undefined && hexDataLength(hash) !== 32) {
       throw new Error('invalid hash - sendTransaction');
     }
 
@@ -1207,7 +1207,7 @@ export abstract class BaseProvider extends AbstractProvider {
       if (confirms === null || confirms === undefined) {
         confirms = 1;
       }
-      if (timeout === null) {
+      if (timeout === null || timeout === undefined) {
         timeout = 0;
       }
 
