@@ -64,11 +64,12 @@ import {
   findEvmEvent,
   filterLog,
   toHex,
-  calcEthereumTransactionParams
+  calcEthereumTransactionParams,
+  sleep
 } from './utils';
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
-import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
+import { BlockCache } from './utils/BlockCache';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -164,6 +165,8 @@ export interface EventListeners {
   [name: string]: EventListener[];
 }
 
+export type NewBlockListener = (header: Header) => any;
+
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
 const NEW_HEADS = 'newHeads';
@@ -177,8 +180,9 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly safeMode: boolean;
   readonly subql?: SubqlProvider;
 
+  _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
-  _cache?: UnfinalizedBlockCache;
+  _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
 
   constructor({
@@ -191,6 +195,7 @@ export abstract class BaseProvider extends AbstractProvider {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
+    this._newBlockListeners = [];
     this.safeMode = safeMode;
     this.latestFinalizedBlockHash = undefined;
 
@@ -209,7 +214,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache(maxCachedSize);
+    this._cache = new BlockCache(maxCachedSize);
 
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
@@ -266,6 +271,14 @@ export abstract class BaseProvider extends AbstractProvider {
           );
         });
       }
+    }) as unknown as void;
+
+    // for getTXhashFromNextBlock
+    this.api.rpc.chain.subscribeNewHeads((header: Header) => {
+      this._newBlockListeners.forEach(cb => {
+        try { cb(header) } catch { /* swallow */ }
+      });
+      this._newBlockListeners = [];
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
@@ -1530,16 +1543,46 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
-  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    // @TODO Optimize performance
-    // Prioritizing the use of cache data can avoid using the database when testing.
-    const txFromCache = await this._getTxReceiptFromCache(txHash);
+  _isTXPending = async (txHash: string): Promise<boolean> => {
+    const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+    for (const e of pendingExtrinsics) {
+      if (e.hash.toHex() === txHash) return true;
+    }
 
+    return false;
+  };
+
+  _getTXReceiptFromNextBlock = async (txHash: string, timeout = 20000): Promise<TransactionReceipt | null> => {
+    return await Promise.race([
+      sleep(timeout),
+      new Promise<TransactionReceipt | null>((resolve) => {
+        const receiptWaiter = async (nextHeader: Header): Promise<void> => {
+          const nextBlockHash = nextHeader.hash.toHex() as string;
+          try {
+            const res = await this.getTransactionReceiptAtBlock(txHash, nextBlockHash);
+            resolve(res);
+          } catch (error) {
+            // `getTransactionReceiptAtBlock` throwing error means tx not found in next block
+            resolve(null);
+          }
+        };
+
+        this._newBlockListeners.push(receiptWaiter);
+      }),
+    ]);
+  };
+
+  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
+    if (await this._isTXPending(txHash)) {
+      const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
+      if (txFromNextBlock) return txFromNextBlock;
+    }
+
+    const txFromCache = await this._getTxReceiptFromCache(txHash);
     if (txFromCache) return txFromCache;
 
     try {
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-
       return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
     } catch {
       return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });

@@ -286,7 +286,7 @@ class Eip1193BridgeImpl {
     };
   }
 
-  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 20, interval: number = 1000): Promise<T> {
+  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 3, interval: number = 1000): Promise<T> {
     let res;
     let tries = 0;
 
@@ -295,9 +295,7 @@ class Eip1193BridgeImpl {
         res = await fn(...args);
       } catch (e) {
         console.log(`failed attemp # ${tries}/${maxRetries}`);
-        if (tries === maxRetries || !(e as any).message.includes('transaction hash not found')) {
-          throw e;
-        }
+        if (tries === maxRetries) throw e;
         await sleep(interval);
       }
     }
