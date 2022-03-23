@@ -69,7 +69,6 @@ import {
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { BlockCache } from './utils/BlockCache';
-import { ISubmittableResult } from '@polkadot/types/types';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
