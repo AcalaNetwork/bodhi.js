@@ -291,7 +291,7 @@ class Eip1193BridgeImpl {
    * @param DATA, 32 Bytes - hash of a transaction
    * @returns Transaction, A transaction object, or null when no transaction was found:
    */
-  async eth_getTransactionByHash(params: any[]): Promise<TX> {
+  async eth_getTransactionByHash(params: any[]): Promise<TX | null> {
     validate([{ type: 'blockHash' }], params);
 
     const res = await runWithRetries(this.#provider.getTransactionByHash, params);
