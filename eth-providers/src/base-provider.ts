@@ -65,6 +65,7 @@ import {
   filterLog,
   calcEthereumTransactionParams,
   sleep,
+  decodeMessage
 } from './utils';
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
@@ -1157,6 +1158,34 @@ export abstract class BaseProvider extends AbstractProvider {
     await extrinsic.send();
 
     return extrinsic.hash.toHex();
+
+    // const res = await new Promise<ISubmittableResult>((resolve, reject) => {
+    //   extrinsic.send(result => {
+    //     if (!result.txIndex) return;    // ignore the first callback before tx is included in block
+
+    //     const createdFailed = result.findRecord('evm', 'CreatedFailed');
+    //     const executedFailed = result.findRecord('evm', 'ExecutedFailed');
+    //     const failed = createdFailed || executedFailed;
+
+    //     if (failed) {
+    //       const err = decodeMessage(
+    //         failed.event.data[2].toJSON(),
+    //         failed.event.data[3].toJSON() as string,
+    //       );
+    //       reject(err);
+    //     }
+
+    //     resolve(result);
+    //   }).catch(e => {  
+    //     console.log('!!!!!!!!!!', e);
+    //     reject(e)
+    //   }) as unknown as void;
+    // }).catch(e => {
+    //   console.log('@@@@@@@@@@@@@@', e, typeof e)
+    //   return logger.throwError('transaction failed', Logger.errors.CALL_EXCEPTION, { error: e.toString() })
+    // });
+
+    // return res.txHash.toHex() as string;
   };
 
   sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
