@@ -63,9 +63,8 @@ import {
   getEvmExtrinsicIndexes,
   findEvmEvent,
   filterLog,
-  toHex,
   calcEthereumTransactionParams,
-  sleep
+  sleep,
 } from './utils';
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
@@ -1572,29 +1571,34 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
   };
 
-  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    if (await this._isTXPending(txHash)) {
-      const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
-      if (txFromNextBlock) return txFromNextBlock;
-    }
-
-    const txFromCache = await this._getTxReceiptFromCache(txHash);
-    if (txFromCache) return txFromCache;
-
+  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
+    // TODO: potentially these 3 can go in parallel
+    let res = null;
     try {
+      if (await this._isTXPending(txHash)) {
+        const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
+        if (txFromNextBlock) return txFromNextBlock;
+      }
+
+      const txFromCache = await this._getTxReceiptFromCache(txHash);
+      if (txFromCache) return txFromCache;
+
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-      return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+      res = txFromSubql || null;
     } catch {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+      res = null;
     }
+
+    return res;
   };
 
   // Queries
   getTransaction = (txHash: string): Promise<TransactionResponse> =>
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
-  getTransactionByHash = async (txHash: string): Promise<TX> => {
+  getTransactionByHash = async (txHash: string): Promise<TX | null> => {
     const tx = await this._getTXReceipt(txHash);
+    if (!tx) return null;
 
     const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash);
 
@@ -1628,8 +1632,9 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTXReceiptByHash(txHash);
   };
 
-  getTXReceiptByHash = async (txHash: string): Promise<TXReceipt> => {
+  getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
     const tx = await this._getTXReceipt(txHash);
+    if (!tx) return null;
 
     return this.formatter.receipt({
       to: tx.to || null,

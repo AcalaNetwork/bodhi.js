@@ -6,7 +6,7 @@ import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
-import { sleep } from './utils';
+import { runWithRetries } from './utils';
 import { validate } from './validate';
 
 const HEX_ZERO = '0x0';
@@ -286,33 +286,16 @@ class Eip1193BridgeImpl {
     };
   }
 
-  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 3, interval: number = 1000): Promise<T> {
-    let res;
-    let tries = 0;
-
-    while (!res && tries++ < maxRetries) {
-      try {
-        res = await fn(...args);
-      } catch (e) {
-        console.log(`failed attemp # ${tries}/${maxRetries}`);
-        if (tries === maxRetries) throw e;
-        await sleep(interval);
-      }
-    }
-
-    return res as T;
-  }
-
   /**
    * Returns the information about a transaction requested by transaction hash.
    * @param DATA, 32 Bytes - hash of a transaction
    * @returns Transaction, A transaction object, or null when no transaction was found:
    */
-  async eth_getTransactionByHash(params: any[]): Promise<TX> {
+  async eth_getTransactionByHash(params: any[]): Promise<TX | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this._runWithRetries<TX>(this.#provider.getTransactionByHash, params);
-    return hexlifyRpcResult(res);
+    const res = await runWithRetries(this.#provider.getTransactionByHash, params);
+    return res ? hexlifyRpcResult(res) : null;
   }
 
   /**
@@ -323,10 +306,8 @@ class Eip1193BridgeImpl {
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, params);
-    if (res === null || res === undefined) {
-      return null;
-    }
+    const res = await runWithRetries(this.#provider.getTXReceiptByHash, params);
+    if (!res) return null;
 
     // @ts-ignore
     delete res.byzantium;
