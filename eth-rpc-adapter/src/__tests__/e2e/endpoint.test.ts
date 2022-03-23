@@ -14,8 +14,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const RPC_URL = process.env.RPC_URL || 'ws://127.0.0.1:8545';
-const SUBQL_URL = process.env.SUBQL_URL || 'ws://127.0.0.1:3001';
+const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
+const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
 
 const subql = new SubqlProvider(SUBQL_URL);
 
@@ -332,7 +332,7 @@ describe('eth_getTransactionByHash', () => {
     expect(res.data.result.hash).to.equal(tx3.transactionHash);
   });
 
-  it('return correct error code and messge', async () => {
+  it('return correct error or null', async () => {
     let res;
 
     /* ---------- invalid hex address ---------- */
@@ -344,8 +344,7 @@ describe('eth_getTransactionByHash', () => {
     /* ---------- hash not found ---------- */
     res = await eth_getTransactionByHash(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
     expect(res.status).to.equal(200);
-    expect(res.data.error.code).to.equal(6969);
-    expect(res.data.error.message).to.contain('transaction hash not found');
+    expect(res.data.result).to.contain(null);
   });
 });
 

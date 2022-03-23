@@ -1157,7 +1157,9 @@ export abstract class BaseProvider extends AbstractProvider {
   sendRawTransaction = async (rawTx: string): Promise<string> => {
     const { extrinsic } = await this.prepareTransaction(rawTx);
 
-    const res = await extrinsic.send();
+    await extrinsic.send();
+
+    return extrinsic.hash.toHex();
 
     // const res = await new Promise<ISubmittableResult>((resolve, reject) => {
     //   extrinsic.send(result => {
@@ -1176,7 +1178,7 @@ export abstract class BaseProvider extends AbstractProvider {
     //     }
 
     //     resolve(result);
-    //   }).catch(e => {
+    //   }).catch(e => {  
     //     console.log('!!!!!!!!!!', e);
     //     reject(e)
     //   }) as unknown as void;
@@ -1186,7 +1188,6 @@ export abstract class BaseProvider extends AbstractProvider {
     // });
 
     // return res.txHash.toHex() as string;
-    return res.hash.toHex() as string;
   };
 
   sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
