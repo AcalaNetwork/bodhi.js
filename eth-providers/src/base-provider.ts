@@ -416,6 +416,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
 
+    let total_used_gas = BIGNUMBER_ZERO;
     let transactions: any[];
 
     if (!fullTx) {
@@ -440,10 +441,36 @@ export abstract class BaseProvider extends AbstractProvider {
         let gas;
         let value;
         let input;
+        let gasPrice = GAS_PRICE;
         const from = evmEvent.event.data[0].toString();
         const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
           ? null
           : evmEvent.event.data[1].toString();
+
+        // @TODO remove
+        // only work on mandala and karura-testnet
+        // https://github.com/AcalaNetwork/Acala/pull/1985
+        if (evmEvent.event.data.length > 5 || (evmEvent.event.data.length === 5 && evmEvent.event.method === 'Executed')) {
+          const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
+          const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
+
+          // treasury.Deposit
+          const treasuryEvent = events[events.length - 2];
+          if (treasuryEvent.event.section.toUpperCase() === 'TREASURY' && treasuryEvent.event.method === 'Deposit') {
+            let tx_fee = BigNumber.from(treasuryEvent.event.data[0].toString());
+
+            // get storage fee
+            // if used_storage > 0, tx_fee include the storage fee.
+            if (used_storage.gt(0)) {
+              const { storageDepositPerByte } = this._getGasConsts();
+              tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
+            }
+
+            gasPrice = tx_fee.div(used_gas);
+
+            total_used_gas = total_used_gas.add(used_gas);
+          }
+        }
 
         switch (extrinsic.method.section.toUpperCase()) {
           case 'EVM': {
@@ -499,7 +526,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
         // @TODO Missing data
         return {
-          gasPrice: '0x1', // TODO: get correct value
+          gasPrice,
           gas,
           input,
           v: DUMMY_V,
@@ -529,14 +556,14 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: BIGNUMBER_ZERO,
+      gasUsed: total_used_gas,
 
       miner: author,
       extraData: EMPTY_STRING,
       sha3Uncles: EMTPY_UNCLE_HASH,
       receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
-      size: block.size,
+      size: block.encodedLength,
       uncles: EMTPY_UNCLES,
 
       transactions
@@ -1573,7 +1600,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
     // TODO: potentially these 3 can go in parallel
-    let res = null;
     try {
       if (await this._isTXPending(txHash)) {
         const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
@@ -1584,12 +1610,16 @@ export abstract class BaseProvider extends AbstractProvider {
       if (txFromCache) return txFromCache;
 
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-      res = txFromSubql || null;
+      const res = txFromSubql || null;
+      if (res) {
+        res.blockNumber = +res.blockNumber;
+        res.transactionIndex = +res.transactionIndex;
+        res.gasUsed = BigNumber.from(res.gasUsed);
+      };
+      return res;
     } catch {
-      res = null;
+      return null;
     }
-
-    return res;
   };
 
   // Queries
@@ -1619,7 +1649,7 @@ export abstract class BaseProvider extends AbstractProvider {
       nonce,
       blockNumber: tx.blockNumber,
       transactionIndex: tx.transactionIndex,
-      value,
+      value: hexValue(value),
       gasPrice: GAS_PRICE,
       gas: tx.gasUsed,
       input

@@ -56,43 +56,64 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     byzantium: false,
     // @TODO EIP712
     type: 0,
-    gasUsed: BIGNUMBER_ZERO,
     cumulativeGasUsed: BIGNUMBER_ZERO,
     effectiveGasPrice: EFFECTIVE_GAS_PRICE
   };
 
   switch (event.event.method) {
     case 'Created': {
-      const [source, evmAddress, logs] = event.event.data as unknown as [H160, H160, EvmLog[]];
+      const [source, evmAddress, logs, used_gas, _used_storage] = event.event.data as unknown as [
+        H160,
+        H160,
+        EvmLog[],
+        BigNumber,
+        BigNumber
+      ];
 
       return {
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
+        gasUsed: used_gas,
         status: 1,
         logs: getPartialLogs(logs),
         ...defaultValue
       };
     }
     case 'Executed': {
-      const [source, evmAddress, logs] = event.event.data as unknown as [H160, H160, EvmLog[]];
+      const [source, evmAddress, logs, used_gas, _used_storage] = event.event.data as unknown as [
+        H160,
+        H160,
+        EvmLog[],
+        BigNumber,
+        BigNumber
+      ];
 
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
+        gasUsed: used_gas,
         logs: getPartialLogs(logs),
         status: 1,
         ...defaultValue
       };
     }
     case 'CreatedFailed': {
-      const [source, evmAddress, _exitReason, logs] = event.event.data as unknown as [H160, H160, ExitReason, EvmLog[]];
+      const [source, evmAddress, _exitReason, logs, used_gas, _used_storage] = event.event.data as unknown as [
+        H160,
+        H160,
+        ExitReason,
+        EvmLog[],
+        BigNumber,
+        BigNumber
+      ];
 
       return {
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
+        gasUsed: used_gas,
         logs: getPartialLogs(logs),
         status: 0,
         exitReason: _exitReason.toString(),
@@ -100,18 +121,21 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
       };
     }
     case 'ExecutedFailed': {
-      const [source, evmAddress, _exitReason, _output, logs] = event.event.data as unknown as [
+      const [source, evmAddress, _exitReason, _output, logs, used_gas, _used_storage] = event.event.data as unknown as [
         H160,
         H160,
         ExitReason,
         unknown,
-        EvmLog[]
+        EvmLog[],
+        BigNumber,
+        BigNumber
       ];
 
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: undefined,
+        gasUsed: used_gas,
         status: 0,
         exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
