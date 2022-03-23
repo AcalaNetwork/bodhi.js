@@ -344,7 +344,7 @@ describe('eth_getTransactionByHash', () => {
     /* ---------- hash not found ---------- */
     res = await eth_getTransactionByHash(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
     expect(res.status).to.equal(200);
-    expect(res.data.result).to.contain(null);
+    expect(res.data.result).to.equal(null);
   });
 });
 
