@@ -31,6 +31,7 @@ import { hexlifyRpcResult } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
+  BIGNUMBER_ONE,
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
   GAS_PRICE,
@@ -441,7 +442,6 @@ export abstract class BaseProvider extends AbstractProvider {
         let gas;
         let value;
         let input;
-        let gasPrice = GAS_PRICE;
         const from = evmEvent.event.data[0].toString();
         const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
           ? null
@@ -450,6 +450,7 @@ export abstract class BaseProvider extends AbstractProvider {
         // @TODO remove
         // only work on mandala and karura-testnet
         // https://github.com/AcalaNetwork/Acala/pull/1985
+        let gasPrice = BIGNUMBER_ONE;
         if (evmEvent.event.data.length > 5 || (evmEvent.event.data.length === 5 && evmEvent.event.method === 'Executed')) {
           const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
           const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
