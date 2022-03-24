@@ -5,7 +5,7 @@ export const sleep = async (time: number = 1000): Promise<void> => new Promise((
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,
   args: any[] = [],
-  maxRetries: number = 3,
+  maxRetries: number = 2,
   interval: number = 1000,
 ): Promise<F extends (...args: any[]) => infer R ? R : any> => {
   let res;
