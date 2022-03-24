@@ -31,7 +31,7 @@ services:
       DB_PORT: 5432
     command:
       - -f=./
-      - --network-endpoint=ws://103.253.145.222:9947
+      - --network-endpoint=ws://host.docker.internal:9948
       - --subquery-name=acala-evm
       - --log-level=debug
 
@@ -74,7 +74,7 @@ services:
       - 13331:3331
     restart: always
     environment:
-      - ENDPOINT_URL=ws://103.253.145.222:9947
+      - ENDPOINT_URL=ws://host.docker.internal:9948
       - SUBQL_URL=http://graphql-engine-karura-safe:3001
       - SAFE_MODE=1
     command: yarn start
