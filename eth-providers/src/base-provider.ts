@@ -523,6 +523,8 @@ export abstract class BaseProvider extends AbstractProvider {
         }
 
         gasPrice = tx_fee.div(used_gas);
+      } else {
+        logger.warn('Get treasuryEvent failed ' + extrinsicEvents.toString(), Logger.errors.UNSUPPORTED_OPERATION);
       }
     }
 
