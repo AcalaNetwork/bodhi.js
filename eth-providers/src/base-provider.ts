@@ -445,9 +445,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const total_used_gas = transactions
       .reduce((r, tx) => {
-        r = r + tx.gas
-        return r;
-      });
+        return r.add(tx.gas);
+      }, BIGNUMBER_ZERO);
 
     const data = {
       hash: blockHash,
