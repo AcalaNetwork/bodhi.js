@@ -1511,7 +1511,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     return {
-      extrinsics: block.block.extrinsics[transactionIndex],
+      extrinsics: block.block.extrinsics[extrinsicIndex],
       extrinsicsEvents: extrinsicEvents
     };
   }
