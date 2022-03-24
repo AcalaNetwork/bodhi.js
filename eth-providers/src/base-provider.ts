@@ -1162,6 +1162,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const res = await new Promise<ISubmittableResult>((resolve, reject) => {
       extrinsic.send(result => {
+        console.log(result)
         if (!result.txIndex) return;    // ignore the first callback before tx is included in block
 
         const createdFailed = result.findRecord('evm', 'CreatedFailed');
