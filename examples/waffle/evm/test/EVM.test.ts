@@ -44,9 +44,7 @@ describe('StateRent', () => {
 
       expect((await evm.publicationFee()).toString()).to.equal(formatAmount('1_000_000_000_000_000_000'));
 
-      await provider.api.tx.evm.publishContract(evm.address).signAndSend(testPairs.alice.address);
-      // TODO: https://github.com/AcalaNetwork/Acala/pull/1826
-      // await evmPredeployed.publishContract(evm.address);
+      await evmPredeployed.publishContract(evm.address);
     } else {
       expect(await evm.newContractExtraBytes()).to.equal(0);
 

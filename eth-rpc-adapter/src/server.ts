@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Router } from './router';
-const pjson = require('../package.json')
+import { version } from './_version';
 
 dotenv.config();
 
@@ -47,7 +47,7 @@ export async function start() {
   await provider.isReady();
 
   console.log(`-------- 🚀 SERVER STARTED 🚀 --------`);
-  console.log(`version      : ${pjson.version}`);
+  console.log(`version      : ${version}`);
   console.log(`endpoint url : ${ENDPOINT_URL}`);
   console.log(`subquery url : ${SUBQL_URL}`);
   console.log(`listening to : http ${HTTP_PORT} | ws ${WS_PORT}`);
