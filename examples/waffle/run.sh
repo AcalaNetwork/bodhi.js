@@ -9,7 +9,7 @@ build_all() {
     -t evm-waffle-example-e2e \
     -t evm-waffle-example-erc20 \
     -t evm-waffle-example-oracle \
-    -t evm-waffle-example-state-rent \
+    -t evm-waffle-example-evm \
     -t evm-waffle-example-arbitrager \
     -t evm-waffle-example-scheduler'
 }
@@ -21,7 +21,7 @@ rebuild_all() {
     -t evm-waffle-example-e2e \
     -t evm-waffle-example-erc20 \
     -t evm-waffle-example-oracle \
-    -t evm-waffle-example-state-rent \
+    -t evm-waffle-example-evm \
     -t evm-waffle-example-arbitrager \
     -t evm-waffle-example-scheduler'
 }
@@ -32,7 +32,7 @@ test_all() {
     "dex"
     "oracle"
     "erc20"
-    "state-rent"
+    "evm"
     "e2e"
     "scheduler"
     "arbitrager"

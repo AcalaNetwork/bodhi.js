@@ -47,7 +47,7 @@ COPY examples/waffle/e2e/package.json examples/waffle/e2e/package.json
 COPY examples/waffle/erc20/package.json examples/waffle/erc20/package.json
 COPY examples/waffle/oracle/package.json examples/waffle/oracle/package.json
 COPY examples/waffle/hello-world/package.json examples/waffle/hello-world/package.json
-COPY examples/waffle/state-rent/package.json examples/waffle/state-rent/package.json
+COPY examples/waffle/evm/package.json examples/waffle/evm/package.json
 COPY examples/waffle/scheduler/package.json examples/waffle/scheduler/package.json
 COPY examples/waffle/uniswap/package.json examples/waffle/uniswap/package.json
 
