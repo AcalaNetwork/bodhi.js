@@ -121,17 +121,17 @@ export interface CallRequest {
 
 export interface partialTX {
   from: string;
-  to: string | null;
-  blockHash: string;
-  blockNumber: number;
-  transactionIndex: number;
+  to: string | null;                // null for contract creation
+  blockHash: string | null;         // null for pending TX
+  blockNumber: number | null;       // null for pending TX
+  transactionIndex: number | null;  // null for pending TX
 }
 
 export interface TX extends partialTX {
   hash: string;
   nonce: number;
   value: BigNumberish;
-  gasPrice: BigNumber;
+  gasPrice: BigNumberish;
   gas: BigNumberish;
   input: string;
 }
@@ -148,6 +148,21 @@ export interface TXReceipt extends partialTX {
   effectiveGasPrice: BigNumber;
   type: number;
   status?: number;
+}
+
+export interface ExtrinsicMethodJSON {
+  callIndex: string,
+  args: {
+    action: {
+      [key: string]: string
+    },
+    input: string,
+    value: number,
+    gas_limit: number,
+    storage_limit: number,
+    access_list: any[],
+    valid_until: number
+  }
 }
 
 export interface GasConsts {
@@ -633,7 +648,18 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
-    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    let pendingNonce = 0;
+    if ((await blockTag) === 'pending') {
+      const substrateAddress = await this.getSubstrateAddress(await addressOrName);
+      const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+      pendingNonce = pendingExtrinsics.filter(e => e.signer.toString() === substrateAddress).length;
+      logger.info({
+        pendingNonce
+      })
+    }
+
+    const minedNonce = !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    return minedNonce + pendingNonce;
   };
 
   getSubstrateNonce = async (
@@ -1615,6 +1641,29 @@ export abstract class BaseProvider extends AbstractProvider {
     return false;
   };
 
+  _getPendingTX = async (txHash: string): Promise<TX | null> => {
+    const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+    const targetExtrinsic = pendingExtrinsics.find(e => e.hash.toHex() === txHash);
+
+    if (!targetExtrinsic) return null;
+
+    const args = (targetExtrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
+
+    return {
+      from: await this.getEvmAddress(targetExtrinsic.signer.toString()),
+      to: args.action.Call ? args.action.Call : null,
+      blockHash: null,
+      blockNumber: null,
+      transactionIndex: null,
+      hash: txHash,
+      nonce: targetExtrinsic.nonce.toNumber(),
+      value: args.value,
+      gasPrice: args.storage_limit,   // TODO: reverse calculate if needed
+      gas: args.gas_limit,
+      input: args.input,
+    }
+  };
+
   _getTXReceiptFromNextBlock = async (txHash: string, timeout = 6000): Promise<TransactionReceipt | null> => {
     return await Promise.race([
       sleep(timeout),
@@ -1635,14 +1684,14 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
   };
 
+<<<<<<< HEAD
   _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
     // TODO: potentially these 3 can go in parallel
+=======
+  _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
+    let res = null;
+>>>>>>> test
     try {
-      if (await this._isTXPending(txHash)) {
-        const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
-        if (txFromNextBlock) return txFromNextBlock;
-      }
-
       const txFromCache = await this._getTxReceiptFromCache(txHash);
       if (txFromCache) return txFromCache;
 
@@ -1664,7 +1713,10 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (txHash: string): Promise<TX | null> => {
-    const tx = await this._getTXReceipt(txHash);
+    const pendingTX = await this._getPendingTX(txHash);
+    if (pendingTX) return pendingTX;
+
+    const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     const res = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
@@ -1690,7 +1742,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
-    const tx = await this._getTXReceipt(txHash);
+    const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     return this.formatter.receipt({
