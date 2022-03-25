@@ -1615,7 +1615,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return false;
   };
 
-  _getTXReceiptFromNextBlock = async (txHash: string, timeout = 20000): Promise<TransactionReceipt | null> => {
+  _getTXReceiptFromNextBlock = async (txHash: string, timeout = 6000): Promise<TransactionReceipt | null> => {
     return await Promise.race([
       sleep(timeout),
       new Promise<TransactionReceipt | null>((resolve) => {
