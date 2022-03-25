@@ -26,11 +26,12 @@ import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
-import type { AccountId, Header } from '@polkadot/types/interfaces';
+import type { AccountId, Header, EventRecord } from '@polkadot/types/interfaces';
 import { hexlifyRpcResult } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
+  BIGNUMBER_ONE,
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
   GAS_PRICE,
@@ -400,7 +401,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const apiAt = await this.api.at(blockHash);
 
-    const [block, validators, now, events] = await Promise.all([
+    const [block, validators, now, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.query.session ? apiAt.query.session.validators() : ([] as any),
       apiAt.query.timestamp.now(),
@@ -414,7 +415,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // blockscout need `toLowerCase`
     const author = headerExtended.author ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase() : DUMMY_ADDRESS;
 
-    const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
+    const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
     let transactions: any[];
 
@@ -427,95 +428,25 @@ export abstract class BaseProvider extends AbstractProvider {
       // full
       transactions = await Promise.all(evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
         const extrinsic = block.block.extrinsics[extrinsicIndex];
-        const evmEvent = findEvmEvent(events);
+        const extrinsicEvents = blockEvents.filter(
+          (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+        );
 
-        if (!evmEvent) {
-          return logger.throwError('findEvmEvent failed. blockNumber' + blockNumber + 'transactionIndex: '
-            + transactionIndex, Logger.errors.UNSUPPORTED_OPERATION);
-        }
+        const data = await this._parseExtrinsic(extrinsic, extrinsicEvents);
 
-        // logger.info(extrinsic.method.toHuman());
-        // logger.info(extrinsic.method);
-
-        let gas;
-        let value;
-        let input;
-        const from = evmEvent.event.data[0].toString();
-        const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
-          ? null
-          : evmEvent.event.data[1].toString();
-
-        switch (extrinsic.method.section.toUpperCase()) {
-          case 'EVM': {
-            const evmExtrinsic: any = extrinsic.method.toJSON();
-            value = evmExtrinsic?.args?.value;
-            gas = evmExtrinsic?.args?.gas_limit;
-            // @TODO remove
-            // only work on mandala and karura-testnet
-            // https://github.com/AcalaNetwork/Acala/pull/1965
-            input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
-            break;
-          }
-          case 'CURRENCIES': {
-            // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
-            const evmExtrinsic: any = extrinsic.method.toJSON();
-            value = 0;
-            gas = 2_100_000;
-            const contract = evmExtrinsic?.args?.currency_id?.erc20;
-            const erc20 = new ethers.Contract(contract, ERC20_ABI);
-            const amount = evmExtrinsic?.args?.amount;
-            input = (await erc20.populateTransaction.transfer(to, amount))?.data;
-            break;
-          }
-          case 'SUDO': {
-            const evmExtrinsic: any = extrinsic.method.toJSON();
-            value = evmExtrinsic?.args?.call?.args?.value;
-            gas = evmExtrinsic?.args?.call?.args?.gas_limit;
-            input = evmExtrinsic?.args?.call?.args?.input || evmExtrinsic?.args?.call?.args?.init;
-            // @TODO remove
-            // only work on mandala and karura-testnet
-            // https://github.com/AcalaNetwork/Acala/pull/1971
-            if (input === "0x") {
-              // return token contracts
-              input = MIRRORED_TOKEN_CONTRACT
-            }
-            break;
-          }
-          // @TODO support proxy
-          case 'PROXY': {
-            return logger.throwError('Unspport proxy', Logger.errors.UNSUPPORTED_OPERATION);
-          }
-          // @TODO support utility
-          case 'UTILITY': {
-            return logger.throwError('Unspport utility', Logger.errors.UNSUPPORTED_OPERATION);
-          }
-          default: {
-            return logger.throwError('Unspport ' + extrinsic.method.section.toUpperCase(), Logger.errors.UNSUPPORTED_OPERATION);
-          }
-        };
-
-
-        // @TODO eip2930, eip1559
-
-        // @TODO Missing data
         return {
-          gasPrice: '0x1', // TODO: get correct value
-          gas,
-          input,
-          v: DUMMY_V,
-          r: DUMMY_R,
-          s: DUMMY_S,
           blockHash,
           blockNumber,
           transactionIndex,
-          hash: extrinsic.hash.toHex(),
-          nonce: extrinsic.nonce.toNumber(),
-          from: from,
-          to: to,
-          value: hexValue(value),
+          ...data
         };
       }));
     }
+
+    const total_used_gas = transactions
+      .reduce((r, tx) => {
+        return r.add(tx.gas);
+      }, BIGNUMBER_ZERO);
 
     const data = {
       hash: blockHash,
@@ -529,14 +460,14 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: BIGNUMBER_ZERO,
+      gasUsed: total_used_gas,
 
       miner: author,
       extraData: EMPTY_STRING,
       sha3Uncles: EMTPY_UNCLE_HASH,
       receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
-      size: 0x0, // TODO: ???
+      size: block.encodedLength,
       uncles: EMTPY_UNCLES,
 
       transactions
@@ -550,6 +481,120 @@ export abstract class BaseProvider extends AbstractProvider {
     // @ts-ignore
     return data;
   };
+
+  _parseExtrinsic = async (
+    extrinsic: GenericExtrinsic,
+    extrinsicEvents: EventRecord[],
+  ): Promise<any> => {
+    // logger.info(extrinsic.method.toHuman());
+    // logger.info(extrinsic.method);
+
+    const evmEvent = findEvmEvent(extrinsicEvents);
+    if (!evmEvent) {
+      return logger.throwError('findEvmEvent failed. extrinsic: ' + extrinsic.method.toJSON(), Logger.errors.UNSUPPORTED_OPERATION);
+    }
+
+    let gas;
+    let value;
+    let input;
+    const from = evmEvent.event.data[0].toString();
+    const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
+      ? null
+      : evmEvent.event.data[1].toString();
+
+    // @TODO remove
+    // only work on mandala and karura-testnet
+    // https://github.com/AcalaNetwork/Acala/pull/1985
+    let gasPrice = BIGNUMBER_ONE;
+    if (evmEvent.event.data.length > 5 || (evmEvent.event.data.length === 5 && evmEvent.event.method === 'Executed')) {
+      const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
+      const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
+
+      // treasury.Deposit
+      const treasuryEvent = extrinsicEvents[extrinsicEvents.length - 2];
+      if (treasuryEvent.event.section.toUpperCase() === 'TREASURY' && treasuryEvent.event.method === 'Deposit') {
+        let tx_fee = BigNumber.from(treasuryEvent.event.data[0].toString());
+
+        // get storage fee
+        // if used_storage > 0, tx_fee include the storage fee.
+        if (used_storage.gt(0)) {
+          const { storageDepositPerByte } = this._getGasConsts();
+          tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
+        }
+
+        gasPrice = tx_fee.div(used_gas);
+      } else {
+        logger.warn('Get treasuryEvent failed ' + extrinsicEvents.toString(), Logger.errors.UNSUPPORTED_OPERATION);
+      }
+    }
+
+    switch (extrinsic.method.section.toUpperCase()) {
+      case 'EVM': {
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = evmExtrinsic?.args?.value;
+        gas = evmExtrinsic?.args?.gas_limit;
+        // @TODO remove
+        // only work on mandala and karura-testnet
+        // https://github.com/AcalaNetwork/Acala/pull/1965
+        input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
+        break;
+      }
+      case 'CURRENCIES': {
+        // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = 0;
+        gas = 2_100_000;
+        const contract = evmExtrinsic?.args?.currency_id?.erc20;
+        const erc20 = new ethers.Contract(contract, ERC20_ABI);
+        const amount = evmExtrinsic?.args?.amount;
+        input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+        break;
+      }
+      case 'SUDO': {
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = evmExtrinsic?.args?.call?.args?.value;
+        gas = evmExtrinsic?.args?.call?.args?.gas_limit;
+        input = evmExtrinsic?.args?.call?.args?.input || evmExtrinsic?.args?.call?.args?.init;
+        // @TODO remove
+        // only work on mandala and karura-testnet
+        // https://github.com/AcalaNetwork/Acala/pull/1971
+        if (input === "0x") {
+          // return token contracts
+          input = MIRRORED_TOKEN_CONTRACT
+        }
+        break;
+      }
+      // @TODO support proxy
+      case 'PROXY': {
+        return logger.throwError('Unspport proxy', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      // @TODO support utility
+      case 'UTILITY': {
+        return logger.throwError('Unspport utility', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      default: {
+        return logger.throwError('Unspport ' + extrinsic.method.section.toUpperCase(), Logger.errors.UNSUPPORTED_OPERATION);
+      }
+    };
+
+
+    // @TODO eip2930, eip1559
+
+    // @TODO Missing data
+    return {
+      gasPrice,
+      gas,
+      input,
+      v: DUMMY_V,
+      r: DUMMY_R,
+      s: DUMMY_S,
+      hash: extrinsic.hash.toHex(),
+      nonce: extrinsic.nonce.toNumber(),
+      from: from,
+      to: to,
+      value: hexValue(value),
+    };
+  }
 
   // @TODO free
   getBalance = async (
@@ -1436,22 +1481,41 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
-    const extrinsics = (await this._getExtrinsicsAtBlock(blockHash)) as GenericExtrinsic[];
+    const extrinsics = (await this._getExtrinsicsAndEventsAtBlock(blockHash)).extrinsics as GenericExtrinsic[];
     return extrinsics.map((e) => e.hash.toHex());
   };
 
-  _getExtrinsicsAtBlock = async (
+  _getExtrinsicsAndEventsAtBlock = async (
     blockHash: string,
     txHash?: string
-  ): Promise<GenericExtrinsic | GenericExtrinsic[] | undefined> => {
-    const block = await this.api.rpc.chain.getBlock(blockHash.toLowerCase());
-    const { extrinsics } = block.block;
+  ): Promise<{
+    extrinsics: GenericExtrinsic | GenericExtrinsic[] | undefined,
+    extrinsicsEvents: EventRecord[] | undefined,
+  }> => {
+    const apiAt = await this.api.at(blockHash.toLowerCase());
 
-    if (!txHash) return extrinsics;
+    const [block, blockEvents] = await Promise.all([
+      this.api.rpc.chain.getBlock(blockHash.toLowerCase()),
+      apiAt.query.system.events()
+    ]);
 
-    const _txHash = txHash.toLowerCase();
-    return extrinsics.find((e) => e.hash.toHex() === _txHash);
-  };
+    if (!txHash) return { extrinsics: block.block.extrinsics, extrinsicsEvents: undefined };
+
+    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
+      txHash.toLowerCase(),
+      block.block.extrinsics,
+      blockEvents
+    );
+
+    const extrinsicEvents = blockEvents.filter(
+      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+    );
+
+    return {
+      extrinsics: block.block.extrinsics[extrinsicIndex],
+      extrinsicsEvents: extrinsicEvents
+    };
+  }
 
   // @TODO Testing
   getTransactionReceiptAtBlock = async (
@@ -1573,7 +1637,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
     // TODO: potentially these 3 can go in parallel
-    let res = null;
     try {
       if (await this._isTXPending(txHash)) {
         const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
@@ -1584,12 +1647,16 @@ export abstract class BaseProvider extends AbstractProvider {
       if (txFromCache) return txFromCache;
 
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-      res = txFromSubql || null;
+      const res = txFromSubql || null;
+      if (res) {
+        res.blockNumber = +res.blockNumber;
+        res.transactionIndex = +res.transactionIndex;
+        res.gasUsed = BigNumber.from(res.gasUsed);
+      };
+      return res;
     } catch {
-      res = null;
+      return null;
     }
-
-    return res;
   };
 
   // Queries
@@ -1600,29 +1667,19 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx = await this._getTXReceipt(txHash);
     if (!tx) return null;
 
-    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash);
+    const res = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
 
-    if (!extrinsic) {
+    if (!res) {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const nonce = (extrinsic as GenericExtrinsic).nonce.toNumber();
-    const { args } = (extrinsic as GenericExtrinsic).method.toJSON();
-    const input = (args as any).input ?? '';
-    const value = (args as any).value ?? 0;
+    const data = await this._parseExtrinsic(res.extrinsics as GenericExtrinsic, res.extrinsicsEvents as EventRecord[]);
 
     return {
-      from: tx.from,
-      to: tx.to || null,
-      hash: tx.transactionHash,
       blockHash: tx.blockHash,
-      nonce,
       blockNumber: tx.blockNumber,
       transactionIndex: tx.transactionIndex,
-      value,
-      gasPrice: GAS_PRICE,
-      gas: tx.gasUsed,
-      input
+      ...data
     };
   };
 
