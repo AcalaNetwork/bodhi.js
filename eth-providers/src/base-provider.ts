@@ -432,7 +432,7 @@ export abstract class BaseProvider extends AbstractProvider {
           (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
         );
 
-        const data = await this._parseExtrinsic(extrinsic, extrinsicEvents);
+        const data = await this._parseExtrinsic(blockHash, extrinsic, extrinsicEvents);
 
         return {
           blockHash,
@@ -483,6 +483,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _parseExtrinsic = async (
+    blockHash: string,
     extrinsic: GenericExtrinsic,
     extrinsicEvents: EventRecord[],
   ): Promise<any> => {
@@ -510,22 +511,17 @@ export abstract class BaseProvider extends AbstractProvider {
       const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
       const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
 
-      // treasury.Deposit
-      const treasuryEvent = extrinsicEvents[extrinsicEvents.length - 2];
-      if (treasuryEvent.event.section.toUpperCase() === 'TREASURY' && treasuryEvent.event.method === 'Deposit') {
-        let tx_fee = BigNumber.from(treasuryEvent.event.data[0].toString());
+      const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), blockHash);
+      let tx_fee = BigNumber.from(payment.partialFee.toString());
 
-        // get storage fee
-        // if used_storage > 0, tx_fee include the storage fee.
-        if (used_storage.gt(0)) {
-          const { storageDepositPerByte } = this._getGasConsts();
-          tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
-        }
-
-        gasPrice = tx_fee.div(used_gas);
-      } else {
-        logger.warn('Get treasuryEvent failed ' + extrinsicEvents.toString(), Logger.errors.UNSUPPORTED_OPERATION);
+      // get storage fee
+      // if used_storage > 0, tx_fee include the storage fee.
+      if (used_storage.gt(0)) {
+        const { storageDepositPerByte } = this._getGasConsts();
+        tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
       }
+
+      gasPrice = tx_fee.div(used_gas);
     }
 
     switch (extrinsic.method.section.toUpperCase()) {
@@ -1673,7 +1669,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const data = await this._parseExtrinsic(res.extrinsics as GenericExtrinsic, res.extrinsicsEvents as EventRecord[]);
+    const data = await this._parseExtrinsic(tx.blockHash, res.extrinsics as GenericExtrinsic, res.extrinsicsEvents as EventRecord[]);
 
     return {
       blockHash: tx.blockHash,
