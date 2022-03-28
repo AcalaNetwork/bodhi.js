@@ -1684,13 +1684,8 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
   };
 
-<<<<<<< HEAD
-  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
-    // TODO: potentially these 3 can go in parallel
-=======
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
     let res = null;
->>>>>>> test
     try {
       const txFromCache = await this._getTxReceiptFromCache(txHash);
       if (txFromCache) return txFromCache;
