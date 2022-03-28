@@ -34,7 +34,6 @@ import {
   BIGNUMBER_ONE,
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
-  GAS_PRICE,
   U32MAX,
   U64MAX,
   ZERO,
@@ -150,6 +149,7 @@ export interface TXReceipt extends partialTX {
   status?: number;
 }
 
+// TODO: safe to assume this shape?
 export interface ExtrinsicMethodJSON {
   callIndex: string,
   args: {
@@ -1676,7 +1676,6 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
-    let res = null;
     try {
       const txFromCache = await this._getTxReceiptFromCache(txHash);
       if (txFromCache) return txFromCache;
