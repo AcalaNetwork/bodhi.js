@@ -511,7 +511,9 @@ export abstract class BaseProvider extends AbstractProvider {
       const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
       const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
 
-      const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), blockHash);
+      const block = await this.api.rpc.chain.getBlock(blockHash);
+      // use parentHash to get tx fee
+      const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
       let tx_fee = BigNumber.from(payment.partialFee.toString());
 
       // get storage fee
@@ -521,7 +523,8 @@ export abstract class BaseProvider extends AbstractProvider {
         tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
       }
 
-      gasPrice = tx_fee.div(used_gas);
+      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+      gasPrice = ethers.utils.parseUnits(tx_fee.div(used_gas).toString(), "mwei");
     }
 
     switch (extrinsic.method.section.toUpperCase()) {
