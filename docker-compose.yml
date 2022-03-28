@@ -98,22 +98,6 @@ services:
       - --instant-sealing
       - --tmp
 
-  mandala-node-normal-sealing:
-    image: acala/mandala-node:e361c534
-    ports:
-      - 9944:9944
-    command:
-      - --dev
-      # - -lruntime=debug
-      # - -levm=debug
-      - --ws-port=9944
-      - --ws-external=true
-      - --rpc-port=9933
-      - --rpc-external=true
-      - --rpc-cors=all
-      - --rpc-methods=unsafe
-      - --tmp
-
   feed-tx:
     build:
       context: .
@@ -141,17 +125,6 @@ services:
       - 8545:8545
     depends_on:
       - mandala-node
-    restart: always
-
-  eth-rpc-adapter-server-normal-sealing:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
-      target: eth-rpc-adapter
-    ports:
-      - 8545:8545
-    depends_on:
-      - mandala-node-normal-sealing
     restart: always
 
   waffle-examples-test:
@@ -183,11 +156,3 @@ services:
       target: truffle-tutorials
     depends_on:
       - eth-rpc-adapter-server
-
-  truffle-tutorials-normal-sealing-test:
-    build:
-      context: .
-      dockerfile: docker/truffle-tutorials-test.Dockerfile
-      target: truffle-tutorials
-    depends_on:
-      - eth-rpc-adapter-server-normal-sealing
