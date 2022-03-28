@@ -1632,15 +1632,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
-  _isTXPending = async (txHash: string): Promise<boolean> => {
-    const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
-    for (const e of pendingExtrinsics) {
-      if (e.hash.toHex() === txHash) return true;
-    }
-
-    return false;
-  };
-
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find(e => e.hash.toHex() === txHash);
