@@ -6,7 +6,6 @@ import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
-import { runWithRetries } from './utils';
 import { validate } from './validate';
 
 const HEX_ZERO = '0x0';
@@ -294,7 +293,7 @@ class Eip1193BridgeImpl {
   async eth_getTransactionByHash(params: any[]): Promise<TX | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await runWithRetries(this.#provider.getTransactionByHash, params);
+    const res = await this.#provider.getTransactionByHash(params[0]);
     return res ? hexlifyRpcResult(res) : null;
   }
 
@@ -306,7 +305,7 @@ class Eip1193BridgeImpl {
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await runWithRetries(this.#provider.getTXReceiptByHash, params);
+    const res = await this.#provider.getTXReceiptByHash(params[0]);
     if (!res) return null;
 
     // @ts-ignore

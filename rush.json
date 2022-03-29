@@ -585,6 +585,12 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "hardhat-tutorial-evm",
+      "projectFolder": "examples/hardhat-tutorials/EVM",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- truffle examples ---------- */
     {

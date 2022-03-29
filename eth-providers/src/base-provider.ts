@@ -27,14 +27,13 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header, EventRecord } from '@polkadot/types/interfaces';
-import { hexlifyRpcResult } from './utils';
+import { hexlifyRpcResult, isEVMExtrinsic } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
   BIGNUMBER_ONE,
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
-  GAS_PRICE,
   U32MAX,
   U64MAX,
   ZERO,
@@ -121,19 +120,22 @@ export interface CallRequest {
 
 export interface partialTX {
   from: string;
-  to: string | null;
-  blockHash: string;
-  blockNumber: number;
-  transactionIndex: number;
+  to: string | null;                // null for contract creation
+  blockHash: string | null;         // null for pending TX
+  blockNumber: number | null;       // null for pending TX
+  transactionIndex: number | null;  // null for pending TX
 }
 
 export interface TX extends partialTX {
   hash: string;
   nonce: number;
   value: BigNumberish;
-  gasPrice: BigNumber;
+  gasPrice: BigNumberish;
   gas: BigNumberish;
   input: string;
+  v: string;
+  r: string;
+  s: string;
 }
 
 export interface TXReceipt extends partialTX {
@@ -148,6 +150,22 @@ export interface TXReceipt extends partialTX {
   effectiveGasPrice: BigNumber;
   type: number;
   status?: number;
+}
+
+// TODO: safe to assume this shape?
+export interface ExtrinsicMethodJSON {
+  callIndex: string,
+  args: {
+    action: {
+      [key: string]: string
+    },
+    input: string,
+    value: number,
+    gas_limit: number,
+    storage_limit: number,
+    access_list: any[],
+    valid_until: number
+  }
 }
 
 export interface GasConsts {
@@ -637,7 +655,21 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
-    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    let pendingNonce = 0;
+    if ((await blockTag) === 'pending') {
+      const [substrateAddress, pendingExtrinsics] = await Promise.all([
+        this.getSubstrateAddress(await addressOrName),
+        this.api.rpc.author.pendingExtrinsics(),
+      ]);
+
+      pendingNonce = pendingExtrinsics.filter(e => (
+        isEVMExtrinsic(e) &&
+        e.signer.toString() === substrateAddress
+      )).length;
+    }
+
+    const minedNonce = !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    return minedNonce + pendingNonce;
   };
 
   getSubstrateNonce = async (
@@ -1610,43 +1642,34 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
-  _isTXPending = async (txHash: string): Promise<boolean> => {
+  _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
-    for (const e of pendingExtrinsics) {
-      if (e.hash.toHex() === txHash) return true;
+    const targetExtrinsic = pendingExtrinsics.find(e => e.hash.toHex() === txHash);
+
+    if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
+
+    const args = (targetExtrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
+
+    return {
+      from: await this.getEvmAddress(targetExtrinsic.signer.toString()),
+      to: args.action.Call ? args.action.Call : null,
+      blockHash: null,
+      blockNumber: null,
+      transactionIndex: null,
+      hash: txHash,
+      nonce: targetExtrinsic.nonce.toNumber(),
+      value: args.value,
+      gasPrice: 0,      // TODO: reverse calculate using args.storage_limit if needed
+      gas: args.gas_limit,
+      input: args.input,
+      v: DUMMY_V,
+      r: DUMMY_R,
+      s: DUMMY_S,
     }
-
-    return false;
   };
 
-  _getTXReceiptFromNextBlock = async (txHash: string, timeout = 6000): Promise<TransactionReceipt | null> => {
-    return await Promise.race([
-      sleep(timeout),
-      new Promise<TransactionReceipt | null>((resolve) => {
-        const receiptWaiter = async (nextHeader: Header): Promise<void> => {
-          const nextBlockHash = nextHeader.hash.toHex() as string;
-          try {
-            const res = await this.getTransactionReceiptAtBlock(txHash, nextBlockHash);
-            resolve(res);
-          } catch (error) {
-            // `getTransactionReceiptAtBlock` throwing error means tx not found in next block
-            resolve(null);
-          }
-        };
-
-        this._newBlockListeners.push(receiptWaiter);
-      }),
-    ]);
-  };
-
-  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
-    // TODO: potentially these 3 can go in parallel
+  _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
     try {
-      if (await this._isTXPending(txHash)) {
-        const txFromNextBlock = await this._getTXReceiptFromNextBlock(txHash);
-        if (txFromNextBlock) return txFromNextBlock;
-      }
-
       const txFromCache = await this._getTxReceiptFromCache(txHash);
       if (txFromCache) return txFromCache;
 
@@ -1668,7 +1691,10 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (txHash: string): Promise<TX | null> => {
-    const tx = await this._getTXReceipt(txHash);
+    const pendingTX = await this._getPendingTX(txHash);
+    if (pendingTX) return pendingTX;
+
+    const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     const res = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
@@ -1694,7 +1720,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
-    const tx = await this._getTXReceipt(txHash);
+    const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     return this.formatter.receipt({
