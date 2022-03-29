@@ -507,7 +507,10 @@ export abstract class BaseProvider extends AbstractProvider {
     // only work on mandala and karura-testnet
     // https://github.com/AcalaNetwork/Acala/pull/1985
     let gasPrice = BIGNUMBER_ONE;
-    if (evmEvent.event.data.length > 5 || (evmEvent.event.data.length === 5 && evmEvent.event.method === 'Executed')) {
+
+    if (evmEvent.event.data.length > 5 ||
+      (evmEvent.event.data.length === 5 && (evmEvent.event.method === 'Created' || evmEvent.event.method === 'Executed'))
+    ) {
       const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
       const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
 
