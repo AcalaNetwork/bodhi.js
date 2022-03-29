@@ -1,6 +1,6 @@
 import { hexValue } from '@ethersproject/bytes';
 import { expect } from 'chai';
-import { hexlifyRpcResult } from '../../utils';
+import { hexlifyRpcResult, isEVMExtrinsic } from '../utils';
 
 describe('utils', () => {
   it('connect chain', async () => {
@@ -41,5 +41,38 @@ describe('utils', () => {
         logIndex: '0x1'
       }
     ]);
+  });
+
+  it('isEVMExtrinsic', () => {
+    const fakeEVMExtrinsic = {
+      method: {
+        section: {
+          toUpperCase() {
+            return 'EVM'
+          }
+        }
+      }
+    };
+
+    const fakeSUDOExtrinsic = {
+      method: {
+        section: {
+          toUpperCase() {
+            return 'SUDO'
+          }
+        }
+      }
+    };
+
+    expect(isEVMExtrinsic(fakeEVMExtrinsic)).to.equal(true);
+    expect(isEVMExtrinsic(fakeSUDOExtrinsic)).to.equal(false);
+
+    /* ---------- TODO:
+       we have a lot of Extrinsics related helpers
+       that can be extracted as pure function helper
+       we can come up with better mock extrinsics,
+       or even better, construct real Extrinsics,
+       so can tests these more comprehensively
+                                            -------- */
   });
 });
