@@ -12,13 +12,13 @@ use(evmChai);
 
 const provider = getTestProvider();
 const testPairs = createTestPairs();
-const STATE_RENT_ABI = require('@acala-network/contracts/build/contracts/StateRent.json').abi;
+const EVM_ABI = require('@acala-network/contracts/build/contracts/EVM.json').abi;
 
 const formatAmount = (amount: String) => {
   return amount.replace(/_/g, '');
 };
 
-describe('StateRent', () => {
+describe('EVM', () => {
   let wallet: Signer;
   let walletTo: Signer;
   let evm: Contract;
@@ -26,8 +26,8 @@ describe('StateRent', () => {
 
   before(async () => {
     [wallet, walletTo] = await provider.getWallets();
-    evm = await deployContract(wallet as any, StateRent);
-    evmPredeployed = new ethers.Contract(ADDRESS.StateRent, STATE_RENT_ABI, wallet as any);
+    evm = await deployContract(wallet as any, EVM);
+    evmPredeployed = new ethers.Contract(ADDRESS.EVM, EVM_ABI, wallet as any);
   });
 
   after(async () => {
