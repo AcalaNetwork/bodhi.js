@@ -653,8 +653,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
     let pendingNonce = 0;
     if ((await blockTag) === 'pending') {
-      const substrateAddress = await this.getSubstrateAddress(await addressOrName);
-      const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+      const [substrateAddress, pendingExtrinsics] = await Promise.all([
+        this.getSubstrateAddress(await addressOrName),
+        this.api.rpc.author.pendingExtrinsics(),
+      ]);
       pendingNonce = pendingExtrinsics.filter(e => e.signer.toString() === substrateAddress).length;
     }
 
