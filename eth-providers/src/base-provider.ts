@@ -27,7 +27,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header, EventRecord } from '@polkadot/types/interfaces';
-import { hexlifyRpcResult } from './utils';
+import { hexlifyRpcResult, isEVMExtrinsic } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
@@ -657,7 +657,11 @@ export abstract class BaseProvider extends AbstractProvider {
         this.getSubstrateAddress(await addressOrName),
         this.api.rpc.author.pendingExtrinsics(),
       ]);
-      pendingNonce = pendingExtrinsics.filter(e => e.signer.toString() === substrateAddress).length;
+
+      pendingNonce = pendingExtrinsics.filter(e => (
+        isEVMExtrinsic(e) &&
+        e.signer.toString() === substrateAddress
+      )).length;
     }
 
     const minedNonce = !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
@@ -1638,7 +1642,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find(e => e.hash.toHex() === txHash);
 
-    if (!(targetExtrinsic?.method.section.toUpperCase() === "EVM")) return null;
+    if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
 
     const args = (targetExtrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
 
