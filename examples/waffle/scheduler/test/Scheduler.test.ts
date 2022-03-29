@@ -29,7 +29,7 @@ const next_block = async (block_number: number) => {
 };
 
 const SCHEDULE_CALL_ABI = require('@acala-network/contracts/build/contracts/Schedule.json').abi;
-const ERC20_ABI = require('@acala-network/contracts/build/contracts/ERC20.json').abi;
+const ERC20_ABI = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi;
 
 describe('Schedule', () => {
   let wallet: Signer;
