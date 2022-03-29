@@ -133,6 +133,9 @@ export interface TX extends partialTX {
   gasPrice: BigNumberish;
   gas: BigNumberish;
   input: string;
+  v: string;
+  r: string;
+  s: string;
 }
 
 export interface TXReceipt extends partialTX {
@@ -653,9 +656,6 @@ export abstract class BaseProvider extends AbstractProvider {
       const substrateAddress = await this.getSubstrateAddress(await addressOrName);
       const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
       pendingNonce = pendingExtrinsics.filter(e => e.signer.toString() === substrateAddress).length;
-      logger.info({
-        pendingNonce
-      })
     }
 
     const minedNonce = !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
@@ -1636,7 +1636,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find(e => e.hash.toHex() === txHash);
 
-    if (!targetExtrinsic) return null;
+    if (!(targetExtrinsic?.method.section.toUpperCase() === "EVM")) return null;
 
     const args = (targetExtrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
 
@@ -1649,30 +1649,13 @@ export abstract class BaseProvider extends AbstractProvider {
       hash: txHash,
       nonce: targetExtrinsic.nonce.toNumber(),
       value: args.value,
-      gasPrice: args.storage_limit,   // TODO: reverse calculate if needed
+      gasPrice: 0,      // TODO: reverse calculate using args.storage_limit if needed
       gas: args.gas_limit,
       input: args.input,
+      v: DUMMY_V,
+      r: DUMMY_R,
+      s: DUMMY_S,
     }
-  };
-
-  _getTXReceiptFromNextBlock = async (txHash: string, timeout = 6000): Promise<TransactionReceipt | null> => {
-    return await Promise.race([
-      sleep(timeout),
-      new Promise<TransactionReceipt | null>((resolve) => {
-        const receiptWaiter = async (nextHeader: Header): Promise<void> => {
-          const nextBlockHash = nextHeader.hash.toHex() as string;
-          try {
-            const res = await this.getTransactionReceiptAtBlock(txHash, nextBlockHash);
-            resolve(res);
-          } catch (error) {
-            // `getTransactionReceiptAtBlock` throwing error means tx not found in next block
-            resolve(null);
-          }
-        };
-
-        this._newBlockListeners.push(receiptWaiter);
-      }),
-    ]);
   };
 
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
