@@ -57,20 +57,10 @@
      */
 
     // tutorials use these public versions instead of workspace:*
-    "@polkadot/api": [
-      "^7.11.1",
-      "^7.9.1",
-    ],
-    "@acala-network/api": [
-      "^3.0.2",
-      "^4.0.1"
-    ],
     "@acala-network/bodhi": [
-      "^2.2.2",
-      "^2.1.2"
+      "^2.2.2"
     ],
     "@acala-network/eth-providers": [
-      "^2.1.7",
       "^2.2.3",
     ],
 
@@ -80,7 +70,6 @@
       "~2.0.1",
       "^4.0.2",
       "^4.0.0",
-      "^4.2.0",
     ],
     "@openzeppelin/contracts": [
       "~3.4.2",
@@ -94,10 +83,6 @@
     ],
     "chai": [
       "^4.3.4"
-    ],
-    "ethers": [
-      "^5.5.1",
-      "^5.5.4"
     ],
     "mocha": [
       "^9.1.3"
