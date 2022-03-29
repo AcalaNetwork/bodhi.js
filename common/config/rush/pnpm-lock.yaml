@@ -315,7 +315,7 @@ importers:
 
   ../../examples/hardhat-tutorials/DEX:
     specifiers:
-      '@acala-network/contracts': ^4.0.2
+      '@acala-network/contracts': ^4.2.0
       '@acala-network/eth-providers': ^2.2.3
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
@@ -328,7 +328,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.0.2
+      '@acala-network/contracts': 4.2.0
       '@acala-network/eth-providers': 2.2.3
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
@@ -430,7 +430,7 @@ importers:
 
   ../../examples/hardhat-tutorials/precompiled-token:
     specifiers:
-      '@acala-network/contracts': ^3.0.0
+      '@acala-network/contracts': ^4.2.0
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.0
@@ -442,7 +442,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 3.0.1
+      '@acala-network/contracts': 4.2.0
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
       '@openzeppelin/contracts': 4.4.2
@@ -476,7 +476,7 @@ importers:
 
   ../../examples/truffle-tutorials/DEX:
     specifiers:
-      '@acala-network/contracts': ^4.0.0
+      '@acala-network/contracts': ^4.2.0
       '@openzeppelin/contracts': ^4.4.0
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.4
@@ -485,7 +485,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.0.2
+      '@acala-network/contracts': 4.2.0
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
@@ -524,7 +524,7 @@ importers:
 
   ../../examples/truffle-tutorials/precompiled-token:
     specifiers:
-      '@acala-network/contracts': ^4.0.0
+      '@acala-network/contracts': ^4.2.0
       '@openzeppelin/contracts': ^4.4.0
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.4
@@ -533,7 +533,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.0.2
+      '@acala-network/contracts': 4.2.0
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
@@ -627,7 +627,7 @@ importers:
     specifiers:
       '@acala-network/api': ~4.0.1
       '@acala-network/bodhi': ^2.2.2
-      '@acala-network/contracts': ^3.0.0
+      '@acala-network/contracts': ^4.2.0
       '@openzeppelin/contracts': ^4.4.0
       '@types/chai': ^4.2.22
       '@types/mocha': ^9.0.0
@@ -640,7 +640,7 @@ importers:
       '@acala-network/api': 4.0.1
       '@acala-network/bodhi': 2.2.2
     devDependencies:
-      '@acala-network/contracts': 3.0.1
+      '@acala-network/contracts': 4.2.0
       '@openzeppelin/contracts': 4.4.2
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -1077,14 +1077,6 @@ packages:
   /@acala-network/contracts/2.2.0:
     resolution: {integrity: sha512-RTwEnFN/kuk+tMlQSUvNkS/NCoeknq5av4ara2PxIpjKdV9mkJ9NXAikwg9jWRUukNSeeyPZoxIxp4DpXNinKw==}
     dev: false
-
-  /@acala-network/contracts/3.0.1:
-    resolution: {integrity: sha512-wuqUQYSDWtQshYqUBllTvn0mhIS4Zf4t6Aap62dyupbRB08T/Im73Kke0mqNdXiwSzImsLeUhr1FKBaW7WU3Fw==}
-    dev: true
-
-  /@acala-network/contracts/4.0.2:
-    resolution: {integrity: sha512-IYYRbZwvA/bRfp/nV6oiPDkR68eyxYY+jevby+mDHIt4vrlMDgPjKNhLrPnVkGSymOYuosZjeO4jMEhXtisL4g==}
-    dev: true
 
   /@acala-network/contracts/4.2.0:
     resolution: {integrity: sha512-IT63HPWsHPeHy8zCr71wAztghrFdscLzZlYdcvewEuBGWkRpHFlZ4i32kADYPv6UAT9ew7en6nqOWJa48CaliQ==}
