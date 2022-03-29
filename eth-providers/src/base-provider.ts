@@ -517,7 +517,8 @@ export abstract class BaseProvider extends AbstractProvider {
       const block = await this.api.rpc.chain.getBlock(blockHash);
       // use parentHash to get tx fee
       const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
-      let tx_fee = BigNumber.from(payment.partialFee.toString());
+      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+      let tx_fee = ethers.utils.parseUnits(payment.partialFee.toString(), "mwei");
 
       // get storage fee
       // if used_storage > 0, tx_fee include the storage fee.
@@ -526,8 +527,7 @@ export abstract class BaseProvider extends AbstractProvider {
         tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
       }
 
-      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-      gasPrice = ethers.utils.parseUnits(tx_fee.div(used_gas).toString(), "mwei");
+      gasPrice = tx_fee.div(used_gas);
     }
 
     switch (extrinsic.method.section.toUpperCase()) {
