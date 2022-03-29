@@ -628,6 +628,12 @@
       "projectFolder": "examples/truffle-tutorials/DEX",
       "reviewCategory": "tests",
       "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-evm",
+      "projectFolder": "examples/truffle-tutorials/EVM",
+      "reviewCategory": "tests",
+      "shouldPublish": false
     }
   ]
 }

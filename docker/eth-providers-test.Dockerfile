@@ -41,6 +41,7 @@ COPY examples/truffle-tutorials/token/package.json examples/truffle-tutorials/to
 COPY examples/truffle-tutorials/NFT/package.json examples/truffle-tutorials/NFT/package.json
 COPY examples/truffle-tutorials/precompiled-token/package.json examples/truffle-tutorials/precompiled-token/package.json
 COPY examples/truffle-tutorials/DEX/package.json examples/truffle-tutorials/DEX/package.json
+COPY examples/truffle-tutorials/EVM/package.json examples/truffle-tutorials/EVM/package.json
 
 COPY examples/waffle/arbitrager/package.json examples/waffle/arbitrager/package.json
 COPY examples/waffle/dex/package.json examples/waffle/dex/package.json
