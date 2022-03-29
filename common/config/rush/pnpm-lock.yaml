@@ -338,6 +338,31 @@ importers:
       ethereum-waffle: 3.4.0
       ethers: 5.5.4
 
+  ../../examples/hardhat-tutorials/EVM:
+    specifiers:
+      '@acala-network/contracts': ^4.2.0
+      '@acala-network/eth-providers': ^2.2.3
+      '@nomiclabs/hardhat-ethers': ^2.0.2
+      '@nomiclabs/hardhat-waffle': ^2.0.1
+      '@openzeppelin/contracts': ^4.4.0
+      '@polkadot/api': ~7.11.1
+      chai: ^4.3.4
+      ethereum-waffle: ^3.4.0
+      ethers: ~5.5.4
+      hardhat: ^2.6.8
+    dependencies:
+      hardhat: 2.8.0
+    devDependencies:
+      '@acala-network/contracts': 4.2.0
+      '@acala-network/eth-providers': 2.2.3
+      '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
+      '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
+      '@openzeppelin/contracts': 4.4.2
+      '@polkadot/api': 7.11.1
+      chai: 4.3.4
+      ethereum-waffle: 3.4.0
+      ethers: 5.5.4
+
   ../../examples/hardhat-tutorials/NFT:
     specifiers:
       '@acala-network/eth-providers': ^2.2.3
@@ -1059,6 +1084,10 @@ packages:
 
   /@acala-network/contracts/4.0.2:
     resolution: {integrity: sha512-IYYRbZwvA/bRfp/nV6oiPDkR68eyxYY+jevby+mDHIt4vrlMDgPjKNhLrPnVkGSymOYuosZjeO4jMEhXtisL4g==}
+
+  /@acala-network/contracts/4.2.0:
+    resolution: {integrity: sha512-IT63HPWsHPeHy8zCr71wAztghrFdscLzZlYdcvewEuBGWkRpHFlZ4i32kADYPv6UAT9ew7en6nqOWJa48CaliQ==}
+    dev: true
 
   /@acala-network/eth-providers/2.2.2:
     resolution: {integrity: sha512-DhZuoQR49cFzrV7zUcCt5W5VooBQg6TMh9juRrfnSqZ3Y7LOx97XA/qMqk1x0FVtz/XwZuMTbz/pWq6veeE8AA==}
