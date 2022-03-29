@@ -525,14 +525,18 @@ export abstract class BaseProvider extends AbstractProvider {
     // only work on mandala and karura-testnet
     // https://github.com/AcalaNetwork/Acala/pull/1985
     let gasPrice = BIGNUMBER_ONE;
-    if (evmEvent.event.data.length > 5 || (evmEvent.event.data.length === 5 && evmEvent.event.method === 'Executed')) {
+
+    if (evmEvent.event.data.length > 5 ||
+      (evmEvent.event.data.length === 5 && (evmEvent.event.method === 'Created' || evmEvent.event.method === 'Executed'))
+    ) {
       const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
       const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
 
       const block = await this.api.rpc.chain.getBlock(blockHash);
       // use parentHash to get tx fee
       const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
-      let tx_fee = BigNumber.from(payment.partialFee.toString());
+      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+      let tx_fee = ethers.utils.parseUnits(payment.partialFee.toString(), "mwei");
 
       // get storage fee
       // if used_storage > 0, tx_fee include the storage fee.
@@ -541,8 +545,7 @@ export abstract class BaseProvider extends AbstractProvider {
         tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
       }
 
-      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-      gasPrice = ethers.utils.parseUnits(tx_fee.div(used_gas).toString(), "mwei");
+      gasPrice = tx_fee.div(used_gas);
     }
 
     switch (extrinsic.method.section.toUpperCase()) {
@@ -556,7 +559,9 @@ export abstract class BaseProvider extends AbstractProvider {
         input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
         break;
       }
-      case 'CURRENCIES': {
+      case 'CURRENCIES':
+      case 'HONZONBRIDGE': // HonzonBridge
+      {
         // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
         const evmExtrinsic: any = extrinsic.method.toJSON();
         value = 0;
