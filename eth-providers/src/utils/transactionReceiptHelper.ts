@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
-import type { GenericExtrinsic, u64 } from '@polkadot/types';
+import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
@@ -67,7 +67,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         EvmLog[],
         u64?,
-        u64?,
+        i32?,
       ];
 
       return {
@@ -86,7 +86,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         EvmLog[],
         u64?,
-        u64?,
+        i32?,
       ];
 
       return {
@@ -106,7 +106,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         ExitReason,
         EvmLog[],
         u64?,
-        u64?,
+        i32?,
       ];
 
       return {
@@ -128,7 +128,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         unknown,
         EvmLog[],
         u64?,
-        u64?,
+        i32?,
       ];
 
       return {
