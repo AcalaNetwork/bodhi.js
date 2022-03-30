@@ -29,7 +29,7 @@ const next_block = async (block_number: number) => {
 };
 
 const SCHEDULE_CALL_ABI = require('@acala-network/contracts/build/contracts/Schedule.json').abi;
-const ERC20_ABI = require('@acala-network/contracts/build/contracts/ERC20.json').abi;
+const ERC20_ABI = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi;
 
 describe('Schedule', () => {
   let wallet: Signer;
@@ -157,9 +157,9 @@ describe('Schedule', () => {
     expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
     if (!process.argv.includes('--with-ethereum-compatibility')) {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(
-        formatAmount('4_999_949_644_042_464_000_000')
+        formatAmount('4_999_950_110_286_528_000_000')
       );
-      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_949_644_042_464'));
+      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_950_110_286_528'));
     } else {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(dollar.mul(5000000000).toString());
       expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(5000).toString());

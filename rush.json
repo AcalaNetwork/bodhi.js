@@ -482,8 +482,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "evm-waffle-example-state-rent",
-      "projectFolder": "examples/waffle/state-rent",
+      "packageName": "evm-waffle-example-evm",
+      "projectFolder": "examples/waffle/evm",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
@@ -626,6 +626,12 @@
     {
       "packageName": "truffle-tutorial-dex",
       "projectFolder": "examples/truffle-tutorials/DEX",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-evm",
+      "projectFolder": "examples/truffle-tutorials/EVM",
       "reviewCategory": "tests",
       "shouldPublish": false
     }

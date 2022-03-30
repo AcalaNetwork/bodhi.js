@@ -478,7 +478,7 @@ describe('eth_sendRawTransaction', () => {
 
     describe('with EIP-712 signature', () => {
       it('serialize, parse, and send tx correctly', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -595,7 +595,7 @@ describe('eth_sendRawTransaction', () => {
         const balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -730,7 +730,7 @@ describe('eth_sendRawTransaction', () => {
       it.skip('has correct balance after transfer', async () => {
         // const balance1 = await queryBalance(account1.evmAddress);
         // const balance2 = await queryBalance(account2.evmAddress);
-        // const gasLimit = BigNumber.from('0x030dcf');
+        // const gasLimit = BigNumber.from('210000');
         // const validUntil = 10000;
         // const storageLimit = 100000;
         // const transferTX: AcalaEvmTX = {
@@ -899,7 +899,7 @@ describe('eth_getCode', () => {
   const preCompileAddresses = [
     '0x0000000000000000000100000000000000000001',   // AUSD
     '0x0000000000000000000200000000000000000001',   // LP_ACA_AUSD
-    '0x0000000000000000000000000000000000000804',   // DEX
+    '0x0000000000000000000000000000000000000803',   // DEX
   ];
 
   const tags = [
