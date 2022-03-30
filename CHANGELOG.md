@@ -1,4 +1,4 @@
-## v2.4.0
+## v2.4.0 2022/03/30
 - standardize `eth_getTransactionReceipt` and `eth_getTransactionByHash` behavior
 - supports blockscout
 
