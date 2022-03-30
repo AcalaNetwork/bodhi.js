@@ -93,7 +93,7 @@ describe('Dex', () => {
       })
     ).to.be.ok;
     let pool_3 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
-    // expect((pool_3[0].sub(pool_2[0]))).to.equal(2000992990);
+    expect((pool_3[0].sub(pool_2[0]))).to.equal(1_000_000_000_000);
   });
 
   it('swapWithExactSupply should not works', async () => {
@@ -116,17 +116,17 @@ describe('Dex', () => {
     ).to.be.ok;
 
     let pool_1 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
-    expect(pool_1[0].sub(pool_0[0])).to.equal(1);
+    expect(pool_1[1].sub(pool_0[1])).to.equal(-1);
 
-    let pool_2 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
+    let pool_2 = await dex.getLiquidityPool(ADDRESS.AUSD, ADDRESS.DOT);
     expect(
       await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT], 1, 1_000_000_000_000, {
         value: ethers.utils.parseEther('1'),
         gasLimit: 2_000_000
       })
     ).to.be.ok;
-    let pool_3 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
-    // expect(pool_3[0].sub(pool_2[0])).to.equal(1);
+    let pool_3 = await dex.getLiquidityPool(ADDRESS.AUSD, ADDRESS.DOT);
+    expect(pool_3[1].sub(pool_2[1])).to.equal(-1);
   });
 
   it('swapWithExactTarget should not works', async () => {
