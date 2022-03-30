@@ -60,13 +60,29 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     effectiveGasPrice: EFFECTIVE_GAS_PRICE
   };
 
+  /* --------------- TODO:
+     for newer versions of mandala, used_gas's shape is:
+     ```
+      used_gas: u64 {
+        negative: 0,
+        words: [ 21000 ],
+        length: 1,
+        red: null,
+        registry: TypeRegistry {},
+        encodedLength: 8,
+        __UIntType: 'u64'
+      },
+      ```
+      and `typeof used_gas === 'object'`
+      if this is expected, then we can convert this object to bigNumber gasPrice
+                                                                 --------------- */
   switch (event.event.method) {
     case 'Created': {
       const [source, evmAddress, logs, used_gas, _used_storage] = event.event.data as unknown as [
         H160,
         H160,
         EvmLog[],
-        BigNumber,
+        any,
         BigNumber
       ];
 
@@ -74,7 +90,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: ((used_gas.constructor === BigNumber) && used_gas) || BIGNUMBER_ZERO,
         status: 1,
         logs: getPartialLogs(logs),
         ...defaultValue
@@ -85,7 +101,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         H160,
         EvmLog[],
-        BigNumber,
+        any,
         BigNumber
       ];
 
@@ -93,7 +109,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: ((used_gas.constructor === BigNumber) && used_gas) || BIGNUMBER_ZERO,
         logs: getPartialLogs(logs),
         status: 1,
         ...defaultValue
@@ -105,7 +121,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         ExitReason,
         EvmLog[],
-        BigNumber,
+        any,
         BigNumber
       ];
 
@@ -113,7 +129,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: ((used_gas.constructor === BigNumber) && used_gas) || BIGNUMBER_ZERO,
         logs: getPartialLogs(logs),
         status: 0,
         exitReason: _exitReason.toString(),
@@ -127,7 +143,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         ExitReason,
         unknown,
         EvmLog[],
-        BigNumber,
+        any,
         BigNumber
       ];
 
@@ -135,7 +151,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: undefined,
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: ((used_gas.constructor === BigNumber) && used_gas) || BIGNUMBER_ZERO,
         status: 0,
         exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
