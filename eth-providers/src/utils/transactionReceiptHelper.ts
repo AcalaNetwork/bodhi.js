@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
-import type { GenericExtrinsic } from '@polkadot/types';
+import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
@@ -66,15 +66,15 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         H160,
         EvmLog[],
-        BigNumber,
-        BigNumber
+        u64?,
+        i32?,
       ];
 
       return {
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         status: 1,
         logs: getPartialLogs(logs),
         ...defaultValue
@@ -85,15 +85,15 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         H160,
         EvmLog[],
-        BigNumber,
-        BigNumber
+        u64?,
+        i32?,
       ];
 
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 1,
         ...defaultValue
@@ -105,15 +105,15 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         ExitReason,
         EvmLog[],
-        BigNumber,
-        BigNumber
+        u64?,
+        i32?,
       ];
 
       return {
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 0,
         exitReason: _exitReason.toString(),
@@ -127,15 +127,15 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         ExitReason,
         unknown,
         EvmLog[],
-        BigNumber,
-        BigNumber
+        u64?,
+        i32?,
       ];
 
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: undefined,
-        gasUsed: used_gas || BIGNUMBER_ZERO,
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         status: 0,
         exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
