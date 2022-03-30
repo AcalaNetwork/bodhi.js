@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
-import type { GenericExtrinsic } from '@polkadot/types';
+import type { GenericExtrinsic, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
@@ -60,42 +60,21 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     effectiveGasPrice: EFFECTIVE_GAS_PRICE
   };
 
-  /* --------------- TODO:
-     for newer versions of mandala, used_gas's shape is:
-     ```
-      used_gas: u64 {
-        negative: 0,
-        words: [ 21000 ],
-        length: 1,
-        red: null,
-        registry: TypeRegistry {},
-        encodedLength: 8,
-        __UIntType: 'u64'
-      },
-      ```
-      and `typeof used_gas === 'object'`
-
-      we should confirm this shape
-                                         --------------- */
   switch (event.event.method) {
     case 'Created': {
       const [source, evmAddress, logs, used_gas, _used_storage] = event.event.data as unknown as [
         H160,
         H160,
         EvmLog[],
-        any,
-        any,
+        u64?,
+        u64?,
       ];
-
-      const gasUsed = used_gas.constructor === BigNumber
-        ? used_gas
-        : used_gas.words?.[0];
 
       return {
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: BigNumber.from(gasUsed || 0),
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         status: 1,
         logs: getPartialLogs(logs),
         ...defaultValue
@@ -106,19 +85,15 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         H160,
         EvmLog[],
-        any,
-        any,
+        u64?,
+        u64?,
       ];
-
-      const gasUsed = used_gas.constructor === BigNumber
-        ? used_gas
-        : used_gas.words?.[0];
 
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: BigNumber.from(gasUsed || 0),
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 1,
         ...defaultValue
@@ -130,19 +105,15 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         ExitReason,
         EvmLog[],
-        any,
-        any,
+        u64?,
+        u64?,
       ];
-
-      const gasUsed = used_gas.constructor === BigNumber
-        ? used_gas
-        : used_gas.words?.[0];
 
       return {
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: BigNumber.from(gasUsed || 0),
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 0,
         exitReason: _exitReason.toString(),
@@ -156,19 +127,15 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         ExitReason,
         unknown,
         EvmLog[],
-        any,
-        any,
+        u64?,
+        u64?,
       ];
-
-      const gasUsed = used_gas.constructor === BigNumber
-        ? used_gas
-        : used_gas.words?.[0];
 
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: undefined,
-        gasUsed: BigNumber.from(gasUsed || 0),
+        gasUsed: BigNumber.from(used_gas?.toString() || 0),
         status: 0,
         exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
