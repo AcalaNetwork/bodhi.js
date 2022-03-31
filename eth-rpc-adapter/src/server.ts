@@ -17,9 +17,11 @@ export async function start() {
   const WS_PORT = Number(process.env.WS_PORT || 3331);
   const MAX_CACHE_SIZE = Number(process.env.MAX_CACHE_SIZE || 200);
   const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
+  const LOCAL_MODE = !!Number(process.env.LOCAL_MODE || 0);
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL, {
     safeMode: SAFE_MODE,
+    localMode: LOCAL_MODE,
     maxCacheSize: MAX_CACHE_SIZE,
     subqlUrl: SUBQL_URL,
   });
@@ -53,5 +55,6 @@ export async function start() {
   console.log(`listening to : http ${HTTP_PORT} | ws ${WS_PORT}`);
   console.log(`max cacheSize: ${MAX_CACHE_SIZE}`);
   console.log(`safe mode    : ${SAFE_MODE}`);
+  console.log(`local mode   : ${LOCAL_MODE}`);
   console.log(`--------------------------------------`);
 }

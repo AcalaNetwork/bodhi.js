@@ -27,7 +27,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header, EventRecord } from '@polkadot/types/interfaces';
-import { hexlifyRpcResult, isEVMExtrinsic } from './utils';
+import { hexlifyRpcResult, isEVMExtrinsic, runWithRetries } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
@@ -196,6 +196,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
+  readonly localMode: boolean;
   readonly subql?: SubqlProvider;
 
   _newBlockListeners: NewBlockListener[];
@@ -205,9 +206,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
   constructor({
     safeMode = false,
+    localMode = false,
     subqlUrl,
   }: {
     safeMode?: boolean,
+    localMode?: boolean,
     subqlUrl?: string,
   } = {}) {
     super();
@@ -215,6 +218,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this._listeners = {};
     this._newBlockListeners = [];
     this.safeMode = safeMode;
+    this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
 
     safeMode && logger.warn(`
@@ -222,6 +226,12 @@ export abstract class BaseProvider extends AbstractProvider {
       SafeMode is ON, and RPCs behave very differently than usual world!
                   To go back to normal mode, set SAFE_MODE=0
       ------------------------------------------------------------------
+    `);
+
+    localMode && logger.warn(`
+      ------------------------------- WARNING --------------------------------
+      localMode is ON, some RPCs behave slightly differently than usual world!
+      ------------------------------------------------------------------------
     `);
 
     if (subqlUrl) {
@@ -1634,7 +1644,10 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
+    const targetBlockNumber = this.localMode
+      ? await runWithRetries(this._cache!.getBlockNumber.bind(this._cache!), [txHash])
+      : this._cache?.getBlockNumber(txHash);
+
     if (!targetBlockNumber) return null;
 
     const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
