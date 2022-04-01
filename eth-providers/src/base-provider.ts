@@ -27,7 +27,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header, EventRecord } from '@polkadot/types/interfaces';
-import { hexlifyRpcResult, isEVMExtrinsic } from './utils';
+import { hexlifyRpcResult, isEVMExtrinsic, runWithRetries } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
@@ -196,6 +196,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
+  readonly localMode: boolean;
   readonly subql?: SubqlProvider;
 
   _newBlockListeners: NewBlockListener[];
@@ -205,9 +206,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
   constructor({
     safeMode = false,
+    localMode = false,
     subqlUrl,
   }: {
     safeMode?: boolean,
+    localMode?: boolean,
     subqlUrl?: string,
   } = {}) {
     super();
@@ -215,6 +218,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this._listeners = {};
     this._newBlockListeners = [];
     this.safeMode = safeMode;
+    this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
 
     safeMode && logger.warn(`
@@ -222,6 +226,12 @@ export abstract class BaseProvider extends AbstractProvider {
       SafeMode is ON, and RPCs behave very differently than usual world!
                   To go back to normal mode, set SAFE_MODE=0
       ------------------------------------------------------------------
+    `);
+
+    localMode && logger.warn(`
+      ------------------------------- WARNING --------------------------------
+      localMode is ON, some RPCs behave slightly differently than usual world!
+      ------------------------------------------------------------------------
     `);
 
     if (subqlUrl) {
@@ -396,7 +406,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock> => {
-    return this._getBlock(blockTag, full) as Promise<RichBlock>;
+    return this._getBlock(blockTag, true) as Promise<RichBlock>;
   };
 
   getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
@@ -436,7 +446,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
     let transactions: any[];
-    let total_used_gas = BIGNUMBER_ZERO;
 
     if (!fullTx) {
       // not full
@@ -460,12 +469,12 @@ export abstract class BaseProvider extends AbstractProvider {
           ...data
         };
       }));
-
-      total_used_gas = transactions
-        .reduce((r, tx) => {
-          return r.add(tx.gas);
-        }, BIGNUMBER_ZERO);
     }
+
+    const total_used_gas = transactions
+      .reduce((r, tx) => {
+        return r.add(tx.gas);
+      }, BIGNUMBER_ZERO);
 
     const data = {
       hash: blockHash,
@@ -479,7 +488,7 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: total_used_gas, // TODO: not full is 0
+      gasUsed: total_used_gas,
 
       miner: author,
       extraData: EMPTY_STRING,
@@ -562,17 +571,17 @@ export abstract class BaseProvider extends AbstractProvider {
       }
       case 'CURRENCIES':
       case 'HONZONBRIDGE': // HonzonBridge
-        {
-          // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
-          const evmExtrinsic: any = extrinsic.method.toJSON();
-          value = 0;
-          gas = 2_100_000;
-          const contract = evmExtrinsic?.args?.currency_id?.erc20;
-          const erc20 = new ethers.Contract(contract, ERC20_ABI);
-          const amount = evmExtrinsic?.args?.amount;
-          input = (await erc20.populateTransaction.transfer(to, amount))?.data;
-          break;
-        }
+      {
+        // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = 0;
+        gas = 2_100_000;
+        const contract = evmExtrinsic?.args?.currency_id?.erc20;
+        const erc20 = new ethers.Contract(contract, ERC20_ABI);
+        const amount = evmExtrinsic?.args?.amount;
+        input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+        break;
+      }
       case 'SUDO': {
         const evmExtrinsic: any = extrinsic.method.toJSON();
         value = evmExtrinsic?.args?.call?.args?.value;
@@ -1635,7 +1644,10 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
+    const targetBlockNumber = this.localMode
+      ? await runWithRetries(this._cache!.getBlockNumber.bind(this._cache!), [txHash])
+      : this._cache?.getBlockNumber(txHash);
+
     if (!targetBlockNumber) return null;
 
     const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
@@ -1692,8 +1704,12 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (txHash: string): Promise<TX | null> => {
-    const pendingTX = await this._getPendingTX(txHash);
-    if (pendingTX) return pendingTX;
+    if (!this.localMode) {
+      // local mode is for local instant-sealing node
+      // so ignore pending tx to avoid some timing issue
+      const pendingTX = await this._getPendingTX(txHash);
+      if (pendingTX) return pendingTX;
+    }
 
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
