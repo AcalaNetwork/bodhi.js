@@ -436,6 +436,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
     let transactions: any[];
+    let total_used_gas = BIGNUMBER_ZERO;
 
     if (!fullTx) {
       // not full
@@ -459,12 +460,12 @@ export abstract class BaseProvider extends AbstractProvider {
           ...data
         };
       }));
-    }
 
-    const total_used_gas = transactions
+      total_used_gas = transactions
       .reduce((r, tx) => {
         return r.add(tx.gas);
       }, BIGNUMBER_ZERO);
+    }
 
     const data = {
       hash: blockHash,
