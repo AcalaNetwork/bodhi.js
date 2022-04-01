@@ -479,7 +479,7 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: total_used_gas,
+      gasUsed: total_used_gas, // TODO: not full is 0
 
       miner: author,
       extraData: EMPTY_STRING,
