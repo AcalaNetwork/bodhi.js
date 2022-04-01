@@ -406,7 +406,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock> => {
-    return this._getBlock(blockTag, true) as Promise<RichBlock>;
+    return this._getBlock(blockTag, full) as Promise<RichBlock>;
   };
 
   getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
@@ -446,6 +446,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
     let transactions: any[];
+    let total_used_gas = BIGNUMBER_ZERO;
 
     if (!fullTx) {
       // not full
@@ -469,12 +470,12 @@ export abstract class BaseProvider extends AbstractProvider {
           ...data
         };
       }));
-    }
 
-    const total_used_gas = transactions
-      .reduce((r, tx) => {
-        return r.add(tx.gas);
-      }, BIGNUMBER_ZERO);
+      total_used_gas = transactions
+        .reduce((r, tx) => {
+          return r.add(tx.gas);
+        }, BIGNUMBER_ZERO);
+    }
 
     const data = {
       hash: blockHash,
@@ -488,7 +489,7 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: total_used_gas,
+      gasUsed: total_used_gas, // TODO: not full is 0
 
       miner: author,
       extraData: EMPTY_STRING,
@@ -571,17 +572,17 @@ export abstract class BaseProvider extends AbstractProvider {
       }
       case 'CURRENCIES':
       case 'HONZONBRIDGE': // HonzonBridge
-      {
-        // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
-        const evmExtrinsic: any = extrinsic.method.toJSON();
-        value = 0;
-        gas = 2_100_000;
-        const contract = evmExtrinsic?.args?.currency_id?.erc20;
-        const erc20 = new ethers.Contract(contract, ERC20_ABI);
-        const amount = evmExtrinsic?.args?.amount;
-        input = (await erc20.populateTransaction.transfer(to, amount))?.data;
-        break;
-      }
+        {
+          // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+          const evmExtrinsic: any = extrinsic.method.toJSON();
+          value = 0;
+          gas = 2_100_000;
+          const contract = evmExtrinsic?.args?.currency_id?.erc20;
+          const erc20 = new ethers.Contract(contract, ERC20_ABI);
+          const amount = evmExtrinsic?.args?.amount;
+          input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+          break;
+        }
       case 'SUDO': {
         const evmExtrinsic: any = extrinsic.method.toJSON();
         value = evmExtrinsic?.args?.call?.args?.value;
