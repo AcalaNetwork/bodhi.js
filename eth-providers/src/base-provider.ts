@@ -1704,8 +1704,12 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (txHash: string): Promise<TX | null> => {
-    const pendingTX = await this._getPendingTX(txHash);
-    if (pendingTX) return pendingTX;
+    if (!this.localMode) {
+      // local mode is for local instant-sealing node
+      // so ignore pending tx to avoid some timing issue
+      const pendingTX = await this._getPendingTX(txHash);
+      if (pendingTX) return pendingTX;
+    }
 
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;

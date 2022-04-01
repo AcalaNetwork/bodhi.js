@@ -10,7 +10,7 @@ export const isEVMExtrinsic = (e: Extrinsic): boolean => (
 export const runWithRetries = async <F extends AnyFunction> (
   fn: F,
   args: any[] = [],
-  maxRetries: number = 10,
+  maxRetries: number = 20,
   interval: number = 300,
 ): Promise<F extends (...args: any[]) => infer R ? R : any> => {
   let res;
@@ -20,9 +20,11 @@ export const runWithRetries = async <F extends AnyFunction> (
     try {
       res = await fn(...args);
     } catch (e) {
-      console.log(e)
-      console.log(`failed attemp # ${tries}/${maxRetries}`);
       if (tries === maxRetries) throw e;
+    }
+
+    if (tries > 0 && !res) {
+      console.log(`empty result # ${tries}/${maxRetries}`);
       await sleep(interval);
     }
   }
