@@ -396,7 +396,7 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag: BlockTag | Promise<BlockTag>,
     full?: boolean | Promise<boolean>
   ): Promise<RichBlock> => {
-    return this._getBlock(blockTag, true) as Promise<RichBlock>;
+    return this._getBlock(blockTag, full) as Promise<RichBlock>;
   };
 
   getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
