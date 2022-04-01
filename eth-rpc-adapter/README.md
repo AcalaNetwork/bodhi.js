@@ -9,7 +9,7 @@ A node service that allows existing Ethereum dApp to be able to interact with [A
   - **WS_PORT**: WS port for requests
   - **MAX_CACHE_SIZE**: max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network)
   - **SAFE_MODE**: if enabled, TX and logs can only be found after they are finalized
-  - **LOCAL_MODE**: enable this mode when testing hardhat scripts with locally running instant-sealing mandala
+  - **LOCAL_MODE**: enable this mode when testing with hardhat and locally running mandala
 
 for example checkout `.env.sample`:
 ```
@@ -19,7 +19,7 @@ HTTP_PORT=8545                   # default http port for ETH RPC methods
 WS_PORT=3331                    
 MAX_CACHE_SIZE=200               
 SAFE_MODE=0                      # disabled by default
-LOCAL_MODE=0                      # disabled by default
+LOCAL_MODE=0                     # disabled by default
 ```
 
 - install dependencies

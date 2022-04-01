@@ -229,9 +229,10 @@ export abstract class BaseProvider extends AbstractProvider {
     `);
 
     localMode && logger.warn(`
-      ------------------------------- WARNING --------------------------------
-      localMode is ON, some RPCs behave slightly differently than usual world!
-      ------------------------------------------------------------------------
+      ------------------ WARNING ---------------------
+      localMode is ON, this is usually only needed for
+      testing with hardhat and locally running node.
+      ------------------------------------------------
     `);
 
     if (subqlUrl) {
