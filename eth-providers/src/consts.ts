@@ -37,3 +37,30 @@ export const ERC20_ABI = [
   // Events
   "event Transfer(address indexed from, address indexed to, uint amount)"
 ];
+
+// TODO: when using from browser may not need these logs
+export const LOCAL_MODE_MSG = `
+  -------------------------------
+  🔨 local development mode is ON
+  ❌ don't use it for production!
+  -------------------------------
+`;
+
+export const PROD_MODE_MSG = `
+  -------------------------------
+  ⚡️ running in production mode ⚡️
+  -------------------------------
+`;
+
+export const SAFE_MODE_WARNING_MSG = `
+  ------------------------------- WARNING -----------------------------
+  🔒 SafeMode is ON, and RPCs behave very differently than usual world!
+  ---------------------------------------------------------------------
+`;
+
+export const CACHE_SIZE_WARNING = `
+  ------------------- WARNING -------------------
+  Max cached blocks is big, please be cautious!
+  If memory exploded, try decrease MAX_CACHE_SIZE
+  -----------------------------------------------
+`

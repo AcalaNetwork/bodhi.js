@@ -77,4 +77,5 @@ WORKDIR /app/eth-rpc-adapter
 ENV ENDPOINT_URL=ws://mandala-node:9944
 ENV HTTP_PORT=8545
 ENV WS_PORT=3331
+ENV LOCAL_MODE=1
 CMD ["yarn", "start"]

@@ -66,19 +66,6 @@ RUN rush build \
   -t @acala-network/bodhi \
   -t @acala-network/eth-rpc-adapter
 
-# =============== eth-rpc-adapter =============== #
-FROM node:16-alpine as eth-rpc-adapter
-COPY --from=bodhi /app /app
-
-WORKDIR /app
-COPY eth-rpc-adapter ./eth-rpc-adapter
-
-WORKDIR /app/eth-rpc-adapter
-ENV ENDPOINT_URL=ws://mandala-node:9944
-ENV HTTP_PORT=8545
-ENV WS_PORT=3331
-CMD ["yarn", "start"]
-
 # =============== waffle-tutorials =============== #
 FROM node:16-alpine as waffle-tutorials
 COPY --from=bodhi /app /app

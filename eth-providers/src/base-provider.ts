@@ -48,6 +48,10 @@ import {
   DUMMY_BLOCK_MIX_HASH,
   ERC20_ABI,
   MIRRORED_TOKEN_CONTRACT,
+  LOCAL_MODE_MSG,
+  PROD_MODE_MSG,
+  SAFE_MODE_WARNING_MSG,
+  CACHE_SIZE_WARNING,
 } from './consts';
 import {
   computeDefaultEvmAddress,
@@ -221,19 +225,8 @@ export abstract class BaseProvider extends AbstractProvider {
     this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
 
-    safeMode && logger.warn(`
-      ----------------------------- WARNING ----------------------------
-      SafeMode is ON, and RPCs behave very differently than usual world!
-                  To go back to normal mode, set SAFE_MODE=0
-      ------------------------------------------------------------------
-    `);
-
-    localMode && logger.warn(`
-      ------------------ WARNING ---------------------
-      localMode is ON, this is usually only needed for
-      testing with hardhat and locally running node.
-      ------------------------------------------------
-    `);
+    safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
+    logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
@@ -248,12 +241,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
-      maxCachedSize > 9999 && logger.warn(`
-        ------------------- WARNING -------------------
-        Max cached blocks is big, please be cautious!
-        If memory exploded, try decrease MAX_CACHE_SIZE
-        -----------------------------------------------
-      `);
+      maxCachedSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
 
     await this.isReady();
