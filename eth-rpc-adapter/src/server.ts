@@ -48,13 +48,17 @@ export async function start() {
 
   await provider.isReady();
 
-  console.log(`-------- 🚀 SERVER STARTED 🚀 --------`);
-  console.log(`version      : ${version}`);
-  console.log(`endpoint url : ${ENDPOINT_URL}`);
-  console.log(`subquery url : ${SUBQL_URL}`);
-  console.log(`listening to : http ${HTTP_PORT} | ws ${WS_PORT}`);
-  console.log(`max cacheSize: ${MAX_CACHE_SIZE}`);
-  console.log(`safe mode    : ${SAFE_MODE}`);
-  console.log(`local mode   : ${LOCAL_MODE}`);
-  console.log(`--------------------------------------`);
+  console.log(`
+  --------------------------------------------
+               🚀 SERVER STARTED 🚀
+  --------------------------------------------
+  version      : ${version}
+  endpoint url : ${ENDPOINT_URL}
+  subquery url : ${SUBQL_URL}
+  listening to : http ${HTTP_PORT} | ws ${WS_PORT}
+  max cacheSize: ${MAX_CACHE_SIZE}
+  safe mode    : ${SAFE_MODE}
+  local mode   : ${LOCAL_MODE}
+  --------------------------------------------
+  `);
 }

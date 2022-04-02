@@ -38,7 +38,6 @@ export const ERC20_ABI = [
   "event Transfer(address indexed from, address indexed to, uint amount)"
 ];
 
-// TODO: when using from browser may not need these logs
 export const LOCAL_MODE_MSG = `
   -------------------------------
   🔨 local development mode is ON
@@ -47,9 +46,9 @@ export const LOCAL_MODE_MSG = `
 `;
 
 export const PROD_MODE_MSG = `
-  -------------------------------
-  ⚡️ running in production mode ⚡️
-  -------------------------------
+  ------------------------------------------
+  ⚡️ running in production (standard) mode ⚡️
+  ------------------------------------------
 `;
 
 export const SAFE_MODE_WARNING_MSG = `
