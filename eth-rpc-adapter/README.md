@@ -9,7 +9,7 @@ A node service that allows existing Ethereum dApp to be able to interact with [A
   - **WS_PORT**: WS port for requests
   - **MAX_CACHE_SIZE**: max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network)
   - **SAFE_MODE**: if enabled, TX and logs can only be found after they are finalized
-  - **LOCAL_MODE**: enable this mode when testing with hardhat and locally running mandala
+  - **LOCAL_MODE**: enable this mode when testing with locally running mandala
 
 for example checkout `.env.sample`:
 ```
