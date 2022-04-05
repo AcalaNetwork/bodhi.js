@@ -27,7 +27,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import type { AccountId, Header, EventRecord } from '@polkadot/types/interfaces';
-import { hexlifyRpcResult, isEVMExtrinsic } from './utils';
+import { hexlifyRpcResult, isEVMExtrinsic, runWithRetries } from './utils';
 import type BN from 'bn.js';
 import {
   BIGNUMBER_ZERO,
@@ -48,6 +48,10 @@ import {
   DUMMY_BLOCK_MIX_HASH,
   ERC20_ABI,
   MIRRORED_TOKEN_CONTRACT,
+  LOCAL_MODE_MSG,
+  PROD_MODE_MSG,
+  SAFE_MODE_WARNING_MSG,
+  CACHE_SIZE_WARNING,
 } from './consts';
 import {
   computeDefaultEvmAddress,
@@ -196,6 +200,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
+  readonly localMode: boolean;
   readonly subql?: SubqlProvider;
 
   _newBlockListeners: NewBlockListener[];
@@ -205,9 +210,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
   constructor({
     safeMode = false,
+    localMode = false,
     subqlUrl,
   }: {
     safeMode?: boolean,
+    localMode?: boolean,
     subqlUrl?: string,
   } = {}) {
     super();
@@ -215,14 +222,11 @@ export abstract class BaseProvider extends AbstractProvider {
     this._listeners = {};
     this._newBlockListeners = [];
     this.safeMode = safeMode;
+    this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
 
-    safeMode && logger.warn(`
-      ----------------------------- WARNING ----------------------------
-      SafeMode is ON, and RPCs behave very differently than usual world!
-                  To go back to normal mode, set SAFE_MODE=0
-      ------------------------------------------------------------------
-    `);
+    safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
+    logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
@@ -237,12 +241,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
-      maxCachedSize > 9999 && logger.warn(`
-        ------------------- WARNING -------------------
-        Max cached blocks is big, please be cautious!
-        If memory exploded, try decrease MAX_CACHE_SIZE
-        -----------------------------------------------
-      `);
+      maxCachedSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
 
     await this.isReady();
@@ -1635,7 +1634,10 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
+    const targetBlockNumber = this.localMode
+      ? await runWithRetries(this._cache!.getBlockNumber.bind(this._cache!), [txHash])
+      : this._cache?.getBlockNumber(txHash);
+
     if (!targetBlockNumber) return null;
 
     const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
@@ -1692,8 +1694,12 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (txHash: string): Promise<TX | null> => {
-    const pendingTX = await this._getPendingTX(txHash);
-    if (pendingTX) return pendingTX;
+    if (!this.localMode) {
+      // local mode is for local instant-sealing node
+      // so ignore pending tx to avoid some timing issue
+      const pendingTX = await this._getPendingTX(txHash);
+      if (pendingTX) return pendingTX;
+    }
 
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
