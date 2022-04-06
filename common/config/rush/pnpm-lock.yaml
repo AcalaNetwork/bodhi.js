@@ -315,7 +315,7 @@ importers:
 
   ../../examples/hardhat-tutorials/DEX:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.0.2
       '@acala-network/eth-providers': ^2.2.3
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
