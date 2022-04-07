@@ -2,6 +2,7 @@
 A node service that allows existing Ethereum dApp to be able to interact with [Acala EVM](https://github.com/AcalaNetwork/Acala/tree/master/modules/evm).
 
 ## Run
+### run with local build
 - provide an optional `.env` file for:
   - **ENDPOINT_URL**: acala node WS url
   - **SUBQL_URL**: subquery service url
@@ -31,6 +32,12 @@ rush update
 ```
 yarn dev
 ```
+
+### run with docker
+```
+docker compose up
+```
+note that docker image might not be most up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 
 ## Usage
 Now that the adaptor service is running and listening to HTTP_PORT, we can send EVM related requests to this port.
