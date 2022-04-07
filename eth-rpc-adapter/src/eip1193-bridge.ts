@@ -10,10 +10,12 @@ import { validate } from './validate';
 
 const HEX_ZERO = '0x0';
 export class Eip1193Bridge extends EventEmitter {
+  readonly provider: EvmRpcProvider;
   readonly #impl: Eip1193BridgeImpl;
 
   constructor(provider: EvmRpcProvider, signer?: Signer) {
     super();
+    this.provider = provider;
     this.#impl = new Eip1193BridgeImpl(provider, signer);
   }
 
