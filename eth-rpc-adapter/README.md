@@ -2,6 +2,7 @@
 A node service that allows existing Ethereum dApp to be able to interact with [Acala EVM](https://github.com/AcalaNetwork/Acala/tree/master/modules/evm).
 
 ## Run
+### run with local build
 - provide an optional `.env` file for:
   - **ENDPOINT_URL**: acala node WS url
   - **SUBQL_URL**: subquery service url
@@ -30,6 +31,11 @@ rush update
 - run the dev server:
 ```
 yarn dev
+```
+
+### run with docker
+```
+docker compose up
 ```
 
 ## Usage
