@@ -37,6 +37,7 @@ yarn dev
 ```
 docker compose up
 ```
+note that docker image might not be most up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 
 ## Usage
 Now that the adaptor service is running and listening to HTTP_PORT, we can send EVM related requests to this port.
