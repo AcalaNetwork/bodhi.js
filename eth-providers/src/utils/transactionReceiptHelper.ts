@@ -67,7 +67,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         EvmLog[],
         u64?,
-        i32?,
+        i32?
       ];
 
       return {
@@ -86,7 +86,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         H160,
         EvmLog[],
         u64?,
-        i32?,
+        i32?
       ];
 
       return {
@@ -106,7 +106,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         ExitReason,
         EvmLog[],
         u64?,
-        i32?,
+        i32?
       ];
 
       return {
@@ -128,7 +128,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         unknown,
         EvmLog[],
         u64?,
-        i32?,
+        i32?
       ];
 
       return {

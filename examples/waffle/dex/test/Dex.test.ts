@@ -93,7 +93,7 @@ describe('Dex', () => {
       })
     ).to.be.ok;
     let pool_3 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
-    expect((pool_3[0].sub(pool_2[0]))).to.equal(1_000_000_000_000);
+    expect(pool_3[0].sub(pool_2[0])).to.equal(1_000_000_000_000);
   });
 
   it('swapWithExactSupply should not works', async () => {

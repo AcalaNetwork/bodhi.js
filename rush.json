@@ -546,7 +546,7 @@
       "projectFolder": "examples/waffle-tutorials/precompiled-token",
       "reviewCategory": "tests",
       "shouldPublish": false
-    }, 
+    },
 
     /* ---------- hardhat examples ---------- */
     {

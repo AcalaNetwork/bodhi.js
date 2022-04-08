@@ -12,7 +12,7 @@ const defaultOpts: BaseProviderOptions = {
   safeMode: false,
   localMode: false,
   maxCacheSize: 200,
-  subqlUrl: undefined,
+  subqlUrl: undefined
 };
 
 export class EvmRpcProvider extends BaseProvider {
@@ -20,7 +20,7 @@ export class EvmRpcProvider extends BaseProvider {
     super({
       safeMode: opt.safeMode,
       localMode: opt.localMode,
-      subqlUrl: opt.subqlUrl,
+      subqlUrl: opt.subqlUrl
     });
     const api = createApi(endpoint);
     this.setApi(api);

@@ -1,17 +1,16 @@
-import { Extrinsic } from "@polkadot/types/interfaces";
-import { AnyFunction } from "@polkadot/types/types";
+import { Extrinsic } from '@polkadot/types/interfaces';
+import { AnyFunction } from '@polkadot/types/types';
 
-export const sleep = (interval = 1000): Promise<null> => new Promise(resolve => setTimeout(() => resolve(null), interval));
+export const sleep = (interval = 1000): Promise<null> =>
+  new Promise((resolve) => setTimeout(() => resolve(null), interval));
 
-export const isEVMExtrinsic = (e: Extrinsic): boolean => (
-  e.method.section.toUpperCase() === "EVM"
-);
+export const isEVMExtrinsic = (e: Extrinsic): boolean => e.method.section.toUpperCase() === 'EVM';
 
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,
   args: any[] = [],
   maxRetries: number = 100,
-  interval: number = 100,
+  interval: number = 100
 ): Promise<F extends (...args: any[]) => infer R ? R : any> => {
   let res;
   let tries = 0;
@@ -30,4 +29,4 @@ export const runWithRetries = async <F extends AnyFunction>(
   }
 
   return res;
-}
+};

@@ -23,7 +23,7 @@ export async function start() {
     safeMode: SAFE_MODE,
     localMode: LOCAL_MODE,
     maxCacheSize: MAX_CACHE_SIZE,
-    subqlUrl: SUBQL_URL,
+    subqlUrl: SUBQL_URL
   });
 
   const bridge = new Eip1193Bridge(provider);

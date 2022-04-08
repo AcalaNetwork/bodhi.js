@@ -91,4 +91,3 @@ describe('filterLog', () => {
     expect(filterLog(log2, { address: addr1, topics: [topic1, topic2, topic3] })).to.equal(false);
   });
 });
-

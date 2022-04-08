@@ -12,7 +12,7 @@ export abstract class AbstractDataProvider {
    * @returns A promise that resolves to an array of filtered logs
    */
   abstract getLogs(
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     filter: any,
     resolveBlockNumber: (blockTag?: BlockTag | Promise<BlockTag>) => Promise<number | undefined>
   ): Promise<Array<Log>>;

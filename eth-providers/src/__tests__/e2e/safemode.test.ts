@@ -6,7 +6,7 @@ import { EvmRpcProvider } from '../../rpc-provider';
 import { sleep } from '../../utils';
 
 chai.use(chaiAsPromised);
-chai.use(sinonChai)
+chai.use(sinonChai);
 const { expect } = chai;
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
@@ -20,17 +20,11 @@ const newBlock = async (finalize: boolean): Promise<void> => {
 
 describe('safe mode', () => {
   before(async () => {
-    await Promise.all([
-      safeProvider.isReady(),
-      provider.isReady(),
-    ]);
+    await Promise.all([safeProvider.isReady(), provider.isReady()]);
   });
 
   after(async () => {
-    await Promise.all([
-      safeProvider.disconnect(),
-      provider.disconnect(),
-    ]);
+    await Promise.all([safeProvider.disconnect(), provider.disconnect()]);
   });
 
   beforeEach(async () => await newBlock(true));
@@ -42,10 +36,7 @@ describe('safe mode', () => {
 
   it('getBlockNumber', async () => {
     // make sure latest finalized block and latest block are even
-    const [curBlock, curFinalizedBlock] = await Promise.all([
-      provider.getBlockNumber(),
-      safeProvider.getBlockNumber(),
-    ]);
+    const [curBlock, curFinalizedBlock] = await Promise.all([provider.getBlockNumber(), safeProvider.getBlockNumber()]);
     expect(curBlock).to.equal(curFinalizedBlock);
 
     // real test
@@ -58,10 +49,7 @@ describe('safe mode', () => {
 
   it('_getBlock', async () => {
     // make sure latest finalized block and latest block are even
-    const [curBlock, curFinalizedBlock] = await Promise.all([
-      provider._getBlock(),
-      safeProvider._getBlock(),
-    ]);
+    const [curBlock, curFinalizedBlock] = await Promise.all([provider._getBlock(), safeProvider._getBlock()]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
     expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
 
@@ -73,19 +61,13 @@ describe('safe mode', () => {
 
   it('_ensureSafeModeBlockTagFinalization', async () => {
     // make sure latest finalized block and latest block are even
-    const [curBlock, curFinalizedBlock] = await Promise.all([
-      provider._getBlock(),
-      safeProvider._getBlock(),
-    ]);
+    const [curBlock, curFinalizedBlock] = await Promise.all([provider._getBlock(), safeProvider._getBlock()]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
     expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
 
     // make sure next block is not finalized
     await newBlock(false);
-    const [nextBlock, nextFinalizedBlock] = await Promise.all([
-      provider._getBlock(),
-      safeProvider._getBlock(),
-    ]);
+    const [nextBlock, nextFinalizedBlock] = await Promise.all([provider._getBlock(), safeProvider._getBlock()]);
     expect(curBlock.hash).to.not.equal(nextBlock.hash);
     expect(curFinalizedBlock.hash).to.equal(nextFinalizedBlock.hash);
     expect(curFinalizedBlock.hash).to.equal(curBlock.hash);
@@ -104,12 +86,16 @@ describe('safe mode', () => {
         - ③ unfinalized block should throw error
                                                       -------------------------- */
     // ①
-    expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(safeProvider.latestFinalizedBlockHash);
+    expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(
+      safeProvider.latestFinalizedBlockHash
+    );
     expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(curFinalizedBlock.hash);
 
-    // ② 
+    // ②
     expect(await safeProvider._ensureSafeModeBlockTagFinalization(undefined)).to.equal(undefined);
-    expect(await safeProvider._ensureSafeModeBlockTagFinalization(curFinalizedBlock.hash)).to.equal(curFinalizedBlock.hash);
+    expect(await safeProvider._ensureSafeModeBlockTagFinalization(curFinalizedBlock.hash)).to.equal(
+      curFinalizedBlock.hash
+    );
 
     for (let i = 1; i < curFinalizedBlock.number; i++) {
       const hash = await provider._getBlockHash(i);
@@ -118,9 +104,9 @@ describe('safe mode', () => {
     }
 
     // ③
-    await expect(
-      safeProvider._ensureSafeModeBlockTagFinalization(nextBlock.hash)
-    ).to.be.rejectedWith('SAFE MODE ERROR: target block is not finalized');
+    await expect(safeProvider._ensureSafeModeBlockTagFinalization(nextBlock.hash)).to.be.rejectedWith(
+      'SAFE MODE ERROR: target block is not finalized'
+    );
   });
 
   it('subscribe', async () => {
@@ -137,14 +123,14 @@ describe('safe mode', () => {
     expect(cb).to.have.been.calledWithMatch({
       subscription: sub,
       result: {
-        hash: curHash,
+        hash: curHash
       }
     });
 
     expect(safeCb).to.have.been.calledWithMatch({
       subscription: safeSub,
       result: {
-        hash: curHash,
+        hash: curHash
       }
     });
 
@@ -155,14 +141,14 @@ describe('safe mode', () => {
     expect(cb).to.have.been.calledWithMatch({
       subscription: sub,
       result: {
-        hash: curHash,
+        hash: curHash
       }
     });
 
     expect(safeCb).to.have.not.been.calledWithMatch({
       subscription: safeSub,
       result: {
-        hash: curHash,
+        hash: curHash
       }
     });
   });
