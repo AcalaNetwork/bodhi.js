@@ -23,7 +23,7 @@ importers:
       '@open-web3/scanner': ~0.9.4-19
       '@polkadot/api': ~7.14.4-6
       '@polkadot/keyring': ~8.4.1
-      '@polkadot/rpc-provider': ~7.14.4-6
+      '@polkadot/rpc-provider': ~7.12.1
       '@polkadot/types': ~7.14.4-6
       '@polkadot/util': ~8.4.1
       '@polkadot/util-crypto': ~8.4.1
@@ -56,7 +56,7 @@ importers:
       '@open-web3/scanner': 0.9.4-38_@polkadot+api@7.14.4-6
       '@polkadot/api': 7.14.4-6
       '@polkadot/keyring': 8.4.1
-      '@polkadot/rpc-provider': 7.14.4-6
+      '@polkadot/rpc-provider': 7.12.1
       '@polkadot/types': 7.14.4-6
       '@polkadot/util': 8.4.1
       '@polkadot/util-crypto': 8.4.1
@@ -1075,7 +1075,7 @@ packages:
       '@open-web3/scanner': 0.9.4-38_@polkadot+api@7.14.4-6
       '@polkadot/api': 7.14.4-6
       '@polkadot/keyring': 8.4.1
-      '@polkadot/rpc-provider': 7.14.4-6
+      '@polkadot/rpc-provider': 7.12.1
       '@polkadot/types': 7.14.4-6
       '@polkadot/util': 8.4.1
       '@polkadot/util-crypto': 8.4.1
@@ -3712,7 +3712,7 @@ packages:
       '@polkadot/keyring': 8.4.1
       '@polkadot/rpc-augment': 7.14.4-6
       '@polkadot/rpc-core': 7.14.4-6
-      '@polkadot/rpc-provider': 7.14.4-6
+      '@polkadot/rpc-provider': 7.12.1
       '@polkadot/types': 7.14.4-6
       '@polkadot/types-augment': 7.14.4-6
       '@polkadot/types-codec': 7.14.4-6
@@ -3782,7 +3782,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.17.8
       '@polkadot/rpc-augment': 7.14.4-6
-      '@polkadot/rpc-provider': 7.14.4-6
+      '@polkadot/rpc-provider': 7.12.1
       '@polkadot/types': 7.14.4-6
       '@polkadot/util': 8.4.1
       rxjs: 7.5.5
@@ -3790,20 +3790,19 @@ packages:
       - encoding
       - supports-color
 
-  /@polkadot/rpc-provider/7.14.4-6:
-    resolution: {integrity: sha512-aOOe7bJehxwdSF14VzJRLOHG6/gxCGMy4YVzRdrbct12/FpvUwzFoyBGB1jAYAvWxkHqkRINPRad+9Nf4EMmtA==}
+  /@polkadot/rpc-provider/7.12.1:
+    resolution: {integrity: sha512-gMvlbqq3xXg54CVoMdiugvrwLNnUI5QhO/YIWv6vOnpc8AOs+JVYgdPaBTNleHiyV7Lw6sVQJno0QH8vx8xjIg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.17.8
       '@polkadot/keyring': 8.4.1
       '@polkadot/types': 7.14.4-6
-      '@polkadot/types-support': 7.14.4-6
+      '@polkadot/types-support': 7.12.1
       '@polkadot/util': 8.4.1
       '@polkadot/util-crypto': 8.4.1
       '@polkadot/x-fetch': 8.7.1
       '@polkadot/x-global': 8.7.1
       '@polkadot/x-ws': 8.7.1
-      '@substrate/connect': 0.7.0-alpha.0
       eventemitter3: 4.0.7
       mock-socket: 9.1.2
       nock: 13.2.4
@@ -3822,7 +3821,7 @@ packages:
       '@polkadot/api': 7.14.4-6
       '@polkadot/api-augment': 7.14.4-6
       '@polkadot/rpc-augment': 7.11.1
-      '@polkadot/rpc-provider': 7.14.4-6
+      '@polkadot/rpc-provider': 7.12.1
       '@polkadot/types': 7.14.4-6
       '@polkadot/types-augment': 7.11.1
       '@polkadot/types-codec': 7.11.1
@@ -3903,8 +3902,8 @@ packages:
       '@babel/runtime': 7.17.2
       '@polkadot/util': 8.4.1
 
-  /@polkadot/types-support/7.14.4-6:
-    resolution: {integrity: sha512-O+e+EakNDmBbZORW3hFgMASUpjbOClHfDDuxKZTfJJket29+6p17H5vNZ+O7xaf7cnd5Xkzr2POa3NBeZ38EDQ==}
+  /@polkadot/types-support/7.12.1:
+    resolution: {integrity: sha512-dlTRXJmBWIcRi3wryvaqPxGBv9vDfu+vWeyQF93CMRdCuBwKB25jeoh2n2xCMZ9c0TbziJzE+Qg2oGoKK2Dzeg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.17.8
@@ -4443,23 +4442,6 @@ packages:
     dependencies:
       antlr4ts: 0.5.0-alpha.4
     dev: false
-
-  /@substrate/connect-extension-protocol/1.0.0:
-    resolution: {integrity: sha512-nFVuKdp71hMd/MGlllAOh+a2hAqt8m6J2G0aSsS/RcALZexxF9jodbFc62ni8RDtJboeOfXAHhenYOANvJKPIg==}
-
-  /@substrate/connect/0.7.0-alpha.0:
-    resolution: {integrity: sha512-fvO7w++M8R95R/pGJFW9+cWOt8OYnnTfgswxtlPqSgzqX4tta8xcNQ51crC72FcL5agwSGkA1gc2/+eyTj7O8A==}
-    dependencies:
-      '@substrate/connect-extension-protocol': 1.0.0
-      '@substrate/smoldot-light': 0.6.8
-      eventemitter3: 4.0.7
-
-  /@substrate/smoldot-light/0.6.8:
-    resolution: {integrity: sha512-9lVwbG6wrtss0sd6013BJGe4WN4taujsGG49pwyt1Lj36USeL2Sb164TTUxmZF/g2NQEqDPwPROBdekQ2gFmgg==}
-    dependencies:
-      buffer: 6.0.3
-      pako: 2.0.4
-      websocket: 1.0.34
 
   /@substrate/ss58-registry/1.15.0:
     resolution: {integrity: sha512-UU5uN8HEp0NM22od6kHWLltX0McQPgPX6O3gj7fSf1mMExsCS5fzW88gv1WaVaT8Q+umvGgnIAF7+Tvp8fqTFw==}
@@ -7299,6 +7281,8 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
+    dev: false
+    optional: true
 
   /bufferutil/4.0.5:
     resolution: {integrity: sha512-HTm14iMQKK2FjFLRTM5lAVcyaUzOnqbPtesFIvREgXpJHdQm8bWS+GkQgIkfaBYRHuCnea7w8UVNfwiAQhlr9A==}
@@ -14531,9 +14515,6 @@ packages:
       registry-url: 5.1.0
       semver: 6.3.0
     dev: true
-
-  /pako/2.0.4:
-    resolution: {integrity: sha512-v8tweI900AUkZN6heMU/4Uy4cXRc2AYNRggVmTR+dEncawDJgCdLMximOVA2p4qO57WMynangsfGRb5WD6L1Bg==}
 
   /param-case/2.1.1:
     resolution: {integrity: sha1-35T9jPZTHs915r75oIWPvHK+Ikc=}

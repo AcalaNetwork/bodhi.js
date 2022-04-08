@@ -25,7 +25,7 @@ const polkadotDeps = {
   "@polkadot/types": "~7.14.4-6",
   "@polkadot/types-known": "~7.14.4-6",
   "@polkadot/rpc-core": "~7.14.4-6",
-  "@polkadot/rpc-provider": "~7.14.4-6",
+  "@polkadot/rpc-provider": "~7.12.1",
   "@polkadot/keyring": "~8.4.1",
   "@polkadot/util": "~8.4.1",
   "@polkadot/util-crypto": "~8.4.1",
