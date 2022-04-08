@@ -1567,7 +1567,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const extrinsicEvents = blockEvents.filter(
-      (event: any) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
     return {
@@ -1600,7 +1600,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const extrinsicEvents = blockEvents.filter(
-      (event: any) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
     if (isExtrinsicFailed) {
