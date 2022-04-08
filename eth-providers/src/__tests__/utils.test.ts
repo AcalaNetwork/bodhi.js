@@ -48,7 +48,7 @@ describe('utils', () => {
       method: {
         section: {
           toUpperCase() {
-            return 'EVM'
+            return 'EVM';
           }
         }
       }
@@ -58,7 +58,7 @@ describe('utils', () => {
       method: {
         section: {
           toUpperCase() {
-            return 'SUDO'
+            return 'SUDO';
           }
         }
       }

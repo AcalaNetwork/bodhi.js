@@ -1,17 +1,7 @@
 import { Filter, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
-import {
-  Query,
-  _Metadata,
-  TransactionReceipt as TXReceiptGQL,
-  Log as LogGQL,
-} from './gqlTypes';
-import {
-  getLogsQueryFilter,
-  adaptLogs,
-  LOGS_NODES,
-  TX_RECEIPT_NODES,
-} from './logs';
+import { Query, _Metadata, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
+import { getLogsQueryFilter, adaptLogs, LOGS_NODES, TX_RECEIPT_NODES } from './logs';
 
 export class SubqlProvider {
   readonly url: string;
@@ -20,10 +10,13 @@ export class SubqlProvider {
     this.url = url;
   }
 
-  queryGraphql = (query: string): Promise<Query> => request(
-    this.url,
-    gql`${query}`
-  );
+  queryGraphql = (query: string): Promise<Query> =>
+    request(
+      this.url,
+      gql`
+        ${query}
+      `
+    );
 
   getAllTxReceipts = async (): Promise<TXReceiptGQL[]> => {
     const res = await this.queryGraphql(`
@@ -97,4 +90,4 @@ export class SubqlProvider {
 
     return res._metadata!;
   };
-};
+}

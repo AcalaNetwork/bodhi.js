@@ -51,7 +51,7 @@ import {
   LOCAL_MODE_MSG,
   PROD_MODE_MSG,
   SAFE_MODE_WARNING_MSG,
-  CACHE_SIZE_WARNING,
+  CACHE_SIZE_WARNING
 } from './consts';
 import {
   computeDefaultEvmAddress,
@@ -68,7 +68,7 @@ import {
   findEvmEvent,
   filterLog,
   calcEthereumTransactionParams,
-  sleep,
+  sleep
 } from './utils';
 import { SubqlProvider } from './utils/subqlProvider';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
@@ -124,10 +124,10 @@ export interface CallRequest {
 
 export interface partialTX {
   from: string;
-  to: string | null;                // null for contract creation
-  blockHash: string | null;         // null for pending TX
-  blockNumber: number | null;       // null for pending TX
-  transactionIndex: number | null;  // null for pending TX
+  to: string | null; // null for contract creation
+  blockHash: string | null; // null for pending TX
+  blockNumber: number | null; // null for pending TX
+  transactionIndex: number | null; // null for pending TX
 }
 
 export interface TX extends partialTX {
@@ -158,18 +158,18 @@ export interface TXReceipt extends partialTX {
 
 // TODO: safe to assume this shape?
 export interface ExtrinsicMethodJSON {
-  callIndex: string,
+  callIndex: string;
   args: {
     action: {
-      [key: string]: string
-    },
-    input: string,
-    value: number,
-    gas_limit: number,
-    storage_limit: number,
-    access_list: any[],
-    valid_until: number
-  }
+      [key: string]: string;
+    };
+    input: string;
+    value: number;
+    gas_limit: number;
+    storage_limit: number;
+    access_list: any[];
+    valid_until: number;
+  };
 }
 
 export interface GasConsts {
@@ -211,11 +211,11 @@ export abstract class BaseProvider extends AbstractProvider {
   constructor({
     safeMode = false,
     localMode = false,
-    subqlUrl,
+    subqlUrl
   }: {
-    safeMode?: boolean,
-    localMode?: boolean,
-    subqlUrl?: string,
+    safeMode?: boolean;
+    localMode?: boolean;
+    subqlUrl?: string;
   } = {}) {
     super();
     this.formatter = new Formatter();
@@ -231,7 +231,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
     } else {
-      logger.warn(`no subql url provided`)
+      logger.warn(`no subql url provided`);
     }
   }
 
@@ -263,11 +263,7 @@ export abstract class BaseProvider extends AbstractProvider {
       if (this._listeners[NEW_HEADS]?.length > 0) {
         const block = await this.getBlock(blockNumber);
         const response = hexlifyRpcResult(block);
-        this._listeners[NEW_HEADS].forEach((l) =>
-          l.cb(
-            response
-          )
-        );
+        this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
       }
 
       if (this._listeners[NEW_LOGS]?.length > 0) {
@@ -281,19 +277,19 @@ export abstract class BaseProvider extends AbstractProvider {
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
           const response = hexlifyRpcResult(filteredLogs);
-          response.forEach((log: any) =>
-            cb(
-              log,
-            )
-          );
+          response.forEach((log: any) => cb(log));
         });
       }
     }) as unknown as void;
 
     // for getTXhashFromNextBlock
     this.api.rpc.chain.subscribeNewHeads((header: Header) => {
-      this._newBlockListeners.forEach(cb => {
-        try { cb(header) } catch { /* swallow */ }
+      this._newBlockListeners.forEach((cb) => {
+        try {
+          cb(header);
+        } catch {
+          /* swallow */
+        }
       });
       this._newBlockListeners = [];
     }) as unknown as void;
@@ -391,10 +387,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return header.number.toNumber();
   };
 
-  getBlock = async (
-    blockTag: BlockTag | Promise<BlockTag>,
-    full?: boolean | Promise<boolean>
-  ): Promise<RichBlock> => {
+  getBlock = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean | Promise<boolean>): Promise<RichBlock> => {
     return this._getBlock(blockTag, full) as Promise<RichBlock>;
   };
 
@@ -430,7 +423,9 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockNumber = headerExtended.number.toNumber();
 
     // blockscout need `toLowerCase`
-    const author = headerExtended.author ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase() : DUMMY_ADDRESS;
+    const author = headerExtended.author
+      ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase()
+      : DUMMY_ADDRESS;
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
@@ -444,26 +439,27 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     } else {
       // full
-      transactions = await Promise.all(evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
-        const extrinsic = block.block.extrinsics[extrinsicIndex];
-        const extrinsicEvents = blockEvents.filter(
-          (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-        );
+      transactions = await Promise.all(
+        evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
+          const extrinsic = block.block.extrinsics[extrinsicIndex];
+          const extrinsicEvents = blockEvents.filter(
+            (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+          );
 
-        const data = await this._parseExtrinsic(blockHash, extrinsic, extrinsicEvents);
+          const data = await this._parseExtrinsic(blockHash, extrinsic, extrinsicEvents);
 
-        return {
-          blockHash,
-          blockNumber,
-          transactionIndex,
-          ...data
-        };
-      }));
+          return {
+            blockHash,
+            blockNumber,
+            transactionIndex,
+            ...data
+          };
+        })
+      );
 
-      total_used_gas = transactions
-        .reduce((r, tx) => {
-          return r.add(tx.gas);
-        }, BIGNUMBER_ZERO);
+      total_used_gas = transactions.reduce((r, tx) => {
+        return r.add(tx.gas);
+      }, BIGNUMBER_ZERO);
     }
 
     const data = {
@@ -503,31 +499,34 @@ export abstract class BaseProvider extends AbstractProvider {
   _parseExtrinsic = async (
     blockHash: string,
     extrinsic: GenericExtrinsic,
-    extrinsicEvents: EventRecord[],
+    extrinsicEvents: EventRecord[]
   ): Promise<any> => {
     // logger.info(extrinsic.method.toHuman());
     // logger.info(extrinsic.method);
 
     const evmEvent = findEvmEvent(extrinsicEvents);
     if (!evmEvent) {
-      return logger.throwError('findEvmEvent failed. extrinsic: ' + extrinsic.method.toJSON(), Logger.errors.UNSUPPORTED_OPERATION);
+      return logger.throwError(
+        'findEvmEvent failed. extrinsic: ' + extrinsic.method.toJSON(),
+        Logger.errors.UNSUPPORTED_OPERATION
+      );
     }
 
     let gas;
     let value;
     let input;
     const from = evmEvent.event.data[0].toString();
-    const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
-      ? null
-      : evmEvent.event.data[1].toString();
+    const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method) ? null : evmEvent.event.data[1].toString();
 
     // @TODO remove
     // only work on mandala and karura-testnet
     // https://github.com/AcalaNetwork/Acala/pull/1985
     let gasPrice = BIGNUMBER_ONE;
 
-    if (evmEvent.event.data.length > 5 ||
-      (evmEvent.event.data.length === 5 && (evmEvent.event.method === 'Created' || evmEvent.event.method === 'Executed'))
+    if (
+      evmEvent.event.data.length > 5 ||
+      (evmEvent.event.data.length === 5 &&
+        (evmEvent.event.method === 'Created' || evmEvent.event.method === 'Executed'))
     ) {
       const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
       const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
@@ -536,7 +535,7 @@ export abstract class BaseProvider extends AbstractProvider {
       // use parentHash to get tx fee
       const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
       // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-      let tx_fee = ethers.utils.parseUnits(payment.partialFee.toString(), "mwei");
+      let tx_fee = ethers.utils.parseUnits(payment.partialFee.toString(), 'mwei');
 
       // get storage fee
       // if used_storage > 0, tx_fee include the storage fee.
@@ -560,18 +559,17 @@ export abstract class BaseProvider extends AbstractProvider {
         break;
       }
       case 'CURRENCIES':
-      case 'HONZONBRIDGE': // HonzonBridge
-        {
-          // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
-          const evmExtrinsic: any = extrinsic.method.toJSON();
-          value = 0;
-          gas = 2_100_000;
-          const contract = evmExtrinsic?.args?.currency_id?.erc20;
-          const erc20 = new ethers.Contract(contract, ERC20_ABI);
-          const amount = evmExtrinsic?.args?.amount;
-          input = (await erc20.populateTransaction.transfer(to, amount))?.data;
-          break;
-        }
+      case 'HONZONBRIDGE': { // HonzonBridge
+        // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = 0;
+        gas = 2_100_000;
+        const contract = evmExtrinsic?.args?.currency_id?.erc20;
+        const erc20 = new ethers.Contract(contract, ERC20_ABI);
+        const amount = evmExtrinsic?.args?.amount;
+        input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+        break;
+      }
       case 'SUDO': {
         const evmExtrinsic: any = extrinsic.method.toJSON();
         value = evmExtrinsic?.args?.call?.args?.value;
@@ -580,9 +578,9 @@ export abstract class BaseProvider extends AbstractProvider {
         // @TODO remove
         // only work on mandala and karura-testnet
         // https://github.com/AcalaNetwork/Acala/pull/1971
-        if (input === "0x") {
+        if (input === '0x') {
           // return token contracts
-          input = MIRRORED_TOKEN_CONTRACT
+          input = MIRRORED_TOKEN_CONTRACT;
         }
         break;
       }
@@ -595,10 +593,12 @@ export abstract class BaseProvider extends AbstractProvider {
         return logger.throwError('Unspport utility', Logger.errors.UNSUPPORTED_OPERATION);
       }
       default: {
-        return logger.throwError('Unspport ' + extrinsic.method.section.toUpperCase(), Logger.errors.UNSUPPORTED_OPERATION);
+        return logger.throwError(
+          'Unspport ' + extrinsic.method.section.toUpperCase(),
+          Logger.errors.UNSUPPORTED_OPERATION
+        );
       }
-    };
-
+    }
 
     // @TODO eip2930, eip1559
 
@@ -614,9 +614,9 @@ export abstract class BaseProvider extends AbstractProvider {
       nonce: extrinsic.nonce.toNumber(),
       from: from,
       to: to,
-      value: hexValue(value),
+      value: hexValue(value)
     };
-  }
+  };
 
   // @TODO free
   getBalance = async (
@@ -659,13 +659,12 @@ export abstract class BaseProvider extends AbstractProvider {
     if ((await blockTag) === 'pending') {
       const [substrateAddress, pendingExtrinsics] = await Promise.all([
         this.getSubstrateAddress(await addressOrName),
-        this.api.rpc.author.pendingExtrinsics(),
+        this.api.rpc.author.pendingExtrinsics()
       ]);
 
-      pendingNonce = pendingExtrinsics.filter(e => (
-        isEVMExtrinsic(e) &&
-        e.signer.toString() === substrateAddress
-      )).length;
+      pendingNonce = pendingExtrinsics.filter(
+        (e) => isEVMExtrinsic(e) && e.signer.toString() === substrateAddress
+      ).length;
     }
 
     const minedNonce = !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
@@ -899,7 +898,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _getEthGas = async ({
     gasLimit = 21000000,
     storageLimit = 64100,
-    validUntil: _validUntil,
+    validUntil: _validUntil
   }: {
     gasLimit?: BigNumberish;
     storageLimit?: BigNumberish;
@@ -971,20 +970,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const extrinsic = !to
       ? this.api.tx.evm.create(
-        data,
-        value?.toBigInt(),
-        U64MAX.toBigInt(), // gas_limit u64::max
-        U32MAX.toBigInt(), // storage_limit u32::max
-        accessList
-      )
+          data,
+          value?.toBigInt(),
+          U64MAX.toBigInt(), // gas_limit u64::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
+        )
       : this.api.tx.evm.call(
-        to,
-        data,
-        value?.toBigInt(),
-        U64MAX.toBigInt(), // gas_limit u64::max
-        U32MAX.toBigInt(), // storage_limit u32::max
-        accessList
-      );
+          to,
+          data,
+          value?.toBigInt(),
+          U64MAX.toBigInt(), // gas_limit u64::max
+          U32MAX.toBigInt(), // storage_limit u32::max
+          accessList
+        );
 
     const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
 
@@ -1371,9 +1370,7 @@ export abstract class BaseProvider extends AbstractProvider {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
-        return this.safeMode
-          ? this.latestFinalizedBlockHash!
-          : (await this.api.rpc.chain.getBlockHash()).toHex();
+        return this.safeMode ? this.latestFinalizedBlockHash! : (await this.api.rpc.chain.getBlockHash()).toHex();
       }
       case 'earliest': {
         const hash = this.api.genesisHash;
@@ -1418,18 +1415,12 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
 
     const [finalizedBlockNumber, verifyingBlockNumber] = (
-      await Promise.all([
-        this.api.rpc.chain.getHeader(finalizedHead),
-        this.api.rpc.chain.getHeader(verifyingBlockHash),
-      ])
+      await Promise.all([this.api.rpc.chain.getHeader(finalizedHead), this.api.rpc.chain.getHeader(verifyingBlockHash)])
     ).map((header) => header.number.toNumber());
 
     const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
 
-    return (
-      finalizedBlockNumber >= verifyingBlockNumber &&
-      canonicalHash.toString() === verifyingBlockHash
-    );
+    return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash.toString() === verifyingBlockHash;
   };
 
   _ensureSafeModeBlockTagFinalization = async (_blockTag: BlockTagish): Promise<BlockTagish> => {
@@ -1442,12 +1433,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return isBlockFinalized
       ? blockTag
-      // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
-      : logger.throwError(
-        'SAFE MODE ERROR: target block is not finalized',
-        Logger.errors.UNKNOWN_ERROR,
-        { blockTag }
-      );
+      : // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
+        logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
@@ -1525,8 +1512,8 @@ export abstract class BaseProvider extends AbstractProvider {
     blockHash: string,
     txHash?: string
   ): Promise<{
-    extrinsics: GenericExtrinsic | GenericExtrinsic[] | undefined,
-    extrinsicsEvents: EventRecord[] | undefined,
+    extrinsics: GenericExtrinsic | GenericExtrinsic[] | undefined;
+    extrinsicsEvents: EventRecord[] | undefined;
   }> => {
     const apiAt = await this.api.at(blockHash.toLowerCase());
 
@@ -1551,7 +1538,7 @@ export abstract class BaseProvider extends AbstractProvider {
       extrinsics: block.block.extrinsics[extrinsicIndex],
       extrinsicsEvents: extrinsicEvents
     };
-  }
+  };
 
   // @TODO Testing
   getTransactionReceiptAtBlock = async (
@@ -1647,7 +1634,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
-    const targetExtrinsic = pendingExtrinsics.find(e => e.hash.toHex() === txHash);
+    const targetExtrinsic = pendingExtrinsics.find((e) => e.hash.toHex() === txHash);
 
     if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
 
@@ -1662,13 +1649,13 @@ export abstract class BaseProvider extends AbstractProvider {
       hash: txHash,
       nonce: targetExtrinsic.nonce.toNumber(),
       value: args.value,
-      gasPrice: 0,      // TODO: reverse calculate using args.storage_limit if needed
+      gasPrice: 0, // TODO: reverse calculate using args.storage_limit if needed
       gas: args.gas_limit,
       input: args.input,
       v: DUMMY_V,
       r: DUMMY_R,
-      s: DUMMY_S,
-    }
+      s: DUMMY_S
+    };
   };
 
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
@@ -1682,7 +1669,7 @@ export abstract class BaseProvider extends AbstractProvider {
         res.blockNumber = +res.blockNumber;
         res.transactionIndex = +res.transactionIndex;
         res.gasUsed = BigNumber.from(res.gasUsed);
-      };
+      }
       return res;
     } catch {
       return null;
@@ -1710,7 +1697,11 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const data = await this._parseExtrinsic(tx.blockHash, res.extrinsics as GenericExtrinsic, res.extrinsicsEvents as EventRecord[]);
+    const data = await this._parseExtrinsic(
+      tx.blockHash,
+      res.extrinsics as GenericExtrinsic,
+      res.extrinsicsEvents as EventRecord[]
+    );
 
     return {
       blockHash: tx.blockHash,
@@ -1778,7 +1769,9 @@ export abstract class BaseProvider extends AbstractProvider {
   // Bloom-filter Queries
   getLogs = async (filter: Filter): Promise<Log[]> => {
     if (!this.subql) {
-      return logger.throwError('missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.');
+      return logger.throwError(
+        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
+      );
     }
 
     const { fromBlock = 'latest', toBlock = 'latest' } = filter;

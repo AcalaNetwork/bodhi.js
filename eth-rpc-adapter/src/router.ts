@@ -4,7 +4,7 @@ import { InvalidParams, JSONRPCError, MethodNotFound } from './errors';
 import { logger } from './logger';
 import { JSONRPCResponse } from './transports/types';
 
-const errorRegex = /execution fatal: Module { index: (\d+), error: (\d+), message: None }/
+const errorRegex = /execution fatal: Module { index: (\d+), error: (\d+), message: None }/;
 
 export class Router {
   readonly #bridge: Eip1193Bridge;
