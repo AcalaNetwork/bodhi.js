@@ -1,5 +1,4 @@
-import '@polkadot/api-augment';
-import { checkSignatureType, AcalaEvmTX, parseTransaction } from '@acala-network/eth-transactions';
+import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   EventType,
@@ -13,8 +12,6 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
-import { ethers, Wallet, BigNumber, BigNumberish } from 'ethers';
-import { AccessListish } from 'ethers/lib/utils';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -23,56 +20,65 @@ import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/pr
 import { Formatter } from '@ethersproject/providers';
 import { accessListify, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
+import '@polkadot/api-augment';
 import { createHeaderExtended } from '@polkadot/api-derive';
+import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
-import type { AccountId, Header, EventRecord } from '@polkadot/types/interfaces';
-import { hexlifyRpcResult, isEVMExtrinsic, runWithRetries } from './utils';
+import { decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
+import type { AccountId, EventRecord, Header } from '@polkadot/types/interfaces';
+import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { Storage } from '@polkadot/types/metadata/decorate/types';
+import { isNull, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
+import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
+import { AccessListish } from 'ethers/lib/utils';
 import {
-  BIGNUMBER_ZERO,
   BIGNUMBER_ONE,
-  EFFECTIVE_GAS_PRICE,
-  EMPTY_STRING,
-  U32MAX,
-  U64MAX,
-  ZERO,
+  BIGNUMBER_ZERO,
+  CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
+  DUMMY_BLOCK_MIX_HASH,
+  DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
-  DUMMY_V,
   DUMMY_R,
   DUMMY_S,
+  DUMMY_V,
+  EFFECTIVE_GAS_PRICE,
+  EMPTY_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
-  DUMMY_BLOCK_NONCE,
-  DUMMY_BLOCK_MIX_HASH,
   ERC20_ABI,
-  MIRRORED_TOKEN_CONTRACT,
   LOCAL_MODE_MSG,
+  MIRRORED_TOKEN_CONTRACT,
   PROD_MODE_MSG,
   SAFE_MODE_WARNING_MSG,
-  CACHE_SIZE_WARNING
+  U32MAX,
+  U64MAX,
+  ZERO
 } from './consts';
 import {
+  calcEthereumTransactionParams,
+  calcSubstrateTransactionParams,
   computeDefaultEvmAddress,
   computeDefaultSubstrateAddress,
   convertNativeToken,
+  filterLog,
+  findEvmEvent,
+  getEvmExtrinsicIndexes,
   getPartialTransactionReceipt,
   getTransactionIndexAndHash,
+  hexlifyRpcResult,
+  isEVMExtrinsic,
   logger,
   PROVIDER_ERRORS,
+  runWithRetries,
   sendTx,
-  throwNotImplemented,
-  calcSubstrateTransactionParams,
-  getEvmExtrinsicIndexes,
-  findEvmEvent,
-  filterLog,
-  calcEthereumTransactionParams,
-  sleep
+  throwNotImplemented
 } from './utils';
-import { SubqlProvider } from './utils/subqlProvider';
-import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
 import { BlockCache } from './utils/BlockCache';
+import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
+import { SubqlProvider } from './utils/subqlProvider';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -202,6 +208,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly safeMode: boolean;
   readonly localMode: boolean;
   readonly subql?: SubqlProvider;
+  readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
@@ -312,6 +319,48 @@ export abstract class BaseProvider extends AbstractProvider {
     defineReadOnly(this, '_api', api);
   };
 
+  queryStorage = async <T = any>(
+    module: `${string}.${string}`,
+    args: any[],
+    _blockTag?: BlockTag | Promise<BlockTag>
+  ) => {
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockHash = await this._getBlockHash(blockTag);
+
+    const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
+
+    if (!this.storages.get(registry)) {
+      const storage = decorateStorage(registry.registry, registry.metadata.asLatest, registry.metadata.version);
+      this.storages.set(registry, storage);
+    }
+
+    const storage = this.storages.get(registry)!;
+
+    const [section, method] = module.split('.');
+
+    const entry = storage[section][method];
+    const key = entry(...args);
+
+    const value: any = await this.api.rpc.state.getStorage(key, blockHash);
+
+    const outputType = unwrapStorageType(registry.registry, entry.meta.type, entry.meta.modifier.isOptional);
+
+    const isEmpty = isNull(value);
+
+    // we convert to Uint8Array since it maps to the raw encoding, all
+    // data will be correctly encoded (incl. numbers, excl. :code)
+    const input = isEmpty
+      ? null
+      : u8aToU8a(entry.meta.modifier.isOptional ? value.toU8a() : value.isSome ? value.unwrap().toU8a() : null);
+
+    const result = this.api.registry.createTypeUnsafe(outputType, [input], {
+      blockHash,
+      isPedantic: !entry.meta.modifier.isOptional
+    });
+
+    return result as any as T;
+  };
+
   get api(): ApiPromise {
     if (!this._api) {
       return logger.throwError('the api needs to be set', Logger.errors.UNKNOWN_ERROR);
@@ -409,13 +458,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockHash = header.hash.toHex();
 
-    const apiAt = await this.api.at(blockHash);
-
     const [block, validators, now, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
-      this.api.query.session ? apiAt.query.session.validators() : ([] as any),
-      apiAt.query.timestamp.now(),
-      apiAt.query.system.events()
+      this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
+      this.queryStorage('timestamp.now', [], blockHash),
+      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
     ]);
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
@@ -559,7 +606,8 @@ export abstract class BaseProvider extends AbstractProvider {
         break;
       }
       case 'CURRENCIES':
-      case 'HONZONBRIDGE': { // HonzonBridge
+      case 'HONZONBRIDGE': {
+        // HonzonBridge
         // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
         const evmExtrinsic: any = extrinsic.method.toJSON();
         value = 0;
@@ -633,9 +681,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    const apiAt = await this.api.at(blockHash);
-
-    const accountInfo = await apiAt.query.system.account(substrateAddress);
+    const accountInfo = await this.queryStorage('system.account', [substrateAddress], blockHash);
 
     return convertNativeToken(BigNumber.from(accountInfo.data.free.toBigInt()), this.chainDecimal);
   };
@@ -689,8 +735,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockHash = await this._getBlockHash(blockTag);
 
-    const apiAt = await this.api.at(blockHash);
-    const accountInfo = await apiAt.query.system.account(substrateAddress);
+    const accountInfo = await this.queryStorage('system.account', [substrateAddress], blockHash);
 
     return accountInfo.nonce.toNumber();
   };
@@ -768,9 +813,7 @@ export abstract class BaseProvider extends AbstractProvider {
       resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))
     });
 
-    const apiAt = await this.api.at(blockHash);
-
-    const code = await apiAt.query.evm.accountStorages(address, position);
+    const code = await this.queryStorage('evm.accountStorages', [address, position], blockHash);
 
     return code.toHex();
   };
@@ -1003,9 +1046,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const apiAt = await this.api.at(blockHash);
-
-    const substrateAccount = await apiAt.query.evmAccounts.accounts<Option<AccountId>>(address);
+    const substrateAccount = await this.queryStorage<Option<AccountId>>('evmAccounts.accounts', [address], blockHash);
 
     return substrateAccount.isEmpty ? computeDefaultSubstrateAddress(address) : substrateAccount.toString();
   };
@@ -1045,9 +1086,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const apiAt = await this.api.at(blockHash);
-
-    const accountInfo = await apiAt.query.evm.accounts<Option<EvmAccountInfo>>(address);
+    const accountInfo = await this.queryStorage<Option<EvmAccountInfo>>('evm.accounts', [address], blockHash);
 
     return accountInfo;
   };
@@ -1292,8 +1331,7 @@ export abstract class BaseProvider extends AbstractProvider {
     result.blockNumber = startBlock;
     result.blockHash = startBlockHash;
 
-    const apiAt = await this.api.at(result.blockHash);
-    result.timestamp = Math.floor((await apiAt.query.timestamp.now()).toNumber() / 1000);
+    result.timestamp = Math.floor((await this.queryStorage('timestamp.now', [], result.blockHash)).toNumber() / 1000);
 
     result.wait = async (confirms?: number, timeout?: number) => {
       if (confirms === null || confirms === undefined) {
@@ -1515,11 +1553,9 @@ export abstract class BaseProvider extends AbstractProvider {
     extrinsics: GenericExtrinsic | GenericExtrinsic[] | undefined;
     extrinsicsEvents: EventRecord[] | undefined;
   }> => {
-    const apiAt = await this.api.at(blockHash.toLowerCase());
-
     const [block, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash.toLowerCase()),
-      apiAt.query.system.events()
+      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
     ]);
 
     if (!txHash) return { extrinsics: block.block.extrinsics, extrinsicsEvents: undefined };
@@ -1531,7 +1567,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const extrinsicEvents = blockEvents.filter(
-      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+      (event: any) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
     return {
@@ -1552,11 +1588,9 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const apiAt = await this.api.at(blockHash);
-
     const [block, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
-      apiAt.query.system.events()
+      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
     ]);
 
     const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
@@ -1566,7 +1600,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const extrinsicEvents = blockEvents.filter(
-      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+      (event: any) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
     if (isExtrinsicFailed) {
