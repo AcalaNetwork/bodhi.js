@@ -189,7 +189,7 @@ describe('transaction tests', () => {
         expect(parsedTx.gasPrice.eq(txGasPrice)).equal(true);
         expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
 
-        expect(parsedTx.from).equal(wallet1.address.toLowerCase());
+        expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
         expect(parsedTx.type).equal(null);
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
@@ -223,7 +223,7 @@ describe('transaction tests', () => {
         expect(parsedTx.maxPriorityFeePerGas.eq(priorityFee)).equal(true);
         expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
 
-        expect(parsedTx.from).equal(wallet1.address.toLowerCase());
+        expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
         expect(parsedTx.type).equal(2);
         expect(parsedTx.gasPrice).equal(null);
@@ -265,7 +265,7 @@ describe('transaction tests', () => {
         expect(parsedTx.validUntil.eq(validUntil)).equal(true);
         expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
 
-        expect(parsedTx.from).equal(wallet1.address.toLowerCase());
+        expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
         expect(parsedTx.type).equal(96);
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
@@ -298,7 +298,7 @@ describe('transaction tests', () => {
         expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
 
         expect(parsedTx.tip.eq(2)).equal(true);
-        expect(parsedTx.from).equal(wallet1.address.toLowerCase());
+        expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
         expect(parsedTx.type).equal(96);
         expect(parsedTx.maxPriorityFeePerGas).equal(undefined);
