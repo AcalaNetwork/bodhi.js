@@ -63,4 +63,12 @@ describe('rpc test', () => {
       provider._getBlockHeader('0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c')
     ).to.be.rejectedWith('header not found');
   });
+
+  // Working only on the test network
+  it.skip('get earlier blocks', async () => {
+    const result = await provider.getBlock('0x1F147', true);
+    console.log(result);
+
+    expect(result.hash).equal('0xa768823dc5f64211a53f0f4e609b16813967642345327d9e7e3c94d7e1c5a633');
+  });
 });
