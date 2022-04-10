@@ -353,7 +353,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ? null
       : u8aToU8a(entry.meta.modifier.isOptional ? value.toU8a() : value.isSome ? value.unwrap().toU8a() : null);
 
-    const result = this.api.registry.createTypeUnsafe(outputType, [input], {
+    const result = registry.registry.createTypeUnsafe(outputType, [input], {
       blockHash,
       isPedantic: !entry.meta.modifier.isOptional
     });
