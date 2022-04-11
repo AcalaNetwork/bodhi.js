@@ -606,6 +606,7 @@ export abstract class BaseProvider extends AbstractProvider {
         break;
       }
       case 'CURRENCIES':
+      case 'DEX':
       case 'HONZONBRIDGE': {
         // HonzonBridge
         // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
