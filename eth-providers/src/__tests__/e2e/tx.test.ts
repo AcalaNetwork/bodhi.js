@@ -172,7 +172,7 @@ describe('transaction tests', () => {
 
         expect(receipt.type).equal(0);
         expect(receipt.status).equal(1);
-        expect(receipt.from).equal(wallet1.address.toLowerCase());
+        expect(receipt.from).equal(wallet1.address);
       });
     });
 
@@ -200,7 +200,7 @@ describe('transaction tests', () => {
 
         expect(receipt.type).equal(0); // TODO: should be null, need to fix getPartialTransactionReceipt
         expect(receipt.status).equal(1);
-        expect(receipt.from).equal(wallet1.address.toLowerCase());
+        expect(receipt.from).equal(wallet1.address);
       });
     });
 
@@ -233,7 +233,7 @@ describe('transaction tests', () => {
 
         expect(receipt.type).equal(0); // TODO: should be 2, need to fix getPartialTransactionReceipt
         expect(receipt.status).equal(1);
-        expect(receipt.from).equal(wallet1.address.toLowerCase());
+        expect(receipt.from).equal(wallet1.address);
       });
     });
 
