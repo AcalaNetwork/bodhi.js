@@ -605,17 +605,7 @@ export abstract class BaseProvider extends AbstractProvider {
         input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
         break;
       }
-      // case 'CURRENCIES': {
-      //   // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
-      //   const evmExtrinsic: any = extrinsic.method.toJSON();
-      //   value = 0;
-      //   gas = 2_100_000;
-      //   const contract = evmExtrinsic?.args?.currency_id?.erc20;
-      //   const erc20 = new ethers.Contract(contract, ERC20_ABI);
-      //   const amount = evmExtrinsic?.args?.amount;
-      //   input = (await erc20.populateTransaction.transfer(to, amount))?.data;
-      //   break;
-      // }
+      // Not a raw evm transaction, input = 0x
       case 'CURRENCIES':
       case 'DEX':
       case 'HONZONBRIDGE':
@@ -626,21 +616,6 @@ export abstract class BaseProvider extends AbstractProvider {
         input = '0x';
         break;
       }
-      // case 'SUDO': {
-      //   const evmExtrinsic: any = extrinsic.method.toJSON();
-      //   value = evmExtrinsic?.args?.call?.args?.value;
-      //   gas = evmExtrinsic?.args?.call?.args?.gas_limit;
-      //   input = evmExtrinsic?.args?.call?.args?.input || evmExtrinsic?.args?.call?.args?.init;
-      //   // @TODO remove
-      //   // only work on mandala and karura-testnet
-      //   // https://github.com/AcalaNetwork/Acala/pull/1971
-      //   if (input === '0x') {
-      //     // return token contracts
-      //     input = MIRRORED_TOKEN_CONTRACT;
-      //   }
-      //   break;
-      // }
-
       // @TODO support utility
       case 'UTILITY': {
         return logger.throwError('Unspport utility, blockHash: ' + blockHash, Logger.errors.UNSUPPORTED_OPERATION);
