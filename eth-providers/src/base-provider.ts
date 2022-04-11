@@ -17,6 +17,7 @@ import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@e
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
+import { Formatter } from '@ethersproject/providers';
 import { accessListify, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import '@polkadot/api-augment';
@@ -202,6 +203,7 @@ const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
+  readonly formatter: Formatter;
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
   readonly localMode: boolean;
@@ -223,6 +225,7 @@ export abstract class BaseProvider extends AbstractProvider {
     subqlUrl?: string;
   } = {}) {
     super();
+    this.formatter = new Formatter();
     this._listeners = {};
     this._newBlockListeners = [];
     this.safeMode = safeMode;
@@ -1636,17 +1639,15 @@ export abstract class BaseProvider extends AbstractProvider {
     const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     // to and contractAddress may be undefined
-    return {
+    return this.formatter.receipt({
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
-      to: partialTransactionReceipt.to || null,
-      contractAddress: partialTransactionReceipt.contractAddress || null,
       logs: partialTransactionReceipt.logs.map((log) => ({
         ...transactionInfo,
         ...log
       }))
-    } as any;
+    }) as any;
   };
 
   static isProvider(value: any): value is Provider {
@@ -1699,12 +1700,9 @@ export abstract class BaseProvider extends AbstractProvider {
       const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
       const res = txFromSubql || null;
       if (res) {
-        res.status = +res.status;
-        res.type = +res.type;
         res.blockNumber = +res.blockNumber;
         res.transactionIndex = +res.transactionIndex;
         res.gasUsed = BigNumber.from(res.gasUsed);
-        res.cumulativeGasUsed = BigNumber.from(res.cumulativeGasUsed);
       }
       return res;
     } catch {
@@ -1757,7 +1755,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
-    return {
+    return this.formatter.receipt({
       to: tx.to || null,
       from: tx.from,
       contractAddress: tx.contractAddress || null,
@@ -1769,11 +1767,11 @@ export abstract class BaseProvider extends AbstractProvider {
       logs: Array.isArray(tx.logs) ? tx.logs : (tx.logs.nodes as Log[]),
       blockNumber: tx.blockNumber,
       cumulativeGasUsed: tx.cumulativeGasUsed,
-      effectiveGasPrice: EFFECTIVE_GAS_PRICE,
-      status: tx.status,
       type: tx.type,
+      status: tx.status,
+      effectiveGasPrice: EFFECTIVE_GAS_PRICE,
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
-    };
+    });
   };
 
   _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
@@ -1824,12 +1822,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filteredLogs = await this.subql.getFilteredLogs(_filter as Filter);
 
-    return filteredLogs.map((log) => {
-      log.blockNumber = +log.blockNumber;
-      log.transactionIndex = +log.transactionIndex;
-      log.logIndex = +log.logIndex;
-      return log;
-    });
+    return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
   getIndexerMetadata = async (): Promise<any> => {
