@@ -31,7 +31,7 @@ export const hexlifyRpcResult = (data: unknown): any => {
   }
 
   if (isHexString(data)) {
-    return data;
+    return (data as string).toLowerCase();
   }
 
   return data;
