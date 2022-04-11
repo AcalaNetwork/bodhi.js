@@ -605,6 +605,17 @@ export abstract class BaseProvider extends AbstractProvider {
         input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
         break;
       }
+      // case 'CURRENCIES': {
+      //   // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+      //   const evmExtrinsic: any = extrinsic.method.toJSON();
+      //   value = 0;
+      //   gas = 2_100_000;
+      //   const contract = evmExtrinsic?.args?.currency_id?.erc20;
+      //   const erc20 = new ethers.Contract(contract, ERC20_ABI);
+      //   const amount = evmExtrinsic?.args?.amount;
+      //   input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+      //   break;
+      // }
       case 'CURRENCIES':
       case 'DEX':
       case 'HONZONBRIDGE':
