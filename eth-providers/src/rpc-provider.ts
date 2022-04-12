@@ -1,25 +1,26 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider';
-import { BaseProvider, BlockTag } from './base-provider';
+import { BaseProvider } from './base-provider';
 import { createApi } from './chain-api';
-import { throwNotImplemented } from './utils';
 
 export interface BaseProviderOptions {
   safeMode?: boolean;
+  localMode?: boolean;
   maxCacheSize?: number;
   subqlUrl?: string;
 }
 
 const defaultOpts: BaseProviderOptions = {
   safeMode: false,
+  localMode: false,
   maxCacheSize: 200,
-  subqlUrl: undefined,
+  subqlUrl: undefined
 };
 
 export class EvmRpcProvider extends BaseProvider {
   constructor(endpoint: string | string[], opt: BaseProviderOptions = defaultOpts) {
     super({
       safeMode: opt.safeMode,
-      subqlUrl: opt.subqlUrl,
+      localMode: opt.localMode,
+      subqlUrl: opt.subqlUrl
     });
     const api = createApi(endpoint);
     this.setApi(api);

@@ -33,7 +33,7 @@
     "typescript": "~4.4.4"
   },
   "dependencies": {
-    "@acala-network/eth-providers": "~2.2.2",
+    "@acala-network/eth-providers": "~2.4.0",
     "@polkadot/api": "~6.4.2"
   },
   "resolutions": {

@@ -27,6 +27,7 @@ COPY examples/hardhat-tutorials/token/package.json examples/hardhat-tutorials/to
 COPY examples/hardhat-tutorials/NFT/package.json examples/hardhat-tutorials/NFT/package.json
 COPY examples/hardhat-tutorials/precompiled-token/package.json examples/hardhat-tutorials/precompiled-token/package.json
 COPY examples/hardhat-tutorials/DEX/package.json examples/hardhat-tutorials/DEX/package.json
+COPY examples/hardhat-tutorials/EVM/package.json examples/hardhat-tutorials/EVM/package.json
 
 COPY examples/waffle-tutorials/hello-world/package.json examples/waffle-tutorials/hello-world/package.json
 COPY examples/waffle-tutorials/echo/package.json examples/waffle-tutorials/echo/package.json
@@ -40,6 +41,7 @@ COPY examples/truffle-tutorials/token/package.json examples/truffle-tutorials/to
 COPY examples/truffle-tutorials/NFT/package.json examples/truffle-tutorials/NFT/package.json
 COPY examples/truffle-tutorials/precompiled-token/package.json examples/truffle-tutorials/precompiled-token/package.json
 COPY examples/truffle-tutorials/DEX/package.json examples/truffle-tutorials/DEX/package.json
+COPY examples/truffle-tutorials/EVM/package.json examples/truffle-tutorials/EVM/package.json
 
 COPY examples/waffle/arbitrager/package.json examples/waffle/arbitrager/package.json
 COPY examples/waffle/dex/package.json examples/waffle/dex/package.json
@@ -47,7 +49,7 @@ COPY examples/waffle/e2e/package.json examples/waffle/e2e/package.json
 COPY examples/waffle/erc20/package.json examples/waffle/erc20/package.json
 COPY examples/waffle/oracle/package.json examples/waffle/oracle/package.json
 COPY examples/waffle/hello-world/package.json examples/waffle/hello-world/package.json
-COPY examples/waffle/state-rent/package.json examples/waffle/state-rent/package.json
+COPY examples/waffle/evm/package.json examples/waffle/evm/package.json
 COPY examples/waffle/scheduler/package.json examples/waffle/scheduler/package.json
 COPY examples/waffle/uniswap/package.json examples/waffle/uniswap/package.json
 
@@ -75,6 +77,7 @@ WORKDIR /app/eth-rpc-adapter
 ENV ENDPOINT_URL=ws://mandala-node:9944
 ENV HTTP_PORT=8545
 ENV WS_PORT=3331
+ENV LOCAL_MODE=1
 CMD ["yarn", "start"]
 
 # =============== truffle-tutorials =============== #

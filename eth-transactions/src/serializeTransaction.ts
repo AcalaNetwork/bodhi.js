@@ -21,14 +21,14 @@ function formatNumber(value: BigNumberish, name: string): Uint8Array {
 }
 
 // rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, tip, accessList, eip712sig])
-export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: SignatureLike) {
+export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: SignatureLike): string {
   const fields: any = [
     formatNumber(transaction.chainId || 0, 'chainId'),
     transaction.salt || '0x',
     formatNumber(transaction.nonce || 0, 'nonce'),
     formatNumber(transaction.gasLimit || 0, 'gasLimit'),
     formatNumber(transaction.storageLimit || 0, 'storageLimit'),
-    transaction.to != null ? getAddress(transaction.to) : '0x',
+    transaction.to === null || transaction.to === undefined ? '0x' : getAddress(transaction.to),
     formatNumber(transaction.value || 0, 'value'),
     transaction.data || '0x',
     formatNumber(transaction.validUntil || MAX_UINT256, 'validUntil'),
@@ -48,7 +48,13 @@ export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: Sig
 
 export function serializeTransaction(transaction: UnsignedAcalaEvmTX, signature?: SignatureLike): string {
   // Ethereum Transactions
-  if (transaction.type == null || transaction.type === 0 || transaction.type === 1 || transaction.type === 2) {
+  if (
+    transaction.type === null ||
+    transaction.type === undefined ||
+    transaction.type === 0 ||
+    transaction.type === 1 ||
+    transaction.type === 2
+  ) {
     return serialize(transaction, signature);
   }
 

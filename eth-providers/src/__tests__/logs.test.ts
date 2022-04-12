@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { toHex, filterLog } from '../utils';
+import { filterLog } from '../utils';
 
 describe('filterLog', () => {
   const topic1 = '0x11111111111111111111111111111111111111111111111111111111111111aA';
@@ -89,12 +89,5 @@ describe('filterLog', () => {
     expect(filterLog(log2, { address: addr2.toLowerCase(), topics: [topic1, topic2.toUpperCase()] })).to.equal(true);
     expect(filterLog(log2, { address: addr2, topics: [topic2] })).to.equal(true);
     expect(filterLog(log2, { address: addr1, topics: [topic1, topic2, topic3] })).to.equal(false);
-  });
-});
-
-describe('toHex', () => {
-  it('return correct hex string', () => {
-    expect(toHex(3)).to.equal('0x3');
-    expect(toHex(18)).to.equal('0x12');
   });
 });

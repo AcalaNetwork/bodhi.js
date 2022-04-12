@@ -1,5 +1,4 @@
-import '@polkadot/api-augment';
-import { checkSignatureType, AcalaEvmTX, parseTransaction } from '@acala-network/eth-transactions';
+import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   EventType,
@@ -13,8 +12,6 @@ import {
   TransactionRequest,
   TransactionResponse
 } from '@ethersproject/abstract-provider';
-import { Wallet, BigNumber, BigNumberish } from 'ethers';
-import { AccessListish } from 'ethers/lib/utils';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
@@ -23,40 +20,65 @@ import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/pr
 import { Formatter } from '@ethersproject/providers';
 import { accessListify, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
+import '@polkadot/api-augment';
 import { createHeaderExtended } from '@polkadot/api-derive';
+import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
-import type { AccountId, Header } from '@polkadot/types/interfaces';
+import { decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
+import type { AccountId, EventRecord, Header } from '@polkadot/types/interfaces';
+import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { Storage } from '@polkadot/types/metadata/decorate/types';
+import { isNull, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
+import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
+import { AccessListish } from 'ethers/lib/utils';
 import {
+  BIGNUMBER_ONE,
   BIGNUMBER_ZERO,
+  CACHE_SIZE_WARNING,
+  DUMMY_ADDRESS,
+  DUMMY_BLOCK_MIX_HASH,
+  DUMMY_BLOCK_NONCE,
+  DUMMY_LOGS_BLOOM,
+  DUMMY_R,
+  DUMMY_S,
+  DUMMY_V,
   EFFECTIVE_GAS_PRICE,
   EMPTY_STRING,
-  GAS_PRICE,
+  EMTPY_UNCLES,
+  EMTPY_UNCLE_HASH,
+  ERC20_ABI,
+  LOCAL_MODE_MSG,
+  MIRRORED_TOKEN_CONTRACT,
+  PROD_MODE_MSG,
+  SAFE_MODE_WARNING_MSG,
   U32MAX,
   U64MAX,
   ZERO
 } from './consts';
 import {
+  calcEthereumTransactionParams,
+  calcSubstrateTransactionParams,
   computeDefaultEvmAddress,
   computeDefaultSubstrateAddress,
   convertNativeToken,
+  filterLog,
+  findEvmEvent,
+  getEvmExtrinsicIndexes,
   getPartialTransactionReceipt,
   getTransactionIndexAndHash,
+  hexlifyRpcResult,
+  isEVMExtrinsic,
   logger,
   PROVIDER_ERRORS,
+  runWithRetries,
   sendTx,
-  throwNotImplemented,
-  calcSubstrateTransactionParams,
-  getEvmExtrinsicIndexes,
-  findEvmEvent,
-  filterLog,
-  toHex,
-  calcEthereumTransactionParams
+  throwNotImplemented
 } from './utils';
-import { SubqlProvider } from './utils/subqlProvider';
+import { BlockCache } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
-import { UnfinalizedBlockCache } from './utils/unfinalizedBlockCache';
+import { SubqlProvider } from './utils/subqlProvider';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -85,7 +107,6 @@ export interface _Block {
 export interface _RichBlock extends _Block {
   stateRoot: string;
   transactionsRoot: string;
-  author: string;
   mixHash: string;
 }
 
@@ -109,19 +130,22 @@ export interface CallRequest {
 
 export interface partialTX {
   from: string;
-  to: string | null;
-  blockHash: string;
-  blockNumber: number;
-  transactionIndex: number;
+  to: string | null; // null for contract creation
+  blockHash: string | null; // null for pending TX
+  blockNumber: number | null; // null for pending TX
+  transactionIndex: number | null; // null for pending TX
 }
 
 export interface TX extends partialTX {
   hash: string;
   nonce: number;
   value: BigNumberish;
-  gasPrice: BigNumber;
+  gasPrice: BigNumberish;
   gas: BigNumberish;
   input: string;
+  v: string;
+  r: string;
+  s: string;
 }
 
 export interface TXReceipt extends partialTX {
@@ -136,6 +160,22 @@ export interface TXReceipt extends partialTX {
   effectiveGasPrice: BigNumber;
   type: number;
   status?: number;
+}
+
+// TODO: safe to assume this shape?
+export interface ExtrinsicMethodJSON {
+  callIndex: string;
+  args: {
+    action: {
+      [key: string]: string;
+    };
+    input: string;
+    value: number;
+    gas_limit: number;
+    storage_limit: number;
+    access_list: any[];
+    valid_until: number;
+  };
 }
 
 export interface GasConsts {
@@ -153,70 +193,62 @@ export interface EventListeners {
   [name: string]: EventListener[];
 }
 
+export type NewBlockListener = (header: Header) => any;
+
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
 const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
 const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
 
-const DUMMY_ADDRESS = '0x1111111111333333333355555555558888888888';
-const DUMMY_LOGS_BLOOM =
-  '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
-const DUMMY_V = '0x25';
-const DUMMY_R = '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea';
-const DUMMY_S = '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c';
-const EMTPY_UNCLE_HASH = '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347';
-
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
+  readonly localMode: boolean;
   readonly subql?: SubqlProvider;
+  readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
 
+  _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
-  _cache?: UnfinalizedBlockCache;
+  _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
 
   constructor({
     safeMode = false,
-    subqlUrl,
+    localMode = false,
+    subqlUrl
   }: {
-    safeMode?: boolean,
-    subqlUrl?: string,
+    safeMode?: boolean;
+    localMode?: boolean;
+    subqlUrl?: string;
   } = {}) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
+    this._newBlockListeners = [];
     this.safeMode = safeMode;
+    this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
 
-    safeMode && logger.warn(`
-      ----------------------------- WARNING ----------------------------
-      SafeMode is ON, and RPCs behave very differently than usual world!
-                  To go back to normal mode, set SAFE_MODE=0
-      ------------------------------------------------------------------
-    `);
+    safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
+    logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
     } else {
-      logger.warn(`no subql url provided`)
+      logger.warn(`no subql url provided`);
     }
   }
 
   startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
-    this._cache = new UnfinalizedBlockCache(maxCachedSize);
+    this._cache = new BlockCache(maxCachedSize);
 
     if (maxCachedSize < 1) {
       return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
     } else {
-      maxCachedSize > 9999 && logger.warn(`
-        ------------------- WARNING -------------------
-        Max cached blocks is big, please be cautious!
-        If memory exploded, try decrease MAX_CACHE_SIZE
-        -----------------------------------------------
-      `);
+      maxCachedSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
 
     await this.isReady();
@@ -237,21 +269,8 @@ export abstract class BaseProvider extends AbstractProvider {
       // TODO: can do some optimizations
       if (this._listeners[NEW_HEADS]?.length > 0) {
         const block = await this.getBlock(blockNumber);
-        this._listeners[NEW_HEADS].forEach((l) =>
-          l.cb({
-            ...block,
-            number: toHex(block.number),
-            timestamp: toHex(block.timestamp),
-            difficulty: toHex(block.difficulty),
-            gasLimit: `0x${block.gasLimit.toNumber()}`, // TODO: this is dummy wrong value
-            gasUsed: `0x${block.gasUsed.toNumber()}`, // TODO: this is dummy wrong value
-            miner: block.miner === '' ? DUMMY_ADDRESS : block.miner,
-            author: block.author === '' ? DUMMY_ADDRESS : block.author,
-            sha3Uncles: EMTPY_UNCLE_HASH,
-            receiptsRoot: block.transactionsRoot, // TODO: correct value?
-            logsBloom: DUMMY_LOGS_BLOOM // TODO: ???
-          })
-        );
+        const response = hexlifyRpcResult(block);
+        this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
       }
 
       if (this._listeners[NEW_LOGS]?.length > 0) {
@@ -264,17 +283,22 @@ export abstract class BaseProvider extends AbstractProvider {
 
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
-          filteredLogs.forEach((l) =>
-            cb({
-              ...l,
-              transactionIndex: toHex(l.transactionIndex),
-              blockNumber: toHex(l.blockNumber),
-              logIndex: toHex(l.logIndex),
-              type: 'mined'
-            })
-          );
+          const response = hexlifyRpcResult(filteredLogs);
+          response.forEach((log: any) => cb(log));
         });
       }
+    }) as unknown as void;
+
+    // for getTXhashFromNextBlock
+    this.api.rpc.chain.subscribeNewHeads((header: Header) => {
+      this._newBlockListeners.forEach((cb) => {
+        try {
+          cb(header);
+        } catch {
+          /* swallow */
+        }
+      });
+      this._newBlockListeners = [];
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
@@ -293,6 +317,48 @@ export abstract class BaseProvider extends AbstractProvider {
 
   setApi = (api: ApiPromise): void => {
     defineReadOnly(this, '_api', api);
+  };
+
+  queryStorage = async <T = any>(
+    module: `${string}.${string}`,
+    args: any[],
+    _blockTag?: BlockTag | Promise<BlockTag>
+  ) => {
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockHash = await this._getBlockHash(blockTag);
+
+    const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
+
+    if (!this.storages.get(registry)) {
+      const storage = decorateStorage(registry.registry, registry.metadata.asLatest, registry.metadata.version);
+      this.storages.set(registry, storage);
+    }
+
+    const storage = this.storages.get(registry)!;
+
+    const [section, method] = module.split('.');
+
+    const entry = storage[section][method];
+    const key = entry(...args);
+
+    const value: any = await this.api.rpc.state.getStorage(key, blockHash);
+
+    const outputType = unwrapStorageType(registry.registry, entry.meta.type, entry.meta.modifier.isOptional);
+
+    const isEmpty = isNull(value);
+
+    // we convert to Uint8Array since it maps to the raw encoding, all
+    // data will be correctly encoded (incl. numbers, excl. :code)
+    const input = isEmpty
+      ? null
+      : u8aToU8a(entry.meta.modifier.isOptional ? value.toU8a() : value.isSome ? value.unwrap().toU8a() : null);
+
+    const result = registry.registry.createTypeUnsafe(outputType, [input], {
+      blockHash,
+      isPedantic: !entry.meta.modifier.isOptional
+    });
+
+    return result as any as T;
   };
 
   get api(): ApiPromise {
@@ -370,11 +436,8 @@ export abstract class BaseProvider extends AbstractProvider {
     return header.number.toNumber();
   };
 
-  getBlock = async (
-    blockTag: BlockTag | Promise<BlockTag>,
-    full?: boolean | Promise<boolean>
-  ): Promise<RichBlock> => {
-    return this._getBlock(blockTag, true) as Promise<RichBlock>;
+  getBlock = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean | Promise<boolean>): Promise<RichBlock> => {
+    return this._getBlock(blockTag, full) as Promise<RichBlock>;
   };
 
   getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
@@ -395,27 +458,26 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockHash = header.hash.toHex();
 
-    const apiAt = await this.api.at(blockHash);
-
-    const [block, validators, now, events] = await Promise.all([
+    const [block, validators, now, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
-      this.api.query.session ? apiAt.query.session.validators() : ([] as any),
-      apiAt.query.timestamp.now(),
-      apiAt.query.system.events()
+      this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
+      this.queryStorage('timestamp.now', [], blockHash),
+      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
     ]);
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
 
     const blockNumber = headerExtended.number.toNumber();
 
-    const deafultNonce = this.api.registry.createType('u64', 0);
-    const deafultMixHash = this.api.registry.createType('u256', 0);
+    // blockscout need `toLowerCase`
+    const author = headerExtended.author
+      ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase()
+      : DUMMY_ADDRESS;
 
-    const author = headerExtended.author ? await this.getEvmAddress(headerExtended.author.toString()) : DUMMY_ADDRESS;
-
-    const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
+    const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
     let transactions: any[];
+    let total_used_gas = BIGNUMBER_ZERO;
 
     if (!fullTx) {
       // not full
@@ -424,46 +486,27 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     } else {
       // full
-      transactions = evmExtrinsicIndexes.map((extrinsicIndex, transactionIndex) => {
-        const extrinsic = block.block.extrinsics[extrinsicIndex];
-        const evmEvent = findEvmEvent(events);
+      transactions = await Promise.all(
+        evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
+          const extrinsic = block.block.extrinsics[extrinsicIndex];
+          const extrinsicEvents = blockEvents.filter(
+            (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+          );
 
-        if (!evmEvent) {
+          const data = await this._parseExtrinsic(blockHash, extrinsic, extrinsicEvents);
+
           return {
             blockHash,
             blockNumber,
             transactionIndex,
-            hash: extrinsic.hash.toHex(),
-            nonce: extrinsic.nonce.toNumber(),
-            // @TODO get tx value
-            value: 0
+            ...data
           };
-        }
+        })
+      );
 
-        const from = evmEvent.event.data[0].toString();
-        const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method)
-          ? null
-          : evmEvent.event.data[1].toString();
-
-        // @TODO Missing data
-        return {
-          gasPrice: '0x1', // TODO: get correct value
-          gas: '0x1', // TODO: get correct value
-          input: '', // TODO: get correct value
-          v: DUMMY_V,
-          r: DUMMY_R,
-          s: DUMMY_S,
-          blockHash,
-          blockNumber,
-          transactionIndex,
-          hash: extrinsic.hash.toHex(),
-          nonce: extrinsic.nonce.toNumber(),
-          from: from,
-          to: to,
-          // @TODO get tx value
-          value: 0
-        };
-      });
+      total_used_gas = transactions.reduce((r, tx) => {
+        return r.add(tx.gas);
+      }, BIGNUMBER_ZERO);
     }
 
     const data = {
@@ -473,18 +516,20 @@ export abstract class BaseProvider extends AbstractProvider {
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: Math.floor(now.toNumber() / 1000),
-      nonce: deafultNonce.toHex(),
-      mixHash: deafultMixHash.toHex(),
+      nonce: DUMMY_BLOCK_NONCE,
+      mixHash: DUMMY_BLOCK_MIX_HASH,
       difficulty: ZERO,
+      totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: BIGNUMBER_ZERO,
+      gasUsed: total_used_gas, // TODO: not full is 0
 
       miner: author,
-      author: author,
       extraData: EMPTY_STRING,
       sha3Uncles: EMTPY_UNCLE_HASH,
       receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
+      size: block.encodedLength,
+      uncles: EMTPY_UNCLES,
 
       transactions
 
@@ -496,6 +541,129 @@ export abstract class BaseProvider extends AbstractProvider {
     // @TODO remove ts-ignore
     // @ts-ignore
     return data;
+  };
+
+  _parseExtrinsic = async (
+    blockHash: string,
+    extrinsic: GenericExtrinsic,
+    extrinsicEvents: EventRecord[]
+  ): Promise<any> => {
+    // logger.info(extrinsic.method.toHuman());
+    // logger.info(extrinsic.method);
+
+    const evmEvent = findEvmEvent(extrinsicEvents);
+    if (!evmEvent) {
+      return logger.throwError(
+        'findEvmEvent failed. extrinsic: ' + extrinsic.method.toJSON(),
+        Logger.errors.UNSUPPORTED_OPERATION
+      );
+    }
+
+    let gas;
+    let value;
+    let input;
+    const from = evmEvent.event.data[0].toString();
+    const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method) ? null : evmEvent.event.data[1].toString();
+
+    // @TODO remove
+    // only work on mandala and karura-testnet
+    // https://github.com/AcalaNetwork/Acala/pull/1985
+    let gasPrice = BIGNUMBER_ONE;
+
+    if (
+      evmEvent.event.data.length > 5 ||
+      (evmEvent.event.data.length === 5 &&
+        (evmEvent.event.method === 'Created' || evmEvent.event.method === 'Executed'))
+    ) {
+      const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
+      const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
+
+      const block = await this.api.rpc.chain.getBlock(blockHash);
+      // use parentHash to get tx fee
+      const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
+      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+      let tx_fee = ethers.utils.parseUnits(payment.partialFee.toString(), 'mwei');
+
+      // get storage fee
+      // if used_storage > 0, tx_fee include the storage fee.
+      if (used_storage.gt(0)) {
+        const { storageDepositPerByte } = this._getGasConsts();
+        tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
+      }
+
+      gasPrice = tx_fee.div(used_gas);
+    }
+
+    switch (extrinsic.method.section.toUpperCase()) {
+      case 'EVM': {
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = evmExtrinsic?.args?.value;
+        gas = evmExtrinsic?.args?.gas_limit;
+        // @TODO remove
+        // only work on mandala and karura-testnet
+        // https://github.com/AcalaNetwork/Acala/pull/1965
+        input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
+        break;
+      }
+      case 'CURRENCIES':
+      case 'HONZONBRIDGE': {
+        // HonzonBridge
+        // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = 0;
+        gas = 2_100_000;
+        const contract = evmExtrinsic?.args?.currency_id?.erc20;
+        const erc20 = new ethers.Contract(contract, ERC20_ABI);
+        const amount = evmExtrinsic?.args?.amount;
+        input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+        break;
+      }
+      case 'SUDO': {
+        const evmExtrinsic: any = extrinsic.method.toJSON();
+        value = evmExtrinsic?.args?.call?.args?.value;
+        gas = evmExtrinsic?.args?.call?.args?.gas_limit;
+        input = evmExtrinsic?.args?.call?.args?.input || evmExtrinsic?.args?.call?.args?.init;
+        // @TODO remove
+        // only work on mandala and karura-testnet
+        // https://github.com/AcalaNetwork/Acala/pull/1971
+        if (input === '0x') {
+          // return token contracts
+          input = MIRRORED_TOKEN_CONTRACT;
+        }
+        break;
+      }
+      // @TODO support proxy
+      case 'PROXY': {
+        return logger.throwError('Unspport proxy', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      // @TODO support utility
+      case 'UTILITY': {
+        return logger.throwError('Unspport utility', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      default: {
+        return logger.throwError(
+          'Unspport ' + extrinsic.method.section.toUpperCase(),
+          Logger.errors.UNSUPPORTED_OPERATION
+        );
+      }
+    }
+
+    // @TODO eip2930, eip1559
+
+    // @TODO Missing data
+    return {
+      gasPrice,
+      gas,
+      input,
+      v: DUMMY_V,
+      r: DUMMY_R,
+      s: DUMMY_S,
+      hash: extrinsic.hash.toHex(),
+      nonce: extrinsic.nonce.toNumber(),
+      from: from,
+      to: to,
+      value: hexValue(value)
+    };
   };
 
   // @TODO free
@@ -513,9 +681,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    const apiAt = await this.api.at(blockHash);
-
-    const accountInfo = await apiAt.query.system.account(substrateAddress);
+    const accountInfo = await this.queryStorage('system.account', [substrateAddress], blockHash);
 
     return convertNativeToken(BigNumber.from(accountInfo.data.free.toBigInt()), this.chainDecimal);
   };
@@ -535,7 +701,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
-    return !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    let pendingNonce = 0;
+    if ((await blockTag) === 'pending') {
+      const [substrateAddress, pendingExtrinsics] = await Promise.all([
+        this.getSubstrateAddress(await addressOrName),
+        this.api.rpc.author.pendingExtrinsics()
+      ]);
+
+      pendingNonce = pendingExtrinsics.filter(
+        (e) => isEVMExtrinsic(e) && e.signer.toString() === substrateAddress
+      ).length;
+    }
+
+    const minedNonce = !accountInfo.isNone ? accountInfo.unwrap().nonce.toNumber() : 0;
+    return minedNonce + pendingNonce;
   };
 
   getSubstrateNonce = async (
@@ -556,8 +735,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockHash = await this._getBlockHash(blockTag);
 
-    const apiAt = await this.api.at(blockHash);
-    const accountInfo = await apiAt.query.system.account(substrateAddress);
+    const accountInfo = await this.queryStorage('system.account', [substrateAddress], blockHash);
 
     return accountInfo.nonce.toNumber();
   };
@@ -635,9 +813,7 @@ export abstract class BaseProvider extends AbstractProvider {
       resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))
     });
 
-    const apiAt = await this.api.at(blockHash);
-
-    const code = await apiAt.query.evm.accountStorages(address, position);
+    const code = await this.queryStorage('evm.accountStorages', [address, position], blockHash);
 
     return code.toHex();
   };
@@ -762,10 +938,10 @@ export abstract class BaseProvider extends AbstractProvider {
    * default to return big enough gas for contract deployment
    * @returns The gas used by eth transaction
    */
-  _getEthGas = async({
+  _getEthGas = async ({
     gasLimit = 21000000,
     storageLimit = 64100,
-    validUntil: _validUntil,
+    validUntil: _validUntil
   }: {
     gasLimit?: BigNumberish;
     storageLimit?: BigNumberish;
@@ -870,9 +1046,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const apiAt = await this.api.at(blockHash);
-
-    const substrateAccount = await apiAt.query.evmAccounts.accounts<Option<AccountId>>(address);
+    const substrateAccount = await this.queryStorage<Option<AccountId>>('evmAccounts.accounts', [address], blockHash);
 
     return substrateAccount.isEmpty ? computeDefaultSubstrateAddress(address) : substrateAccount.toString();
   };
@@ -912,9 +1086,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const apiAt = await this.api.at(blockHash);
-
-    const accountInfo = await apiAt.query.evm.accounts<Option<EvmAccountInfo>>(address);
+    const accountInfo = await this.queryStorage<Option<EvmAccountInfo>>('evm.accounts', [address], blockHash);
 
     return accountInfo;
   };
@@ -966,7 +1138,7 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit = BigInt(_storageLimit);
       validUntil = BigInt(_validUntil);
       tip = BigInt(_tip);
-    } else if (ethTx.type == null || ethTx.type === 0 || ethTx.type === 2) {
+    } else if (ethTx.type === null || ethTx.type === undefined || ethTx.type === 0 || ethTx.type === 2) {
       // Legacy, EIP-155, and EIP-1559 transaction
       const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
 
@@ -1111,7 +1283,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const hexTx = await Promise.resolve(signedTransaction).then((t) => hexlify(t));
     const tx = parseTransaction(await signedTransaction);
 
-    if ((tx as any).confirmations == null) {
+    if ((tx as any).confirmations === null || (tx as any).confirmations === undefined) {
       (tx as any).confirmations = 0;
     }
 
@@ -1139,7 +1311,7 @@ export abstract class BaseProvider extends AbstractProvider {
     startBlock: number,
     startBlockHash: string
   ): Promise<TransactionResponse> => {
-    if (hash != null && hexDataLength(hash) !== 32) {
+    if (hash !== null && hash !== undefined && hexDataLength(hash) !== 32) {
       throw new Error('invalid hash - sendTransaction');
     }
 
@@ -1152,21 +1324,20 @@ export abstract class BaseProvider extends AbstractProvider {
     //   });
     // }
 
-    const result = <TransactionResponse>tx;
+    const result = tx as TransactionResponse;
 
     // fix tx hash
     result.hash = hash;
     result.blockNumber = startBlock;
     result.blockHash = startBlockHash;
 
-    const apiAt = await this.api.at(result.blockHash);
-    result.timestamp = Math.floor((await apiAt.query.timestamp.now()).toNumber() / 1000);
+    result.timestamp = Math.floor((await this.queryStorage('timestamp.now', [], result.blockHash)).toNumber() / 1000);
 
     result.wait = async (confirms?: number, timeout?: number) => {
       if (confirms === null || confirms === undefined) {
         confirms = 1;
       }
-      if (timeout == null) {
+      if (timeout === null || timeout === undefined) {
         timeout = 0;
       }
 
@@ -1237,9 +1408,7 @@ export abstract class BaseProvider extends AbstractProvider {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
-        return this.safeMode
-          ? this.latestFinalizedBlockHash!
-          : (await this.api.rpc.chain.getBlockHash()).toHex();
+        return this.safeMode ? this.latestFinalizedBlockHash! : (await this.api.rpc.chain.getBlockHash()).toHex();
       }
       case 'earliest': {
         const hash = this.api.genesisHash;
@@ -1284,18 +1453,12 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
 
     const [finalizedBlockNumber, verifyingBlockNumber] = (
-      await Promise.all([
-        this.api.rpc.chain.getHeader(finalizedHead),
-        this.api.rpc.chain.getHeader(verifyingBlockHash),
-      ])
+      await Promise.all([this.api.rpc.chain.getHeader(finalizedHead), this.api.rpc.chain.getHeader(verifyingBlockHash)])
     ).map((header) => header.number.toNumber());
 
     const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
 
-    return (
-      finalizedBlockNumber >= verifyingBlockNumber &&
-      canonicalHash.toString() === verifyingBlockHash
-    );
+    return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash.toString() === verifyingBlockHash;
   };
 
   _ensureSafeModeBlockTagFinalization = async (_blockTag: BlockTagish): Promise<BlockTagish> => {
@@ -1308,12 +1471,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return isBlockFinalized
       ? blockTag
-      // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
-      : logger.throwError(
-        'SAFE MODE ERROR: target block is not finalized',
-        Logger.errors.UNKNOWN_ERROR,
-        { blockTag }
-      );
+      : // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
+        logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
@@ -1383,21 +1542,38 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
-    const extrinsics = (await this._getExtrinsicsAtBlock(blockHash)) as GenericExtrinsic[];
+    const extrinsics = (await this._getExtrinsicsAndEventsAtBlock(blockHash)).extrinsics as GenericExtrinsic[];
     return extrinsics.map((e) => e.hash.toHex());
   };
 
-  _getExtrinsicsAtBlock = async (
+  _getExtrinsicsAndEventsAtBlock = async (
     blockHash: string,
     txHash?: string
-  ): Promise<GenericExtrinsic | GenericExtrinsic[] | undefined> => {
-    const block = await this.api.rpc.chain.getBlock(blockHash.toLowerCase());
-    const { extrinsics } = block.block;
+  ): Promise<{
+    extrinsics: GenericExtrinsic | GenericExtrinsic[] | undefined;
+    extrinsicsEvents: EventRecord[] | undefined;
+  }> => {
+    const [block, blockEvents] = await Promise.all([
+      this.api.rpc.chain.getBlock(blockHash.toLowerCase()),
+      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
+    ]);
 
-    if (!txHash) return extrinsics;
+    if (!txHash) return { extrinsics: block.block.extrinsics, extrinsicsEvents: undefined };
 
-    const _txHash = txHash.toLowerCase();
-    return extrinsics.find((e) => e.hash.toHex() === _txHash);
+    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
+      txHash.toLowerCase(),
+      block.block.extrinsics,
+      blockEvents
+    );
+
+    const extrinsicEvents = blockEvents.filter(
+      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+    );
+
+    return {
+      extrinsics: block.block.extrinsics[extrinsicIndex],
+      extrinsicsEvents: extrinsicEvents
+    };
   };
 
   // @TODO Testing
@@ -1412,11 +1588,9 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const apiAt = await this.api.at(blockHash);
-
     const [block, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
-      apiAt.query.system.events()
+      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
     ]);
 
     const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
@@ -1481,7 +1655,10 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
+    const targetBlockNumber = this.localMode
+      ? await runWithRetries(this._cache!.getBlockNumber.bind(this._cache!), [txHash])
+      : this._cache?.getBlockNumber(txHash);
+
     if (!targetBlockNumber) return null;
 
     const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
@@ -1489,19 +1666,47 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
-  _getTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL> => {
-    // @TODO Optimize performance
-    // Prioritizing the use of cache data can avoid using the database when testing.
-    const txFromCache = await this._getTxReceiptFromCache(txHash);
+  _getPendingTX = async (txHash: string): Promise<TX | null> => {
+    const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+    const targetExtrinsic = pendingExtrinsics.find((e) => e.hash.toHex() === txHash);
 
-    if (txFromCache) return txFromCache;
+    if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
 
+    const args = (targetExtrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
+
+    return {
+      from: await this.getEvmAddress(targetExtrinsic.signer.toString()),
+      to: args.action.Call ? args.action.Call : null,
+      blockHash: null,
+      blockNumber: null,
+      transactionIndex: null,
+      hash: txHash,
+      nonce: targetExtrinsic.nonce.toNumber(),
+      value: args.value,
+      gasPrice: 0, // TODO: reverse calculate using args.storage_limit if needed
+      gas: args.gas_limit,
+      input: args.input,
+      v: DUMMY_V,
+      r: DUMMY_R,
+      s: DUMMY_S
+    };
+  };
+
+  _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
     try {
-      const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
+      const txFromCache = await this._getTxReceiptFromCache(txHash);
+      if (txFromCache) return txFromCache;
 
-      return txFromSubql || logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+      const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
+      const res = txFromSubql || null;
+      if (res) {
+        res.blockNumber = +res.blockNumber;
+        res.transactionIndex = +res.transactionIndex;
+        res.gasUsed = BigNumber.from(res.gasUsed);
+      }
+      return res;
     } catch {
-      return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, { txHash });
+      return null;
     }
   };
 
@@ -1509,32 +1714,34 @@ export abstract class BaseProvider extends AbstractProvider {
   getTransaction = (txHash: string): Promise<TransactionResponse> =>
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
-  getTransactionByHash = async (txHash: string): Promise<TX> => {
-    const tx = await this._getTXReceipt(txHash);
+  getTransactionByHash = async (txHash: string): Promise<TX | null> => {
+    if (!this.localMode) {
+      // local mode is for local instant-sealing node
+      // so ignore pending tx to avoid some timing issue
+      const pendingTX = await this._getPendingTX(txHash);
+      if (pendingTX) return pendingTX;
+    }
 
-    const extrinsic = await this._getExtrinsicsAtBlock(tx.blockHash, txHash);
+    const tx = await this._getMinedTXReceipt(txHash);
+    if (!tx) return null;
 
-    if (!extrinsic) {
+    const res = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
+
+    if (!res) {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const nonce = (extrinsic as GenericExtrinsic).nonce.toNumber();
-    const { args } = (extrinsic as GenericExtrinsic).method.toJSON();
-    const input = (args as any).input ?? '';
-    const value = (args as any).value ?? 0;
+    const data = await this._parseExtrinsic(
+      tx.blockHash,
+      res.extrinsics as GenericExtrinsic,
+      res.extrinsicsEvents as EventRecord[]
+    );
 
     return {
-      from: tx.from,
-      to: tx.to || null,
-      hash: tx.transactionHash,
       blockHash: tx.blockHash,
-      nonce,
       blockNumber: tx.blockNumber,
       transactionIndex: tx.transactionIndex,
-      value,
-      gasPrice: GAS_PRICE,
-      gas: tx.gasUsed,
-      input
+      ...data
     };
   };
 
@@ -1544,8 +1751,9 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTXReceiptByHash(txHash);
   };
 
-  getTXReceiptByHash = async (txHash: string): Promise<TXReceipt> => {
-    const tx = await this._getTXReceipt(txHash);
+  getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
+    const tx = await this._getMinedTXReceipt(txHash);
+    if (!tx) return null;
 
     return this.formatter.receipt({
       to: tx.to || null,
@@ -1595,7 +1803,9 @@ export abstract class BaseProvider extends AbstractProvider {
   // Bloom-filter Queries
   getLogs = async (filter: Filter): Promise<Log[]> => {
     if (!this.subql) {
-      return logger.throwError('missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.');
+      return logger.throwError(
+        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
+      );
     }
 
     const { fromBlock = 'latest', toBlock = 'latest' } = filter;

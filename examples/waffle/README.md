@@ -21,7 +21,7 @@ compile and build all contracts
 
 if testing with local node, start a acala node with docker
 ```
-docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:e361c534 --dev --instant-sealing --ws-external=true --rpc-port=9933 --rpc-external=true --rpc-cors=all --rpc-methods=unsafe
+docker run -it --rm -p 9944:9944 -p 9933:9933 acala/mandala-node:e361c534 --dev --instant-sealing --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe
 ```
 
 run all tests

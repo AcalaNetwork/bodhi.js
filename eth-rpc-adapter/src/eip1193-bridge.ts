@@ -1,4 +1,4 @@
-import { EvmRpcProvider, TX, TXReceipt } from '@acala-network/eth-providers';
+import { EvmRpcProvider, TX, TXReceipt, hexlifyRpcResult } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -6,14 +6,16 @@ import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
-import { hexlifyRpcResult, sleep } from './utils';
 import { validate } from './validate';
 
+const HEX_ZERO = '0x0';
 export class Eip1193Bridge extends EventEmitter {
+  readonly provider: EvmRpcProvider;
   readonly #impl: Eip1193BridgeImpl;
 
   constructor(provider: EvmRpcProvider, signer?: Signer) {
     super();
+    this.provider = provider;
     this.#impl = new Eip1193BridgeImpl(provider, signer);
   }
 
@@ -285,35 +287,16 @@ class Eip1193BridgeImpl {
     };
   }
 
-  async _runWithRetries<T>(fn: any, args: any[] = [], maxRetries: number = 20, interval: number = 1000): Promise<T> {
-    let res;
-    let tries = 0;
-
-    while (!res && tries++ < maxRetries) {
-      try {
-        res = await fn(...args);
-      } catch (e) {
-        console.log(`failed attemp # ${tries}/${maxRetries}`);
-        if (tries === maxRetries || !(e as any).message.includes('transaction hash not found')) {
-          throw e;
-        }
-        await sleep(interval);
-      }
-    }
-
-    return res as T;
-  }
-
   /**
    * Returns the information about a transaction requested by transaction hash.
    * @param DATA, 32 Bytes - hash of a transaction
    * @returns Transaction, A transaction object, or null when no transaction was found:
    */
-  async eth_getTransactionByHash(params: any[]): Promise<TX> {
+  async eth_getTransactionByHash(params: any[]): Promise<TX | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this._runWithRetries<TX>(this.#provider.getTransactionByHash, params);
-    return hexlifyRpcResult(res);
+    const res = await this.#provider.getTransactionByHash(params[0]);
+    return res ? hexlifyRpcResult(res) : null;
   }
 
   /**
@@ -321,10 +304,16 @@ class Eip1193BridgeImpl {
    * @param DATA, 32 Bytes - hash of a transaction
    * @returns TransactionReceipt, A transaction receipt object, or null when no receipt was found:
    */
-  async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt> {
+  async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this._runWithRetries<TXReceipt>(this.#provider.getTXReceiptByHash, params);
+    const res = await this.#provider.getTXReceiptByHash(params[0]);
+    if (!res) return null;
+
+    // @ts-ignore
+    delete res.byzantium;
+    // @ts-ignore
+    delete res.confirmations;
     return hexlifyRpcResult(res);
   }
 
@@ -380,21 +369,29 @@ class Eip1193BridgeImpl {
     return hexlifyRpcResult(res);
   }
 
-  // async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
+  async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
+    validate([{ type: 'blockHash' }], params);
 
-  // }
+    return HEX_ZERO;
+  }
 
-  // async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
+  async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
+    validate([{ type: 'block' }], params);
 
-  // }
+    return HEX_ZERO;
+  }
 
-  // async eth_getUncleByBlockHashAndIndex(params: any[]): Promise<any> {
+  async eth_getUncleByBlockHashAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'blockHash' }, { type: 'hexNumber' }], params);
 
-  // }
+    return null;
+  }
 
-  // async eth_getUncleByBlockNumberAndIndex(params: any[]): Promise<any> {
+  async eth_getUncleByBlockNumberAndIndex(params: any[]): Promise<any> {
+    validate([{ type: 'block' }, { type: 'hexNumber' }], params);
 
-  // }
+    return null;
+  }
 
   // async eth_newFilter(params: any[]): Promise<any> {
 

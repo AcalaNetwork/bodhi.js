@@ -14,12 +14,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const RPC_URL = process.env.RPC_URL || 'ws://127.0.0.1:8545';
-const SUBQL_URL = process.env.SUBQL_URL || 'ws://127.0.0.1:3001';
+const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
+const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
 
 const subql = new SubqlProvider(SUBQL_URL);
 
-const rpcGet = (method: string) => (
+const rpcGet =
+  (method: string) =>
   (params: any): any =>
     axios.get(RPC_URL, {
       data: {
@@ -28,8 +29,7 @@ const rpcGet = (method: string) => (
         method,
         params
       }
-    })
-);
+    });
 
 export const logsEq = (a: Log[], b: Log[]): boolean =>
   a.length === b.length &&
@@ -71,7 +71,7 @@ describe('eth_getTransactionReceipt', () => {
     expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
   });
 
-  it('return correct error code and messge', async () => {
+  it('return correct error or null', async () => {
     let res;
 
     /* ---------- invalid hex address ---------- */
@@ -83,8 +83,7 @@ describe('eth_getTransactionReceipt', () => {
     /* ---------- hash not found ---------- */
     res = await eth_getTransactionReceipt(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
     expect(res.status).to.equal(200);
-    expect(res.data.error.code).to.equal(6969);
-    expect(res.data.error.message).to.contain('transaction hash not found');
+    expect(res.data.result).to.equal(null);
   });
 });
 
@@ -333,7 +332,7 @@ describe('eth_getTransactionByHash', () => {
     expect(res.data.result.hash).to.equal(tx3.transactionHash);
   });
 
-  it('return correct error code and messge', async () => {
+  it('return correct error or null', async () => {
     let res;
 
     /* ---------- invalid hex address ---------- */
@@ -345,8 +344,7 @@ describe('eth_getTransactionByHash', () => {
     /* ---------- hash not found ---------- */
     res = await eth_getTransactionByHash(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
     expect(res.status).to.equal(200);
-    expect(res.data.error.code).to.equal(6969);
-    expect(res.data.error.message).to.contain('transaction hash not found');
+    expect(res.data.result).to.equal(null);
   });
 });
 
@@ -480,7 +478,7 @@ describe('eth_sendRawTransaction', () => {
 
     describe('with EIP-712 signature', () => {
       it('serialize, parse, and send tx correctly', async () => {
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -597,7 +595,7 @@ describe('eth_sendRawTransaction', () => {
         const balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
-        const gasLimit = BigNumber.from('0x030dcf');
+        const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
 
@@ -732,7 +730,7 @@ describe('eth_sendRawTransaction', () => {
       it.skip('has correct balance after transfer', async () => {
         // const balance1 = await queryBalance(account1.evmAddress);
         // const balance2 = await queryBalance(account2.evmAddress);
-        // const gasLimit = BigNumber.from('0x030dcf');
+        // const gasLimit = BigNumber.from('210000');
         // const validUntil = 10000;
         // const storageLimit = 100000;
         // const transferTX: AcalaEvmTX = {
@@ -843,7 +841,7 @@ describe('eth_getEthGas', () => {
       eth_getEthGas([{ gasLimit, storageLimit, validUntil }]),
       eth_getEthGas([{ gasLimit, validUntil }]),
       eth_getEthGas([{ storageLimit, validUntil }]),
-      eth_getEthGas([{ validUntil }]),
+      eth_getEthGas([{ validUntil }])
     ]);
 
     for (const res of defaultResults1) {
@@ -855,16 +853,23 @@ describe('eth_getEthGas', () => {
 
     // correspond to validUntil = curBlock + 150
     const curBlock = parseInt((await eth_blockNumber()).data.result, 16);
-    const expectedGasPrice = parseInt((await eth_getEthGas([{
-      validUntil: curBlock + 150,
-    }])).data.result.gasPrice, 16);
+    const expectedGasPrice = parseInt(
+      (
+        await eth_getEthGas([
+          {
+            validUntil: curBlock + 150
+          }
+        ])
+      ).data.result.gasPrice,
+      16
+    );
 
     const defaultResults2 = await Promise.all([
       eth_getEthGas([{ gasLimit }]),
       eth_getEthGas([{ storageLimit }]),
       eth_getEthGas([{ gasLimit, storageLimit }]),
       eth_getEthGas([{}]),
-      eth_getEthGas([]),
+      eth_getEthGas([])
     ]);
 
     for (const res of defaultResults2) {
@@ -899,15 +904,12 @@ describe('eth_getCode', () => {
   const eth_getCode = rpcGet('eth_getCode');
 
   const preCompileAddresses = [
-    '0x0000000000000000000100000000000000000001',   // AUSD
-    '0x0000000000000000000200000000000000000001',   // LP_ACA_AUSD
-    '0x0000000000000000000000000000000000000804',   // DEX
+    '0x0000000000000000000100000000000000000001', // AUSD
+    '0x0000000000000000000200000000000000000001', // LP_ACA_AUSD
+    '0x0000000000000000000000000000000000000803' // DEX
   ];
 
-  const tags = [
-    'latest',
-    'earliest',
-  ];
+  const tags = ['latest', 'earliest'];
 
   it('get correct precompile token code', async () => {
     for (const addr of preCompileAddresses) {
@@ -918,8 +920,7 @@ describe('eth_getCode', () => {
     }
   });
 
-  it.skip('get correct user deployed contract code', async () => {
-  });
+  it.skip('get correct user deployed contract code', async () => {});
 
   it('returns empty for pending tag or non-exist contract address', async () => {
     const randAddr = '0x1ebEc3D7fd088d9eE4B6d8272788f028e5122218';
