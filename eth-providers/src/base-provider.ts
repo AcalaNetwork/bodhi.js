@@ -66,18 +66,21 @@ import {
   filterLog,
   findEvmEvent,
   getEvmExtrinsicIndexes,
+  getHealthResult,
   getPartialTransactionReceipt,
   getTransactionIndexAndHash,
+  HealthResult,
   hexlifyRpcResult,
   isEVMExtrinsic,
   logger,
   PROVIDER_ERRORS,
   runWithRetries,
+  runWithTiming,
   sendTx,
   throwNotImplemented
 } from './utils';
-import { BlockCache } from './utils/BlockCache';
-import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
+import { BlockCache, CacheInspect } from './utils/BlockCache';
+import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
@@ -214,6 +217,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _network?: Promise<Network>;
   _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
+  latestFinalizedBlockNumber: number | undefined;
 
   constructor({
     safeMode = false,
@@ -231,6 +235,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
+    this.latestFinalizedBlockNumber = undefined;
 
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
@@ -303,8 +308,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
       const blockNumber = header.number.toNumber();
+      this.latestFinalizedBlockNumber = blockNumber;
 
-      // safe mode related
+      // safe mode only, if useful in the future, can remove this if condition
       if (this.safeMode) {
         const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
         this.latestFinalizedBlockHash = blockHash;
@@ -323,7 +329,7 @@ export abstract class BaseProvider extends AbstractProvider {
     module: `${string}.${string}`,
     args: any[],
     _blockTag?: BlockTag | Promise<BlockTag>
-  ) => {
+  ): Promise<T> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const blockHash = await this._getBlockHash(blockTag);
 
@@ -1805,11 +1811,64 @@ export abstract class BaseProvider extends AbstractProvider {
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
-  getIndexerMetadata = async (): Promise<any> => {
-    return this.subql?.getIndexerMetadata();
+  getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
+    try {
+      return await this.subql?.getIndexerMetadata();
+    } catch (error) {
+      // TODO: after https://github.com/AcalaNetwork/bodhi.js/issues/320 we can remove this try catch
+      return undefined;
+    }
   };
 
-  getUnfinalizedCachInfo = (): any => this._cache?._inspect() || 'no cache running!';
+  getUnfinalizedCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
+
+  _timeEthCalls = async (): Promise<{
+    gasPriceTime: number;
+    estimateGasTime: number;
+    getBlockTime: number;
+    getFullBlockTime: number;
+  }> => {
+    const gasPricePromise = runWithTiming(async () => this.getGasPrice());
+    const estimateGasPromise = runWithTiming(async () =>
+      this.estimateGas({
+        from: '0xe3234f433914d4cfcf846491ec5a7831ab9f0bb3',
+        value: '0x0',
+        gasPrice: '0x2f0276000a',
+        data: '0x',
+        to: '0x22293227a254a481883ca5e823023633308cb9ca'
+      })
+    );
+
+    // ideally randBlockNumber should have EVM TX
+    const randBlockNumber = Math.floor(Math.random() * this.latestFinalizedBlockNumber!);
+    const getBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, false));
+    const getFullBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, true));
+
+    const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
+      await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])
+    ).map((res) => Math.floor(res.time));
+
+    return {
+      gasPriceTime,
+      estimateGasTime,
+      getBlockTime,
+      getFullBlockTime
+    };
+  };
+
+  healthCheck = async (): Promise<HealthResult> => {
+    const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
+
+    const cacheInfo = this.getUnfinalizedCachInfo();
+    const curFinalizedHeight = this.latestFinalizedBlockNumber!;
+
+    return getHealthResult({
+      indexerMeta,
+      cacheInfo,
+      curFinalizedHeight,
+      ethCallTiming
+    });
+  };
 
   // ENS
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
