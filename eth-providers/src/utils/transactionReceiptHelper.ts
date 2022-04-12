@@ -92,7 +92,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
-        contractAddress: evmAddress.toString(),
+        contractAddress: undefined,
         gasUsed: BigNumber.from(used_gas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 1,
