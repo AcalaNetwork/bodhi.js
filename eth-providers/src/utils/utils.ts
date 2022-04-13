@@ -75,9 +75,8 @@ export const getHealthResult = ({
   indexerMeta,
   cacheInfo,
   curFinalizedHeight,
-  ethCallTiming
+  ethCallTiming,
 }: HealthData): HealthResult => {
-  const MAX_STORAGE_CACHE_SIZE = 1000;
   const MAX_IDLE_TIME = 30 * 60; // half an hour
   const MAX_IDLE_BLOCKS = 50; // ~10 minutes
   const ETH_CALL_MAX_TIME = 5000; // 5 seconds
@@ -173,6 +172,7 @@ export const getHealthResult = ({
   };
 };
 
+const TIME_OUT = 20000;   // 20s
 export const runWithTiming = async <F extends AnyFunction>(
   fn: F,
   repeats: number = 3
@@ -182,19 +182,37 @@ export const runWithTiming = async <F extends AnyFunction>(
 }> => {
   let res = null;
   const t0 = performance.now();
+  let runningErr = false;
+  let timedout = false;
 
   try {
     for (let i = 0; i < repeats; i++) {
-      res = await fn();
+      res = await Promise.race([
+        fn(),
+        sleep(TIME_OUT),
+      ]);
+
+      // fn should always return something
+      if (res === null) {
+        res = `error in runWithTiming: timeout after ${TIME_OUT / 1000} seconds`;
+        timedout = true;
+        break;
+      }
     }
   } catch (e) {
-    res = `error in runWithTiming: ${JSON.stringify(e)}`;
+    res = `error in runWithTiming: ${(e as any).toString()}`;
+    runningErr = true;
   }
 
   const t1 = performance.now();
+  const time = runningErr
+    ? -1
+    : timedout
+      ? -999
+      : (t1 - t0) / repeats;
 
   return {
     res,
-    time: (t1 - t0) / repeats
+    time,
   };
 };
