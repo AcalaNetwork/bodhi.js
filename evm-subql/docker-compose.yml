@@ -46,7 +46,7 @@ services:
     command:
       - -f=/app
       - --network-endpoint=ws://mandala-node:9944
-      - --subquery-name=acala-evm
+      - --db-schema=acala-evm
       - --log-level=debug
 
   graphql-engine:
