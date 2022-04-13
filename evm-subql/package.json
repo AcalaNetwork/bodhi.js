@@ -9,7 +9,7 @@
     "prepack": "rm -rf dist && npm build",
     "codegen": "./node_modules/.bin/subql codegen",
     "test": "echo",
-    "index": "yarn subql-node -f . --local --batch-size 200 --subquery-name=acala-evm  --port 3030",
+    "index": "yarn subql-node -f . --local --batch-size 200  --db-schema acala-evm --port 3030",
     "query": "PORT=3001 yarn subql-query --name acala-evm --playground --indexer=http://localhost:3030 --debug"
   },
   "homepage": "https://github.com/subquery/subql-starter",
