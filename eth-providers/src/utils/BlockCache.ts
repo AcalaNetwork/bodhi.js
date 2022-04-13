@@ -1,9 +1,17 @@
-interface HashToBlockMap {
+export interface HashToBlockMap {
   [hash: string]: number;
 }
 
-interface BlockToHashesMap {
+export interface BlockToHashesMap {
   [block: string]: string[];
+}
+
+export interface CacheInspect {
+  extraBlockCount: number;
+  cachedBlocksCount: number;
+  cachedBlocks: string[];
+  allBlockToHash: Record<string, string[]>;
+  allHashToBlock: Record<string, number>;
 }
 
 export class BlockCache {
@@ -32,7 +40,7 @@ export class BlockCache {
     return this.allTxHashes[hash];
   }
 
-  _inspect = (): any => ({
+  _inspect = (): CacheInspect => ({
     extraBlockCount: this.extraBlockCount,
     cachedBlocksCount: Object.keys(this.blockTxHashes).length,
     cachedBlocks: Object.keys(this.blockTxHashes),

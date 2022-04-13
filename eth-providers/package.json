@@ -58,6 +58,9 @@
     "ts-node": "~10.3.0",
     "chai-as-promised": "~7.1.1",
     "sinon-chai": "~3.7.0",
-    "sinon": "~13.0.1"
+    "sinon": "~13.0.1",
+    "@sinonjs/fake-timers": "~9.1.1",
+    "@types/sinonjs__fake-timers": "~8.1.2",
+    "chai-subset": "~1.6.0"
   }
 }
