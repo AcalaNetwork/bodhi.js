@@ -26,77 +26,25 @@ describe('BlockCache', () => {
   });
 
   describe('add block', () => {
-    it('correctly find cached transactions', () => {
-      chain.forEach((transactions, idx) => {
-        cache.addTxsAtBlock(idx, transactions);
+    it('correctly find cached transactions, and prune old blocks', () => {
+      chain.forEach((transactions, latestBlockNumber) => {
+        cache.addTxsAtBlock(latestBlockNumber, transactions);
 
+        const firstBlockInCache = Math.max(0, latestBlockNumber - EXTRA_BLOCK_COUNT + 1);
+        /* ---------- test inspect ---------- */
         const { cachedBlocks } = cache._inspect();
-        expect(Number(cachedBlocks[0])).to.equal(0);
-        expect(Number(cachedBlocks[cachedBlocks.length - 1])).to.equal(idx);
-      });
+        expect(parseInt(cachedBlocks[0])).to.equal(firstBlockInCache);
+        expect(parseInt(cachedBlocks[cachedBlocks.length - 1])).to.equal(latestBlockNumber);
 
-      for (let blockNumber = 0; blockNumber < TOTAL_BLOCKS; blockNumber++) {
-        for (const curTx of chain[blockNumber]) {
-          expect(cache.getBlockNumber(curTx)).to.equal(blockNumber);
-        }
-      }
-    });
-  });
+        /* ---------- test getBlockNumber ---------- */
+        for (let blockNumber = 0; blockNumber < TOTAL_BLOCKS; blockNumber++) {
+          const isBlockInCache = blockNumber >= firstBlockInCache && blockNumber <= latestBlockNumber;
 
-  describe('update finalized block', () => {
-    it('correctly remove tx from the (finalized - extra cached) block', () => {
-      chain.forEach((transactions, idx) => cache.addTxsAtBlock(idx, transactions));
-
-      for (let blockNumber = 0; blockNumber < TOTAL_BLOCKS; blockNumber++) {
-        const blockToRemove = blockNumber - EXTRA_BLOCK_COUNT;
-        if (blockToRemove < 0) continue;
-
-        const curRemovingBlock = chain[blockToRemove];
-        cache.handleFinalizedBlock(blockNumber);
-
-        // these tx from finalized block should be removed
-        for (const curTx of curRemovingBlock) {
-          expect(cache.getBlockNumber(curTx)).to.equal(undefined);
-        }
-
-        // these tx from unfinalized block should still be there
-        // ufbn => unfinalizeBlockNumber
-        for (let ufbn = blockToRemove + 1; ufbn < TOTAL_BLOCKS; ufbn++) {
-          for (const tx of chain[ufbn]) {
-            expect(cache.getBlockNumber(tx)).to.equal(ufbn);
+          for (const curTx of chain[blockNumber]) {
+            expect(cache.getBlockNumber(curTx)).to.equal(isBlockInCache ? blockNumber : undefined);
           }
         }
-
-        const { cachedBlocks } = cache._inspect();
-        expect(Number(cachedBlocks[0])).to.equal(blockNumber - EXTRA_BLOCK_COUNT + 1);
-        expect(Number(cachedBlocks[cachedBlocks.length - 1])).to.equal(TOTAL_BLOCKS - 1);
-      }
-    });
-  });
-
-  describe('prune', () => {
-    it('correctly remove all data before (finalized - extra cached) block', () => {
-      chain.forEach((transactions, idx) => cache.addTxsAtBlock(idx, transactions));
-
-      expect(Object.keys(cache.blockToHashes).length).to.equal(TOTAL_BLOCKS);
-      cache.prune();
-      expect(Object.keys(cache.blockToHashes).length).to.equal(EXTRA_BLOCK_COUNT);
-
-      const pruneStart = TOTAL_BLOCKS - EXTRA_BLOCK_COUNT;
-
-      // these tx from finalized block should be removed
-      for (let i = 0; i < pruneStart; i++) {
-        for (const tx of chain[i]) {
-          expect(cache.getBlockNumber(tx)).to.equal(undefined);
-        }
-      }
-
-      // these tx from unfinalized block should still be there
-      for (let j = pruneStart; j < TOTAL_BLOCKS; j++) {
-        for (const tx of chain[j]) {
-          expect(cache.getBlockNumber(tx)).to.equal(j);
-        }
-      }
+      });
     });
   });
 });

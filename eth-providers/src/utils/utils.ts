@@ -88,7 +88,7 @@ export const getHealthResult = ({
   const msg = [];
 
   /* --------------- cache --------------- */
-  const extraBlockCount = cacheInfo?.extraBlockCount || 0;
+  const maxCachedBlocks = cacheInfo?.maxCachedBlocks || 0;
   let cachedBlocksCount = 0;
   if (!cacheInfo) {
     msg.push('no cache running!');
@@ -98,8 +98,8 @@ export const getHealthResult = ({
     cachedBlocksCount = cacheInfo.cachedBlocksCount;
 
     // only care if at least 1000
-    if (cachedBlocksCount > Math.max(1000, Math.floor(extraBlockCount * 1.3))) {
-      msg.push(`cached blocks size is bigger than expected: ${cachedBlocksCount}, expect at most ~${extraBlockCount}`);
+    if (cachedBlocksCount > Math.max(1000, Math.floor(maxCachedBlocks * 1.3))) {
+      msg.push(`cached blocks size is bigger than expected: ${cachedBlocksCount}, expect at most ~${maxCachedBlocks}`);
       isHealthy = false;
       isCacheOK = false;
     }
@@ -171,7 +171,7 @@ export const getHealthResult = ({
     moreInfo: {
       // cache
       cachedBlocksCount,
-      maxCachedBlocksCount: extraBlockCount,
+      maxCachedBlocksCount: maxCachedBlocks,
       // subql
       lastProcessedHeight,
       targetHeight,

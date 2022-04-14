@@ -7,7 +7,7 @@ export interface BlockToHashesMap {
 }
 
 export interface CacheInspect {
-  extraBlockCount: number;
+  maxCachedBlocks: number;
   cachedBlocksCount: number;
   cachedBlocks: string[];
   allBlockToHash: Record<string, string[]>;
@@ -17,47 +17,38 @@ export interface CacheInspect {
 export class BlockCache {
   blockToHashes: BlockToHashesMap;
   hashToBlocks: HashToBlockMap;
-  extraBlockCount: number;
+  maxCachedBlocks: number;
 
-  constructor(extraBlockCount: number = 200) {
+  constructor(maxCachedBlocks: number = 200) {
     this.blockToHashes = {};
     this.hashToBlocks = {};
-    this.extraBlockCount = extraBlockCount;
+    this.maxCachedBlocks = maxCachedBlocks;
   }
 
+  // automatically preserve a sliding window of ${maxCachedBlocks} blocks
   addTxsAtBlock(blockNumber: number, txHashes: string[]): void {
     txHashes.forEach((h) => (this.hashToBlocks[h] = blockNumber));
     this.blockToHashes[blockNumber] = txHashes;
+
+    const cachedBlocksCount = Object.keys(this.blockToHashes).length;
+    if (cachedBlocksCount > this.maxCachedBlocks) {
+      const blockToRemove = blockNumber - this.maxCachedBlocks;
+      this._removeBlock(blockToRemove);
+    }
   }
 
+  // if block exist in cache, remove it, otherwise do nothing
   _removeBlock(blockToRemove: number): void {
     this.blockToHashes[blockToRemove]?.forEach((h) => delete this.hashToBlocks[h]);
     delete this.blockToHashes[blockToRemove];
-  }
-
-  handleFinalizedBlock(blockNumber: number): void {
-    const blockToRemove = blockNumber - this.extraBlockCount;
-    this._removeBlock(blockToRemove);
   }
 
   getBlockNumber(hash: string): number | undefined {
     return this.hashToBlocks[hash];
   }
 
-  // prune all data except latest ${extraBlockCount} records
-  prune(): void {
-    const cachedBlocks = Object.keys(this.blockToHashes);
-    if (cachedBlocks.length <= this.extraBlockCount) return;
-
-    const latestBlock = parseInt(cachedBlocks[cachedBlocks.length - 1]);
-    const pruneStartBlock = latestBlock - this.extraBlockCount;
-    const pruneBlocks = cachedBlocks.filter((blockNumber) => parseInt(blockNumber) <= pruneStartBlock);
-
-    pruneBlocks.forEach((block) => this._removeBlock(Number(block)));
-  }
-
   _inspect = (): CacheInspect => ({
-    extraBlockCount: this.extraBlockCount,
+    maxCachedBlocks: this.maxCachedBlocks,
     cachedBlocksCount: Object.keys(this.blockToHashes).length,
     cachedBlocks: Object.keys(this.blockToHashes),
     allBlockToHash: this.blockToHashes,

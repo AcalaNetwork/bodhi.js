@@ -144,10 +144,10 @@ describe('getHealthResult', () => {
     targetHeight
   };
 
-  const extraBlockCount = 200;
+  const maxCachedBlocks = 200;
   const cachedBlocksCount = 196;
   const cacheInfo: Partial<CacheInspect> = {
-    extraBlockCount,
+    maxCachedBlocks,
     cachedBlocksCount
   };
 
@@ -172,7 +172,7 @@ describe('getHealthResult', () => {
     msg: [],
     moreInfo: {
       cachedBlocksCount,
-      maxCachedBlocksCount: extraBlockCount,
+      maxCachedBlocksCount: maxCachedBlocks,
       // subql
       lastProcessedHeight,
       targetHeight,
@@ -219,7 +219,7 @@ describe('getHealthResult', () => {
         isSubqlOK: false,
         moreInfo: {
           ...healthResult.moreInfo,
-          maxCachedBlocksCount: extraBlockCount,
+          maxCachedBlocksCount: maxCachedBlocks,
           lastProcessedHeight: lastProcessedHeightBad,
           lastProcessedTimestamp: lastProcessedTimestampBad,
           idleBlocks: curFinalizedHeight - lastProcessedHeightBad
@@ -246,7 +246,7 @@ describe('getHealthResult', () => {
         isHealthy: false,
         isCacheOK: false,
         msg: [
-          `cached blocks size is bigger than expected: ${cachedBlocksCountBad}, expect at most ~${extraBlockCount}`
+          `cached blocks size is bigger than expected: ${cachedBlocksCountBad}, expect at most ~${maxCachedBlocks}`
         ],
         moreInfo: {
           ...healthResult.moreInfo,

@@ -269,9 +269,6 @@ export abstract class BaseProvider extends AbstractProvider {
       const txHashes = await this._getTxHashesAtBlock(blockHash);
 
       this._cache!.addTxsAtBlock(blockNumber, txHashes);
-      if (blockNumber % 1000 === 0) {
-        this._cache!.prune(); // do an extra prune every 1000 blocks
-      }
 
       // eth_subscribe
       // TODO: can do some optimizations
@@ -318,9 +315,6 @@ export abstract class BaseProvider extends AbstractProvider {
         const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
         this.latestFinalizedBlockHash = blockHash;
       }
-
-      // cache related
-      this._cache!.handleFinalizedBlock(blockNumber);
     }) as unknown as void;
   };
 
