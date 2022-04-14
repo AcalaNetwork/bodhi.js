@@ -243,7 +243,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
     } else {
-      logger.warn(`no subql url provided`);
+      logger.warn(`no subql url provided, which is fine if you don't need it`);
     }
   }
 
@@ -1679,21 +1679,17 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
-    try {
-      const txFromCache = await this._getTxReceiptFromCache(txHash);
-      if (txFromCache) return txFromCache;
+    const txFromCache = await this._getTxReceiptFromCache(txHash);
+    if (txFromCache) return txFromCache;
 
-      const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-      const res = txFromSubql || null;
-      if (res) {
-        res.blockNumber = +res.blockNumber;
-        res.transactionIndex = +res.transactionIndex;
-        res.gasUsed = BigNumber.from(res.gasUsed);
-      }
-      return res;
-    } catch {
-      return null;
+    const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
+    const res = txFromSubql || null;
+    if (res) {
+      res.blockNumber = +res.blockNumber;
+      res.transactionIndex = +res.transactionIndex;
+      res.gasUsed = BigNumber.from(res.gasUsed);
     }
+    return res;
   };
 
   // Queries
@@ -1812,12 +1808,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
-    try {
-      return await this.subql?.getIndexerMetadata();
-    } catch (error) {
-      // TODO: after https://github.com/AcalaNetwork/bodhi.js/issues/320 we can remove this try catch
-      return undefined;
-    }
+    return await this.subql?.getIndexerMetadata();
   };
 
   getUnfinalizedCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
