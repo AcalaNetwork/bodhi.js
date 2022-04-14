@@ -1159,16 +1159,12 @@ export abstract class BaseProvider extends AbstractProvider {
       }
 
       if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
-        logger.throwError(
-          `bad substrate gas params caused by invalid gasLimit/gasPrice combination provided. ${err_help_msg}`,
-          Logger.errors.INVALID_ARGUMENT,
-          {
-            ..._getErrInfo(),
-            gasLimit,
-            validUntil,
-            storageLimit
-          }
-        );
+        logger.throwError(`bad substrate gas params caused by ${err_help_msg}`, Logger.errors.INVALID_ARGUMENT, {
+          ..._getErrInfo(),
+          gasLimit,
+          validUntil,
+          storageLimit
+        });
       }
     } else if (ethTx.type === 1) {
       // EIP-2930 transaction
