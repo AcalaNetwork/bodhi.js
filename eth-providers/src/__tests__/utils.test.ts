@@ -164,6 +164,27 @@ describe('getHealthResult', () => {
     getFullBlockTime
   };
 
+  const healthResult = {
+    isHealthy: true,
+    isSubqlOK: true,
+    isCacheOK: true,
+    isRPCOK: true,
+    msg: [],
+    moreInfo: {
+      cachedBlocksCount,
+      maxCachedBlocksCount: extraBlockCount,
+      // subql
+      lastProcessedHeight,
+      targetHeight,
+      curFinalizedHeight,
+      lastProcessedTimestamp,
+      idleBlocks: curFinalizedHeight - lastProcessedHeight,
+      indexerHealthy,
+      // RPC
+      ethCallTiming
+    }
+  };
+
   it('return correct healthy data when healthy', () => {
     const res = getHealthResult({
       indexerMeta,
@@ -173,26 +194,7 @@ describe('getHealthResult', () => {
     });
 
     // console.log(res)
-    expect(res).containSubset({
-      isHealthy: true,
-      isSubqlOK: true,
-      isCacheOK: true,
-      isRPCOK: true,
-      msg: [],
-      moreInfo: {
-        cachedBlocksCount,
-        maxCachedBlocksCount: extraBlockCount,
-        // subql
-        lastProcessedHeight,
-        targetHeight,
-        curFinalizedHeight,
-        lastProcessedTimestamp,
-        idleBlocks: curFinalizedHeight - lastProcessedHeight,
-        indexerHealthy,
-        // RPC
-        ethCallTiming
-      }
-    });
+    expect(res).containSubset(healthResult);
   });
 
   describe('return correct error when unhealthy', () => {
@@ -212,22 +214,15 @@ describe('getHealthResult', () => {
       });
 
       expect(res).containSubset({
+        ...healthResult,
         isHealthy: false,
         isSubqlOK: false,
-        isCacheOK: true,
-        isRPCOK: true,
         moreInfo: {
-          cachedBlocksCount,
+          ...healthResult.moreInfo,
           maxCachedBlocksCount: extraBlockCount,
-          // subql
           lastProcessedHeight: lastProcessedHeightBad,
-          targetHeight,
-          curFinalizedHeight,
           lastProcessedTimestamp: lastProcessedTimestampBad,
-          idleBlocks: curFinalizedHeight - lastProcessedHeightBad,
-          indexerHealthy,
-          // RPC
-          ethCallTiming
+          idleBlocks: curFinalizedHeight - lastProcessedHeightBad
         }
       });
 
@@ -247,25 +242,15 @@ describe('getHealthResult', () => {
       });
 
       expect(res).containSubset({
+        ...healthResult,
         isHealthy: false,
-        isSubqlOK: true,
         isCacheOK: false,
-        isRPCOK: true,
         msg: [
           `cached blocks size is bigger than expected: ${cachedBlocksCountBad}, expect at most ~${extraBlockCount}`
         ],
         moreInfo: {
-          cachedBlocksCount: cachedBlocksCountBad,
-          maxCachedBlocksCount: extraBlockCount,
-          // subql
-          lastProcessedHeight,
-          targetHeight,
-          curFinalizedHeight,
-          lastProcessedTimestamp,
-          idleBlocks: curFinalizedHeight - lastProcessedHeight,
-          indexerHealthy,
-          // RPC
-          ethCallTiming
+          ...healthResult.moreInfo,
+          cachedBlocksCount: cachedBlocksCountBad
         }
       });
     });
@@ -283,9 +268,8 @@ describe('getHealthResult', () => {
       });
 
       expect(res).containSubset({
+        ...healthResult,
         isHealthy: false,
-        isSubqlOK: true,
-        isCacheOK: true,
         isRPCOK: false,
         msg: [
           `an RPC is getting slow, takes more than 5 seconds to complete internally. All timings: ${JSON.stringify(
@@ -293,16 +277,7 @@ describe('getHealthResult', () => {
           )}`
         ],
         moreInfo: {
-          cachedBlocksCount,
-          maxCachedBlocksCount: extraBlockCount,
-          // subql
-          lastProcessedHeight,
-          targetHeight,
-          curFinalizedHeight,
-          lastProcessedTimestamp,
-          idleBlocks: curFinalizedHeight - lastProcessedHeight,
-          indexerHealthy,
-          // RPC
+          ...healthResult.moreInfo,
           ethCallTiming: ethCallTimingBad
         }
       });
@@ -321,22 +296,12 @@ describe('getHealthResult', () => {
       });
 
       expect(res).containSubset({
+        ...healthResult,
         isHealthy: false,
-        isSubqlOK: true,
-        isCacheOK: true,
         isRPCOK: false,
         msg: [`an RPC is getting running errors. All timings: ${JSON.stringify(ethCallTimingBad)}`],
         moreInfo: {
-          cachedBlocksCount,
-          maxCachedBlocksCount: extraBlockCount,
-          // subql
-          lastProcessedHeight,
-          targetHeight,
-          curFinalizedHeight,
-          lastProcessedTimestamp,
-          idleBlocks: curFinalizedHeight - lastProcessedHeight,
-          indexerHealthy,
-          // RPC
+          ...healthResult.moreInfo,
           ethCallTiming: ethCallTimingBad
         }
       });
@@ -355,22 +320,12 @@ describe('getHealthResult', () => {
       });
 
       expect(res).containSubset({
+        ...healthResult,
         isHealthy: false,
-        isSubqlOK: true,
-        isCacheOK: true,
         isRPCOK: false,
         msg: [`an RPC is getting timeouts. All timings: ${JSON.stringify(ethCallTimingBad)}`],
         moreInfo: {
-          cachedBlocksCount,
-          maxCachedBlocksCount: extraBlockCount,
-          // subql
-          lastProcessedHeight,
-          targetHeight,
-          curFinalizedHeight,
-          lastProcessedTimestamp,
-          idleBlocks: curFinalizedHeight - lastProcessedHeight,
-          indexerHealthy,
-          // RPC
+          ...healthResult.moreInfo,
           ethCallTiming: ethCallTimingBad
         }
       });
