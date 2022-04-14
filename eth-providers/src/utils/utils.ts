@@ -97,7 +97,8 @@ export const getHealthResult = ({
   } else {
     cachedBlocksCount = cacheInfo.cachedBlocksCount;
 
-    if (cachedBlocksCount > Math.min(1000, Math.floor(extraBlockCount * 1.3))) {
+    // only care if at least 1000
+    if (cachedBlocksCount > Math.max(1000, Math.floor(extraBlockCount * 1.3))) {
       msg.push(`cached blocks size is bigger than expected: ${cachedBlocksCount}, expect at most ~${extraBlockCount}`);
       isHealthy = false;
       isCacheOK = false;
