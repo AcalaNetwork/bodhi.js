@@ -1137,6 +1137,9 @@ export abstract class BaseProvider extends AbstractProvider {
         storageDepositPerByte
       });
 
+      const err_help_msg =
+        'invalid ETH gasLimit/gasPrice combination provided. Please DO NOT change gasLimit/gasPrice in metamask when sending token, if you are deploying contract, DO NOT provide random gasLimit/gasPrice, please check out our doc for how to compute gas, easiest way is to call eth_getEthGas directly';
+
       try {
         const params = calcSubstrateTransactionParams({
           txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
@@ -1151,7 +1154,7 @@ export abstract class BaseProvider extends AbstractProvider {
         tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
       } catch {
         logger.throwError(
-          'calculating substrate gas failed: invalid ETH gasLimit/gasPrice combination provided',
+          `calculating substrate gas failed: ${err_help_msg}`,
           Logger.errors.INVALID_ARGUMENT,
           _getErrInfo()
         );
@@ -1159,7 +1162,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
       if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
         logger.throwError(
-          'substrate gasLimit, gasPrice, storageLimit should all be greater than 0',
+          `bad substrate gas params caused by invalid gasLimit/gasPrice combination provided. ${err_help_msg}`,
           Logger.errors.INVALID_ARGUMENT,
           {
             ..._getErrInfo(),
