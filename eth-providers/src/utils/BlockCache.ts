@@ -15,36 +15,52 @@ export interface CacheInspect {
 }
 
 export class BlockCache {
-  blockTxHashes: BlockToHashesMap;
-  allTxHashes: HashToBlockMap;
+  blockToHashes: BlockToHashesMap;
+  hashToBlocks: HashToBlockMap;
   extraBlockCount: number;
 
-  constructor(extraBlockCount: number = 10) {
-    this.blockTxHashes = {};
-    this.allTxHashes = {};
+  constructor(extraBlockCount: number = 200) {
+    this.blockToHashes = {};
+    this.hashToBlocks = {};
     this.extraBlockCount = extraBlockCount;
   }
 
   addTxsAtBlock(blockNumber: number, txHashes: string[]): void {
-    txHashes.forEach((h) => (this.allTxHashes[h] = blockNumber));
-    this.blockTxHashes[blockNumber] = txHashes;
+    txHashes.forEach((h) => (this.hashToBlocks[h] = blockNumber));
+    this.blockToHashes[blockNumber] = txHashes;
+  }
+
+  _removeBlock(blockToRemove: number): void {
+    this.blockToHashes[blockToRemove]?.forEach((h) => delete this.hashToBlocks[h]);
+    delete this.blockToHashes[blockToRemove];
   }
 
   handleFinalizedBlock(blockNumber: number): void {
     const blockToRemove = blockNumber - this.extraBlockCount;
-    this.blockTxHashes[blockToRemove]?.forEach((h) => delete this.allTxHashes[h]);
-    delete this.blockTxHashes[blockToRemove];
+    this._removeBlock(blockToRemove);
   }
 
   getBlockNumber(hash: string): number | undefined {
-    return this.allTxHashes[hash];
+    return this.hashToBlocks[hash];
+  }
+
+  // prune all data except latest ${extraBlockCount} records
+  prune(): void {
+    const cachedBlocks = Object.keys(this.blockToHashes);
+    if (cachedBlocks.length <= this.extraBlockCount) return;
+
+    const latestBlock = parseInt(cachedBlocks[cachedBlocks.length - 1]);
+    const pruneStartBlock = latestBlock - this.extraBlockCount;
+    const pruneBlocks = cachedBlocks.filter((blockNumber) => parseInt(blockNumber) <= pruneStartBlock);
+
+    pruneBlocks.forEach((block) => this._removeBlock(Number(block)));
   }
 
   _inspect = (): CacheInspect => ({
     extraBlockCount: this.extraBlockCount,
-    cachedBlocksCount: Object.keys(this.blockTxHashes).length,
-    cachedBlocks: Object.keys(this.blockTxHashes),
-    allBlockToHash: this.blockTxHashes,
-    allHashToBlock: this.allTxHashes
+    cachedBlocksCount: Object.keys(this.blockToHashes).length,
+    cachedBlocks: Object.keys(this.blockToHashes),
+    allBlockToHash: this.blockToHashes,
+    allHashToBlock: this.hashToBlocks
   });
 }

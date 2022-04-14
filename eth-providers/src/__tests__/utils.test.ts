@@ -270,7 +270,7 @@ describe('getHealthResult', () => {
       });
     });
 
-    it('when RPC unhealthy', () => {
+    it('when RPC becomes slow', () => {
       const ethCallTimingBad = {
         ...ethCallTiming,
         getFullBlockTime: 23000
@@ -288,10 +288,78 @@ describe('getHealthResult', () => {
         isCacheOK: true,
         isRPCOK: false,
         msg: [
-          `RPC is getting slow, takes more than 5 seconds to complete internally. All timings: ${JSON.stringify(
+          `an RPC is getting slow, takes more than 5 seconds to complete internally. All timings: ${JSON.stringify(
             ethCallTimingBad
           )}`
         ],
+        moreInfo: {
+          cachedBlocksCount,
+          maxCachedBlocksCount: extraBlockCount,
+          // subql
+          lastProcessedHeight,
+          targetHeight,
+          curFinalizedHeight,
+          lastProcessedTimestamp,
+          idleBlocks: curFinalizedHeight - lastProcessedHeight,
+          indexerHealthy,
+          // RPC
+          ethCallTiming: ethCallTimingBad
+        }
+      });
+    });
+
+    it('when RPC has running error', () => {
+      const ethCallTimingBad = {
+        ...ethCallTiming,
+        getFullBlockTime: -1
+      };
+      const res = getHealthResult({
+        indexerMeta,
+        cacheInfo,
+        curFinalizedHeight,
+        ethCallTiming: ethCallTimingBad
+      });
+
+      expect(res).containSubset({
+        isHealthy: false,
+        isSubqlOK: true,
+        isCacheOK: true,
+        isRPCOK: false,
+        msg: [`an RPC is getting running errors. All timings: ${JSON.stringify(ethCallTimingBad)}`],
+        moreInfo: {
+          cachedBlocksCount,
+          maxCachedBlocksCount: extraBlockCount,
+          // subql
+          lastProcessedHeight,
+          targetHeight,
+          curFinalizedHeight,
+          lastProcessedTimestamp,
+          idleBlocks: curFinalizedHeight - lastProcessedHeight,
+          indexerHealthy,
+          // RPC
+          ethCallTiming: ethCallTimingBad
+        }
+      });
+    });
+
+    it('when RPC timeouts', () => {
+      const ethCallTimingBad = {
+        ...ethCallTiming,
+        getFullBlockTime: -999
+      };
+      const res = getHealthResult({
+        indexerMeta,
+        cacheInfo,
+        curFinalizedHeight,
+        ethCallTiming: ethCallTimingBad
+      });
+
+      expect(res).containSubset({
+        isHealthy: false,
+        isSubqlOK: true,
+        isCacheOK: true,
+        isRPCOK: false,
+        msg: [`an RPC is getting timeouts. All timings: ${JSON.stringify(ethCallTimingBad)}`],
         moreInfo: {
           cachedBlocksCount,
           maxCachedBlocksCount: extraBlockCount,

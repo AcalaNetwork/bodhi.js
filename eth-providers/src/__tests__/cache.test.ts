@@ -11,13 +11,17 @@ const mockChain = (blocksCount: number = 50): string[][] => Array.from({ length:
 describe('BlockCache', () => {
   const EXTRA_BLOCK_COUNT = 15;
   const TOTAL_BLOCKS = 80;
-  const cache = new BlockCache(EXTRA_BLOCK_COUNT);
   const chain = mockChain(TOTAL_BLOCKS);
+  let cache: BlockCache;
+
+  beforeEach(() => {
+    cache = new BlockCache(EXTRA_BLOCK_COUNT);
+  });
 
   describe('initialization', () => {
     it('initialize two empty map', () => {
-      expect(cache.blockTxHashes).to.deep.equal({});
-      expect(cache.allTxHashes).to.deep.equal({});
+      expect(cache.blockToHashes).to.deep.equal({});
+      expect(cache.hashToBlocks).to.deep.equal({});
     });
   });
 
@@ -66,6 +70,32 @@ describe('BlockCache', () => {
         const { cachedBlocks } = cache._inspect();
         expect(Number(cachedBlocks[0])).to.equal(blockNumber - EXTRA_BLOCK_COUNT + 1);
         expect(Number(cachedBlocks[cachedBlocks.length - 1])).to.equal(TOTAL_BLOCKS - 1);
+      }
+    });
+  });
+
+  describe('prune', () => {
+    it('correctly remove all data before (finalized - extra cached) block', () => {
+      chain.forEach((transactions, idx) => cache.addTxsAtBlock(idx, transactions));
+
+      expect(Object.keys(cache.blockToHashes).length).to.equal(TOTAL_BLOCKS);
+      cache.prune();
+      expect(Object.keys(cache.blockToHashes).length).to.equal(EXTRA_BLOCK_COUNT);
+
+      const pruneStart = TOTAL_BLOCKS - EXTRA_BLOCK_COUNT;
+
+      // these tx from finalized block should be removed
+      for (let i = 0; i < pruneStart; i++) {
+        for (const tx of chain[i]) {
+          expect(cache.getBlockNumber(tx)).to.equal(undefined);
+        }
+      }
+
+      // these tx from unfinalized block should still be there
+      for (let j = pruneStart; j < TOTAL_BLOCKS; j++) {
+        for (const tx of chain[j]) {
+          expect(cache.getBlockNumber(tx)).to.equal(j);
+        }
       }
     });
   });
