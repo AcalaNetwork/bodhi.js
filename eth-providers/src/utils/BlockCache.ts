@@ -32,8 +32,8 @@ export class BlockCache {
 
     const cachedBlocksCount = Object.keys(this.blockToHashes).length;
     if (cachedBlocksCount > this.maxCachedBlocks) {
-      const blockToRemove = blockNumber - this.maxCachedBlocks;
-      this._removeBlock(blockToRemove);
+      const blockToRemove = Object.keys(this.blockToHashes)[0]; // assume insert order
+      this._removeBlock(parseInt(blockToRemove));
     }
   }
 
