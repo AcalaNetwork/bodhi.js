@@ -230,7 +230,7 @@ describe('getHealthResult', () => {
     });
 
     it('when cache unhealthy', () => {
-      const cachedBlocksCountBad = cachedBlocksCount + 300;
+      const cachedBlocksCountBad = cachedBlocksCount + 1300;
       const res = getHealthResult({
         indexerMeta,
         cacheInfo: {
