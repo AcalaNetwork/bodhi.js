@@ -242,8 +242,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
-    } else {
-      logger.warn(`no subql url provided, which is fine if you don't need it`);
     }
   }
 
