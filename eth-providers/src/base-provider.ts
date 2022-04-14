@@ -315,9 +315,6 @@ export abstract class BaseProvider extends AbstractProvider {
         const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
         this.latestFinalizedBlockHash = blockHash;
       }
-
-      // cache related
-      this._cache!.handleFinalizedBlock(blockNumber);
     }) as unknown as void;
   };
 
@@ -1820,7 +1817,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  getUnfinalizedCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
+  getCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
 
   _timeEthCalls = async (): Promise<{
     gasPriceTime: number;
@@ -1859,7 +1856,7 @@ export abstract class BaseProvider extends AbstractProvider {
   healthCheck = async (): Promise<HealthResult> => {
     const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
 
-    const cacheInfo = this.getUnfinalizedCachInfo();
+    const cacheInfo = this.getCachInfo();
     const curFinalizedHeight = this.latestFinalizedBlockNumber!;
 
     return getHealthResult({

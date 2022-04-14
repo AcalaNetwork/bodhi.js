@@ -75,7 +75,7 @@ export const getHealthResult = ({
   indexerMeta,
   cacheInfo,
   curFinalizedHeight,
-  ethCallTiming,
+  ethCallTiming
 }: HealthData): HealthResult => {
   const MAX_IDLE_TIME = 30 * 60; // half an hour
   const MAX_IDLE_BLOCKS = 50; // ~10 minutes
@@ -88,7 +88,7 @@ export const getHealthResult = ({
   const msg = [];
 
   /* --------------- cache --------------- */
-  const extraBlockCount = cacheInfo?.extraBlockCount || 0;
+  const maxCachedBlocks = cacheInfo?.maxCachedBlocks || 0;
   let cachedBlocksCount = 0;
   if (!cacheInfo) {
     msg.push('no cache running!');
@@ -97,8 +97,9 @@ export const getHealthResult = ({
   } else {
     cachedBlocksCount = cacheInfo.cachedBlocksCount;
 
-    if (cachedBlocksCount > Math.floor(extraBlockCount * 1.3)) {
-      msg.push(`cached blocks size is bigger than expected: ${cachedBlocksCount}, expect at most ~${extraBlockCount}`);
+    // only care if at least 1000
+    if (cachedBlocksCount > Math.max(1000, Math.floor(maxCachedBlocks * 1.3))) {
+      msg.push(`cached blocks size is bigger than expected: ${cachedBlocksCount}, expect at most ~${maxCachedBlocks}`);
       isHealthy = false;
       isCacheOK = false;
     }
@@ -136,15 +137,29 @@ export const getHealthResult = ({
   }
 
   /* --------------- RPC --------------- */
-  if (Object.values(ethCallTiming).some((t) => t > ETH_CALL_MAX_TIME)) {
-    msg.push(
-      `RPC is getting slow, takes more than ${
-        ETH_CALL_MAX_TIME / 1000
-      } seconds to complete internally. All timings: ${JSON.stringify(ethCallTiming)}`
-    );
-    isHealthy = false;
-    isRPCOK = false;
-  }
+  Object.values(ethCallTiming).forEach((t) => {
+    if (t > ETH_CALL_MAX_TIME) {
+      msg.push(
+        `an RPC is getting slow, takes more than ${
+          ETH_CALL_MAX_TIME / 1000
+        } seconds to complete internally. All timings: ${JSON.stringify(ethCallTiming)}`
+      );
+      isHealthy = false;
+      isRPCOK = false;
+    }
+
+    if (t === -1) {
+      msg.push(`an RPC is getting running errors. All timings: ${JSON.stringify(ethCallTiming)}`);
+      isHealthy = false;
+      isRPCOK = false;
+    }
+
+    if (t === -999) {
+      msg.push(`an RPC is getting timeouts. All timings: ${JSON.stringify(ethCallTiming)}`);
+      isHealthy = false;
+      isRPCOK = false;
+    }
+  });
 
   /* --------------- result --------------- */
   return {
@@ -156,7 +171,7 @@ export const getHealthResult = ({
     moreInfo: {
       // cache
       cachedBlocksCount,
-      maxCachedBlocksCount: extraBlockCount,
+      maxCachedBlocksCount: maxCachedBlocks,
       // subql
       lastProcessedHeight,
       targetHeight,
@@ -172,7 +187,7 @@ export const getHealthResult = ({
   };
 };
 
-const TIME_OUT = 20000;   // 20s
+const TIME_OUT = 20000; // 20s
 export const runWithTiming = async <F extends AnyFunction>(
   fn: F,
   repeats: number = 3
@@ -187,10 +202,7 @@ export const runWithTiming = async <F extends AnyFunction>(
 
   try {
     for (let i = 0; i < repeats; i++) {
-      res = await Promise.race([
-        fn(),
-        sleep(TIME_OUT),
-      ]);
+      res = await Promise.race([fn(), sleep(TIME_OUT)]);
 
       // fn should always return something
       if (res === null) {
@@ -205,14 +217,10 @@ export const runWithTiming = async <F extends AnyFunction>(
   }
 
   const t1 = performance.now();
-  const time = runningErr
-    ? -1
-    : timedout
-      ? -999
-      : (t1 - t0) / repeats;
+  const time = runningErr ? -1 : timedout ? -999 : (t1 - t0) / repeats;
 
   return {
     res,
-    time,
+    time
   };
 };
