@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-transactions",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
-    "@rushstack/eslint-config": "~2.4.2",
+    "@rushstack/eslint-config": "~2.4.3",
     "@rushstack/heft": "~0.41.6",
     "eslint": "~7.32.0",
     "typescript": "~4.4.4",

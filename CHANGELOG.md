@@ -1,4 +1,4 @@
-## v2.4.2 2022/04/15
+## v2.4.3 2022/04/15
 - Add health montioring API
 - Add cache pruning
 - Publish `@acala-network/eth-rpc-adapter`

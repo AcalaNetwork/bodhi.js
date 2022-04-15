@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-rpc-adapter",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
@@ -55,7 +55,7 @@
     "@types/node": "~16.10.1",
     "@types/node-ipc": "~9.1.5",
     "@types/ws": "~8.2.0",
-    "@rushstack/eslint-config": "~2.4.2",
+    "@rushstack/eslint-config": "~2.4.3",
     "eslint": "~7.32.0",
     "nodemon": "~2.0.12",
     "pino-pretty": "~7.0.1",
