@@ -8,11 +8,11 @@ import { version } from './_version';
 
 dotenv.config();
 
-export async function start() {
+export async function start(): Promise<void> {
   console.log('starting server ...');
 
   const ENDPOINT_URL = process.env.ENDPOINT_URL || 'ws://0.0.0.0::9944';
-  const SUBQL_URL = process.env.SUBQL_URL || 'http://0.0.0.0:3001';
+  const SUBQL_URL = process.env.SUBQL_URL;
   const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
   const WS_PORT = Number(process.env.WS_PORT || 3331);
   const MAX_CACHE_SIZE = Number(process.env.MAX_CACHE_SIZE || 200);

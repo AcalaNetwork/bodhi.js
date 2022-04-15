@@ -21,8 +21,9 @@ import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { SigningKey } from './SigningKey';
 import { dataToString, toBN } from './utils';
+import { version } from './_version';
 
-const logger = new Logger('bodhi/2.3.0');
+export const logger = new Logger(version);
 
 export class Signer extends Abstractsigner implements TypedDataSigner {
   // @ts-ignore

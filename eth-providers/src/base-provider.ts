@@ -66,18 +66,21 @@ import {
   filterLog,
   findEvmEvent,
   getEvmExtrinsicIndexes,
+  getHealthResult,
   getPartialTransactionReceipt,
   getTransactionIndexAndHash,
+  HealthResult,
   hexlifyRpcResult,
   isEVMExtrinsic,
   logger,
   PROVIDER_ERRORS,
   runWithRetries,
+  runWithTiming,
   sendTx,
   throwNotImplemented
 } from './utils';
-import { BlockCache } from './utils/BlockCache';
-import { TransactionReceipt as TransactionReceiptGQL } from './utils/gqlTypes';
+import { BlockCache, CacheInspect } from './utils/BlockCache';
+import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
@@ -214,6 +217,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _network?: Promise<Network>;
   _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
+  latestFinalizedBlockNumber: number | undefined;
 
   constructor({
     safeMode = false,
@@ -231,14 +235,13 @@ export abstract class BaseProvider extends AbstractProvider {
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
+    this.latestFinalizedBlockNumber = undefined;
 
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
-    } else {
-      logger.warn(`no subql url provided`);
     }
   }
 
@@ -303,15 +306,13 @@ export abstract class BaseProvider extends AbstractProvider {
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
       const blockNumber = header.number.toNumber();
+      this.latestFinalizedBlockNumber = blockNumber;
 
-      // safe mode related
+      // safe mode only, if useful in the future, can remove this if condition
       if (this.safeMode) {
         const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
         this.latestFinalizedBlockHash = blockHash;
       }
-
-      // cache related
-      this._cache!.handleFinalizedBlock(blockNumber);
     }) as unknown as void;
   };
 
@@ -323,7 +324,7 @@ export abstract class BaseProvider extends AbstractProvider {
     module: `${string}.${string}`,
     args: any[],
     _blockTag?: BlockTag | Promise<BlockTag>
-  ) => {
+  ): Promise<T> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const blockHash = await this._getBlockHash(blockTag);
 
@@ -605,44 +606,24 @@ export abstract class BaseProvider extends AbstractProvider {
         input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
         break;
       }
+      // Not a raw evm transaction, input = 0x
       case 'CURRENCIES':
-      case 'HONZONBRIDGE': {
-        // HonzonBridge
-        // https://github.com/AcalaNetwork/Acala/blob/f94e9dd2212b4cb626ca9c8f698e444de2cb89fa/modules/evm-bridge/src/lib.rs#L174-L189
-        const evmExtrinsic: any = extrinsic.method.toJSON();
+      case 'DEX':
+      case 'HONZONBRIDGE':
+      case 'PROXY':
+      case 'SUDO': {
         value = 0;
         gas = 2_100_000;
-        const contract = evmExtrinsic?.args?.currency_id?.erc20;
-        const erc20 = new ethers.Contract(contract, ERC20_ABI);
-        const amount = evmExtrinsic?.args?.amount;
-        input = (await erc20.populateTransaction.transfer(to, amount))?.data;
+        input = '0x';
         break;
-      }
-      case 'SUDO': {
-        const evmExtrinsic: any = extrinsic.method.toJSON();
-        value = evmExtrinsic?.args?.call?.args?.value;
-        gas = evmExtrinsic?.args?.call?.args?.gas_limit;
-        input = evmExtrinsic?.args?.call?.args?.input || evmExtrinsic?.args?.call?.args?.init;
-        // @TODO remove
-        // only work on mandala and karura-testnet
-        // https://github.com/AcalaNetwork/Acala/pull/1971
-        if (input === '0x') {
-          // return token contracts
-          input = MIRRORED_TOKEN_CONTRACT;
-        }
-        break;
-      }
-      // @TODO support proxy
-      case 'PROXY': {
-        return logger.throwError('Unspport proxy', Logger.errors.UNSUPPORTED_OPERATION);
       }
       // @TODO support utility
       case 'UTILITY': {
-        return logger.throwError('Unspport utility', Logger.errors.UNSUPPORTED_OPERATION);
+        return logger.throwError('Unspport utility, blockHash: ' + blockHash, Logger.errors.UNSUPPORTED_OPERATION);
       }
       default: {
         return logger.throwError(
-          'Unspport ' + extrinsic.method.section.toUpperCase(),
+          'Unspport ' + extrinsic.method.section.toUpperCase() + 'blockHash: ' + blockHash,
           Logger.errors.UNSUPPORTED_OPERATION
         );
       }
@@ -1151,6 +1132,9 @@ export abstract class BaseProvider extends AbstractProvider {
         storageDepositPerByte
       });
 
+      const err_help_msg =
+        'invalid ETH gasLimit/gasPrice combination provided. Please DO NOT change gasLimit/gasPrice in metamask when sending token, if you are deploying contract, DO NOT provide random gasLimit/gasPrice, please check out our doc for how to compute gas, easiest way is to call eth_getEthGas directly';
+
       try {
         const params = calcSubstrateTransactionParams({
           txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
@@ -1165,23 +1149,19 @@ export abstract class BaseProvider extends AbstractProvider {
         tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
       } catch {
         logger.throwError(
-          'calculating substrate gas failed: invalid ETH gasLimit/gasPrice combination provided',
+          `calculating substrate gas failed: ${err_help_msg}`,
           Logger.errors.INVALID_ARGUMENT,
           _getErrInfo()
         );
       }
 
       if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
-        logger.throwError(
-          'substrate gasLimit, gasPrice, storageLimit should all be greater than 0',
-          Logger.errors.INVALID_ARGUMENT,
-          {
-            ..._getErrInfo(),
-            gasLimit,
-            validUntil,
-            storageLimit
-          }
-        );
+        logger.throwError(`bad substrate gas params caused by ${err_help_msg}`, Logger.errors.INVALID_ARGUMENT, {
+          ..._getErrInfo(),
+          gasLimit,
+          validUntil,
+          storageLimit
+        });
       }
     } else if (ethTx.type === 1) {
       // EIP-2930 transaction
@@ -1693,21 +1673,17 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
-    try {
-      const txFromCache = await this._getTxReceiptFromCache(txHash);
-      if (txFromCache) return txFromCache;
+    const txFromCache = await this._getTxReceiptFromCache(txHash);
+    if (txFromCache) return txFromCache;
 
-      const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-      const res = txFromSubql || null;
-      if (res) {
-        res.blockNumber = +res.blockNumber;
-        res.transactionIndex = +res.transactionIndex;
-        res.gasUsed = BigNumber.from(res.gasUsed);
-      }
-      return res;
-    } catch {
-      return null;
+    const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
+    const res = txFromSubql || null;
+    if (res) {
+      res.blockNumber = +res.blockNumber;
+      res.transactionIndex = +res.transactionIndex;
+      res.gasUsed = BigNumber.from(res.gasUsed);
     }
+    return res;
   };
 
   // Queries
@@ -1825,11 +1801,59 @@ export abstract class BaseProvider extends AbstractProvider {
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
-  getIndexerMetadata = async (): Promise<any> => {
-    return this.subql?.getIndexerMetadata();
+  getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
+    return await this.subql?.getIndexerMetadata();
   };
 
-  getUnfinalizedCachInfo = (): any => this._cache?._inspect() || 'no cache running!';
+  getCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
+
+  _timeEthCalls = async (): Promise<{
+    gasPriceTime: number;
+    estimateGasTime: number;
+    getBlockTime: number;
+    getFullBlockTime: number;
+  }> => {
+    const gasPricePromise = runWithTiming(async () => this.getGasPrice());
+    const estimateGasPromise = runWithTiming(async () =>
+      this.estimateGas({
+        from: '0xe3234f433914d4cfcf846491ec5a7831ab9f0bb3',
+        value: '0x0',
+        gasPrice: '0x2f0276000a',
+        data: '0x',
+        to: '0x22293227a254a481883ca5e823023633308cb9ca'
+      })
+    );
+
+    // ideally randBlockNumber should have EVM TX
+    const randBlockNumber = Math.floor(Math.random() * this.latestFinalizedBlockNumber!);
+    const getBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, false));
+    const getFullBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, true));
+
+    const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
+      await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])
+    ).map((res) => Math.floor(res.time));
+
+    return {
+      gasPriceTime,
+      estimateGasTime,
+      getBlockTime,
+      getFullBlockTime
+    };
+  };
+
+  healthCheck = async (): Promise<HealthResult> => {
+    const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
+
+    const cacheInfo = this.getCachInfo();
+    const curFinalizedHeight = this.latestFinalizedBlockNumber!;
+
+    return getHealthResult({
+      indexerMeta,
+      cacheInfo,
+      curFinalizedHeight,
+      ethCallTiming
+    });
+  };
 
   // ENS
   lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');

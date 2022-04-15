@@ -1,42 +1,57 @@
-interface HashToBlockMap {
+export interface HashToBlockMap {
   [hash: string]: number;
 }
 
-interface BlockToHashesMap {
+export interface BlockToHashesMap {
   [block: string]: string[];
 }
 
+export interface CacheInspect {
+  maxCachedBlocks: number;
+  cachedBlocksCount: number;
+  cachedBlocks: string[];
+  allBlockToHash: Record<string, string[]>;
+  allHashToBlock: Record<string, number>;
+}
+
 export class BlockCache {
-  blockTxHashes: BlockToHashesMap;
-  allTxHashes: HashToBlockMap;
-  extraBlockCount: number;
+  blockToHashes: BlockToHashesMap;
+  hashToBlocks: HashToBlockMap;
+  maxCachedBlocks: number;
 
-  constructor(extraBlockCount: number = 10) {
-    this.blockTxHashes = {};
-    this.allTxHashes = {};
-    this.extraBlockCount = extraBlockCount;
+  constructor(maxCachedBlocks: number = 200) {
+    this.blockToHashes = {};
+    this.hashToBlocks = {};
+    this.maxCachedBlocks = maxCachedBlocks;
   }
 
+  // automatically preserve a sliding window of ${maxCachedBlocks} blocks
   addTxsAtBlock(blockNumber: number, txHashes: string[]): void {
-    txHashes.forEach((h) => (this.allTxHashes[h] = blockNumber));
-    this.blockTxHashes[blockNumber] = txHashes;
+    txHashes.forEach((h) => (this.hashToBlocks[h] = blockNumber));
+    this.blockToHashes[blockNumber] = txHashes;
+
+    const cachedBlocksCount = Object.keys(this.blockToHashes).length;
+    if (cachedBlocksCount > this.maxCachedBlocks) {
+      const blockToRemove = Object.keys(this.blockToHashes)[0]; // assume insert order
+      this._removeBlock(parseInt(blockToRemove));
+    }
   }
 
-  handleFinalizedBlock(blockNumber: number): void {
-    const blockToRemove = blockNumber - this.extraBlockCount;
-    this.blockTxHashes[blockToRemove]?.forEach((h) => delete this.allTxHashes[h]);
-    delete this.blockTxHashes[blockToRemove];
+  // if block exist in cache, remove it, otherwise do nothing
+  _removeBlock(blockToRemove: number): void {
+    this.blockToHashes[blockToRemove]?.forEach((h) => delete this.hashToBlocks[h]);
+    delete this.blockToHashes[blockToRemove];
   }
 
   getBlockNumber(hash: string): number | undefined {
-    return this.allTxHashes[hash];
+    return this.hashToBlocks[hash];
   }
 
-  _inspect = (): any => ({
-    extraBlockCount: this.extraBlockCount,
-    cachedBlocksCount: Object.keys(this.blockTxHashes).length,
-    cachedBlocks: Object.keys(this.blockTxHashes),
-    allBlockToHash: this.blockTxHashes,
-    allHashToBlock: this.allTxHashes
+  _inspect = (): CacheInspect => ({
+    maxCachedBlocks: this.maxCachedBlocks,
+    cachedBlocksCount: Object.keys(this.blockToHashes).length,
+    cachedBlocks: Object.keys(this.blockToHashes),
+    allBlockToHash: this.blockToHashes,
+    allHashToBlock: this.hashToBlocks
   });
 }

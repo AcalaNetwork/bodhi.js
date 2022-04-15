@@ -63,12 +63,17 @@ class Eip1193BridgeImpl {
   // query unfinalized cache info for dev debugging use
   async net_cacheInfo(params: any[]): Promise<any> {
     validate([], params);
-    return this.#provider.getUnfinalizedCachInfo();
+    return this.#provider.getCachInfo();
   }
 
   async net_isSafeMode(params: any[]): Promise<any> {
     validate([], params);
     return this.#provider.isSafeMode;
+  }
+
+  async net_health(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.healthCheck();
   }
 
   /**
