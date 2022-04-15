@@ -242,8 +242,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
-    } else {
-      logger.warn(`no subql url provided`);
     }
   }
 
@@ -1134,6 +1132,9 @@ export abstract class BaseProvider extends AbstractProvider {
         storageDepositPerByte
       });
 
+      const err_help_msg =
+        'invalid ETH gasLimit/gasPrice combination provided. Please DO NOT change gasLimit/gasPrice in metamask when sending token, if you are deploying contract, DO NOT provide random gasLimit/gasPrice, please check out our doc for how to compute gas, easiest way is to call eth_getEthGas directly';
+
       try {
         const params = calcSubstrateTransactionParams({
           txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
@@ -1148,23 +1149,19 @@ export abstract class BaseProvider extends AbstractProvider {
         tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
       } catch {
         logger.throwError(
-          'calculating substrate gas failed: invalid ETH gasLimit/gasPrice combination provided',
+          `calculating substrate gas failed: ${err_help_msg}`,
           Logger.errors.INVALID_ARGUMENT,
           _getErrInfo()
         );
       }
 
       if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
-        logger.throwError(
-          'substrate gasLimit, gasPrice, storageLimit should all be greater than 0',
-          Logger.errors.INVALID_ARGUMENT,
-          {
-            ..._getErrInfo(),
-            gasLimit,
-            validUntil,
-            storageLimit
-          }
-        );
+        logger.throwError(`bad substrate gas params caused by ${err_help_msg}`, Logger.errors.INVALID_ARGUMENT, {
+          ..._getErrInfo(),
+          gasLimit,
+          validUntil,
+          storageLimit
+        });
       }
     } else if (ethTx.type === 1) {
       // EIP-2930 transaction
@@ -1676,21 +1673,17 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
-    try {
-      const txFromCache = await this._getTxReceiptFromCache(txHash);
-      if (txFromCache) return txFromCache;
+    const txFromCache = await this._getTxReceiptFromCache(txHash);
+    if (txFromCache) return txFromCache;
 
-      const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-      const res = txFromSubql || null;
-      if (res) {
-        res.blockNumber = +res.blockNumber;
-        res.transactionIndex = +res.transactionIndex;
-        res.gasUsed = BigNumber.from(res.gasUsed);
-      }
-      return res;
-    } catch {
-      return null;
+    const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
+    const res = txFromSubql || null;
+    if (res) {
+      res.blockNumber = +res.blockNumber;
+      res.transactionIndex = +res.transactionIndex;
+      res.gasUsed = BigNumber.from(res.gasUsed);
     }
+    return res;
   };
 
   // Queries
@@ -1809,12 +1802,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
-    try {
-      return await this.subql?.getIndexerMetadata();
-    } catch (error) {
-      // TODO: after https://github.com/AcalaNetwork/bodhi.js/issues/320 we can remove this try catch
-      return undefined;
-    }
+    return await this.subql?.getIndexerMetadata();
   };
 
   getCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
