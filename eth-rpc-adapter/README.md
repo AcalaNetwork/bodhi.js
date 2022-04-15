@@ -3,12 +3,7 @@ A node service that allows existing Ethereum dApp to be able to interact with [A
 
 ## Run
 #### from npm version
-- install
-```
-yarn add @acala-network/eth-rpc-adapter
-```
-
-- run the server
+- run the server (should automagically install it)
 ```
 LOCAL_MODE=1 npx @acala-network/eth-rpc-adapter
 ```
