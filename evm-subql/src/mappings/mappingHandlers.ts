@@ -4,6 +4,7 @@ import {
   getTransactionIndexAndHash
 } from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
 import { SubstrateEvent } from '@subql/types';
+import '@polkadot/api-augment';
 import { Log, TransactionReceipt } from '../types';
 
 const NOT_EXIST_TRANSACTION_INDEX = BigInt(0xffff);

@@ -29,11 +29,11 @@ services:
     command:
       - -f=./
       - --network-endpoint=ws://mandala-node:9944
-      - --subquery-name=acala-evm
+      - --db-schema=acala_evm
       - --log-level=debug
 
   graphql-engine:
-    image: onfinality/subql-query:v0.8.1-4
+    image: onfinality/subql-query:v0.14.1
     ports:
       - 3001:3001
     depends_on:
@@ -48,7 +48,7 @@ services:
       DB_PORT: 5432
       PORT: 3001
     command:
-      - --name=acala-evm
+      - --name=acala_evm
       - --playground
       - --indexer=http://subquery-node:3000
 
