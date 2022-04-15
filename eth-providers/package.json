@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.4.1",
+  "version": "2.4.3",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
@@ -47,7 +47,7 @@
     "@types/mocha": "~9.0.0",
     "@types/bn.js": "~5.1.0",
     "@types/chai-as-promised": "~7.1.4",
-    "@rushstack/eslint-config": "~2.4.2",
+    "@rushstack/eslint-config": "~2.4.3",
     "@rushstack/heft": "~0.41.6",
     "@graphql-codegen/cli": "2.2.2",
     "@graphql-codegen/typescript": "2.3.0",
@@ -58,6 +58,9 @@
     "ts-node": "~10.3.0",
     "chai-as-promised": "~7.1.1",
     "sinon-chai": "~3.7.0",
-    "sinon": "~13.0.1"
+    "sinon": "~13.0.1",
+    "@sinonjs/fake-timers": "~9.1.1",
+    "@types/sinonjs__fake-timers": "~8.1.2",
+    "chai-subset": "~1.6.0"
   }
 }

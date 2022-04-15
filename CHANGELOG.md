@@ -1,15 +1,20 @@
+## v2.4.3 2022/04/15
+- Add health montioring API
+- Add cache pruning
+- Publish `@acala-network/eth-rpc-adapter`
+
 ## v2.4.1 2022/04/12
-- update polkadot api
-- fix contractAddress in transfer
-- cache the metadata
-- return error message instead of index
-- add local mode
+- Update polkadot api
+- Fix contractAddress in transfer
+- Cache the metadata
+- Return error message instead of index
+- Add local mode
 
 ## v2.4.0 2022/03/30
-- standardize `eth_getTransactionReceipt` and `eth_getTransactionByHash` behavior
-- supports blockscout
+- Standardize `eth_getTransactionReceipt` and `eth_getTransactionByHash` behavior
+- Supports blockscout
 
 ## v2.3.0 2022/03/11
-- upgraded all dependecy pacakges to latest
-- subql refacrtor
-- new RPC `net_isSafeMode`
+- Upgraded all dependecy pacakges to latest
+- Subql refacrtor
+- New RPC `net_isSafeMode`

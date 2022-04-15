@@ -1,6 +1,13 @@
 import { hexValue } from '@ethersproject/bytes';
-import { expect } from 'chai';
-import { hexlifyRpcResult, isEVMExtrinsic } from '../utils';
+import chai from 'chai';
+import chaiSubset from 'chai-subset';
+import FakeTimer from '@sinonjs/fake-timers';
+import { EthCallTimingResult, getHealthResult, hexlifyRpcResult, isEVMExtrinsic, runWithTiming, sleep } from '../utils';
+import { CacheInspect } from '../utils/BlockCache';
+import { _Metadata } from '../utils/gqlTypes';
+
+chai.use(chaiSubset);
+const { expect } = chai;
 
 describe('utils', () => {
   it('connect chain', async () => {
@@ -42,8 +49,10 @@ describe('utils', () => {
       }
     ]);
   });
+});
 
-  it('isEVMExtrinsic', () => {
+describe('isEVMExtrinsic', () => {
+  it('returns correct result', () => {
     const fakeEVMExtrinsic = {
       method: {
         section: {
@@ -74,5 +83,252 @@ describe('utils', () => {
        or even better, construct real Extrinsics,
        so can tests these more comprehensively
                                             -------- */
+  });
+});
+
+describe('runwithTiming', () => {
+  it('returns correct result and running time', async () => {
+    const runningTime = 1000;
+    const funcRes = 'vegeta';
+    const f = async () => {
+      await sleep(runningTime);
+      return funcRes;
+    };
+
+    const { res, time } = await runWithTiming(f);
+    expect(res).to.equal(funcRes);
+    expect(time).to.greaterThan(runningTime);
+    expect(time).to.lessThan(runningTime * 2);
+  });
+
+  it('returns correct error for running errors', async () => {
+    const runningTime = 1000;
+    const funcRes = 'vegeta';
+    const ERR_MSG = 'goku';
+    const f = async () => {
+      throw new Error(ERR_MSG);
+    };
+
+    const { res, time } = await runWithTiming(f);
+    expect(res).to.contain(`error in runWithTiming: Error: ${ERR_MSG}`);
+    expect(time).to.equal(-1);
+  });
+
+  it('returns correct error for timeout', async () => {
+    const clock = FakeTimer.install();
+
+    const f = async () => {
+      await sleep(99999);
+    };
+
+    const resPromise = runWithTiming(f);
+    clock.tick(20000);
+    const { res, time } = await resPromise;
+
+    expect(res).to.contain('error in runWithTiming: timeout after');
+    expect(time).to.equal(-999);
+
+    clock.uninstall();
+  });
+});
+
+describe('getHealthResult', () => {
+  const indexerHealthy = true;
+  const lastProcessedHeight = 2000;
+  const lastProcessedTimestamp = Date.now() - 10000;
+  const targetHeight = 2002;
+  const indexerMeta: _Metadata = {
+    indexerHealthy,
+    lastProcessedHeight,
+    lastProcessedTimestamp,
+    targetHeight
+  };
+
+  const maxCachedBlocks = 200;
+  const cachedBlocksCount = 196;
+  const cacheInfo: Partial<CacheInspect> = {
+    maxCachedBlocks,
+    cachedBlocksCount
+  };
+
+  let curFinalizedHeight = targetHeight;
+
+  const gasPriceTime = 1688;
+  const estimateGasTime = 1234;
+  const getBlockTime = 2874;
+  const getFullBlockTime = 678;
+  let ethCallTiming: EthCallTimingResult = {
+    gasPriceTime,
+    estimateGasTime,
+    getBlockTime,
+    getFullBlockTime
+  };
+
+  const healthResult = {
+    isHealthy: true,
+    isSubqlOK: true,
+    isCacheOK: true,
+    isRPCOK: true,
+    msg: [],
+    moreInfo: {
+      cachedBlocksCount,
+      maxCachedBlocksCount: maxCachedBlocks,
+      // subql
+      lastProcessedHeight,
+      targetHeight,
+      curFinalizedHeight,
+      lastProcessedTimestamp,
+      idleBlocks: curFinalizedHeight - lastProcessedHeight,
+      indexerHealthy,
+      // RPC
+      ethCallTiming
+    }
+  };
+
+  it('return correct healthy data when healthy', () => {
+    const res = getHealthResult({
+      indexerMeta,
+      cacheInfo,
+      curFinalizedHeight,
+      ethCallTiming
+    });
+
+    // console.log(res)
+    expect(res).containSubset(healthResult);
+  });
+
+  describe('return correct error when unhealthy', () => {
+    it('when indexer unhealthy', () => {
+      const lastProcessedHeightBad = lastProcessedHeight - 100;
+      const lastProcessedTimestampBad = lastProcessedTimestamp - 35 * 60 * 1000;
+
+      const res = getHealthResult({
+        indexerMeta: {
+          ...indexerMeta,
+          lastProcessedHeight: lastProcessedHeightBad,
+          lastProcessedTimestamp: lastProcessedTimestampBad
+        },
+        cacheInfo,
+        curFinalizedHeight,
+        ethCallTiming
+      });
+
+      expect(res).containSubset({
+        ...healthResult,
+        isHealthy: false,
+        isSubqlOK: false,
+        moreInfo: {
+          ...healthResult.moreInfo,
+          maxCachedBlocksCount: maxCachedBlocks,
+          lastProcessedHeight: lastProcessedHeightBad,
+          lastProcessedTimestamp: lastProcessedTimestampBad,
+          idleBlocks: curFinalizedHeight - lastProcessedHeightBad
+        }
+      });
+
+      expect(res.msg.length).to.equal(2);
+    });
+
+    it('when cache unhealthy', () => {
+      const cachedBlocksCountBad = cachedBlocksCount + 1300;
+      const res = getHealthResult({
+        indexerMeta,
+        cacheInfo: {
+          ...cacheInfo,
+          cachedBlocksCount: cachedBlocksCountBad
+        },
+        curFinalizedHeight,
+        ethCallTiming
+      });
+
+      expect(res).containSubset({
+        ...healthResult,
+        isHealthy: false,
+        isCacheOK: false,
+        msg: [
+          `cached blocks size is bigger than expected: ${cachedBlocksCountBad}, expect at most ~${maxCachedBlocks}`
+        ],
+        moreInfo: {
+          ...healthResult.moreInfo,
+          cachedBlocksCount: cachedBlocksCountBad
+        }
+      });
+    });
+
+    it('when RPC becomes slow', () => {
+      const ethCallTimingBad = {
+        ...ethCallTiming,
+        getFullBlockTime: 23000
+      };
+      const res = getHealthResult({
+        indexerMeta,
+        cacheInfo,
+        curFinalizedHeight,
+        ethCallTiming: ethCallTimingBad
+      });
+
+      expect(res).containSubset({
+        ...healthResult,
+        isHealthy: false,
+        isRPCOK: false,
+        msg: [
+          `an RPC is getting slow, takes more than 5 seconds to complete internally. All timings: ${JSON.stringify(
+            ethCallTimingBad
+          )}`
+        ],
+        moreInfo: {
+          ...healthResult.moreInfo,
+          ethCallTiming: ethCallTimingBad
+        }
+      });
+    });
+
+    it('when RPC has running error', () => {
+      const ethCallTimingBad = {
+        ...ethCallTiming,
+        getFullBlockTime: -1
+      };
+      const res = getHealthResult({
+        indexerMeta,
+        cacheInfo,
+        curFinalizedHeight,
+        ethCallTiming: ethCallTimingBad
+      });
+
+      expect(res).containSubset({
+        ...healthResult,
+        isHealthy: false,
+        isRPCOK: false,
+        msg: [`an RPC is getting running errors. All timings: ${JSON.stringify(ethCallTimingBad)}`],
+        moreInfo: {
+          ...healthResult.moreInfo,
+          ethCallTiming: ethCallTimingBad
+        }
+      });
+    });
+
+    it('when RPC timeouts', () => {
+      const ethCallTimingBad = {
+        ...ethCallTiming,
+        getFullBlockTime: -999
+      };
+      const res = getHealthResult({
+        indexerMeta,
+        cacheInfo,
+        curFinalizedHeight,
+        ethCallTiming: ethCallTimingBad
+      });
+
+      expect(res).containSubset({
+        ...healthResult,
+        isHealthy: false,
+        isRPCOK: false,
+        msg: [`an RPC is getting timeouts. All timings: ${JSON.stringify(ethCallTimingBad)}`],
+        moreInfo: {
+          ...healthResult.moreInfo,
+          ethCallTiming: ethCallTimingBad
+        }
+      });
+    });
   });
 });

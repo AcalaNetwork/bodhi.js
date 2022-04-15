@@ -104,13 +104,16 @@ importers:
       '@polkadot/util-crypto': ~8.4.1
       '@rushstack/eslint-config': ~2.4.2
       '@rushstack/heft': ~0.41.6
+      '@sinonjs/fake-timers': ~9.1.1
       '@types/bn.js': ~5.1.0
       '@types/chai': ~4.2.22
       '@types/chai-as-promised': ~7.1.4
       '@types/mocha': ~9.0.0
+      '@types/sinonjs__fake-timers': ~8.1.2
       bn.js: 4.12.0
       chai: ~4.3.4
       chai-as-promised: ~7.1.1
+      chai-subset: ~1.6.0
       eslint: ~7.32.0
       ethers: ~5.5.4
       graphql: ~16.0.1
@@ -152,12 +155,15 @@ importers:
       '@graphql-codegen/typescript': 2.3.0_graphql@16.0.1
       '@rushstack/eslint-config': 2.4.5_eslint@7.32.0+typescript@4.4.4
       '@rushstack/heft': 0.41.8
+      '@sinonjs/fake-timers': 9.1.1
       '@types/bn.js': 5.1.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/mocha': 9.0.0
+      '@types/sinonjs__fake-timers': 8.1.2
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
+      chai-subset: 1.6.0
       eslint: 7.32.0
       mocha: 9.1.3
       sinon: 13.0.1
@@ -4420,8 +4426,8 @@ packages:
       '@sinonjs/commons': 1.8.3
     dev: true
 
-  /@sinonjs/fake-timers/9.1.0:
-    resolution: {integrity: sha512-M8vapsv9qQupMdzrVzkn5rb9jG7aUTEPAZdMtME2PuBaefksFZVE2C1g4LBRTkF/k3nRDNbDc5tp5NFC1PEYxA==}
+  /@sinonjs/fake-timers/9.1.1:
+    resolution: {integrity: sha512-Wp5vwlZ0lOqpSYGKqr53INws9HLkt6JDc/pDZcPf7bchQnrXJMXPns8CXx0hFikMSGSWfvtvvpb2gtMVfkWagA==}
     dependencies:
       '@sinonjs/commons': 1.8.3
     dev: true
@@ -5411,6 +5417,10 @@ packages:
     resolution: {integrity: sha512-6EF+wzMWvBNeGrfP3Nx60hhx+FfwSg1JJBLAAP/IdIUq0EYkqCYf70VT3PhuhPX9eLD+Dp+lNdpb/ZeHG8Yezg==}
     dependencies:
       '@sinonjs/fake-timers': 7.1.2
+    dev: true
+
+  /@types/sinonjs__fake-timers/8.1.2:
+    resolution: {integrity: sha512-9GcLXF0/v3t80caGs5p2rRfkB+a8VBGLJZVih6CNFkx8IZ994wiKKLSRs9nuFwk1HevWs/1mnUmkApGrSGsShA==}
     dev: true
 
   /@types/tapable/1.0.6:
@@ -7442,6 +7452,11 @@ packages:
     dependencies:
       chai: 4.3.4
       check-error: 1.0.2
+    dev: true
+
+  /chai-subset/1.6.0:
+    resolution: {integrity: sha1-pdDKFOMpp5WW7XAFi2ZGvWmIz+k=}
+    engines: {node: '>=4'}
     dev: true
 
   /chai/4.3.4:
@@ -13904,7 +13919,7 @@ packages:
     resolution: {integrity: sha512-yr5kW2THW1AkxVmCnKEh4nbYkJdB3I7LUkiUgOvEkOp414mc2UMaHMA7pjq1nYowhdoJZGwEKGaQVbxfpWj10A==}
     dependencies:
       '@sinonjs/commons': 1.8.3
-      '@sinonjs/fake-timers': 9.1.0
+      '@sinonjs/fake-timers': 9.1.1
       '@sinonjs/text-encoding': 0.7.1
       just-extend: 4.2.1
       path-to-regexp: 1.8.0
@@ -16400,7 +16415,7 @@ packages:
     resolution: {integrity: sha512-8yx2wIvkBjIq/MGY1D9h1LMraYW+z1X0mb648KZnKSdvLasvDu7maa0dFaNYdTDczFgbjNw2tOmWdTk9saVfwQ==}
     dependencies:
       '@sinonjs/commons': 1.8.3
-      '@sinonjs/fake-timers': 9.1.0
+      '@sinonjs/fake-timers': 9.1.1
       '@sinonjs/samsam': 6.1.1
       diff: 5.0.0
       nise: 5.1.1

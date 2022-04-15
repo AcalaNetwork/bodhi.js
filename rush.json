@@ -440,7 +440,8 @@
     {
       "packageName": "@acala-network/eth-rpc-adapter",
       "projectFolder": "eth-rpc-adapter",
-      "reviewCategory": "production"
+      "reviewCategory": "production",
+      "shouldPublish": true
     },
     {
       "packageName": "@acala-network/bodhi",
