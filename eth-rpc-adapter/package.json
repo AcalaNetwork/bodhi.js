@@ -4,7 +4,7 @@
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
-  "bin": "./lib/eth-rpc-adapter",
+  "bin": "./bin/eth-rpc-adapter.js",
   "scripts": {
     "build": "heft build --clean",
     "build:watch": "heft build",
