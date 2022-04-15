@@ -29,7 +29,7 @@ jobs:
         run: node common/scripts/install-run-rush.js update
 
       - name: build packages
-        run: node common/scripts/install-run-rush.js build --verbose --to @acala-network/bodhi
+        run: node common/scripts/install-run-rush.js build --verbose --to @acala-network/bodhi --to @acala-network/eth-rpc-adapter
 
       - name: publish
         run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch master --add-commit-details --set-access-level public -n ${{ secrets.NPM_AUTH_TOKEN }}
