@@ -4,7 +4,7 @@
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
-  "bin": "./lib/parachain-launch",
+  "bin": "./lib/eth-rpc-adapter",
   "scripts": {
     "build": "heft build --clean",
     "build:watch": "heft build",
