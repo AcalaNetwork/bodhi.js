@@ -1,10 +1,10 @@
 {
   "name": "@acala-network/eth-rpc-adapter",
-  "version": "2.4.3",
+  "version": "2.4.4",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
-  "bin": "./lib/eth-rpc-adapter",
+  "bin": "./bin/eth-rpc-adapter.js",
   "scripts": {
     "build": "heft build --clean",
     "build:watch": "heft build",
