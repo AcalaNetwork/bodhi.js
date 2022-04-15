@@ -41,7 +41,7 @@
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
     "@acala-network/api": "~4.0.1",
-    "@rushstack/eslint-config": "~2.4.4",
+    "@rushstack/eslint-config": "~2.4.3",
     "@rushstack/heft": "~0.41.6",
     "@types/chai": "~4.2.22",
     "eslint": "~7.32.0",

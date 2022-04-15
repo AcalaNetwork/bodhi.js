@@ -47,7 +47,7 @@
     "@types/mocha": "~9.0.0",
     "@types/bn.js": "~5.1.0",
     "@types/chai-as-promised": "~7.1.4",
-    "@rushstack/eslint-config": "~2.4.4",
+    "@rushstack/eslint-config": "~2.4.3",
     "@rushstack/heft": "~0.41.6",
     "@graphql-codegen/cli": "2.2.2",
     "@graphql-codegen/typescript": "2.3.0",
