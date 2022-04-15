@@ -4,9 +4,10 @@ import {
   getTransactionIndexAndHash
 } from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
 import { SubstrateEvent } from '@subql/types';
+import '@polkadot/api-augment';
 import { Log, TransactionReceipt } from '../types';
 
-const NOT_EXIST_TRANSACTION_INDEX = 0xffff;
+const NOT_EXIST_TRANSACTION_INDEX = BigInt(0xffff);
 const DUMMY_TX_HASH = '0x6666666666666666666666666666666666666666666666666666666666666666';
 
 export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
@@ -17,14 +18,14 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
 
   try {
     const tx = getTransactionIndexAndHash(transactionHash, block.block.extrinsics, block.events);
-    transactionIndex = tx.transactionIndex;
+    transactionIndex = BigInt(tx.transactionIndex);
   } catch (error) {
     logger.error(error);
   }
 
   const transactionInfo = {
     transactionHash,
-    blockNumber: block.block.header.number.toNumber(),
+    blockNumber: block.block.header.number.toBigInt(),
     blockHash: block.block.hash.toHex(),
     transactionIndex
   };
@@ -47,8 +48,8 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
     gasUsed: ret.gasUsed.toBigInt(),
     logsBloom: ret.logsBloom,
     cumulativeGasUsed: ret.cumulativeGasUsed.toBigInt(),
-    type: ret.type,
-    status: ret.status,
+    type: BigInt(ret.type),
+    status: BigInt(ret.status),
     exitReason: ret.exitReason,
     ...transactionInfo
   });
@@ -59,14 +60,14 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
     const log = Log.create({
       id: `${receiptId}-${idx}`,
       transactionHash,
-      blockNumber: block.block.header.number.toNumber(),
+      blockNumber: block.block.header.number.toBigInt(),
       blockHash: block.block.hash.toHex(),
       transactionIndex,
       removed: evmLog.removed,
       address: evmLog.address,
       data: evmLog.data,
       topics: evmLog.topics,
-      logIndex: idx,
+      logIndex: BigInt(idx),
       receiptId,
       ...transactionInfo
     });

@@ -9,8 +9,8 @@
     "prepack": "rm -rf dist && npm build",
     "codegen": "./node_modules/.bin/subql codegen",
     "test": "echo",
-    "index": "yarn subql-node -f . --local --batch-size 200 --subquery-name=acala-evm  --port 3030",
-    "query": "PORT=3001 yarn subql-query --name acala-evm --playground --indexer=http://localhost:3030 --debug"
+    "index": "yarn subql-node -f . --local --batch-size 200 --db-schema acala_evm --port 3030",
+    "query": "PORT=3001 yarn subql-query --name acala_evm --playground --indexer=http://localhost:3030 --debug"
   },
   "homepage": "https://github.com/subquery/subql-starter",
   "repository": "github:subquery/subql-starter",
@@ -22,33 +22,32 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@polkadot/types": "~6.4.2",
+    "@polkadot/types": "~7.14.4-6",
     "@rushstack/heft": "~0.42.0",
-    "@subql/cli": "~0.12.0",
-    "@subql/node": "^0.25.2",
-    "@subql/query": "^0.8.0",
-    "@subql/types": "~0.8.4",
+    "@subql/cli": "^0.25.0",
+    "@subql/node": "^0.33.0",
+    "@subql/query": "^0.14.1",
+    "@subql/types": "^0.14.0",
     "pino": "~7.0.0-rc.3",
     "tslib": "~2.3.1",
     "typescript": "~4.4.4"
   },
   "dependencies": {
-    "@acala-network/eth-providers": "~2.4.1",
-    "@polkadot/api": "~6.4.2"
+    "@acala-network/eth-providers": "~2.4.4"
   },
   "resolutions": {
-    "@polkadot/api": "~6.4.2",
-    "@polkadot/api-derive": "~6.4.2",
-    "@polkadot/types": "~6.4.2",
-    "@polkadot/util-crypto": "~7.5.1",
-    "@polkadot/util": "~7.5.1",
+    "@polkadot/api": "~7.14.4-6",
+    "@polkadot/api-derive": "~7.14.4-6",
+    "@polkadot/types": "~7.14.4-6",
+    "@polkadot/util-crypto": "~8.7.1",
+    "@polkadot/util": "~8.7.1",
     "@ethersproject/bignumber": "~5.5.0",
     "@ethersproject/bytes": "~5.5.0",
     "@ethersproject/abstract-provider": "~5.5.0",
     "@ethersproject/properties": "~5.5.0",
     "@ethersproject/transactions": "~5.5.0",
-    "@acala-network/api": "~3.0.2-1",
-    "@acala-network/types": "~3.0.1",
+    "@acala-network/api": "~4.0.1",
+    "@acala-network/types": "~4.0.1",
     "@ethersproject/logger": "~5.5.0",
     "@ethersproject/networks": "~5.5.0",
     "@ethersproject/address": "~5.5.0"
