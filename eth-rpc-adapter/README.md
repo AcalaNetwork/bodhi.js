@@ -15,7 +15,7 @@ A node service that allows existing Ethereum dApp to be able to interact with [A
 for example checkout `.env.sample`:
 ```
 ENDPOINT_URL=ws://localhost:9944 # default WS port that acala node exposes
-SUBQL_URL=http://localhost:3001  # default http port that subquery exposes
+SUBQL_URL=http://localhost:3001  # default http port that subquery exposes (default is undefined in RPC adaptor if we don't specify SUBQL_URL explicitly)
 HTTP_PORT=8545                   # default http port for ETH RPC methods
 WS_PORT=3331                    
 MAX_CACHE_SIZE=200               
