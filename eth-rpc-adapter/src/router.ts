@@ -7,7 +7,7 @@ import { JSONRPCResponse } from './transports/types';
 // TODO: remove errorRegex1
 const errorRegex1 = /execution fatal: Module { index: (\d+), error: (\d+), message: None }/;
 // polkadot-0.9.18
-const errorRegex2 = /execution fatal: Module(ModuleError { index: (\d+), error: (\d+), message: None })/;
+const errorRegex2 = /execution fatal: Module\(ModuleError { index: (\d+), error: (\d+), message: None }\)/;
 
 export class Router {
   readonly #bridge: Eip1193Bridge;
