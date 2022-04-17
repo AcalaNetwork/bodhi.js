@@ -703,7 +703,7 @@ importers:
       '@acala-network/api': ^4.1.1
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ^2.2.0
-      '@openzeppelin/contracts': ^4.4.2
+      '@openzeppelin/contracts': ^3.4.2
       '@polkadot/api': ~7.14.4-6
       '@polkadot/keyring': ~8.4.1
       '@types/chai': ^4.2.22
@@ -725,7 +725,7 @@ importers:
       '@uniswap/v2-core': 1.0.1
       '@uniswap/v2-periphery': 1.1.0-beta.0
     devDependencies:
-      '@openzeppelin/contracts': 4.5.0
+      '@openzeppelin/contracts': 3.4.2
       '@types/chai': 4.3.1
       '@types/mocha': 9.1.0
       chai: 4.3.6
@@ -3466,6 +3466,10 @@ packages:
     dependencies:
       '@polkadot/api': 7.14.4-9
     dev: false
+
+  /@openzeppelin/contracts/3.4.2:
+    resolution: {integrity: sha512-z0zMCjyhhp4y7XKAcDAi3Vgms4T2PstwBdahiO0+9NaGICQKjynK3wduSRplTgk4LXmoO1yfDGO5RbjKYxtuxA==}
+    dev: true
 
   /@openzeppelin/contracts/4.5.0:
     resolution: {integrity: sha512-fdkzKPYMjrRiPK6K4y64e6GzULR7R7RwxSigHS8DDp7aWDeoReqsQI+cxHV1UuhAqX69L1lAaWDxenfP+xiqzA==}
