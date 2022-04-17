@@ -17,8 +17,8 @@
   "dependencies": {
     "@acala-network/eth-transactions": "workspace:*",
     "@acala-network/contracts": "^4.2.0",
-    "@acala-network/types": "^4.0.1",
-    "@acala-network/api": "^4.0.1",
+    "@acala-network/types": "^4.1.1",
+    "@acala-network/api": "^4.1.1",
     "@polkadot/api": "^7.14.4-6",
     "@polkadot/api-derive": "^7.14.4-6",
     "@polkadot/types": "^7.14.4-6",

@@ -46,8 +46,8 @@
     "@ethersproject/abstract-provider": "^5.5.0",
     "@ethersproject/properties": "^5.5.0",
     "@ethersproject/transactions": "^5.5.0",
-    "@acala-network/api": "^4.0.1",
-    "@acala-network/types": "^4.0.1",
+    "@acala-network/api": "^4.1.1",
+    "@acala-network/types": "^4.1.1",
     "@ethersproject/logger": "^5.5.0",
     "@ethersproject/networks": "^5.5.0",
     "@ethersproject/address": "^5.5.0"
