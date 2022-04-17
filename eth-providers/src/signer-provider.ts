@@ -1,12 +1,12 @@
-import { options } from '@acala-network/api';
 import { ApiPromise } from '@polkadot/api';
 import type { ApiOptions } from '@polkadot/api/types';
 import { BaseProvider } from './base-provider';
+import { createApiOptions } from './chain-api';
 
 export class SignerProvider extends BaseProvider {
   constructor(apiOptions: ApiOptions) {
     super();
-    const api = new ApiPromise(options(apiOptions));
+    const api = new ApiPromise(createApiOptions(apiOptions));
     this.setApi(api);
   }
 
