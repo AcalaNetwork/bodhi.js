@@ -5,13 +5,13 @@
   "author": "Jan Turk",
   "license": "MIT",
   "devDependencies": {
-    "@types/chai": "~4.2.22",
-    "@types/mocha": "~9.0.0",
-    "chai": "~4.3.4",
-    "ethereum-waffle": "~3.4.0",
-    "mocha": "~9.1.3",
-    "ts-node": "~10.3.0",
-    "typescript": "~4.4.4"
+    "@types/chai": "^4.2.22",
+    "@types/mocha": "^9.0.0",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "mocha": "^9.1.3",
+    "ts-node": "^10.3.0",
+    "typescript": "^4.4.4"
   },
   "scripts": {
     "build": "waffle",
@@ -19,7 +19,7 @@
     "deploy": "ts-node --transpile-only src/deploy.ts"
   },
   "dependencies": {
-    "@acala-network/api": "~4.0.1",
+    "@acala-network/api": "^4.0.1",
     "@acala-network/bodhi": "workspace:*"
   }
 }
