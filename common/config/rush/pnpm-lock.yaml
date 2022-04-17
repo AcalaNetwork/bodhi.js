@@ -914,7 +914,7 @@ importers:
       '@acala-network/api': ^4.1.1
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ^2.2.0
-      '@openzeppelin/contracts': ^4.4.2
+      '@openzeppelin/contracts': ^3.4.2
       '@polkadot/api': ~7.14.4-6
       '@polkadot/keyring': ~8.4.1
       '@types/chai': ^4.2.22
@@ -932,7 +932,7 @@ importers:
       '@polkadot/api': 7.14.4-9
       '@polkadot/keyring': 8.4.1
     devDependencies:
-      '@openzeppelin/contracts': 4.5.0
+      '@openzeppelin/contracts': 3.4.2
       '@types/chai': 4.3.1
       '@types/mocha': 9.1.0
       chai: 4.3.6
