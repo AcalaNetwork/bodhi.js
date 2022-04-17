@@ -7,9 +7,7 @@ importers:
 
   ../../bodhi:
     specifiers:
-      '@acala-network/api': ~4.0.1
       '@acala-network/eth-providers': workspace:*
-      '@acala-network/types': ~4.0.1
       '@ethersproject/abstract-provider': ~5.5.0
       '@ethersproject/abstract-signer': ~5.5.0
       '@ethersproject/address': ~5.5.0
@@ -42,7 +40,6 @@ importers:
       typescript: ~4.4.4
     dependencies:
       '@acala-network/eth-providers': link:../eth-providers
-      '@acala-network/types': 4.0.1
       '@ethersproject/abstract-provider': 5.5.1
       '@ethersproject/abstract-signer': 5.5.0
       '@ethersproject/address': 5.5.0
@@ -65,7 +62,6 @@ importers:
       bn.js: 4.12.0
       ethers: 5.5.4
     devDependencies:
-      '@acala-network/api': 4.0.1_@polkadot+types@7.14.4-6
       '@rushstack/eslint-config': 2.4.5_eslint@7.32.0+typescript@4.4.4
       '@rushstack/heft': 0.41.8
       '@types/chai': 4.2.22
@@ -81,6 +77,7 @@ importers:
       '@acala-network/contracts': ~4.2.0
       '@acala-network/eth-transactions': workspace:*
       '@acala-network/type-definitions': ~4.1.1
+      '@acala-network/types': ~4.1.1
       '@ethersproject/abstract-provider': ~5.5.0
       '@ethersproject/address': ~5.5.0
       '@ethersproject/bignumber': ~5.5.0
@@ -149,6 +146,7 @@ importers:
       graphql: 16.0.1
       graphql-request: 3.6.1_graphql@16.0.1
     devDependencies:
+      '@acala-network/types': 4.1.1
       '@graphql-codegen/cli': 2.2.2_graphql@16.0.1+typescript@4.4.4
       '@graphql-codegen/typescript': 2.3.0_graphql@16.0.1
       '@rushstack/eslint-config': 2.4.5_eslint@7.32.0+typescript@4.4.4
@@ -171,10 +169,9 @@ importers:
 
   ../../eth-rpc-adapter:
     specifiers:
-      '@acala-network/api': ~4.0.1
       '@acala-network/eth-providers': workspace:*
       '@acala-network/eth-transactions': workspace:*
-      '@acala-network/types': ~4.0.1
+      '@acala-network/type-definitions': ~4.1.1
       '@ethersproject/abstract-provider': ~5.5.0
       '@ethersproject/abstract-signer': ~5.5.0
       '@ethersproject/address': ~5.5.0
@@ -218,10 +215,9 @@ importers:
       typescript: ~4.4.4
       ws: ~8.2.2
     dependencies:
-      '@acala-network/api': 4.0.1_@polkadot+types@7.14.4-6
       '@acala-network/eth-providers': link:../eth-providers
       '@acala-network/eth-transactions': link:../eth-transactions
-      '@acala-network/types': 4.0.1
+      '@acala-network/type-definitions': 4.1.1
       '@ethersproject/abstract-provider': 5.5.1
       '@ethersproject/abstract-signer': 5.5.0
       '@ethersproject/address': 5.5.0
@@ -1009,6 +1005,7 @@ packages:
       - '@polkadot/typegen'
       - encoding
       - supports-color
+    dev: false
 
   /@acala-network/api/3.0.3-16_@polkadot+types@7.14.4-6:
     resolution: {integrity: sha512-EwKJbDdveOsZR2LM8gjDmy/nUw2a9pXOWzq4Qb1S4YauaVbfJaX/TBFdlgG+iGK49Jl8k3Iply+Fp9PaVf09tA==}
@@ -1043,23 +1040,6 @@ packages:
       - encoding
       - supports-color
     dev: false
-
-  /@acala-network/api/4.0.1_@polkadot+types@7.14.4-6:
-    resolution: {integrity: sha512-v9sSKbEJtl9TRB2Q3ssJo7maH37n1qS+hx9fyjRvzsxc6hR1H2RnnoYhddzHulaDNV/POuX8By80O3CJwnzSlA==}
-    peerDependencies:
-      '@polkadot/types': ^7.1.1
-    dependencies:
-      '@acala-network/api-derive': 4.0.1_@polkadot+api@7.14.4-6
-      '@acala-network/types': 4.0.1
-      '@babel/runtime': 7.17.2
-      '@open-web3/orml-api-derive': 1.0.2-2_@polkadot+api@7.14.4-6
-      '@polkadot/api': 7.14.4-6
-      '@polkadot/rpc-core': 7.14.4-6
-      '@polkadot/types': 7.14.4-6
-    transitivePeerDependencies:
-      - '@polkadot/typegen'
-      - encoding
-      - supports-color
 
   /@acala-network/bodhi/2.2.2:
     resolution: {integrity: sha512-XZtg8gtGccroZQtz34mUTMuroq3dmWMagI01vdLBmXh3lastRTfTDCRbITr4tgm/nfT3Dbq7GZjtIOdsrcLi5g==}
@@ -1213,7 +1193,6 @@ packages:
     resolution: {integrity: sha512-2OGO3ZFpNHUv5ZQRPSJuzoLkrPrDi9bHz0UEt2mAVW0Ay3TKnwvgOUAPVenY9xfz8hjxmEP5QAuuP3qFFVMjZA==}
     dependencies:
       '@open-web3/orml-type-definitions': 1.1.3
-    dev: false
 
   /@acala-network/types/4.0.1:
     resolution: {integrity: sha512-dQFHHJks+L9JWWdr8kVc++x+EbQtznPw0CKt9k9hOKA5tGspbNQt1hDn35nBW0Gwd5ldZ+Ra7YBmY7OiaR70TQ==}
@@ -1228,6 +1207,21 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  /@acala-network/types/4.1.1:
+    resolution: {integrity: sha512-trgbfRsIoCm2nNTaBHIwgstwXDUpE+geUIFi1KVdCQMCVPXbZmw4QibdePBCAxtMDuClT+zZ9jVq+Vy7B1v39Q==}
+    dependencies:
+      '@acala-network/type-definitions': 4.1.1
+      '@babel/runtime': 7.17.8
+      '@open-web3/api-mobx': 1.1.3_@polkadot+api@7.14.4-6
+      '@open-web3/orml-types': 1.1.3_00d7d2837a3fd725b982869c86b87db1
+      '@polkadot/api': 7.14.4-6
+      '@polkadot/typegen': 7.11.1
+      '@polkadot/types': 7.14.4-6
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: true
 
   /@ampproject/remapping/2.1.2:
     resolution: {integrity: sha512-hoyByceqwKirw7w3Z7gnIIZC3Wx3J484Y3L/cMpXFbr7d9ZQj2mODrirNzcJa+SM3UlpWXYvKV4RlRpFXlWgXg==}
@@ -3612,6 +3606,16 @@ packages:
       mobx: 5.15.7
       mobx-utils: 5.6.2_mobx@5.15.7
 
+  /@open-web3/api-mobx/1.1.3_@polkadot+api@7.14.4-6:
+    resolution: {integrity: sha512-5fBV7hHcg3H4PQaCdMTOyS9/6CVeExiJ3zi0Da1hNuTTSDWEv5CyjgTrgQfuvycaofsUwKGjmnB2LmUo2+4m2w==}
+    peerDependencies:
+      '@polkadot/api': '>6.3.1'
+    dependencies:
+      '@polkadot/api': 7.14.4-6
+      mobx: 5.15.7
+      mobx-utils: 5.6.2_mobx@5.15.7
+    dev: true
+
   /@open-web3/orml-api-derive/1.0.2-2_@polkadot+api@7.14.4-6:
     resolution: {integrity: sha512-5A2qy/9kzyHEqUZBkjpbWkH54i931zjmKnknr1zE5TuH/tnLn+Mm5qtMPCCupTe9in4KU0iduLrIkpPWXBSqpA==}
     peerDependencies:
@@ -3630,7 +3634,6 @@ packages:
     resolution: {integrity: sha512-kIYIGzaILjUikKsUxs3mE2akQINC+rctVuq4rYYniZPsWA2L0+4FLt8tefTxTy6OcfsmQeefrbFiFBHs9igC7w==}
     dependencies:
       lodash.merge: 4.6.2
-    dev: false
 
   /@open-web3/orml-types/1.0.2-2_00d7d2837a3fd725b982869c86b87db1:
     resolution: {integrity: sha512-WIOkobP7oXPT3wF5DGtTmvF4J4JCQdAQGfvxfKgvUOutjc31PpeSzNhjY6G5iXpG7MvlGw8sMlBoPfV8A3mIfQ==}
@@ -3650,6 +3653,17 @@ packages:
     dependencies:
       '@open-web3/orml-type-definitions': 1.0.2-2
       '@polkadot/api': 7.14.4-6
+
+  /@open-web3/orml-types/1.1.3_00d7d2837a3fd725b982869c86b87db1:
+    resolution: {integrity: sha512-emWQJRtpfPwnLnmz2JHThVAvsLTwJ8+8T9DG2QzCitw06PSzGgieBukkkqZcxZt4TgJcOfdYbWJiEOSF66lWmg==}
+    peerDependencies:
+      '@polkadot/api': '>6.3.1'
+      '@polkadot/typegen': '>6.3.1'
+    dependencies:
+      '@open-web3/orml-type-definitions': 1.1.3
+      '@polkadot/api': 7.14.4-6
+      '@polkadot/typegen': 7.11.1
+    dev: true
 
   /@open-web3/scanner/0.9.4-38_@polkadot+api@7.14.4-6:
     resolution: {integrity: sha512-DTqFtfSsLK9xbEBKTYxNHjS6jIPdSblmLUykaqORe2LpD8lDc1Rz8Ywb7dZDuxtA7LFhCBPrH/STmSoaP+QrxA==}
@@ -10220,6 +10234,18 @@ packages:
         optional: true
     dev: false
 
+  /follow-redirects/1.14.6_debug@4.3.3:
+    resolution: {integrity: sha512-fhUl5EwSJbbl8AR+uYL2KQDxLkdSjZGR36xy46AO7cOMTrCMON6Sa28FmAnC2tRTDbd/Uuzz3aJBv7EBN7JH8A==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dependencies:
+      debug: 4.3.3
+    dev: false
+
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
     dependencies:
@@ -16548,7 +16574,7 @@ packages:
     dependencies:
       command-exists: 1.2.9
       commander: 3.0.2
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
       fs-extra: 0.30.0
       js-sha3: 0.8.0
       memorystream: 0.3.1

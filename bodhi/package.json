@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
-    "@acala-network/types": "~4.0.1",
     "@ethersproject/abstract-provider": "~5.5.0",
     "@ethersproject/address": "~5.5.0",
     "@ethersproject/bignumber": "~5.5.0",
@@ -40,7 +39,6 @@
   "devDependencies": {
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
-    "@acala-network/api": "~4.0.1",
     "@rushstack/eslint-config": "~2.4.3",
     "@rushstack/heft": "~0.41.6",
     "@types/chai": "~4.2.22",
