@@ -326,7 +326,7 @@ importers:
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.2
-      '@polkadot/api': ^7.14.4-9
+      '@polkadot/api': ^7.15.2-2
       chai: ^4.3.4
       ethereum-waffle: ^3.4.0
       ethers: ^5.5.4
@@ -339,7 +339,7 @@ importers:
       '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.4+hardhat@2.9.3
       '@nomiclabs/hardhat-waffle': 2.0.3_1065b7944e68fffed89b61072fa1592e
       '@openzeppelin/contracts': 4.5.0
-      '@polkadot/api': 7.15.1
+      '@polkadot/api': 7.15.2-15
       chai: 4.3.6
       ethereum-waffle: 3.4.4
       ethers: 5.6.4
@@ -351,7 +351,7 @@ importers:
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.2
-      '@polkadot/api': ^7.14.4-9
+      '@polkadot/api': ^7.15.2-2
       chai: ^4.3.4
       ethereum-waffle: ^3.4.0
       ethers: ^5.5.4
@@ -364,7 +364,7 @@ importers:
       '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.4+hardhat@2.9.3
       '@nomiclabs/hardhat-waffle': 2.0.3_1065b7944e68fffed89b61072fa1592e
       '@openzeppelin/contracts': 4.5.0
-      '@polkadot/api': 7.15.1
+      '@polkadot/api': 7.15.2-15
       chai: 4.3.6
       ethereum-waffle: 3.4.4
       ethers: 5.6.4
@@ -375,7 +375,7 @@ importers:
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.2
-      '@polkadot/api': ^7.14.4-9
+      '@polkadot/api': ^7.15.2-2
       chai: ^4.3.4
       ethereum-waffle: ^3.4.0
       ethers: ^5.5.4
@@ -387,7 +387,7 @@ importers:
       '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.4+hardhat@2.9.3
       '@nomiclabs/hardhat-waffle': 2.0.3_1065b7944e68fffed89b61072fa1592e
       '@openzeppelin/contracts': 4.5.0
-      '@polkadot/api': 7.15.1
+      '@polkadot/api': 7.15.2-15
       chai: 4.3.6
       ethereum-waffle: 3.4.4
       ethers: 5.6.4
@@ -397,7 +397,7 @@ importers:
       '@acala-network/eth-providers': ^2.2.3
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
-      '@polkadot/api': ^7.14.4-9
+      '@polkadot/api': ^7.15.2-2
       chai: ^4.3.4
       ethereum-waffle: ^3.4.0
       ethers: ^5.5.4
@@ -408,7 +408,7 @@ importers:
       '@acala-network/eth-providers': 2.4.4
       '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.4+hardhat@2.9.3
       '@nomiclabs/hardhat-waffle': 2.0.3_1065b7944e68fffed89b61072fa1592e
-      '@polkadot/api': 7.15.1
+      '@polkadot/api': 7.15.2-15
       chai: 4.3.6
       ethereum-waffle: 3.4.4
       ethers: 5.6.4
@@ -418,7 +418,7 @@ importers:
       '@acala-network/eth-providers': ^2.2.3
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
-      '@polkadot/api': ^7.14.4-9
+      '@polkadot/api': ^7.15.2-2
       chai: ^4.3.4
       ethereum-waffle: ^3.4.0
       ethers: ^5.5.4
@@ -429,7 +429,7 @@ importers:
       '@acala-network/eth-providers': 2.4.4
       '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.4+hardhat@2.9.3
       '@nomiclabs/hardhat-waffle': 2.0.3_1065b7944e68fffed89b61072fa1592e
-      '@polkadot/api': 7.15.1
+      '@polkadot/api': 7.15.2-15
       chai: 4.3.6
       ethereum-waffle: 3.4.4
       ethers: 5.6.4
@@ -440,7 +440,7 @@ importers:
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.2
-      '@polkadot/api': ^7.14.4-9
+      '@polkadot/api': ^7.15.2-2
       chai: ^4.3.4
       ethereum-waffle: ^3.4.0
       ethers: ^5.5.4
@@ -452,7 +452,7 @@ importers:
       '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.4+hardhat@2.9.3
       '@nomiclabs/hardhat-waffle': 2.0.3_1065b7944e68fffed89b61072fa1592e
       '@openzeppelin/contracts': 4.5.0
-      '@polkadot/api': 7.15.1
+      '@polkadot/api': 7.15.2-15
       chai: 4.3.6
       ethereum-waffle: 3.4.4
       ethers: 5.6.4
@@ -463,7 +463,7 @@ importers:
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.2
-      '@polkadot/api': ^7.14.4-9
+      '@polkadot/api': ^7.15.2-2
       chai: ^4.3.4
       ethereum-waffle: ^3.4.0
       ethers: ^5.5.4
@@ -475,7 +475,7 @@ importers:
       '@nomiclabs/hardhat-ethers': 2.0.5_ethers@5.6.4+hardhat@2.9.3
       '@nomiclabs/hardhat-waffle': 2.0.3_1065b7944e68fffed89b61072fa1592e
       '@openzeppelin/contracts': 4.5.0
-      '@polkadot/api': 7.15.1
+      '@polkadot/api': 7.15.2-15
       chai: 4.3.6
       ethereum-waffle: 3.4.4
       ethers: 5.6.4
@@ -3499,8 +3499,8 @@ packages:
       - encoding
       - supports-color
 
-  /@polkadot/api-base/7.15.1:
-    resolution: {integrity: sha512-UlhLdljJPDwGpm5FxOjvJNFTxXMRFaMuVNx6EklbuetbBEJ/Amihhtj0EJRodxQwtZ4ZtPKYKt+g+Dn7OJJh4g==}
+  /@polkadot/api-base/7.15.2-15:
+    resolution: {integrity: sha512-tbWdG/SORwQemFjzudOeNY+Ewd7r3zJIUPZCtQrLKRbdEAwXU0zFuK0ZkL92IUwaKI+1ddo7qkZrQI52L/2Q3w==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.17.9
@@ -3556,22 +3556,22 @@ packages:
       - encoding
       - supports-color
 
-  /@polkadot/api/7.15.1:
-    resolution: {integrity: sha512-z0z6+k8+R9ixRMWzfsYrNDnqSV5zHKmyhTCL0I7+1I081V18MJTCFUKubrh0t1gD0/FCt3U9Ibvr4IbtukYLrQ==}
+  /@polkadot/api/7.15.2-15:
+    resolution: {integrity: sha512-QNqZpxExxP3UXtAAq169lQHub1eN7b+DAIW1hx58J9ZzUJ7mcD2QkkbYbcdKFY/tILHfL5GK9NFixzjDSAsJjw==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@babel/runtime': 7.17.9
       '@polkadot/api-augment': 7.14.4-9
-      '@polkadot/api-base': 7.15.1
+      '@polkadot/api-base': 7.15.2-15
       '@polkadot/api-derive': 7.14.4-9
       '@polkadot/keyring': 8.4.1
-      '@polkadot/rpc-augment': 7.15.1
+      '@polkadot/rpc-augment': 7.15.2-15
       '@polkadot/rpc-core': 7.14.4-9
       '@polkadot/rpc-provider': 7.14.4-9
       '@polkadot/types': 7.14.4-9
-      '@polkadot/types-augment': 7.15.1
-      '@polkadot/types-codec': 7.15.1
-      '@polkadot/types-create': 7.15.1
+      '@polkadot/types-augment': 7.15.2-15
+      '@polkadot/types-codec': 7.15.2-15
+      '@polkadot/types-create': 7.15.2-15
       '@polkadot/types-known': 7.14.4-9
       '@polkadot/util': 8.4.1
       '@polkadot/util-crypto': 8.4.1
@@ -3631,6 +3631,20 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  /@polkadot/rpc-augment/7.15.2-15:
+    resolution: {integrity: sha512-s+4XBHGlQ0YMLGO9Xot5WPv5hVvWjToP4EfOMh9kOo23YVqgYNE2aP/yJ1Trr1nhGWR/Zqd23kMvPQUCvMlu+w==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@babel/runtime': 7.17.9
+      '@polkadot/rpc-core': 7.14.4-9
+      '@polkadot/types': 7.14.4-9
+      '@polkadot/types-codec': 7.15.2-15
+      '@polkadot/util': 8.4.1
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+    dev: true
 
   /@polkadot/rpc-core/7.14.4-9:
     resolution: {integrity: sha512-DQhBgLFMeRCsZ206WTOkNdXPX/qDX8lMRZv7ER8ibDk2s7+Olure5GBlbIMgrokq8Xf5R1+UFmUr4PGOQl4RSg==}
@@ -3711,6 +3725,16 @@ packages:
       '@polkadot/types-codec': 7.15.1
       '@polkadot/util': 8.4.1
 
+  /@polkadot/types-augment/7.15.2-15:
+    resolution: {integrity: sha512-CXoEEEWV49CARQrtX8ruom0Xmo7HZfqKA88roMP2buEiqa1FYpEC4XF5oBhmgHuZhw3HKM/UOQMF/n7/23xeEQ==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@babel/runtime': 7.17.9
+      '@polkadot/types': 7.14.4-9
+      '@polkadot/types-codec': 7.15.2-15
+      '@polkadot/util': 8.4.1
+    dev: true
+
   /@polkadot/types-codec/7.14.4-9:
     resolution: {integrity: sha512-rYHY1xEkPMsBTYbl5YnA/RdL4C0PuP+K6zWX6EFvdQ6YJ/tYhNIpKK6dCqnjp8QBJ8Rn9lM+n9QYxIEnHs03yQ==}
     engines: {node: '>=14.0.0'}
@@ -3724,6 +3748,14 @@ packages:
     dependencies:
       '@babel/runtime': 7.17.9
       '@polkadot/util': 8.4.1
+
+  /@polkadot/types-codec/7.15.2-15:
+    resolution: {integrity: sha512-rmh34olu2UwrxwNSgGW8uCfBNJfZIsNVqZb2alTTra+trOmmqZJHFFOGPPmeHBHZ6T1NueNwRRSAHXA8utQRbA==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@babel/runtime': 7.17.9
+      '@polkadot/util': 8.4.1
+    dev: true
 
   /@polkadot/types-create/7.14.4-9:
     resolution: {integrity: sha512-EqQYSrmCODlvK1tjsuycIlKXBHPwDpKPUxJHT5rgg9NZO4lf4yNG0gV+9uxcG+L+iumJ4K2WdFez/er/5M5nzw==}
@@ -3740,6 +3772,15 @@ packages:
       '@babel/runtime': 7.17.9
       '@polkadot/types-codec': 7.15.1
       '@polkadot/util': 8.4.1
+
+  /@polkadot/types-create/7.15.2-15:
+    resolution: {integrity: sha512-cR704ouPsaiQAHjE3cLHhUBh1mHJtFyywlX6800yUg78UvyybWafVoXPyud0T09iBwtmaWcnJpJnjow7rDukVQ==}
+    engines: {node: '>=14.0.0'}
+    dependencies:
+      '@babel/runtime': 7.17.9
+      '@polkadot/types-codec': 7.15.2-15
+      '@polkadot/util': 8.4.1
+    dev: true
 
   /@polkadot/types-known/7.14.4-9:
     resolution: {integrity: sha512-/1VzPNy1JD6hIeP1E2u3cQHBf5OME7rOypTb2lXLyVqdxUknyPoZ6zK52o7MzJT1bsD2zUQflYBuGx3pCiiOIQ==}
