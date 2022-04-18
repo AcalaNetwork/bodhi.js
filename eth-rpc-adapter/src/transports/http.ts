@@ -6,6 +6,8 @@ import ServerTransport from './server-transport';
 import type { JSONRPCRequest } from './types';
 import { logger } from '../logger';
 import { errorHandler } from '../middlewares';
+import { InvalidRequest } from '../errors';
+
 export interface HTTPServerTransportOptions extends ServerOptions {
   middleware: HandleFunction[];
   port: number;
@@ -55,9 +57,18 @@ export default class HTTPServerTransport extends ServerTransport {
     let result = null;
     if (req.body instanceof Array) {
       if (req.body.length > this.options.batch_size) {
-        return logger.throwError('Exceeded maximum batch size');
+        const error = new InvalidRequest();
+        result = {
+          jsonrpc: '2.0',
+          error: {
+            code: error.code,
+            data: error.data,
+            message: 'Exceeded maximum batch size'
+          }
+        };
+      } else {
+        result = await Promise.all(req.body.map((r: JSONRPCRequest) => super.routerHandler(r)));
       }
-      result = await Promise.all(req.body.map((r: JSONRPCRequest) => super.routerHandler(r)));
     } else {
       result = await super.routerHandler(req.body);
     }

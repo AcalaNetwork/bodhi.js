@@ -8,6 +8,7 @@ import { logger } from '../logger';
 import ServerTransport from './server-transport';
 import type { JSONRPCRequest } from './types';
 import { errorHandler } from '../middlewares';
+import { InvalidRequest } from '../errors';
 
 export interface WebSocketServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];
@@ -80,9 +81,18 @@ export default class WebSocketServerTransport extends ServerTransport {
     logger.debug(req, 'WS incoming request');
     if (req instanceof Array) {
       if (req.length > this.options.batch_size) {
-        return logger.throwError('Exceeded maximum batch size');
+        const error = new InvalidRequest();
+        result = {
+          jsonrpc: '2.0',
+          error: {
+            code: error.code,
+            data: error.data,
+            message: 'Exceeded maximum batch size'
+          }
+        };
+      } else {
+        result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, respondWith)));
       }
-      result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, respondWith)));
     } else {
       result = await super.routerHandler(req, respondWith);
     }
