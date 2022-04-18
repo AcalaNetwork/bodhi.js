@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.4.4",
+  "version": "2.4.5",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
@@ -17,15 +17,14 @@
   "dependencies": {
     "@acala-network/eth-transactions": "workspace:*",
     "@acala-network/contracts": "~4.2.0",
-    "@acala-network/types": "~4.0.1",
-    "@acala-network/api": "~4.0.1",
+    "@acala-network/type-definitions": "~4.1.1",
     "@polkadot/api": "~7.14.4-6",
     "@polkadot/api-derive": "~7.14.4-6",
     "@polkadot/types": "~7.14.4-6",
     "@polkadot/api-augment": "~7.14.4-6",
-    "@polkadot/util-crypto": "~8.4.1",
-    "@polkadot/util": "~8.4.1",
-    "@polkadot/keyring": "~8.4.1",
+    "@polkadot/util-crypto": "~8.7.1",
+    "@polkadot/util": "~8.7.1",
+    "@polkadot/keyring": "~8.7.1",
     "ethers": "~5.5.4",
     "@ethersproject/providers": "~5.5.0",
     "@ethersproject/bignumber": "~5.5.0",
@@ -43,6 +42,7 @@
     "graphql-request": "~3.6.1"
   },
   "devDependencies": {
+    "@acala-network/types": "~4.1.1",
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
     "@types/bn.js": "~5.1.0",
