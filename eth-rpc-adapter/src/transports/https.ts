@@ -63,7 +63,7 @@ export default class HTTPSServerTransport extends ServerTransport {
           error: {
             code: error.code,
             data: error.data,
-            message: 'Exceeded maximum batch size'
+            message: `Exceeded maximum batch size ${this.options.batch_size}`
           }
         };
       } else {
