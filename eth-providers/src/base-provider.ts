@@ -48,9 +48,8 @@ import {
   EMPTY_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
-  ERC20_ABI,
+  ERROR_PATTERN,
   LOCAL_MODE_MSG,
-  MIRRORED_TOKEN_CONTRACT,
   PROD_MODE_MSG,
   SAFE_MODE_WARNING_MSG,
   U32MAX,
@@ -1279,6 +1278,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
       return this._wrapTransaction(transaction, hash, blockNumber, blockHash.toHex());
     } catch (error) {
+      const match = error.match(ERROR_PATTERN);
+      if (match) {
+        const error = this.api.registry.findMetaError(new Uint8Array([match[1], match[2]]));
+        (<any>error).message = `${error.section}.${error.name}: ${error.docs}`;
+      }
+
       (<any>error).transaction = tx;
       (<any>error).transactionHash = tx.hash;
       throw error;
@@ -1592,7 +1597,7 @@ export abstract class BaseProvider extends AbstractProvider {
         try {
           const mod = dispatchError.asModule;
           const error = this.api.registry.findMetaError(new Uint8Array([mod.index.toNumber(), mod.error.toNumber()]));
-          message = `${error.section}.${error.name}`;
+          message = `${error.section}.${error.name}: ${error.docs}`;
         } catch (error) {
           // swallow
         }
