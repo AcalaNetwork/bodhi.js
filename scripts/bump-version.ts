@@ -23,7 +23,7 @@ packageJSONPaths.forEach((p, index) => {
   // _version.ts
   const versionString = fs.readFileSync(versionsPaths[index], { encoding: 'utf8', flag: 'r' });
   const newVersionString = versionString.replace(curVersion, nextPatchVersion);
-  fs.writeFileSync(versionsPaths[index], newVersionString);
+  fs.writeFileSync(versionsPaths[index], newVersionString + '\n');
 
   const pkgName = p.split('/').at(-2);
   console.log(`bumped ${pkgName}: ${curVersion} => ${nextPatchVersion}`);
