@@ -14,6 +14,7 @@ export interface WebSocketServerTransportOptions extends SecureServerOptions {
   port: number;
   cors?: cors.CorsOptions;
   allowHTTP1?: boolean;
+  batch_size: number;
 }
 
 export default class WebSocketServerTransport extends ServerTransport {
@@ -78,6 +79,9 @@ export default class WebSocketServerTransport extends ServerTransport {
     let result = null;
     logger.debug(req, 'WS incoming request');
     if (req instanceof Array) {
+      if (req.length > this.options.batch_size) {
+        return logger.throwError('Exceeded maximum batch size');
+      }
       result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, respondWith)));
     } else {
       result = await super.routerHandler(req, respondWith);

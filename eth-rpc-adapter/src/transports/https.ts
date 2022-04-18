@@ -12,6 +12,7 @@ export interface HTTPSServerTransportOptions extends SecureServerOptions {
   port: number;
   cors?: cors.CorsOptions;
   allowHTTP1?: boolean;
+  batch_size: number;
 }
 
 export default class HTTPSServerTransport extends ServerTransport {
@@ -54,6 +55,9 @@ export default class HTTPSServerTransport extends ServerTransport {
     logger.debug(req.body, 'incoming request');
     let result = null;
     if (req.body instanceof Array) {
+      if (req.body.length > this.options.batch_size) {
+        return logger.throwError('Exceeded maximum batch size');
+      }
       result = await Promise.all(req.body.map((r: JSONRPCRequest) => super.routerHandler(r)));
     } else {
       result = await super.routerHandler(req.body);

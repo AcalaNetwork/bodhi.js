@@ -8,6 +8,7 @@ export interface IPCServerTransportOptions {
   port: number;
   udp: boolean;
   ipv6: boolean;
+  batch_size: number;
 }
 
 type UdpType = 'udp4' | 'udp6' | undefined;
@@ -50,6 +51,9 @@ export default class IPCServerTransport extends ServerTransport {
     let result = null;
     logger.debug(req.body, 'incoming request');
     if (req instanceof Array) {
+      if (req.length > this.options.batch_size) {
+        return logger.throwError('Exceeded maximum batch size');
+      }
       result = await Promise.all(req.map((jsonrpcReq: JSONRPCRequest) => super.routerHandler(jsonrpcReq)));
     } else {
       result = await super.routerHandler(req);
