@@ -61,7 +61,7 @@ docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}')
 - run tests
 ```
 ### run any test
-docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+docker-compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
 
 where xxx ∈ {
   eth-providers-test,
