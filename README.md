@@ -61,7 +61,7 @@ docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}')
 - run tests
 ```
 ### run any test
-docker-compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
+docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
 
 where xxx ∈ {
   eth-providers-test,
@@ -90,13 +90,6 @@ docker logs -f <container_id>           # logs for specific container
 ## Release Workflow
 ### manual
 ```
-## first let rush determine what projects were changed
-rush change --bulk --message "version x.x.x" --bump-type "patch"
-
-## build
-rush build
-
-## publish
 rush publish -p --set-access-level public -n <paste_npm_token_here>
 ```
 
@@ -104,8 +97,11 @@ rush publish -p --set-access-level public -n <paste_npm_token_here>
 Each commit to master will trigger a CI publish. However, if the version in `package.json` didn't change, publish won't actually go to npm ,which is fine, so we don't want a new version for each commit. So if we want an actual publish, simply change to version in `package.json`, then push to master.
 
 ```
-## first modify package.json's version to v2.x.x
+## first bump versions and commit
+node scripts/bump-version.ts
 git commit -m "bump version v2.x.x"
+
+## tag the commit and push
 git tag v2.x.x
 git push origin v2.x.x
 ```
