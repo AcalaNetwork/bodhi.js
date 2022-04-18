@@ -18,6 +18,7 @@ export async function start(): Promise<void> {
   const MAX_CACHE_SIZE = Number(process.env.MAX_CACHE_SIZE || 200);
   const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
   const LOCAL_MODE = !!Number(process.env.LOCAL_MODE || 0);
+  const MAX_BATCH_SIZE = Number(process.env.MAX_BATCH_SIZE || 50);
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL, {
     safeMode: SAFE_MODE,
@@ -32,12 +33,14 @@ export async function start(): Promise<void> {
 
   const HTTPTransport = new HTTPServerTransport({
     port: HTTP_PORT,
-    middleware: []
+    middleware: [],
+    batch_size: MAX_BATCH_SIZE
   });
 
   const WebSocketTransport = new WebSocketServerTransport({
     port: WS_PORT,
-    middleware: []
+    middleware: [],
+    batch_size: MAX_BATCH_SIZE
   });
 
   HTTPTransport.addRouter(router as any);
@@ -57,6 +60,7 @@ export async function start(): Promise<void> {
   subquery url : ${SUBQL_URL}
   listening to : http ${HTTP_PORT} | ws ${WS_PORT}
   max cacheSize: ${MAX_CACHE_SIZE}
+  max batchSize: ${MAX_BATCH_SIZE}
   safe mode    : ${SAFE_MODE}
   local mode   : ${LOCAL_MODE}
   --------------------------------------------
