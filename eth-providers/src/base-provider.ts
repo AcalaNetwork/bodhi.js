@@ -48,9 +48,8 @@ import {
   EMPTY_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
-  ERC20_ABI,
+  ERROR_PATTERN,
   LOCAL_MODE_MSG,
-  MIRRORED_TOKEN_CONTRACT,
   PROD_MODE_MSG,
   SAFE_MODE_WARNING_MSG,
   U32MAX,
@@ -1278,9 +1277,24 @@ export abstract class BaseProvider extends AbstractProvider {
       const hash = extrinsic.hash.toHex();
 
       return this._wrapTransaction(transaction, hash, blockNumber, blockHash.toHex());
-    } catch (error) {
-      (<any>error).transaction = tx;
-      (<any>error).transactionHash = tx.hash;
+    } catch (err) {
+      const error = err as any;
+      const match = ((error.toString?.() || '') as string).match(ERROR_PATTERN);
+      if (match) {
+        const errDetails = this.api.registry.findMetaError(new Uint8Array([parseInt(match[1]), parseInt(match[2])]));
+
+        // error.message is readonly, so construct a new error object
+        throw new Error(
+          JSON.stringify({
+            message: `${errDetails.section}.${errDetails.name}: ${errDetails.docs}`,
+            transaction: tx,
+            transactionHash: tx.hash
+          })
+        );
+      }
+
+      error.transaction = tx;
+      error.transactionHash = tx.hash;
       throw error;
     }
   };
@@ -1592,7 +1606,7 @@ export abstract class BaseProvider extends AbstractProvider {
         try {
           const mod = dispatchError.asModule;
           const error = this.api.registry.findMetaError(new Uint8Array([mod.index.toNumber(), mod.error.toNumber()]));
-          message = `${error.section}.${error.name}`;
+          message = `${error.section}.${error.name}: ${error.docs}`;
         } catch (error) {
           // swallow
         }

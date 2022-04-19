@@ -1,4 +1,10 @@
-import { options } from '@acala-network/api';
+import {
+  rpc as acalaRpc,
+  signedExtensions as acalaSignedExtensions,
+  types as acalaTypes,
+  typesAlias as acalaTypesAlias,
+  typesBundle as acalaTypesBundle
+} from '@acala-network/type-definitions';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import type { ApiOptions } from '@polkadot/api/types';
 
@@ -31,11 +37,60 @@ const TYPES = {
   }
 };
 
+export const defaultOptions: ApiOptions = {
+  types: acalaTypes,
+  rpc: acalaRpc
+};
+
+export const createApiOptions = ({
+  types = {},
+  rpc = {},
+  typesAlias = {},
+  typesBundle = {},
+  signedExtensions,
+  ...otherOptions
+}: ApiOptions = {}): ApiOptions => ({
+  types: {
+    ...types
+  },
+  rpc: {
+    ...acalaRpc,
+    ...rpc
+  },
+  typesAlias: {
+    ...acalaTypesAlias,
+    ...typesAlias
+  },
+  typesBundle: {
+    ...typesBundle,
+    spec: {
+      ...typesBundle.spec,
+      acala: {
+        ...acalaTypesBundle?.spec?.acala,
+        ...typesBundle?.spec?.acala
+      },
+      mandala: {
+        ...acalaTypesBundle?.spec?.mandala,
+        ...typesBundle?.spec?.mandala
+      },
+      karura: {
+        ...acalaTypesBundle?.spec?.karura,
+        ...typesBundle?.spec?.mandala
+      }
+    }
+  },
+  signedExtensions: {
+    ...acalaSignedExtensions,
+    ...signedExtensions
+  },
+  ...otherOptions
+});
+
 export const createApi = (endpoints: string | string[], apiOptions?: ApiOptions): ApiPromise => {
   const wsProvider = new WsProvider(endpoints);
 
   return new ApiPromise(
-    options({
+    createApiOptions({
       types: {
         ...TYPES,
         ...apiOptions?.types

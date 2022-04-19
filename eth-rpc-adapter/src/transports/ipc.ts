@@ -2,12 +2,14 @@ import ipc from 'node-ipc';
 import { logger } from '../logger';
 import ServerTransport from './server-transport';
 import type { JSONRPCRequest } from './types';
+import { InvalidRequest } from '../errors';
 
 export interface IPCServerTransportOptions {
   id: string;
   port: number;
   udp: boolean;
   ipv6: boolean;
+  batch_size: number;
 }
 
 type UdpType = 'udp4' | 'udp6' | undefined;
@@ -50,7 +52,19 @@ export default class IPCServerTransport extends ServerTransport {
     let result = null;
     logger.debug(req.body, 'incoming request');
     if (req instanceof Array) {
-      result = await Promise.all(req.map((jsonrpcReq: JSONRPCRequest) => super.routerHandler(jsonrpcReq)));
+      if (req.length > this.options.batch_size) {
+        const error = new InvalidRequest();
+        result = {
+          jsonrpc: '2.0',
+          error: {
+            code: error.code,
+            data: error.data,
+            message: `Exceeded maximum batch size ${this.options.batch_size}`
+          }
+        };
+      } else {
+        result = await Promise.all(req.map((jsonrpcReq: JSONRPCRequest) => super.routerHandler(jsonrpcReq)));
+      }
     } else {
       result = await super.routerHandler(req);
     }
