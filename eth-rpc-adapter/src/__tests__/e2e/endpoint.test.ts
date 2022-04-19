@@ -425,7 +425,7 @@ describe('eth_sendRawTransaction', () => {
       it('serialize, parse, and send tx correctly', async () => {
         const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result
         };
 
         const rawTx = await wallet1.signTransaction(unsignedTx);
@@ -451,7 +451,7 @@ describe('eth_sendRawTransaction', () => {
         const priorityFee = BigNumber.from(2);
         const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: txGasPrice,
@@ -484,7 +484,7 @@ describe('eth_sendRawTransaction', () => {
 
         const unsignEip712Tx: AcalaEvmTX = {
           ...partialDeployTx,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           salt: genesisHash,
           gasLimit,
           validUntil,
@@ -541,7 +541,7 @@ describe('eth_sendRawTransaction', () => {
 
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -567,7 +567,7 @@ describe('eth_sendRawTransaction', () => {
         const priorityFee = BigNumber.from(2);
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: txGasPrice,
@@ -601,7 +601,7 @@ describe('eth_sendRawTransaction', () => {
 
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           salt: genesisHash,
           gasLimit,
           validUntil,
@@ -674,7 +674,7 @@ describe('eth_sendRawTransaction', () => {
         const transferTX: AcalaEvmTX = {
           ...partialNativeTransferTX,
           ...(await estimateGas()),
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -702,7 +702,7 @@ describe('eth_sendRawTransaction', () => {
         const transferTX: AcalaEvmTX = {
           ...partialNativeTransferTX,
           gasLimit,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: gasPrice,
@@ -736,7 +736,7 @@ describe('eth_sendRawTransaction', () => {
         // const transferTX: AcalaEvmTX = {
         //   ...partialNativeTransferTX,
         //   ...(await estimateGas()),
-        //   nonce: (await eth_getTransactionCount([wallet1.address, 'latest'])).data.result,
+        //   nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         //   salt: genesisHash,
         //   gasLimit,
         //   validUntil,
