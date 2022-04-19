@@ -1,3 +1,5 @@
+## v2.4.6 2022/04/19
+- Add batch request limit
 ## v2.4.3 2022/04/15
 - Add health montioring API
 - Add cache pruning

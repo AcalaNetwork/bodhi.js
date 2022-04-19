@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-rpc-adapter",
-  "version": "2.4.5",
+  "version": "2.4.6",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
@@ -35,7 +35,6 @@
     "@ethersproject/address": "~5.5.0",
     "@ethersproject/wallet": "~5.5.0",
     "@ethersproject/logger": "~5.5.0",
-    "@ethersproject/wallet": "~5.5.0",
     "body-parser": "~1.19.0",
     "connect": "~3.7.0",
     "cors": "~2.8.5",
