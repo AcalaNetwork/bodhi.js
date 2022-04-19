@@ -3,7 +3,7 @@ import ADDRESS from '@acala-network/contracts/utils/Address';
 import { expect, use } from 'chai';
 import { evmChai } from '@acala-network/bodhi';
 
-import { setup } from '../../utils';
+import { setup } from '../utils';
 import Arbitrager from '../build/Arbitrager.json';
 import UniswapFactory from '../artifacts/UniswapV2Factory.json';
 import UniswapRouter from '../artifacts/UniswapV2Router02.json';
