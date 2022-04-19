@@ -317,7 +317,7 @@ Let's build the `setup.ts` first, as we will be importing it into the `deploy.ts
 import the required artifacts from the dependencies of the project:
 
 ```
-import { Provider, Signer, TestAccountSigningKey } from '@acala-network/bodhi';
+import { Provider, Signer, AccountSigningKey } from '@acala-network/bodhi';
 import { Keyring, WsProvider } from '@polkadot/api';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -377,7 +377,7 @@ environment variable, we are still able to deploy to a local development network
 Next we define a `signingKey` with which we are able to sign transactions:
 
 ```
-    const signingKey = new TestAccountSigningKey(provider.api.registry);
+    const signingKey = new AccountSigningKey(provider.api.registry);
     signingKey.addKeyringPair(pair);
 ```
 
@@ -396,7 +396,7 @@ This completes our `setup.ts` and allows us to move on to `deploy.ts`.
 <details>
     <summary>Your src/setup.ts should look like this:</summary>
 
-    import { Provider, Signer, TestAccountSigningKey } from '@acala-network/bodhi';
+    import { Provider, Signer, AccountSigningKey } from '@acala-network/bodhi';
     import { Keyring, WsProvider } from '@polkadot/api';
     import { createTestPairs } from '@polkadot/keyring/testingPairs';
     import { KeyringPair } from '@polkadot/keyring/types';
@@ -420,7 +420,7 @@ This completes our `setup.ts` and allows us to move on to `deploy.ts`.
             pair = testPairs.alice
         }
 
-        const signingKey = new TestAccountSigningKey(provider.api.registry);
+        const signingKey = new AccountSigningKey(provider.api.registry);
         signingKey.addKeyringPair(pair);
 
         const wallet = new Signer(provider, pair.address, signingKey);
