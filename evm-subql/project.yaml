@@ -18,12 +18,12 @@ network:
 
   # mandala
   chainId: '0x42375bbff13887e1967c7a1836b7b9c123500ad14705d7cd9f21cedba90c6a3a'
-  # endpoint: ws://localhost:9944
+  endpoint: ws://localhost:9944
   chaintypes:
     file: ./types.json
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 55700
+    startBlock: 1
     mapping:
       file: ./dist/index.js
       handlers:
