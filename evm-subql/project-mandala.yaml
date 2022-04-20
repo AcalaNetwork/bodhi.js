@@ -15,7 +15,7 @@ schema:
 network:
   # public mandala
   chainId: '0x5c562e6300954998233c9a40b6b86f3028977e6d32d0da1af207738d19f98c1b'
-  endpoint: wss://karura-rpc-0.aca-api.network
+  endpoint: wss://mandala-tc7-rpcnode.aca-dev.network/ws
   chaintypes:
     file: ./types.json
 dataSources:
