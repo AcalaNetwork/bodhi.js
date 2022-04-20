@@ -10,8 +10,8 @@
     "chai": "~4.3.4",
     "ethereum-waffle": "~3.4.0",
     "mocha": "~9.1.3",
-    "ts-node": "~10.3.0",
-    "typescript": "~4.4.4"
+    "ts-node": "~10.7.0",
+    "typescript": "~4.6.3"
   },
   "scripts": {
     "build": "waffle",
