@@ -1,6 +1,6 @@
 specVersion: 1.0.0
 name: '@acala-network/evm-subql'
-version: 0.0.1
+version: 1.0.0
 runner:
   node:
     name: '@subql/node'
@@ -8,8 +8,8 @@ runner:
   query:
     name: '@subql/query'
     version: 0.14.1
-description: ''
-repository: ''
+description: 'subquery for Acala EVM+'
+repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:
   file: ./schema.graphql
 network:
@@ -20,6 +20,7 @@ network:
   chainId: '0x42375bbff13887e1967c7a1836b7b9c123500ad14705d7cd9f21cedba90c6a3a'
   endpoint: ws://localhost:9944
   chaintypes:
+    # TODO: can generate this dynamically with `yarn build` using `@acala-network/types`
     file: ./types.json
 dataSources:
   - kind: substrate/Runtime
