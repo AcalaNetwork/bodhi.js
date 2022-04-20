@@ -18,31 +18,32 @@ module.exports = {
   }
 };
 
-const polkadotDeps = {
-  "@polkadot/api": "~8.1.1",
-  "@polkadot/api-derive": "~8.1.1",
-  '@polkadot/api-augment': "~8.1.1",
-  "@polkadot/types": "~8.1.1",
-  "@polkadot/types-known": "~8.1.1",
-  "@polkadot/rpc-core": "~8.1.1",
-  "@polkadot/rpc-provider": "~8.1.1",
-  "@polkadot/keyring": "~9.0.1",
-  "@polkadot/util": "~9.0.1",
-  "@polkadot/util-crypto": "~9.0.1",
-  "@acala-network/types": "~4.1.1",
-}
+// const polkadotDeps = {
+//   "@polkadot/api": "~8.1.1",
+//   "@polkadot/api-derive": "~8.1.1",
+//   '@polkadot/api-augment': "~8.1.1",
+//   "@polkadot/types": "~8.1.1",
+//   "@polkadot/types-known": "~8.1.1",
+//   "@polkadot/rpc-core": "~8.1.1",
+//   "@polkadot/rpc-provider": "~8.1.1",
+//   "@polkadot/keyring": "~9.0.1",
+//   "@polkadot/util": "~9.0.1",
+//   "@polkadot/util-crypto": "~9.0.1",
+//   "@acala-network/types": "~4.1.1",
+// }
 
 const fixedDeps = {
-  ...polkadotDeps,
+  // ...polkadotDeps,
+  // ...ethersDeps,
   "bn.js": "4.12.0",
   "@types/bn.js": "5.1.0",
 } 
 
-const projects = [
-  "@acala-network/eth-rpc-adapter",
-  "@acala-network/evm-subql",
-  "@acala-network/bodhi"
-]
+// const projects = [
+//   "@acala-network/eth-rpc-adapter",
+//   "@acala-network/evm-subql",
+//   "@acala-network/bodhi"
+// ]
 
 /**
  * This hook is invoked during installation before a package's dependencies
