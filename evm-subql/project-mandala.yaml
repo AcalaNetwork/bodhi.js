@@ -8,16 +8,15 @@ runner:
   query:
     name: '@subql/query'
     version: 0.14.1
-description: 'subquery for Local Mandala EVM+'
+description: 'subquery for Public Mandala EVM+'
 repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:
   file: ./schema.graphql
 network:
-  # local mandala
-  chainId: '0x42375bbff13887e1967c7a1836b7b9c123500ad14705d7cd9f21cedba90c6a3a'
-  endpoint: ws://localhost:9944
+  # public mandala
+  chainId: '0x5c562e6300954998233c9a40b6b86f3028977e6d32d0da1af207738d19f98c1b'
+  endpoint: wss://mandala-tc7-rpcnode.aca-dev.network/ws
   chaintypes:
-    # TODO: can generate this dynamically with `yarn build` using `@acala-network/types`
     file: ./types.json
 dataSources:
   - kind: substrate/Runtime

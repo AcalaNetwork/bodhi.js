@@ -29,13 +29,13 @@
   resolved "https://registry.npmmirror.com/@acala-network/contracts/-/contracts-4.2.0.tgz#171040db0117bdd9b33bb0a449b4a940363de75e"
   integrity sha512-IT63HPWsHPeHy8zCr71wAztghrFdscLzZlYdcvewEuBGWkRpHFlZ4i32kADYPv6UAT9ew7en6nqOWJa48CaliQ==
 
-"@acala-network/eth-providers@~2.4.5":
-  version "2.4.5"
-  resolved "https://registry.yarnpkg.com/@acala-network/eth-providers/-/eth-providers-2.4.5.tgz#99b8f2dc2c95182d2bc90391bea800b2b922ad09"
-  integrity sha512-kAsXPkfaoNDjPGShXD3ux908/VaEt959JNH7wl9Jn9Gd/uv5ZKaU/epULJ08N7zbA1OXNJlPMnhsmEDj3Utuag==
+"@acala-network/eth-providers@~2.4.6":
+  version "2.4.6"
+  resolved "https://registry.npmjs.org/@acala-network/eth-providers/-/eth-providers-2.4.6.tgz#b17f87cc0eb786be536e01a2a35bed6901fc20da"
+  integrity sha512-tmaRVPkS1U5z3r3A/10EFXlSXgQXA23JZyIn0fevscIcLP9314lUQ2lspCOvFh/Hlp8GDcU3F0EPys8e9GjnPA==
   dependencies:
     "@acala-network/contracts" "~4.2.0"
-    "@acala-network/eth-transactions" "2.4.5"
+    "@acala-network/eth-transactions" "2.4.6"
     "@acala-network/type-definitions" "~4.1.1"
     "@ethersproject/abstract-provider" "~5.5.0"
     "@ethersproject/address" "~5.5.0"
@@ -60,10 +60,10 @@
     graphql "~16.0.1"
     graphql-request "~3.6.1"
 
-"@acala-network/eth-transactions@2.4.5":
-  version "2.4.5"
-  resolved "https://registry.yarnpkg.com/@acala-network/eth-transactions/-/eth-transactions-2.4.5.tgz#bc07f445830f023f7d7fa9708e149286fe7b0afc"
-  integrity sha512-pzA0FRyd63vZBsT0ErP4F4yA+4wq0YbQYu4VAZELZo0o6NNSQnYPi4qHkqaoN5+vmLRd8ibwNXiDvVblS/OiOQ==
+"@acala-network/eth-transactions@2.4.6":
+  version "2.4.6"
+  resolved "https://registry.npmjs.org/@acala-network/eth-transactions/-/eth-transactions-2.4.6.tgz#9c2054df9311f05258810e862a9cdf65e8063a13"
+  integrity sha512-KyEiusKZNSfQ9c53HTMuHzp1Z+l9bb0dkRHqShfNn0UuZKWYNwJD/3PYnZdr2vYmWB21llDteZ7b0lY/vExaig==
   dependencies:
     "@ethersproject/address" "~5.5.0"
     "@ethersproject/bignumber" "~5.5.0"
