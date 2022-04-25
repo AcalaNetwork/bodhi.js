@@ -1,5 +1,4 @@
 import axios from 'axios';
-// import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { parseUnits, Interface } from 'ethers/lib/utils';
 import tokenAbi from '@acala-network/contracts/build/contracts/Token.json';
