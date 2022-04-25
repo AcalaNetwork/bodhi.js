@@ -2,7 +2,7 @@ import axios from 'axios';
 // import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { parseUnits, Interface } from 'ethers/lib/utils';
-import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
+import tokenAbi from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
 
 dotenv.config();
@@ -25,30 +25,59 @@ const rpcGet =
 const eth_call = rpcGet('eth_call');
 const eth_blockNumber = rpcGet('eth_blockNumber');
 
+const TOKENS = [
+  'ACA',
+  'AUSD',
+  'DOT',
+  'LDOT',
+  'RENBTC',
+  'CASH',
+  'KAR',
+  'KUSD',
+  'KSM',
+  'LKSM',
+  'TAI',
+  'BNC',
+  'VSKSM',
+  'PHA',
+  'KINT',
+  'KBTC'
+];
+const iface = new Interface(tokenAbi.abi);
+
 (async () => {
-  const ACA_ADDRESS = '0x0000000000000000000100000000000000000000';
-  const res = eth_call();
+  const funcs = ['name', 'symbol', 'decimals'];
 
-  const iface = new Interface(ACAABI.abi);
+  const queries = [];
+  const allInfo = {};
 
-  // const funcs = ACAABI.abi.filter(a => a.type === 'function' && a.inputs.length === 0).map(x => x.name);
-  const funcs = [
-    'symbol'
-    // 'decimals',
-  ];
+  for (const token of TOKENS) {
+    allInfo[token] = { token };
 
-  funcs.forEach(async (f) => {
-    const data = iface.encodeFunctionData(f);
     const blockNumber = (await eth_blockNumber()).data.result;
-    const res = await eth_call([
-      {
-        to: ADDRESS.ACA,
-        data
-      },
-      blockNumber
-    ]);
 
-    const decodedData = iface.decodeFunctionResult(f, res.data.result)[0];
-    console.log(f, data, decodedData);
-  });
+    queries.push(
+      ...funcs.map(async (f) => {
+        const data = iface.encodeFunctionData(f);
+        try {
+          const res = await eth_call([
+            {
+              to: ADDRESS[token],
+              data
+            },
+            blockNumber
+          ]);
+
+          const decodedData = iface.decodeFunctionResult(f, res.data.result)[0];
+          allInfo[token][f] = decodedData;
+        } catch (error) {
+          console.log(error);
+          allInfo[token][f] = 'failed to fetch';
+        }
+      })
+    );
+  }
+
+  await Promise.all(queries);
+  console.log(allInfo);
 })();
