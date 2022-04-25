@@ -50,10 +50,10 @@ const iface = new Interface(tokenAbi.abi);
   const queries = [];
   const allInfo = {};
 
+  const blockNumber = (await eth_blockNumber()).data.result;
+
   for (const token of TOKENS) {
     allInfo[token] = { token };
-
-    const blockNumber = (await eth_blockNumber()).data.result;
 
     queries.push(
       ...funcs.map(async (f) => {
