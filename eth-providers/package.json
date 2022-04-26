@@ -15,6 +15,7 @@
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@acala-network/types": "~4.1.2-10",
     "@acala-network/contracts": "~4.2.0",
     "@acala-network/eth-transactions": "workspace:*",
     "@acala-network/type-definitions": "~4.1.1",
@@ -42,7 +43,6 @@
     "graphql-request": "~3.6.1"
   },
   "devDependencies": {
-    "@acala-network/types": "~4.1.1",
     "@graphql-codegen/cli": "2.2.2",
     "@graphql-codegen/typescript": "2.3.0",
     "@rushstack/eslint-config": "~2.5.4",
