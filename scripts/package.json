@@ -1,0 +1,19 @@
+{
+  "name": "bodhi-scripts",
+  "version": "1.0.0",
+  "description": "some util scripts for bodhi",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "bump": "TS_NODE_TRANSPILE_ONLY=true ts-node bump-version.ts",
+    "precompile": "TS_NODE_TRANSPILE_ONLY=true ts-node test-precompile.ts"
+  },
+  "devDependencies": {
+    "@acala-network/contracts": "^3.2.0",
+    "axios": "^0.26.1",
+    "dotenv": "^16.0.0",
+    "ethers": "^5.6.4",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
+  }
+}
