@@ -2,7 +2,11 @@
 A node service that allows existing Ethereum dApp to be able to interact with [Acala EVM](https://github.com/AcalaNetwork/Acala/tree/master/modules/evm).
 
 ## Run
-#### from npm version
+There are 3 ways to run an RPC adapter:
+- from npm package
+- from local build
+- from docker
+#### from npm package
 - run the server (should automagically install it)
 ```
 LOCAL_MODE=1 npx @acala-network/eth-rpc-adapter
@@ -20,9 +24,9 @@ rush build @acala-network/eth-rpc-adapter
 LOCAL_MODE=1 yarn dev
 ```
 
-#### with docker
+#### from docker
 ```
-docker compose up
+docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:aa2c8d7 yarn start
 ```
 note that docker image might not be most up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 ## Options
