@@ -68,6 +68,48 @@ GET http://localhost:8545
 }
 ```
 
+## Available RPCs
+### ETH compatible RPCs
+These are ETH compatible RPCs, the interface and functionalities match https://eth.wiki/json-rpc/API
+- `web3_clientVersion`
+- `net_version`
+- `eth_blockNumber`
+- `eth_chainId`
+- `eth_getTransactionCount`
+- `eth_getCode`
+- `eth_call`
+- `eth_getBalance`
+- `eth_getBlockByHash`
+- `eth_getBlockByNumber`
+- `eth_gasPrice`
+- `eth_accounts`
+- `eth_getStorageAt`
+- `eth_getBlockTransactionCountByHash`
+- `eth_getBlockTransactionCountByNumber`
+- `eth_sendRawTransaction`
+- `eth_estimateGas`
+- `eth_getTransactionByHash`
+- `eth_getTransactionReceipt`
+- `eth_sign`
+- `eth_sendTransaction`
+- `eth_getTransactionByBlockHashAndIndex`
+- `eth_getTransactionByBlockNumberAndIndex`
+- `eth_getUncleCountByBlockHash`
+- `eth_getUncleCountByBlockNumber`
+- `eth_getUncleByBlockHashAndIndex`
+- `eth_getUncleByBlockNumberAndIndex`
+- `eth_getLogs`
+- `eth_subscribe`
+- `eth_unsubscribe`
+
+### Custom RPCs
+These are EVM+ custom RPCs that only exist on Acala/Karura
+- `eth_getEthGas`: calculate eth transaction gas params from substrate gas params. More details please refer (here)[link to doc]
+- `eth_getEthResources`: calculate eth transaction gas params from transaction details
+- `net_indexer`: get subql indexer metadata
+- `net_cacheInfo`: get the cache info
+- `net_isSafeMode`: check if this RPC is running in safe mode
+- `net_health`: check the health of the RPC endpoint
 ## Test
 ```
 yarn test     # unit tests
