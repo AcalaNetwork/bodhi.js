@@ -61,10 +61,10 @@
       "^4.1.1"
     ],
     "@acala-network/bodhi": [
-      "^2.4.7"
+      "^2.4.6"
     ],
     "@acala-network/eth-providers": [
-      "^2.4.7"
+      "^2.4.6"
     ],
 
     // these are mostly alternative versions used by tutorials
