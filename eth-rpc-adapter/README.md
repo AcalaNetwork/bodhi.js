@@ -6,6 +6,7 @@ There are 3 ways to run an RPC adapter:
 - from npm package
 - from local build
 - from docker
+
 #### from npm package
 - run the server (should automagically install it)
 ```
@@ -29,6 +30,7 @@ LOCAL_MODE=1 yarn dev
 docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:aa2c8d7 yarn start
 ```
 note that docker image might not be most up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
+
 ## Options
 - available ENV options:
   - **ENDPOINT_URL**: acala node WS url
@@ -114,6 +116,7 @@ These are EVM+ custom RPCs that only exist on Acala/Karura
 - `net_cacheInfo`: get the cache info
 - `net_isSafeMode`: check if this RPC is running in safe mode
 - `net_health`: check the health of the RPC endpoint
+
 ## Test
 ```
 yarn test     # unit tests
