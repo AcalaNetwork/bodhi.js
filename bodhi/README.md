@@ -2,8 +2,6 @@
 
 bodhi.js SDK implements a web3 provider to allow existing Ethereum dApp to be able to interact with [Acala EVM](https://github.com/AcalaNetwork/Acala/tree/master/modules/evm).
 
-**If you are using mandala tc6, then you should use @acala-network/bodhi@0.2.x, @acala-network/api@0.7.1, @polkadot/api@4.2.1.** 
-
 ## Getting Started
 
 - Install dependencies
@@ -27,12 +25,12 @@ The Provider provides some api for interacting with nodes and is an instance of 
 apiOptions has the same parameters as when creating an instance of apiPromise for polkadot.js 
 
 ```javascript
-import { options } from "@acala-network/api";
+import { createApiOptions } from "@acala-network/eth-providers";
 import { Provider } from "@acala-network/bodhi";
 import { WsProvider } from "@polkadot/api";
 
 const evmprovider = new Provider(
-  options({
+  createApiOptions({
     provider: new WsProvider("ws://localhost:9944")
   })
 );
