@@ -140,12 +140,12 @@ Now that we added TypeScript to our project, we need to configure it. To do that
 ```
 
 In addition to the TypeScript, we will be using the `chai` and `mocha` dependencies in
-development (for testing) and `@acala-network/bodhi` as well as `@acala-network/api` dependencies,
+development (for testing) and `@acala-network/bodhi` dependency,
 to be able to interact with the network. Use the following two lines of code to add them:
 
 ```
 yarn add --dev @types/chai chai @types/mocha mocha
-yarn add @acala-network/api @acala-network/bodhi
+yarn add @acala-network/bodhi
 ```
 
 Now that we have all of the necessary dependencies added to our project, let's start writing the
@@ -164,7 +164,7 @@ import { Contract } from 'ethers';
 
 Additionally we will need `evmChai`, `Signer` and `TestProvider` from `@acala-network/bodhi` and
 `WsProvider` from `@polkadot/api`. Don't worry about importing `@polkadot/api` package, as it is a
-dependent package of `@acala-network/api` and is already added to the project:
+dependent package of `@acala-network/bodhi` and is already added to the project:
 
 ```
 import { evmChai, Signer, TestProvider } from '@acala-network/bodhi';

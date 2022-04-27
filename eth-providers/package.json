@@ -15,9 +15,9 @@
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
+    "@acala-network/types": "~4.1.2-11",
     "@acala-network/contracts": "~4.2.0",
     "@acala-network/eth-transactions": "workspace:*",
-    "@acala-network/type-definitions": "~4.1.1",
     "@ethersproject/abstract-provider": "~5.5.0",
     "@ethersproject/address": "~5.5.0",
     "@ethersproject/bignumber": "~5.5.0",
@@ -36,15 +36,11 @@
     "@polkadot/types": "~8.1.1",
     "@polkadot/util": "~9.0.1",
     "@polkadot/util-crypto": "~9.0.1",
-    "bn.js": "~5.2.0",
     "ethers": "~5.5.0",
     "graphql": "~16.0.1",
     "graphql-request": "~3.6.1"
   },
   "devDependencies": {
-    "@acala-network/types": "~4.1.1",
-    "@graphql-codegen/cli": "2.2.2",
-    "@graphql-codegen/typescript": "2.3.0",
     "@rushstack/eslint-config": "~2.5.4",
     "@rushstack/heft": "~0.44.13",
     "@sinonjs/fake-timers": "~9.1.1",

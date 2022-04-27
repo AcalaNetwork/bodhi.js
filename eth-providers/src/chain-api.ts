@@ -4,7 +4,7 @@ import {
   types as acalaTypes,
   typesAlias as acalaTypesAlias,
   typesBundle as acalaTypesBundle
-} from '@acala-network/type-definitions';
+} from '@acala-network/types';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import type { ApiOptions } from '@polkadot/api/types';
 

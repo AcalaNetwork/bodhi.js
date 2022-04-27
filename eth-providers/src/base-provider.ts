@@ -993,18 +993,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const extrinsic = !to
       ? this.api.tx.evm.create(
-          data,
-          value?.toBigInt(),
+          data!,
+          value?.toBigInt()!,
           U64MAX.toBigInt(), // gas_limit u64::max
           U32MAX.toBigInt(), // storage_limit u32::max
+          // @ts-ignore @TODO fix type
           accessList
         )
       : this.api.tx.evm.call(
           to,
-          data,
-          value?.toBigInt(),
+          data!,
+          value?.toBigInt()!,
           U64MAX.toBigInt(), // gas_limit u64::max
           U32MAX.toBigInt(), // storage_limit u32::max
+          // @ts-ignore @TODO fix type
           accessList
         );
 
@@ -1215,6 +1217,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ethTx.value.toString(),
       gasLimit,
       storageLimit,
+      // @ts-ignore @TODO fix type
       accessList || [],
       validUntil
     );
