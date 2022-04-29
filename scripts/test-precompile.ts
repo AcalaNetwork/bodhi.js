@@ -61,6 +61,8 @@ const getAllTokenInfo = async () => {
     queries.push(
       ...funcs.map(async (f) => {
         const data = iface.encodeFunctionData(f);
+        allInfo[token]['address'] = ADDRESS[token];
+
         try {
           const res = await eth_call([
             {
@@ -73,7 +75,7 @@ const getAllTokenInfo = async () => {
           const decodedData = iface.decodeFunctionResult(f, res.data.result)[0];
           allInfo[token][f] = decodedData._isBigNumber ? decodedData.toBigInt() : decodedData;
         } catch (error) {
-          console.log(error);
+          // console.log(error);
           allInfo[token][f] = 'failed to fetch';
         }
       })
