@@ -610,7 +610,8 @@ export abstract class BaseProvider extends AbstractProvider {
       case 'DEX':
       case 'HONZONBRIDGE':
       case 'PROXY':
-      case 'SUDO': {
+      case 'SUDO':
+      case 'TECHNICALCOMMITTEE': {
         value = 0;
         gas = 2_100_000;
         input = '0x';
@@ -622,7 +623,7 @@ export abstract class BaseProvider extends AbstractProvider {
       }
       default: {
         return logger.throwError(
-          'Unspport ' + extrinsic.method.section.toUpperCase() + 'blockHash: ' + blockHash,
+          'Unspport ' + extrinsic.method.section.toUpperCase() + ' blockHash: ' + blockHash,
           Logger.errors.UNSUPPORTED_OPERATION
         );
       }
