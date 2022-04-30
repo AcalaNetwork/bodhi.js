@@ -91,6 +91,7 @@ importers:
       '@types/bn.js': ~5.1.0
       '@types/chai': ~4.2.22
       '@types/chai-as-promised': ~7.1.4
+      '@types/lru-cache': ~7.6.1
       '@types/mocha': ~9.0.0
       '@types/sinonjs__fake-timers': ~8.1.2
       chai: ~4.3.4
@@ -100,6 +101,7 @@ importers:
       ethers: ~5.5.0
       graphql: ~16.0.1
       graphql-request: ~3.6.1
+      lru-cache: ~7.8.2
       mocha: ~9.1.3
       sinon: ~13.0.1
       sinon-chai: ~3.7.0
@@ -130,6 +132,7 @@ importers:
       ethers: 5.5.4
       graphql: 16.0.1
       graphql-request: 3.6.1_graphql@16.0.1
+      lru-cache: 7.8.2
     devDependencies:
       '@rushstack/eslint-config': 2.5.4_eslint@7.32.0+typescript@4.6.3
       '@rushstack/heft': 0.44.13
@@ -137,6 +140,7 @@ importers:
       '@types/bn.js': 5.1.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
+      '@types/lru-cache': 7.6.1
       '@types/mocha': 9.0.0
       '@types/sinonjs__fake-timers': 8.1.2
       chai: 4.3.4
@@ -3905,6 +3909,10 @@ packages:
   /@types/lru-cache/5.1.1:
     resolution: {integrity: sha512-ssE3Vlrys7sdIzs5LOxCzTVMsU7i9oa/IaW92wF32JFb3CVczqOkru2xspuKczHEbG3nvmPY7IFqVmGGHdNbYw==}
     dev: false
+
+  /@types/lru-cache/7.6.1:
+    resolution: {integrity: sha512-69x+Dhrm2aShFkTqUuPgUXbKYwvq4FH/DVeeQH7MBfTjbKjPX51NGLERxVV1vf33N71dzLvXCko4OLqRvsq53Q==}
+    dev: true
 
   /@types/mime/1.3.2:
     resolution: {integrity: sha512-YATxVxgRqNH6nHEIsvg6k2Boc1JHI9ZbH5iWFFv/MTkchz3b1ieGDa5T0a9RznNdI0KhVbdbWSN+KWWrQZRxTw==}
@@ -11092,6 +11100,11 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       yallist: 4.0.0
+
+  /lru-cache/7.8.2:
+    resolution: {integrity: sha512-tVtvt+EqoUgjtIPD3rXSJCSf5izSRJShgnzUeK59T+wxZ9LrFEP3GxhX/Mhf8Rl7kk4ngd4vZaV+5sEibhvQ+A==}
+    engines: {node: '>=12'}
+    dev: false
 
   /lru_map/0.3.3:
     resolution: {integrity: sha1-tcg1G5Rky9dQM1p5ZQoOwOVhGN0=}

@@ -33,6 +33,7 @@ import { isNull, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
+import LRUCache from 'lru-cache';
 import {
   BIGNUMBER_ONE,
   BIGNUMBER_ZERO,
@@ -211,6 +212,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly localMode: boolean;
   readonly subql?: SubqlProvider;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
+  readonly _storageCache: LRUCache<string, any>;
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
@@ -221,11 +223,13 @@ export abstract class BaseProvider extends AbstractProvider {
   constructor({
     safeMode = false,
     localMode = false,
-    subqlUrl
+    subqlUrl,
+    storageCacheSize = 5000
   }: {
     safeMode?: boolean;
     localMode?: boolean;
     subqlUrl?: string;
+    storageCacheSize?: number;
   } = {}) {
     super();
     this.formatter = new Formatter();
@@ -235,6 +239,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.localMode = localMode;
     this.latestFinalizedBlockHash = undefined;
     this.latestFinalizedBlockNumber = undefined;
+    this._storageCache = new LRUCache({ max: storageCacheSize });
 
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
@@ -327,6 +332,13 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const blockHash = await this._getBlockHash(blockTag);
 
+    const cacheKey = `${module}-${blockHash}-${args.join(',')}`;
+    const cached = this._storageCache.get(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
 
     if (!this.storages.get(registry)) {
@@ -357,6 +369,8 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash,
       isPedantic: !entry.meta.modifier.isOptional
     });
+
+    this._storageCache.set(cacheKey, result);
 
     return result as any as T;
   };
@@ -1425,6 +1439,16 @@ export abstract class BaseProvider extends AbstractProvider {
             return logger.throwArgumentError('block number should be less than u32', 'blockNumber', blockNumber);
           }
 
+          const isFinalized = this.latestFinalizedBlockNumber && blockNumber.lte(this.latestFinalizedBlockNumber);
+          const cacheKey = `blockHash-${blockNumber.toString()}`;
+
+          if (isFinalized) {
+            const cached = this._storageCache.get(cacheKey);
+            if (cached) {
+              return cached;
+            }
+          }
+
           const _blockHash = await this.api.rpc.chain.getBlockHash(blockNumber.toBigInt());
 
           if (_blockHash.isEmpty) {
@@ -1433,6 +1457,10 @@ export abstract class BaseProvider extends AbstractProvider {
           }
 
           blockHash = _blockHash.toHex();
+
+          if (isFinalized) {
+            this._storageCache.set(cacheKey, blockHash);
+          }
         }
 
         if (!blockHash) {
