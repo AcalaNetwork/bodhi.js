@@ -39,8 +39,7 @@
     "ethers": "~5.5.0",
     "graphql": "~16.0.1",
     "graphql-request": "~3.6.1",
-    "lru-cache": "~7.8.2",
-    "@types/lru-cache": "~7.6.1"
+    "lru-cache": "~7.8.2"
   },
   "devDependencies": {
     "@rushstack/eslint-config": "~2.5.4",
@@ -51,6 +50,7 @@
     "@types/chai-as-promised": "~7.1.4",
     "@types/mocha": "~9.0.0",
     "@types/sinonjs__fake-timers": "~8.1.2",
+    "@types/lru-cache": "~7.6.1",
     "chai": "~4.3.4",
     "chai-as-promised": "~7.1.1",
     "chai-subset": "~1.6.0",
