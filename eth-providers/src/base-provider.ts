@@ -1414,7 +1414,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getBlockHash = async (_blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
     const blockTag = (await _blockTag) || 'latest';
-    console.log('blockTag', blockTag);
+
     switch (blockTag) {
       case 'pending': {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
