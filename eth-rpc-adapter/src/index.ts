@@ -1,3 +1,4 @@
+import 'dd-trace/init';
 import { start } from './server';
 
 start().catch((e) => {
