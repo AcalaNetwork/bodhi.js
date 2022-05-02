@@ -52,7 +52,7 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.wss = new WebSocket.Server({ server: this.server as any });
 
     this.wss.on('connection', (ws: WebSocket) => {
-      ws.on('message', (message: string) => this.webSocketRouterHandler(JSON.parse(message), ws.send.bind(ws)));
+      ws.on('message', (message: string) => this.webSocketRouterHandler(message, ws.send.bind(ws)));
       ws.on('close', () => ws.removeAllListeners());
     });
   }
@@ -67,7 +67,29 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.server.close();
   }
 
-  private async webSocketRouterHandler(req: any, wsSend: any): Promise<void> {
+  private praseRequest(req: string): any {
+    try {
+      return JSON.parse(req);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  private async webSocketRouterHandler(rawReq: any, wsSend: any): Promise<void> {
+    const req = this.praseRequest(rawReq);
+    if (req === null) {
+      const error = new InvalidRequest();
+      const result = {
+        jsonrpc: '2.0',
+        error: {
+          code: error.code,
+          data: error.data,
+          message: error.message
+        }
+      };
+      wsSend(JSON.stringify(result));
+      return;
+    }
     const respondWith = (data: any): void =>
       wsSend(
         JSON.stringify({
