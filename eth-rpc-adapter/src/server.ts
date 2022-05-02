@@ -62,8 +62,8 @@ export async function start(): Promise<void> {
   subquery url   : ${SUBQL_URL}
   listening to   : http ${HTTP_PORT} | ws ${WS_PORT}
   max cacheSize  : ${MAX_CACHE_SIZE}
-  max batchSize  : ${STORAGE_CACHE_SIZE}
-  max storageSize: ${LOCAL_MODE}
+  max batchSize  : ${MAX_BATCH_SIZE}
+  max storageSize: ${STORAGE_CACHE_SIZE}
   safe mode      : ${SAFE_MODE}
   local mode     : ${LOCAL_MODE}
   --------------------------------------------
