@@ -32,7 +32,8 @@
       "incremental": true,
       "enableParallelism": true,
       // Enable "watch mode"
-      "watchForChanges": true
+      "watchForChanges": true,
+      "ignoreMissingScript": true
     },
     {
       "commandKind": "bulk",
