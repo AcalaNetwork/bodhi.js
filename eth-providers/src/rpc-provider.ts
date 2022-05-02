@@ -6,13 +6,15 @@ export interface BaseProviderOptions {
   localMode?: boolean;
   maxCacheSize?: number;
   subqlUrl?: string;
+  storageCacheSize?: number;
 }
 
 const defaultOpts: BaseProviderOptions = {
   safeMode: false,
   localMode: false,
   maxCacheSize: 200,
-  subqlUrl: undefined
+  subqlUrl: undefined,
+  storageCacheSize: 5000
 };
 
 export class EvmRpcProvider extends BaseProvider {
