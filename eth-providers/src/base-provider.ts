@@ -29,7 +29,7 @@ import { decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
 import type { AccountId, EventRecord, Header } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
-import { isNull, u8aToU8a } from '@polkadot/util';
+import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
@@ -212,7 +212,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly localMode: boolean;
   readonly subql?: SubqlProvider;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
-  readonly _storageCache: LRUCache<string, any>;
+  readonly _storageCache: LRUCache<string, Uint8Array | null>;
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
@@ -332,13 +332,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const blockHash = await this._getBlockHash(blockTag);
 
-    const cacheKey = `${module}-${blockHash}-${args.join(',')}`;
-    const cached = this._storageCache.get(cacheKey);
-
-    if (cached) {
-      return cached;
-    }
-
     const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
 
     if (!this.storages.get(registry)) {
@@ -353,24 +346,33 @@ export abstract class BaseProvider extends AbstractProvider {
     const entry = storage[section][method];
     const key = entry(...args);
 
-    const value: any = await this.api.rpc.state.getStorage(key, blockHash);
-
     const outputType = unwrapStorageType(registry.registry, entry.meta.type, entry.meta.modifier.isOptional);
 
-    const isEmpty = isNull(value);
+    const cacheKey = `${module}-${blockHash}-${args.join(',')}`;
+    const cached = this._storageCache.get(cacheKey);
 
-    // we convert to Uint8Array since it maps to the raw encoding, all
-    // data will be correctly encoded (incl. numbers, excl. :code)
-    const input = isEmpty
-      ? null
-      : u8aToU8a(entry.meta.modifier.isOptional ? value.toU8a() : value.isSome ? value.unwrap().toU8a() : null);
+    let input: Uint8Array | null = null;
+
+    if (cached) {
+      input = cached;
+    } else {
+      const value: any = await this.api.rpc.state.getStorage(key, blockHash);
+
+      const isEmpty = isNull(value);
+
+      // we convert to Uint8Array since it maps to the raw encoding, all
+      // data will be correctly encoded (incl. numbers, excl. :code)
+      input = isEmpty
+        ? null
+        : u8aToU8a(entry.meta.modifier.isOptional ? value.toU8a() : value.isSome ? value.unwrap().toU8a() : null);
+
+      this._storageCache.set(cacheKey, input);
+    }
 
     const result = registry.registry.createTypeUnsafe(outputType, [input], {
       blockHash,
       isPedantic: !entry.meta.modifier.isOptional
     });
-
-    this._storageCache.set(cacheKey, result);
 
     return result as any as T;
   };
@@ -1445,7 +1447,7 @@ export abstract class BaseProvider extends AbstractProvider {
           if (isFinalized) {
             const cached = this._storageCache.get(cacheKey);
             if (cached) {
-              return cached;
+              return u8aToHex(cached);
             }
           }
 
@@ -1459,7 +1461,7 @@ export abstract class BaseProvider extends AbstractProvider {
           blockHash = _blockHash.toHex();
 
           if (isFinalized) {
-            this._storageCache.set(cacheKey, blockHash);
+            this._storageCache.set(cacheKey, _blockHash.toU8a());
           }
         }
 

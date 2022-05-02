@@ -19,12 +19,14 @@ export async function start(): Promise<void> {
   const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
   const LOCAL_MODE = !!Number(process.env.LOCAL_MODE || 0);
   const MAX_BATCH_SIZE = Number(process.env.MAX_BATCH_SIZE || 50);
+  const STORAGE_CACHE_SIZE = Number(process.env.STORAGE_CACHE_SIZE || 5000);
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL, {
     safeMode: SAFE_MODE,
     localMode: LOCAL_MODE,
     maxCacheSize: MAX_CACHE_SIZE,
-    subqlUrl: SUBQL_URL
+    subqlUrl: SUBQL_URL,
+    storageCacheSize: STORAGE_CACHE_SIZE
   });
 
   const bridge = new Eip1193Bridge(provider);
@@ -55,14 +57,15 @@ export async function start(): Promise<void> {
   --------------------------------------------
                🚀 SERVER STARTED 🚀
   --------------------------------------------
-  version      : ${version}
-  endpoint url : ${ENDPOINT_URL}
-  subquery url : ${SUBQL_URL}
-  listening to : http ${HTTP_PORT} | ws ${WS_PORT}
-  max cacheSize: ${MAX_CACHE_SIZE}
-  max batchSize: ${MAX_BATCH_SIZE}
-  safe mode    : ${SAFE_MODE}
-  local mode   : ${LOCAL_MODE}
+  version        : ${version}
+  endpoint url   : ${ENDPOINT_URL}
+  subquery url   : ${SUBQL_URL}
+  listening to   : http ${HTTP_PORT} | ws ${WS_PORT}
+  max cacheSize  : ${MAX_CACHE_SIZE}
+  max batchSize  : ${MAX_BATCH_SIZE}
+  max storageSize: ${STORAGE_CACHE_SIZE}
+  safe mode      : ${SAFE_MODE}
+  local mode     : ${LOCAL_MODE}
   --------------------------------------------
   `);
 }
