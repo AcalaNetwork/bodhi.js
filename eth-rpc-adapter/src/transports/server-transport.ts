@@ -44,7 +44,7 @@ export abstract class ServerTransport {
             method,
             params
           },
-          enterTime: Date.now(),
+          enterTime: performance.now(),
           exitTime: -1,
           elapsedTime: -1
         }
@@ -77,8 +77,8 @@ export abstract class ServerTransport {
     }
     if (span && spanTags) {
       // Update datadog span tags
+      spanTags.exitTime = performance.now();
       spanTags.elapsedTime = spanTags.exitTime - spanTags.enterTime;
-      spanTags.exitTime = Date.now();
       // Assign datadog tags to span
       Object.keys(spanTags).forEach((key) => span.setTag(key, (spanTags as any)[key]));
     }
