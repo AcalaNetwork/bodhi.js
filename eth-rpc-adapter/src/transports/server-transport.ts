@@ -1,3 +1,4 @@
+import tracer from 'dd-trace';
 import { Router } from '../router';
 import type { JSONRPCRequest, JSONRPCResponse } from './types';
 import { MethodNotFound, InvalidRequest } from '../errors';
@@ -34,6 +35,20 @@ export abstract class ServerTransport {
       console.warn('transport method called without a router configured.'); // tslint:disable-line
       throw new Error('No router configured');
     }
+    // Get datadog span from the context
+    const span = process.env.EXTENSIVE_DD_INSTRUMENTATION == 'true' ? tracer.scope().active() : null;
+    // Initialize datadog span tags
+    const spanTags = span
+      ? {
+          body: {
+            method,
+            params
+          },
+          enterTime: performance.now(),
+          exitTime: -1,
+          elapsedTime: -1
+        }
+      : null;
 
     const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
 
@@ -60,7 +75,13 @@ export abstract class ServerTransport {
         ...(await routerForMethod.call(method, params as any, cb))
       };
     }
-
+    if (span && spanTags) {
+      // Update datadog span tags
+      spanTags.exitTime = performance.now();
+      spanTags.elapsedTime = spanTags.exitTime - spanTags.enterTime;
+      // Assign datadog tags to span
+      Object.keys(spanTags).forEach((key) => span.setTag(key, (spanTags as any)[key]));
+    }
     return res;
   }
 }
