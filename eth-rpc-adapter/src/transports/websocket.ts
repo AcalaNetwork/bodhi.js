@@ -6,7 +6,7 @@ import http2, { Http2SecureServer, SecureServerOptions } from 'http2';
 import WebSocket from 'ws';
 import { logger } from '../logger';
 import ServerTransport from './server-transport';
-import type { JSONRPCRequest } from './types';
+import type { JSONRPCRequest, JSONRPCResponse } from './types';
 import { errorHandler } from '../middlewares';
 import { InvalidRequest } from '../errors';
 
@@ -118,7 +118,11 @@ export default class WebSocketServerTransport extends ServerTransport {
     } else {
       result = await super.routerHandler(req, respondWith);
     }
-    logger.debug(result, 'request completed');
+    if (!(result as JSONRPCResponse).error) {
+      logger.debug(result, 'request completed');
+    } else {
+      logger.error(result, 'request completed');
+    }
     wsSend(JSON.stringify(result));
   }
 }
