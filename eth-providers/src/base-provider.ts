@@ -622,26 +622,29 @@ export abstract class BaseProvider extends AbstractProvider {
         break;
       }
       // Not a raw evm transaction, input = 0x
-      case 'CURRENCIES':
-      case 'DEX':
-      case 'HONZONBRIDGE':
-      case 'PROXY':
-      case 'SUDO':
-      case 'TECHNICALCOMMITTEE': {
+      // case 'CURRENCIES':
+      // case 'DEX':
+      // case 'HONZONBRIDGE':
+      // case 'PROXY':
+      // case 'SUDO':
+      // case 'TECHNICALCOMMITTEE':
+      // case 'STABLEASSET':
+      // @TODO support utility
+      // case 'UTILITY': {
+      //   return logger.throwError('Unspport utility, blockHash: ' + blockHash, Logger.errors.UNSUPPORTED_OPERATION);
+      // }
+      // default: {
+      //   return logger.throwError(
+      //     'Unspport ' + extrinsic.method.section.toUpperCase() + ' blockHash: ' + blockHash,
+      //     Logger.errors.UNSUPPORTED_OPERATION
+      //   );
+      // }
+
+      // Not a raw evm transaction, input = 0x
+      default: {
         value = 0;
         gas = 2_100_000;
         input = '0x';
-        break;
-      }
-      // @TODO support utility
-      case 'UTILITY': {
-        return logger.throwError('Unspport utility, blockHash: ' + blockHash, Logger.errors.UNSUPPORTED_OPERATION);
-      }
-      default: {
-        return logger.throwError(
-          'Unspport ' + extrinsic.method.section.toUpperCase() + ' blockHash: ' + blockHash,
-          Logger.errors.UNSUPPORTED_OPERATION
-        );
       }
     }
 
