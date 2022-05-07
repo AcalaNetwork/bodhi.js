@@ -110,12 +110,14 @@ These are ETH compatible RPCs, the interface and functionalities match https://e
 
 ### Custom RPCs
 These are EVM+ custom RPCs that only exist on Acala/Karura
-- `eth_getEthGas`: calculate eth transaction gas params from substrate gas params. More details please refer (here)[link to doc]
-- `eth_getEthResources`: calculate eth transaction gas params from transaction details
+- `eth_getEthGas`: calculate eth transaction gas params from substrate gas params. More details please refer [here](https://evmdocs.acala.network/network/gas-parameters)]
+- `eth_getEthResources`: calculate eth transaction gas params from transaction details, params: [TransactionRequest](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionRequest)
 - `net_indexer`: get subql indexer metadata
 - `net_cacheInfo`: get the cache info
 - `net_isSafeMode`: check if this RPC is running in safe mode
 - `net_health`: check the health of the RPC endpoint
+- `eth_isBlockFinalized`: check the health of the RPC endpoint, params: [BlockTag](https://docs.ethers.io/v5/api/providers/types/#providers-BlockTag)
+- `eth_isTransactionFinalized`: check the health of the RPC endpoint, params: string
 
 ## Test
 ```

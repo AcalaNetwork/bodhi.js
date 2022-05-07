@@ -1492,6 +1492,13 @@ export abstract class BaseProvider extends AbstractProvider {
     return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash.toString() === verifyingBlockHash;
   };
 
+  _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
+    const tx = await this._getMinedTXReceipt(txHash);
+    if (!tx) return false;
+
+    return await this._isBlockFinalized(tx.blockHash);
+  };
+
   _ensureSafeModeBlockTagFinalization = async (_blockTag: BlockTagish): Promise<BlockTagish> => {
     if (!this.safeMode || !_blockTag) return _blockTag;
 
