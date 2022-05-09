@@ -21,7 +21,7 @@ export async function start(): Promise<void> {
   const MAX_BATCH_SIZE = Number(process.env.MAX_BATCH_SIZE || 50);
   const STORAGE_CACHE_SIZE = Number(process.env.STORAGE_CACHE_SIZE || 5000);
 
-  const provider = EvmRpcProvider.from(ENDPOINT_URL, {
+  const provider = EvmRpcProvider.from(ENDPOINT_URL.split(','), {
     safeMode: SAFE_MODE,
     localMode: LOCAL_MODE,
     maxCacheSize: MAX_CACHE_SIZE,
