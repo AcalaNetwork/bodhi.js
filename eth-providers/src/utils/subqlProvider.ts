@@ -1,4 +1,4 @@
-import { Filter, Log } from '@ethersproject/abstract-provider';
+import { Filter, FilterByBlockHash, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
 import { Query, _Metadata, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
 import { getLogsQueryFilter, adaptLogs, LOGS_NODES, TX_RECEIPT_NODES } from './logs';
@@ -58,7 +58,7 @@ export class SubqlProvider {
     return adaptLogs(res.logs!.nodes as LogGQL[]);
   };
 
-  getFilteredLogs = async (filter: Filter): Promise<Log[]> => {
+  getFilteredLogs = async (filter: Filter & FilterByBlockHash): Promise<Log[]> => {
     const queryFilter = getLogsQueryFilter(filter);
 
     const res = await this.queryGraphql(`

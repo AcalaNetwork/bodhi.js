@@ -54,7 +54,7 @@ const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTa
 };
 
 const _getAddressFilter = (address: string | undefined): string =>
-  address ? `address: { in: ${JSON.stringify(Array.isArray(address) ? address : [address])}}` : '';
+  address ? `address: { inInsensitive: ${JSON.stringify(Array.isArray(address) ? address : [address])}}` : '';
 
 const _getTopicsFilter = (topics: Array<string | Array<string> | null> | undefined): string => {
   // NOTE: if needed in the future, we can implement actual nested topic filter.

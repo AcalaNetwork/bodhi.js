@@ -4,6 +4,7 @@ import {
   EventType,
   FeeData,
   Filter,
+  FilterByBlockHash,
   Listener,
   Log,
   Provider as AbstractProvider,
@@ -1835,26 +1836,42 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   // Bloom-filter Queries
-  getLogs = async (filter: Filter): Promise<Log[]> => {
+  getLogs = async (rawFilter: Filter & FilterByBlockHash): Promise<Log[]> => {
     if (!this.subql) {
       return logger.throwError(
         'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
       );
     }
 
-    const { fromBlock = 'latest', toBlock = 'latest' } = filter;
-    const _filter = { ...filter };
+    const { fromBlock, toBlock, blockHash } = rawFilter;
+    const filter = { ...rawFilter };
 
-    if (fromBlock) {
-      const fromBlockNumber = await this._getBlockNumberFromTag(fromBlock);
-      _filter.fromBlock = fromBlockNumber;
-    }
-    if (toBlock) {
-      const toBlockNumber = await this._getBlockNumberFromTag(toBlock);
-      _filter.toBlock = toBlockNumber;
+    if (blockHash && (fromBlock || toBlock)) {
+      return logger.throwError(
+        '`fromBlock` and `toBlock` is not allowed in params when `blockHash` is present',
+        Logger.errors.INVALID_ARGUMENT,
+        {
+          blockHash,
+          fromBlock,
+          toBlock
+        }
+      );
     }
 
-    const filteredLogs = await this.subql.getFilteredLogs(_filter as Filter);
+    if (blockHash) {
+      const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
+
+      filter.fromBlock = blockNumber;
+      filter.toBlock = blockNumber;
+    } else {
+      const fromBlockNumber = await this._getBlockNumberFromTag(fromBlock ?? 'latest');
+      const toBlockNumber = await this._getBlockNumberFromTag(toBlock ?? 'latest');
+
+      filter.fromBlock = fromBlockNumber;
+      filter.toBlock = toBlockNumber;
+    }
+
+    const filteredLogs = await this.subql.getFilteredLogs(filter);
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
