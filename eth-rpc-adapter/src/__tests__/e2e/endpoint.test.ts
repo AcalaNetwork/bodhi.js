@@ -11,6 +11,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
+import { allLogs, log12, log6, log9, log12, log10, log11, log7, log8 } from './consts';
 
 dotenv.config();
 
@@ -36,6 +37,16 @@ export const logsEq = (a: Log[], b: Log[]): boolean =>
   a.every(({ transactionHash: t0, logIndex: l0 }) =>
     b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
   );
+
+const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
+  expect(a.length).to.greaterThan(0);
+  expect(a.length).to.equal(b.length);
+  expect(
+    a.every(({ transactionHash: t0, logIndex: l0 }) =>
+      b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
+    )
+  );
+};
 
 describe('env setup', () => {
   it('has tx in the chain', async () => {
@@ -87,42 +98,36 @@ describe('eth_getTransactionReceipt', () => {
   });
 });
 
+// eth_getLogs tests depend on the deterministic setup
 describe('eth_getLogs', () => {
   const eth_getLogs = rpcGet('eth_getLogs');
   const ALL_BLOCK_RANGE_FILTER = { fromBlock: 'earliest' };
 
   describe('when no filter', () => {
     it('returns all logs from latest block', async () => {
-      expect(true).to.equal(true); // this one is hard to test, skip
+      const res = (await eth_getLogs([{}])).data.result;
+      expect(res.length).to.equal(1);
+      expect(res[0]).to.deep.contain(log12);
     });
   });
 
   describe('filter by address', () => {
     it('returns correct logs', async () => {
-      const allLogs = await subql.getAllLogs();
-      expect(allLogs.length).to.greaterThan(0);
-
-      const log1 = allLogs[0];
-      const log2 = allLogs[allLogs.length - 1];
-      const log3 = allLogs[Math.floor(allLogs.length / 2)];
-      let res;
-      let expectedLogs;
-
       /* ---------- single address ---------- */
-      res = await eth_getLogs([{ address: log1.address, ...ALL_BLOCK_RANGE_FILTER }]);
-      expectedLogs = allLogs.filter((l) => l.address === log1.address);
-      expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      for (const log of allLogs) {
+        const res = await eth_getLogs([{ address: log.address, ...ALL_BLOCK_RANGE_FILTER }]);
+        const expectedLogs = allLogs.filter((l) => l.address === log.address);
+        expectLogsEqual(res.data.result, expectedLogs);
+      }
 
-      res = await eth_getLogs([{ address: log2.address, ...ALL_BLOCK_RANGE_FILTER }]);
-      expectedLogs = allLogs.filter((l) => l.address === log2.address);
-      expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
-
-      res = await eth_getLogs([{ address: log3.address, ...ALL_BLOCK_RANGE_FILTER }]);
-      expectedLogs = allLogs.filter((l) => l.address === log3.address);
-      expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      // should support different case and array of addresses
+      for (const log of allLogs) {
+        const res = await eth_getLogs([
+          { address: [log.address.toLocaleUpperCase(), '0x13579'], ...ALL_BLOCK_RANGE_FILTER }
+        ]);
+        const expectedLogs = allLogs.filter((l) => l.address === log.address);
+        expectLogsEqual(res.data.result, expectedLogs);
+      }
 
       /* ---------- multiple address ---------- */
       // TODO: interestingly, current Filter type says address can only be string
@@ -134,8 +139,6 @@ describe('eth_getLogs', () => {
     it('returns correct logs', async () => {
       const BIG_NUMBER = 88888888;
       const BIG_NUMBER_HEX = '0x54C5638';
-      const allLogs = await subql.getAllLogs();
-      expect(allLogs.length).to.greaterThan(0);
 
       let res;
       let expectedLogs;
@@ -143,23 +146,23 @@ describe('eth_getLogs', () => {
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ ...ALL_BLOCK_RANGE_FILTER }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: 0 }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: -100000, toBlock: BIG_NUMBER }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: -100000, toBlock: BIG_NUMBER_HEX }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: 0, toBlock: 'latest' }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       /* ---------- should return no logs ---------- */
       res = await eth_getLogs([{ fromBlock: 99999 }]);
@@ -171,53 +174,50 @@ describe('eth_getLogs', () => {
       expect(res.data.result).to.deep.equal([]);
 
       /* ---------- should return partial logs ---------- */
-      const from = 16;
-      const to = 50;
+      const from = 9;
+      const to = 11;
       res = await eth_getLogs([{ fromBlock: from }]);
       expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
       expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
       expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, expectedLogs);
     });
   });
 
   describe('filter by block tag', () => {
     it('returns correct logs for valid tag', async () => {
-      const allLogs = await subql.getAllLogs();
-      expect(allLogs.length).to.greaterThan(0);
-
       let res;
       let expectedLogs;
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ fromBlock: 'earliest' }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: 0 }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: '0x0' }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: '0x00000000' }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 'latest' }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, allLogs);
 
       /* ---------- should return no logs ---------- */
       res = await eth_getLogs([{ fromBlock: 'latest', toBlock: 'earliest' }]);
@@ -233,25 +233,129 @@ describe('eth_getLogs', () => {
       expect(res.data.result).to.deep.equal([]);
 
       /* ---------- should return some logs ---------- */
-      const from = 17;
-      const to = 50;
+      const from = 8;
+      const to = 10;
       res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
       expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
       expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
       expect(res.status).to.equal(200);
       expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      expectLogsEqual(res.data.result, expectedLogs);
     });
+  });
 
-    it('returns correct error code and messge for invalid tag', async () => {
+  describe('filter by topics', () => {
+    it('returns correct logs', async () => {
+      let res;
+      let expectedLogs;
+
+      /* ---------- should return all logs ---------- */
+      res = await eth_getLogs([{ topics: [], ...ALL_BLOCK_RANGE_FILTER }]);
+      expect(res.status).to.equal(200);
+      expectLogsEqual(res.data.result, allLogs);
+
+      /* ---------- should return no logs ---------- */
+      res = await eth_getLogs([{ topics: ['XXX'], ...ALL_BLOCK_RANGE_FILTER }]);
+      expect(res.data.result).to.deep.equal([]);
+
+      /* ---------- should return some logs ---------- */
+      for (const log of allLogs) {
+        res = await eth_getLogs([{ topics: log.topics, ...ALL_BLOCK_RANGE_FILTER }]);
+        expectedLogs = allLogs.filter((l) => log.topics.every((t) => l.topics.includes(t)));
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+
+        res = await eth_getLogs([{ topics: [log.topics[0]], ...ALL_BLOCK_RANGE_FILTER }]);
+        expectedLogs = allLogs.filter((l) => l.topics.includes(log.topics[0]));
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+
+        res = await eth_getLogs([{ topics: [log.topics.at(-1)], ...ALL_BLOCK_RANGE_FILTER }]);
+        expectedLogs = allLogs.filter((l) => l.topics.includes(log.topics.at(-1)));
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+      }
+    });
+  });
+
+  describe('filter by blockhash', () => {
+    it('returns correct logs', async () => {
+      const allLogsFromSubql = await subql.getAllLogs();
+
+      for (const log of allLogsFromSubql) {
+        const res = await eth_getLogs([{ blockHash: log.blockHash }]);
+        const expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+      }
+    });
+  });
+
+  describe('filter by multiple params', () => {
+    it('returns correct logs', async () => {
+      let res;
+      let expectedLogs;
+      const allLogsFromSubql = await subql.getAllLogs();
+
+      /* -------------------- when there is only 1 target block -------------------- */
+      for (const log of allLogsFromSubql) {
+        // when found
+        const expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber)); // each block only has 1 log in this deterministic setup
+
+        res = await eth_getLogs([{ blockHash: log.blockHash, topics: log.topics, address: log.address }]);
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+
+        res = await eth_getLogs([{ blockHash: log.blockHash, topics: [log.topics[0]], address: log.address }]);
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+
+        res = await eth_getLogs([{ blockHash: log.blockHash, topics: [log.topics.at(-1)], address: log.address }]);
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+
+        // when not found
+        res = await eth_getLogs([{ blockHash: log.blockHash, topics: log.topics, address: '0x12345' }]);
+        expect(res.status).to.equal(200);
+        expect(res.data.result).to.deep.equal([]);
+
+        res = await eth_getLogs([{ blockHash: log.blockHash, topics: ['0x18189'], address: log.address }]);
+        expect(res.status).to.equal(200);
+        expect(res.data.result).to.deep.equal([]);
+
+        const genesisHash = '0x42375bbff13887e1967c7a1836b7b9c123500ad14705d7cd9f21cedba90c6a3a';
+        res = await eth_getLogs([{ blockHash: genesisHash, topics: [log.topics.at(-1)], address: log.address }]);
+        expect(res.status).to.equal(200);
+        expect(res.data.result).to.deep.equal([]);
+      }
+
+      /* -------------------- when there is a range of target block -------------------- */
+      res = await eth_getLogs([{ fromBlock: 9, toBlock: 10, topics: [log6.topics[1]], address: log6.address }]);
+      expect(res.status).to.equal(200);
+      expectLogsEqual(res.data.result, [log9, log10]);
+
+      res = await eth_getLogs([
+        { fromBlock: 11, toBlock: 'latest', topics: [log11.topics[0]], address: log12.address }
+      ]);
+      expect(res.status).to.equal(200);
+      expectLogsEqual(res.data.result, [log11]);
+
+      res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 11, topics: [log6.topics[0]] }]);
+      expect(res.status).to.equal(200);
+      expectLogsEqual(res.data.result, [log6, log7, log8, log9, log10]);
+    });
+  });
+
+  describe('when error', () => {
+    it('returns correct error code and messge', async () => {
       let res;
 
       /* ---------- invalid tag ---------- */
@@ -265,44 +369,20 @@ describe('eth_getLogs', () => {
       expect(res.status).to.equal(200);
       expect(res.data.error.code).to.equal(-32602);
       expect(res.data.error.message).to.contain("blocktag should be number | hex string | 'latest' | 'earliest'");
-    });
-  });
 
-  describe('filter by topics', () => {
-    it('returns correct logs', async () => {
-      const allLogs = await subql.getAllLogs();
-      expect(allLogs.length).to.greaterThan(0);
-
-      const log1 = allLogs[0];
-      const log2 = allLogs[allLogs.length - 1];
-      const log3 = allLogs[Math.floor(allLogs.length / 2)];
-      let res;
-      let expectedLogs;
-
-      /* ---------- should return all logs ---------- */
-      res = await eth_getLogs([{ topics: [], ...ALL_BLOCK_RANGE_FILTER }]);
+      /* ---------- invalid params combination ---------- */
+      res = await eth_getLogs([{ toBlock: 123, blockHash: '0x12345' }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, allLogs)).to.equal(true);
+      expect(res.data.error.code).to.equal(-32602);
+      expect(res.data.error.message).to.contain(
+        '`fromBlock` and `toBlock` is not allowed in params when `blockHash` is present'
+      );
 
-      /* ---------- should return no logs ---------- */
-      res = await eth_getLogs([{ topics: ['XXX'], ...ALL_BLOCK_RANGE_FILTER }]);
-      expect(res.data.result).to.deep.equal([]);
-
-      /* ---------- should return some logs ---------- */
-      res = await eth_getLogs([{ topics: log1.topics, ...ALL_BLOCK_RANGE_FILTER }]);
-      expectedLogs = allLogs.filter((l) => l.topics.every((t) => log1.topics.includes(t)));
+      /* ---------- invalid blockhash ---------- */
+      res = await eth_getLogs([{ blockHash: '0x12345' }]);
       expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
-
-      res = await eth_getLogs([{ topics: log2.topics, ...ALL_BLOCK_RANGE_FILTER }]);
-      expectedLogs = allLogs.filter((l) => l.topics.every((t) => log2.topics.includes(t)));
-      expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
-
-      res = await eth_getLogs([{ topics: log3.topics, ...ALL_BLOCK_RANGE_FILTER }]);
-      expectedLogs = allLogs.filter((l) => l.topics.every((t) => log3.topics.includes(t)));
-      expect(res.status).to.equal(200);
-      expect(logsEq(res.data.result, expectedLogs)).to.equal(true);
+      expect(res.data.error.code).to.equal(6969);
+      expect(res.data.error.message).to.contain('header not found');
     });
   });
 });
