@@ -120,8 +120,11 @@ describe('eth_getLogs', () => {
         expectLogsEqual(res.data.result, expectedLogs);
       }
 
+      // should support different case and array of addresses
       for (const log of allLogs) {
-        const res = await eth_getLogs([{ address: log.address.toLocaleUpperCase(), ...ALL_BLOCK_RANGE_FILTER }]);
+        const res = await eth_getLogs([
+          { address: [log.address.toLocaleUpperCase(), '0x13579'], ...ALL_BLOCK_RANGE_FILTER }
+        ]);
         const expectedLogs = allLogs.filter((l) => l.address === log.address);
         expectLogsEqual(res.data.result, expectedLogs);
       }
