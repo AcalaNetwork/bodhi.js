@@ -49,9 +49,9 @@ export const isEVMExtrinsic = (e: Extrinsic): boolean => e.method.section.toUppe
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,
   args: any[] = [],
-  maxRetries: number = 100,
+  maxRetries: number = 200,
   interval: number = 100
-): Promise<F extends (...args: any[]) => infer R ? R : any> => {
+): Promise<F extends (...args: any[]) => infer R ? R : never> => {
   let res;
   let tries = 0;
 
@@ -62,10 +62,11 @@ export const runWithRetries = async <F extends AnyFunction>(
       if (tries === maxRetries) throw e;
     }
 
-    if (tries > 0 && !res) {
-      console.log(`empty result # ${tries}/${maxRetries}`);
-      await sleep(interval);
+    if ((tries === 1 || tries % 10 === 0) && !res) {
+      console.log(`<local mode runWithRetries> still waiting for result # ${tries}/${maxRetries}`);
     }
+
+    await sleep(interval);
   }
 
   return res;
