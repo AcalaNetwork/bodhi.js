@@ -1,3 +1,9 @@
+## v2.4.8 2022/05/11
+- bug fixes
+- added dd trace
+- supports `eth_isBlockFinalized` and `eth_isTransactioninalized`
+- `eth_getLogs` support blockHash filter param
+
 ## v2.4.6 2022/04/19
 - Add batch request limit
 ## v2.4.3 2022/04/15
