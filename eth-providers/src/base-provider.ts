@@ -1700,7 +1700,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (!targetBlockNumber) return null;
 
-    const targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
+    const targetBlockHash = this.localMode
+      ? await runWithRetries(async () => this.api.rpc.chain.getBlockHash(targetBlockNumber))
+      : await this.api.rpc.chain.getBlockHash(targetBlockNumber);
 
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
