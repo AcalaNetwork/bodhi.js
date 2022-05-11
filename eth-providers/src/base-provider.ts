@@ -437,12 +437,12 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   netVersion = async (): Promise<string> => {
-    return this.api.consts.evm.chainId.toString();
+    return this.api.consts.evmAccounts.chainId.toString();
   };
 
   chainId = async (): Promise<number> => {
     await this.api.isReadyOrError;
-    return (this.api.consts.evmAccount.chainId as any).toNumber();
+    return (this.api.consts.evmAccounts.chainId as any).toNumber();
   };
 
   getBlockNumber = async (): Promise<number> => {
