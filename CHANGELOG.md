@@ -1,3 +1,6 @@
+## v2.4.9 2022/05/11
+- fix deps conflicts
+
 ## v2.4.8 2022/05/11
 - bug fixes
 - added dd trace
