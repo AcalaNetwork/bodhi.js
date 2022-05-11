@@ -442,7 +442,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   chainId = async (): Promise<number> => {
     await this.api.isReadyOrError;
-    return (this.api.consts.evm.chainId as any).toNumber();
+    return (this.api.consts.evmAccount.chainId as any).toNumber();
   };
 
   getBlockNumber = async (): Promise<number> => {

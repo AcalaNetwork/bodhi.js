@@ -286,7 +286,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
                 gasPrice: BigNumber.from(1),
                 data: dataToString(data),
                 value: BigNumber.from(tx.value || '0'),
-                chainId: +this.provider.api.consts.evm.chainId.toString(),
+                chainId: +this.provider.api.consts.evmAccount.chainId.toString(),
                 wait: (confirmations?: number): Promise<TransactionReceipt> => {
                   const hex = result.status.isInBlock
                     ? result.status.asInBlock.toHex()
