@@ -34,6 +34,6 @@
     "@ethersproject/rlp": "~5.5.0",
     "@ethersproject/transactions": "~5.5.0",
     "@ethersproject/wallet": "~5.5.0",
-    "@polkadot/util-crypto": "~9.0.1"
+    "@polkadot/util-crypto": "^9.0.1"
   }
 }

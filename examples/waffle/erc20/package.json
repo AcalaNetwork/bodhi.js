@@ -22,6 +22,6 @@
     "@acala-network/bodhi": "workspace:*",
     "@acala-network/contracts": "~4.2.0",
     "@polkadot/api": "~8.1.1",
-    "@polkadot/keyring": "~9.0.1"
+    "@polkadot/keyring": "^9.0.1"
   }
 }
