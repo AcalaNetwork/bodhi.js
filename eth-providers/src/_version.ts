@@ -1,1 +1,1 @@
-export const version: string = 'bodhi.js/providers/2.4.9';
+export const version: string = 'bodhi.js/providers/2.4.10';
