@@ -19,13 +19,13 @@ module.exports = {
 };
 
 const polkadotDeps = {
-  "@polkadot/api": "~8.1.1",
-  "@polkadot/api-derive": "~8.1.1",
-  '@polkadot/api-augment': "~8.1.1",
-  "@polkadot/types": "~8.1.1",
-  "@polkadot/types-known": "~8.1.1",
-  "@polkadot/rpc-core": "~8.1.1",
-  "@polkadot/rpc-provider": "~8.1.1",
+  "@polkadot/api": "8.1.1",
+  "@polkadot/api-derive": "8.1.1",
+  '@polkadot/api-augment': "8.1.1",
+  "@polkadot/types": "8.1.1",
+  "@polkadot/types-known": "8.1.1",
+  "@polkadot/rpc-core": "8.1.1",
+  "@polkadot/rpc-provider": "8.1.1",
   "@polkadot/keyring": "^9.0.1",
   "@polkadot/util": "^9.0.1",
   "@polkadot/util-crypto": "^9.0.1",
