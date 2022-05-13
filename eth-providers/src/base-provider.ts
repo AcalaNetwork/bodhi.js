@@ -214,6 +214,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly subql?: SubqlProvider;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
   readonly _storageCache: LRUCache<string, Uint8Array | null>;
+  readonly _healthCheckBlockDistance: number;
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
@@ -225,12 +226,14 @@ export abstract class BaseProvider extends AbstractProvider {
     safeMode = false,
     localMode = false,
     subqlUrl,
-    storageCacheSize = 5000
+    storageCacheSize = 5000,
+    healthCheckBlockDistance = 500
   }: {
     safeMode?: boolean;
     localMode?: boolean;
     subqlUrl?: string;
     storageCacheSize?: number;
+    healthCheckBlockDistance?: number;
   } = {}) {
     super();
     this.formatter = new Formatter();
@@ -241,6 +244,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.latestFinalizedBlockHash = undefined;
     this.latestFinalizedBlockNumber = undefined;
     this._storageCache = new LRUCache({ max: storageCacheSize });
+    this._healthCheckBlockDistance = healthCheckBlockDistance;
 
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
@@ -1902,7 +1906,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     // Distance allowed to fetch old random block (since most oldest block takes longer to fetch)
-    const BLOCK_DISTANCE = Number(process.env.HEALTH_CHECK_BLOCK_DISTANCE || 500);
+    const BLOCK_DISTANCE = this._healthCheckBlockDistance || 500;
     // ideally randBlockNumber should have EVM TX
     const randBlockNumber = Math.abs(Math.floor(this.latestFinalizedBlockNumber! - BLOCK_DISTANCE * Math.random()));
     const getBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, false));
