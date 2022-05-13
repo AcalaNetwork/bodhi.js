@@ -1901,8 +1901,10 @@ export abstract class BaseProvider extends AbstractProvider {
       })
     );
 
+    // Distance allowed to fetch old random block (since most oldest block takes longer to fetch)
+    const BLOCK_DISTANCE = Number(process.env.HEALTH_CHECK_BLOCK_DISTANCE || 500);
     // ideally randBlockNumber should have EVM TX
-    const randBlockNumber = Math.floor(Math.random() * this.latestFinalizedBlockNumber!);
+    const randBlockNumber = Math.abs(Math.floor(this.latestFinalizedBlockNumber! - BLOCK_DISTANCE * Math.random()));
     const getBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, false));
     const getFullBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, true));
 
