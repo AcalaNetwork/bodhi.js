@@ -214,7 +214,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly subql?: SubqlProvider;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
   readonly _storageCache: LRUCache<string, Uint8Array | null>;
-  readonly _healthCheckBlockDistance: number;
+  readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old random block (since most oldest block takes longer to fetch)
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
@@ -1905,10 +1905,10 @@ export abstract class BaseProvider extends AbstractProvider {
       })
     );
 
-    // Distance allowed to fetch old random block (since most oldest block takes longer to fetch)
-    const BLOCK_DISTANCE = this._healthCheckBlockDistance || 500;
     // ideally randBlockNumber should have EVM TX
-    const randBlockNumber = Math.abs(Math.floor(this.latestFinalizedBlockNumber! - BLOCK_DISTANCE * Math.random()));
+    const randBlockNumber = Math.abs(
+      Math.floor(this.latestFinalizedBlockNumber! - this._healthCheckBlockDistance * Math.random())
+    );
     const getBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, false));
     const getFullBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, true));
 
