@@ -28,6 +28,8 @@ COPY examples/hardhat-tutorials/NFT/package.json examples/hardhat-tutorials/NFT/
 COPY examples/hardhat-tutorials/precompiled-token/package.json examples/hardhat-tutorials/precompiled-token/package.json
 COPY examples/hardhat-tutorials/DEX/package.json examples/hardhat-tutorials/DEX/package.json
 COPY examples/hardhat-tutorials/EVM/package.json examples/hardhat-tutorials/EVM/package.json
+COPY examples/hardhat-tutorials/upgradeable-greeter/package.json examples/hardhat-tutorials/upgradeable-greeter/package.json
+COPY examples/hardhat-tutorials/advanced-escrow/package.json examples/hardhat-tutorials/advanced-escrow/package.json
 
 COPY examples/waffle-tutorials/hello-world/package.json examples/waffle-tutorials/hello-world/package.json
 COPY examples/waffle-tutorials/echo/package.json examples/waffle-tutorials/echo/package.json

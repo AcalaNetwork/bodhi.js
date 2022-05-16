@@ -593,6 +593,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "advanced-escrow",
+      "projectFolder": "examples/hardhat-tutorials/advanced-escrow",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
       "packageName": "hardhat-tutorial-upgradeable-greeter",
       "projectFolder": "examples/hardhat-tutorials/upgradeable-greeter",
       "reviewCategory": "tests",
