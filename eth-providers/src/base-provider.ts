@@ -214,7 +214,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly subql?: SubqlProvider;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
   readonly _storageCache: LRUCache<string, Uint8Array | null>;
-  readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old random block (since most oldest block takes longer to fetch)
+  readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old nth block (since most oldest block takes longer to fetch)
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
