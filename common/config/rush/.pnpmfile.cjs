@@ -56,7 +56,7 @@ const fixedDeps = {
 function readPackage(packageJson, context) {
   
   for(const dep of Object.keys(fixedDeps)) {
-    if(packageJson.dependencies[dep]) {
+    if (packageJson.dependencies && packageJson.dependencies[dep]) {
       // context.log('Fixed up dependencies for ' + packageJson.name);
       packageJson.dependencies[dep] = fixedDeps[dep]
     }
