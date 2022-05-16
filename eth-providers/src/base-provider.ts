@@ -1483,6 +1483,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
+    let isFinalized = false;
     const [finalizedHead, verifyingBlockHash] = await Promise.all([
       this.api.rpc.chain.getFinalizedHead(),
       this._getBlockHash(blockTag)
@@ -1492,9 +1493,12 @@ export abstract class BaseProvider extends AbstractProvider {
       await Promise.all([this.api.rpc.chain.getHeader(finalizedHead), this.api.rpc.chain.getHeader(verifyingBlockHash)])
     ).map((header) => header.number.toNumber());
 
-    const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
+    if (finalizedBlockNumber >= verifyingBlockNumber) {
+      const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
+      isFinalized = canonicalHash.toString() === verifyingBlockHash;
+    }
 
-    return finalizedBlockNumber >= verifyingBlockNumber && canonicalHash.toString() === verifyingBlockHash;
+    return isFinalized;
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
