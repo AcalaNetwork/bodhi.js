@@ -227,7 +227,7 @@ export abstract class BaseProvider extends AbstractProvider {
     localMode = false,
     subqlUrl,
     storageCacheSize = 5000,
-    healthCheckBlockDistance = 500
+    healthCheckBlockDistance = 100
   }: {
     safeMode?: boolean;
     localMode?: boolean;
@@ -1905,12 +1905,13 @@ export abstract class BaseProvider extends AbstractProvider {
       })
     );
 
-    // ideally randBlockNumber should have EVM TX
-    const randBlockNumber = Math.abs(
-      Math.floor(this.latestFinalizedBlockNumber! - this._healthCheckBlockDistance * Math.random())
-    );
-    const getBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, false));
-    const getFullBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, true));
+    // ideally pastNblock should have EVM TX
+    const pastNblock =
+      this.latestFinalizedBlockNumber! > this._healthCheckBlockDistance
+        ? this.latestFinalizedBlockNumber! - this._healthCheckBlockDistance
+        : this.latestFinalizedBlockNumber!;
+    const getBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, false));
+    const getFullBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, true));
 
     const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
       await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])
