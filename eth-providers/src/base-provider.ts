@@ -1383,7 +1383,7 @@ export abstract class BaseProvider extends AbstractProvider {
           .subscribeNewHeads((head) => {
             const blockNumber = head.number.toNumber();
 
-            if ((confirms as number) <= blockNumber - startBlock) {
+            if ((confirms as number) <= blockNumber - startBlock + 1) {
               const receipt = this.getTransactionReceiptAtBlock(hash, startBlockHash);
               if (alreadyDone()) {
                 return;
