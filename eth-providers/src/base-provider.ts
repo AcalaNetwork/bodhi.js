@@ -214,6 +214,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly subql?: SubqlProvider;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
   readonly _storageCache: LRUCache<string, Uint8Array | null>;
+  readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old nth block (since most oldest block takes longer to fetch)
 
   _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
@@ -225,12 +226,14 @@ export abstract class BaseProvider extends AbstractProvider {
     safeMode = false,
     localMode = false,
     subqlUrl,
-    storageCacheSize = 5000
+    storageCacheSize = 5000,
+    healthCheckBlockDistance = 100
   }: {
     safeMode?: boolean;
     localMode?: boolean;
     subqlUrl?: string;
     storageCacheSize?: number;
+    healthCheckBlockDistance?: number;
   } = {}) {
     super();
     this.formatter = new Formatter();
@@ -241,6 +244,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.latestFinalizedBlockHash = undefined;
     this.latestFinalizedBlockNumber = undefined;
     this._storageCache = new LRUCache({ max: storageCacheSize });
+    this._healthCheckBlockDistance = healthCheckBlockDistance;
 
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
@@ -1901,10 +1905,13 @@ export abstract class BaseProvider extends AbstractProvider {
       })
     );
 
-    // ideally randBlockNumber should have EVM TX
-    const randBlockNumber = Math.floor(Math.random() * this.latestFinalizedBlockNumber!);
-    const getBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, false));
-    const getFullBlockPromise = runWithTiming(async () => this.getBlock(randBlockNumber, true));
+    // ideally pastNblock should have EVM TX
+    const pastNblock =
+      this.latestFinalizedBlockNumber! > this._healthCheckBlockDistance
+        ? this.latestFinalizedBlockNumber! - this._healthCheckBlockDistance
+        : this.latestFinalizedBlockNumber!;
+    const getBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, false));
+    const getFullBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, true));
 
     const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
       await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])
