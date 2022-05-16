@@ -1,3 +1,6 @@
+## v2.4.11 2022/05/16
+- bug fixes and improvements
+
 ## v2.4.9 2022/05/11
 - fix deps conflicts
 
