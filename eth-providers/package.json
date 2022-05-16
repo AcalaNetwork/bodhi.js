@@ -36,7 +36,7 @@
     "@polkadot/types": "8.1.1",
     "@polkadot/util": "^9.0.1",
     "@polkadot/util-crypto": "^9.0.1",
-    "ethers": "~5.5.0",
+    "ethers": "^5.5.4",
     "graphql": "~16.0.1",
     "graphql-request": "~3.6.1",
     "lru-cache": "~7.8.2"
