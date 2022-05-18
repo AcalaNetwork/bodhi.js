@@ -1,30 +1,12 @@
-import axios from 'axios';
-import dotenv from 'dotenv';
 import { parseUnits, Interface } from 'ethers/lib/utils';
 import tokenAbi from '@acala-network/contracts/build/contracts/Token.json';
 import evmAbi from '@acala-network/contracts/build/contracts/EVM.json';
 import oracleAbi from '@acala-network/contracts/build/contracts/Oracle.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
-
-dotenv.config();
-
-const MANDALA_TESTNET_RPC = 'https://tc7-eth.aca-dev.network';
-const RPC_URL = process.env.RPC_URL || MANDALA_TESTNET_RPC;
-
-const rpcGet =
-  (method: string) =>
-  (params: any): any =>
-    axios.get(RPC_URL, {
-      data: {
-        id: 0,
-        jsonrpc: '2.0',
-        method,
-        params
-      }
-    });
-
-const eth_call = rpcGet('eth_call');
-const eth_blockNumber = rpcGet('eth_blockNumber');
+import {
+  eth_call,
+  eth_blockNumber,
+} from './utils';
 
 const TOKENS = [
   'ACA',
