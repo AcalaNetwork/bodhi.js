@@ -136,5 +136,4 @@ yarn test:dev # all tests
   - by nmemonic: `fox sight canyon orphan hotel grow hedgehog build bless august weather swarm`
   - or by private key: `0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f`
 - before sending any transaction:
-  - don't change the default `GasLimit` and `Max Fee`
-  - can change `Max Priority Fee`, manually setting this a small value (such as 0.000001) will significanlty lower the tx gas cost.
+  - don't change the default `gasPrice` nad `GasLimit`, otherwise transaction will fail.
