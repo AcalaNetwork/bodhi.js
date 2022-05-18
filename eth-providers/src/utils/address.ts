@@ -1,5 +1,5 @@
 import { getAddress } from '@ethersproject/address';
-import { hexToU8a, stringToU8a, u8aConcat, u8aEq, u8aFixLength, u8aToHex } from '@polkadot/util';
+import { hexToU8a, u8aConcat, u8aEq, u8aFixLength, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import type { HexString } from '@polkadot/util/types';
 import { logger } from './logger';
