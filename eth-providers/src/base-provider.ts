@@ -1307,7 +1307,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return this._wrapTransaction(transaction, hash, blockNumber, blockHash.toHex());
     } catch (err) {
       const error = err as any;
-      ERROR_PATTERN.forEach((pattern) => {
+      for (let pattern of ERROR_PATTERN) {
         const match = ((error.toString?.() || '') as string).match(pattern);
         if (match) {
           const errDetails = this.api.registry.findMetaError(new Uint8Array([parseInt(match[1]), parseInt(match[2])]));
@@ -1321,7 +1321,7 @@ export abstract class BaseProvider extends AbstractProvider {
             })
           );
         }
-      });
+      }
 
       error.transaction = tx;
       error.transactionHash = tx.hash;
