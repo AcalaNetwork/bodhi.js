@@ -876,6 +876,8 @@ describe('eth_call', () => {
   const getDecimals = _call('decimals');
 
   it('get correct procompile token info', async () => {
+    // https://github.com/AcalaNetwork/Acala/blob/a5d9e61c74/node/service/src/chain_spec/mandala.rs#L628-L636
+    // Native tokens need to registry in asset_registry module.
     const tokenMetaData = [
       {
         address: '0x0000000000000000000100000000000000000000',
@@ -896,10 +898,16 @@ describe('eth_call', () => {
         decimals: 10
       },
       {
-        address: '0x0000000000000000000100000000000000000080',
-        name: 'Karura',
-        symbol: 'KAR',
-        decimals: 12
+        address: '0x0000000000000000000100000000000000000003',
+        name: 'Liquid DOT',
+        symbol: 'LDOT',
+        decimals: 10
+      },
+      {
+        address: '0x0000000000000000000100000000000000000014',
+        name: 'Ren Protocol BTC',
+        symbol: 'RENBTC',
+        decimals: 8
       }
     ];
 
