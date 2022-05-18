@@ -1307,19 +1307,21 @@ export abstract class BaseProvider extends AbstractProvider {
       return this._wrapTransaction(transaction, hash, blockNumber, blockHash.toHex());
     } catch (err) {
       const error = err as any;
-      const match = ((error.toString?.() || '') as string).match(ERROR_PATTERN);
-      if (match) {
-        const errDetails = this.api.registry.findMetaError(new Uint8Array([parseInt(match[1]), parseInt(match[2])]));
+      ERROR_PATTERN.forEach((pattern) => {
+        const match = ((error.toString?.() || '') as string).match(pattern);
+        if (match) {
+          const errDetails = this.api.registry.findMetaError(new Uint8Array([parseInt(match[1]), parseInt(match[2])]));
 
-        // error.message is readonly, so construct a new error object
-        throw new Error(
-          JSON.stringify({
-            message: `${errDetails.section}.${errDetails.name}: ${errDetails.docs}`,
-            transaction: tx,
-            transactionHash: tx.hash
-          })
-        );
-      }
+          // error.message is readonly, so construct a new error object
+          throw new Error(
+            JSON.stringify({
+              message: `${errDetails.section}.${errDetails.name}: ${errDetails.docs}`,
+              transaction: tx,
+              transactionHash: tx.hash
+            })
+          );
+        }
+      });
 
       error.transaction = tx;
       error.transactionHash = tx.hash;

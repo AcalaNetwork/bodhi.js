@@ -23,8 +23,11 @@ export const DUMMY_BLOCK_NONCE = '0x0000000000000000';
 export const DUMMY_BLOCK_MIX_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000';
 export const EMTPY_UNCLE_HASH = '0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347';
 export const EMTPY_UNCLES = [];
-export const ERROR_PATTERN = /execution fatal: Module\(ModuleError { index: (\d+), error: (\d+), message: None }\)/;
-
+export const ERROR_PATTERN = [
+  // Assume that Error is nested only once
+  /execution fatal: Module\(ModuleError { index: (\d+), error: \[(\d+), 0, 0, 0\], message: None }\)/,
+  /execution fatal: Module\(ModuleError { index: (\d+), error: (\d+), message: None }\)/
+];
 export const ERC20_ABI = [
   // Read-Only Functions
   'function balanceOf(address owner) view returns (uint256)',

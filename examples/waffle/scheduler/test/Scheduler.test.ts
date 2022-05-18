@@ -157,7 +157,7 @@ describe('Schedule', () => {
     expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
     if (!process.argv.includes('--with-ethereum-compatibility')) {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(
-        formatAmount('4_999_949_354_944_000_000_000')
+        formatAmount('4_999_968_554_944_000_000_000')
       );
       expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_949_354_944_000'));
     } else {
