@@ -42,10 +42,13 @@ export class Router {
       logger.error({ err, methodName, params }, 'request error');
 
       let message = err.message;
-      const match = message.match(ERROR_PATTERN);
-      if (match) {
-        const error = this.#bridge.provider.api.registry.findMetaError(new Uint8Array([match[1], match[2]]));
-        message = `${error.section}.${error.name}: ${error.docs}`;
+      for (let pattern of ERROR_PATTERN) {
+        const match = message.match(pattern);
+        if (match) {
+          const error = this.#bridge.provider.api.registry.findMetaError(new Uint8Array([match[1], match[2]]));
+          message = `${error.section}.${error.name}: ${error.docs}`;
+          break;
+        }
       }
 
       return { error: { code: 6969, message: `Error: ${message}` } };
