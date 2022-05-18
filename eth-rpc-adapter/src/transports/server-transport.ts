@@ -42,7 +42,11 @@ export abstract class ServerTransport {
       ? {
           body: {
             method,
-            params
+            params: Array.isArray(params)
+              ? params.reduce((c, v, i) => {
+                  return { ...c, [i]: v };
+                }, {})
+              : params
           },
           enterTime: performance.now(),
           exitTime: -1,
@@ -80,7 +84,7 @@ export abstract class ServerTransport {
       spanTags.exitTime = performance.now();
       spanTags.elapsedTime = spanTags.exitTime - spanTags.enterTime;
       // Assign datadog tags to span
-      Object.keys(spanTags).forEach((key) => span.setTag(key, (spanTags as any)[key]));
+      span.addTags(spanTags);
     }
     return res;
   }
