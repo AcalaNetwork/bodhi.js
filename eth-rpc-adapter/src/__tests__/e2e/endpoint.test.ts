@@ -300,6 +300,21 @@ describe('eth_getLogs', () => {
   });
 
   describe('filter by multiple params', () => {
+    let genesisHash: string;
+    let api: ApiPromise;
+
+    before('prepare common variables', async () => {
+      const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+      const wsProvider = new WsProvider(endpoint);
+      api = await ApiPromise.create({ provider: wsProvider });
+
+      genesisHash = api.genesisHash.toHex();
+    });
+
+    after(async () => {
+      await api.disconnect();
+    });
+
     it('returns correct logs', async () => {
       let res;
       let expectedLogs;
@@ -331,7 +346,6 @@ describe('eth_getLogs', () => {
         expect(res.status).to.equal(200);
         expect(res.data.result).to.deep.equal([]);
 
-        const genesisHash = '0x42375bbff13887e1967c7a1836b7b9c123500ad14705d7cd9f21cedba90c6a3a';
         res = await eth_getLogs([{ blockHash: genesisHash, topics: [log.topics.at(-1)], address: log.address }]);
         expect(res.status).to.equal(200);
         expect(res.data.result).to.deep.equal([]);
