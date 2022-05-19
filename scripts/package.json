@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "bump": "TS_NODE_TRANSPILE_ONLY=true ts-node bump-version.ts",
-    "precompile": "TS_NODE_TRANSPILE_ONLY=true ts-node test-precompile.ts"
+    "precompile": "TS_NODE_TRANSPILE_ONLY=true ts-node test-precompile.ts",
+    "iterate": "TS_NODE_TRANSPILE_ONLY=true ts-node block-iterator.ts"
   },
   "devDependencies": {
     "@acala-network/contracts": "^3.2.0",
