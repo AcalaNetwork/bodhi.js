@@ -58,11 +58,10 @@
 
     // tutorials use these public versions instead of workspace:*
     "@acala-network/bodhi": [
-      "^2.4.7"
+      "^2.4.11"
     ],
     "@acala-network/eth-providers": [
-      "^2.4.6",
-      "^2.4.7"
+      "^2.4.11"
     ],
 
     // these are mostly alternative versions used by tutorials
