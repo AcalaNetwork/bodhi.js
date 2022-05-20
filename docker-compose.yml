@@ -82,7 +82,7 @@ services:
   # ---------- No Subql Realm ---------- #
   # ------------------------------------ #
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-a5d9e61
+    image: ghcr.io/acalanetwork/mandala-node:sha-50c6c01
     ports:
       - 9944:9944
     command:

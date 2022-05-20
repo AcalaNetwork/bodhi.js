@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-a5d9e61
+    image: ghcr.io/acalanetwork/mandala-node:sha-50c6c01
     ports:
       - 9944:9944
     command:
@@ -19,7 +19,7 @@ services:
       - --tmp
 
   eth-rpc-adaptor:
-    image: acala/eth-rpc-adapter:2a8cc61
+    image: acala/eth-rpc-adapter:7e4b68b
     ports:
       - 8545:8545
     depends_on:

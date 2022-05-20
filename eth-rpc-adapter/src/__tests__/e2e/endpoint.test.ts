@@ -1032,3 +1032,23 @@ describe('eth_getCode', () => {
     }
   });
 });
+
+describe('eth_getEthResources', () => {
+  const eth_getEthResources = rpcGet('eth_getEthResources');
+
+  const tags = ['latest', 'earliest'];
+
+  it('get correct precompile token code', async () => {
+    const rawRes = (
+      await eth_getEthResources([
+        {
+          from: '0xd2a5c8867d1b3665fb3b2d93d514bd1c73bb2227',
+          to: '0x4e3e1108e86c3fafb389629e99bff9c4fa911e54',
+          data: '0x'
+        }
+      ])
+    ).data.result;
+    expect(rawRes.gasPrice).to.equal('0x2e90f10000');
+    expect(rawRes.gasLimit).to.equal('0x5728');
+  });
+});
