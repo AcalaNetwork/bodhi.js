@@ -1038,7 +1038,7 @@ describe('eth_getEthResources', () => {
 
   const tags = ['latest', 'earliest'];
 
-  it('get correct precompile token code', async () => {
+  it('get correct gas', async () => {
     const rawRes = (
       await eth_getEthResources([
         {
