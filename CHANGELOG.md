@@ -1,3 +1,6 @@
+## v2.4.12 2022/05/25
+- bug fixes and improvements
+
 ## v2.4.11 2022/05/16
 - bug fixes and improvements
 
