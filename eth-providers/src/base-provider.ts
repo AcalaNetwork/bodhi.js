@@ -28,7 +28,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import { decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
 import type { AccountId, EventRecord, Header } from '@polkadot/types/interfaces';
-import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
@@ -671,7 +671,6 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  // @TODO free
   getBalance = async (
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag>
@@ -686,9 +685,16 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    const accountInfo = await this.queryStorage('system.account', [substrateAddress], blockHash);
+    const accountInfo = await this.queryStorage<FrameSystemAccountInfo>(
+      'system.account',
+      [substrateAddress],
+      blockHash
+    );
 
-    return convertNativeToken(BigNumber.from(accountInfo.data.free.toBigInt()), this.chainDecimal);
+    const { free, miscFrozen } = accountInfo.data;
+    const transferable = free.toBigInt() - miscFrozen.toBigInt();
+
+    return convertNativeToken(BigNumber.from(transferable), this.chainDecimal);
   };
 
   getTransactionCount = async (

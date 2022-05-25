@@ -1,3 +1,4 @@
+import { BigNumber } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
 import { CacheInspect } from './BlockCache';
@@ -224,4 +225,10 @@ export const runWithTiming = async <F extends AnyFunction>(
     res,
     time
   };
+};
+
+const ETH_DECIMALS = 18;
+export const convertNativeToken = (value: BigNumber, decimals: number): BigNumber => {
+  if (!value) return value;
+  return value.mul(10 ** (ETH_DECIMALS - decimals));
 };
