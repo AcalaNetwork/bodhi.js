@@ -47,7 +47,7 @@ import {
   DUMMY_S,
   DUMMY_V,
   EFFECTIVE_GAS_PRICE,
-  EMPTY_STRING,
+  EMPTY_HEX_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
   ERROR_PATTERN,
@@ -545,7 +545,7 @@ export abstract class BaseProvider extends AbstractProvider {
       gasUsed: total_used_gas, // TODO: not full is 0
 
       miner: author,
-      extraData: EMPTY_STRING,
+      extraData: EMPTY_HEX_STRING,
       sha3Uncles: EMTPY_UNCLE_HASH,
       receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???

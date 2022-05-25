@@ -2,7 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 
 export const ZERO = 0;
 export const BIGNUMBER_ONE = BigNumber.from(1);
-export const EMPTY_STRING = '';
+export const EMPTY_HEX_STRING = '0x';
 
 export const BIGNUMBER_ZERO = BigNumber.from(ZERO);
 
