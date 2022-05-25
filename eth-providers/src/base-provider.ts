@@ -691,10 +691,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash
     );
 
-    const { free, miscFrozen } = accountInfo.data;
-    const transferable = free.toBigInt() - miscFrozen.toBigInt();
-
-    return convertNativeToken(BigNumber.from(transferable), this.chainDecimal);
+    return convertNativeToken(BigNumber.from(accountInfo.data.free.toBigInt()), this.chainDecimal);
   };
 
   getTransactionCount = async (
