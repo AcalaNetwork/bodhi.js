@@ -701,6 +701,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getEvmTransactionCount(addressOrName, blockTag);
   };
 
+  // TODO: test pending
   getEvmTransactionCount = async (
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
@@ -1720,7 +1721,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
 
-  // TODO: test
+  // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find((e) => e.hash.toHex() === txHash);
