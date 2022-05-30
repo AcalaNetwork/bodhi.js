@@ -27,7 +27,7 @@ import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
 import { decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
-import type { AccountId, EventRecord, Header } from '@polkadot/types/interfaces';
+import type { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
@@ -197,6 +197,26 @@ export interface EventListeners {
   [name: string]: EventListener[];
 }
 
+export interface BaseProviderOptions {
+  safeMode?: boolean;
+  localMode?: boolean;
+  verbose?: boolean;
+  subqlUrl?: string;
+  maxBlockCacheSize?: number;
+  storageCacheSize?: number;
+  healthCheckBlockDistance?: number;
+}
+
+export const defaultOpts: BaseProviderOptions = {
+  safeMode: false,
+  localMode: false,
+  verbose: false,
+  subqlUrl: undefined,
+  maxBlockCacheSize: 200,
+  storageCacheSize: 5000,
+  healthCheckBlockDistance: 100
+};
+
 export type NewBlockListener = (header: Header) => any;
 
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
@@ -211,7 +231,9 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
   readonly localMode: boolean;
+  readonly verbose: boolean;
   readonly subql?: SubqlProvider;
+  readonly maxBlockCacheSize: number;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
   readonly _storageCache: LRUCache<string, Uint8Array | null>;
   readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old nth block (since most oldest block takes longer to fetch)
@@ -221,46 +243,48 @@ export abstract class BaseProvider extends AbstractProvider {
   _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
   latestFinalizedBlockNumber: number | undefined;
+  runtimeVersion: number | undefined;
 
   constructor({
     safeMode = false,
     localMode = false,
+    verbose = false,
     subqlUrl,
+    maxBlockCacheSize = 200,
     storageCacheSize = 5000,
     healthCheckBlockDistance = 100
-  }: {
-    safeMode?: boolean;
-    localMode?: boolean;
-    subqlUrl?: string;
-    storageCacheSize?: number;
-    healthCheckBlockDistance?: number;
-  } = {}) {
+  }: BaseProviderOptions = defaultOpts) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
     this._newBlockListeners = [];
     this.safeMode = safeMode;
     this.localMode = localMode;
+    this.verbose = verbose;
     this.latestFinalizedBlockHash = undefined;
     this.latestFinalizedBlockNumber = undefined;
+    this.maxBlockCacheSize = maxBlockCacheSize;
     this._storageCache = new LRUCache({ max: storageCacheSize });
     this._healthCheckBlockDistance = healthCheckBlockDistance;
 
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
-    logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
+    this.verbose && logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
     }
   }
 
-  startSubscription = async (maxCachedSize: number = 200): Promise<any> => {
-    this._cache = new BlockCache(maxCachedSize);
+  startSubscription = async (): Promise<any> => {
+    this._cache = new BlockCache(this.maxBlockCacheSize);
 
-    if (maxCachedSize < 1) {
-      return logger.throwError(`expect maxCachedSize > 0, but got ${maxCachedSize}`, Logger.errors.INVALID_ARGUMENT);
+    if (this.maxBlockCacheSize < 1) {
+      return logger.throwError(
+        `expect maxBlockCacheSize > 0, but got ${this.maxBlockCacheSize}`,
+        Logger.errors.INVALID_ARGUMENT
+      );
     } else {
-      maxCachedSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
+      this.maxBlockCacheSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
 
     await this.isReady();
@@ -321,6 +345,18 @@ export abstract class BaseProvider extends AbstractProvider {
       if (this.safeMode) {
         const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
         this.latestFinalizedBlockHash = blockHash;
+      }
+    }) as unknown as void;
+
+    this.api.rpc.state.subscribeRuntimeVersion((runtime: RuntimeVersion) => {
+      const version = runtime.specVersion.toNumber();
+      this.verbose && logger.info(`runtime version: ${version}`);
+
+      if (!this.runtimeVersion || this.runtimeVersion === version) {
+        this.runtimeVersion = version;
+      } else {
+        logger.warn('runtime version changed, shutting down myself...');
+        process?.exit(1);
       }
     }) as unknown as void;
   };
