@@ -17,7 +17,7 @@ LOCAL_MODE=1 npx @acala-network/eth-rpc-adapter
 - build it locally
 ```
 rush update
-rush build @acala-network/eth-rpc-adapter
+rush build -t . 
 ```
 
 - run the dev server:
