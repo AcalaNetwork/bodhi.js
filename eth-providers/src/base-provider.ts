@@ -355,7 +355,9 @@ export abstract class BaseProvider extends AbstractProvider {
       if (!this.runtimeVersion || this.runtimeVersion === version) {
         this.runtimeVersion = version;
       } else {
-        logger.warn('runtime version changed, shutting down myself...');
+        logger.warn(
+          `runtime version changed: ${this.runtimeVersion} => ${version}, shutting down myself... good bye 👋`
+        );
         process?.exit(1);
       }
     }) as unknown as void;
@@ -440,6 +442,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
   get isSafeMode(): boolean {
     return this.safeMode;
+  }
+
+  // TODO: maybe can encapsulate all provider info into one call `net_Info` or something
+  get runtimeVersion(): number {
+    return this.runtimeVersion;
   }
 
   isReady = (): Promise<Network> => {

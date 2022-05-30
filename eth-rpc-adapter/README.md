@@ -122,6 +122,7 @@ These are EVM+ custom RPCs that only exist on Acala/Karura
 - `net_cacheInfo`: get the cache info
 - `net_isSafeMode`: check if this RPC is running in safe mode
 - `net_health`: check the health of the RPC endpoint
+- `net_runtimeVersion`: check the current runtime version of the underlying polkadot.js api
 - `eth_isBlockFinalized`: check if a block is finalized, params: [BlockTag](https://docs.ethers.io/v5/api/providers/types/#providers-BlockTag)
 - `eth_isTransactionFinalized`: check if a transaction is finalized, note that it also returns false for non-exist tx, params: string
 

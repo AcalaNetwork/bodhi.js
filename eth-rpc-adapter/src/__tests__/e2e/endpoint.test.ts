@@ -1052,3 +1052,13 @@ describe('eth_getEthResources', () => {
     expect(rawRes.gasLimit).to.equal('0x5728');
   });
 });
+
+describe('net_runtimeVersion', () => {
+  const net_runtimeVersion = rpcGet('net_runtimeVersion');
+
+  it('get correct runtime version', async () => {
+    const version = (await net_runtimeVersion([])).data.result;
+
+    expect(version).to.be.gt(2000);
+  });
+});

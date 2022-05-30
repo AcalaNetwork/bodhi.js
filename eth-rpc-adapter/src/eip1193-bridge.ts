@@ -76,6 +76,11 @@ class Eip1193BridgeImpl {
     return this.#provider.healthCheck();
   }
 
+  async net_runtimeVersion(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.runtimeVersion;
+  }
+
   /**
    * Returns the current network id.
    * @returns ID - The current network id.
