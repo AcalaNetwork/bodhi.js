@@ -444,11 +444,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.safeMode;
   }
 
-  // TODO: maybe can encapsulate all provider info into one call `net_Info` or something
-  get runtimeVersion(): number {
-    return this.runtimeVersion;
-  }
-
   isReady = (): Promise<Network> => {
     if (!this._network) {
       const _getNetwork = async () => {
