@@ -38,18 +38,24 @@ note that docker image might not be most up-to-date. Latest image can be found [
   - **HTTP_PORT**: HTTP port for requests
   - **WS_PORT**: WS port for requests
   - **MAX_CACHE_SIZE**: max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network)
+  - **MAX_BATCH_SIZE**: max batch size for RPC request
+  - **STORAGE_CACHE_SIZE**: max storage cache size
   - **SAFE_MODE**: if enabled, TX and logs can only be found after they are finalized
   - **LOCAL_MODE**: enable this mode when testing with locally running mandala
+  - **VERBOSE**: print some extra info
 
 for example checkout `.env.sample`:
 ```
 ENDPOINT_URL=ws://localhost:9944 # default WS port that acala node exposes
 SUBQL_URL=http://localhost:3001  # default http port that subquery exposes (default is undefined in RPC adaptor if we don't specify SUBQL_URL explicitly)
 HTTP_PORT=8545                   # default http port for ETH RPC methods
-WS_PORT=3331                    
+WS_PORT=3331                     
 MAX_CACHE_SIZE=200               
+MAX_BATCH_SIZE=50
+STORAGE_CACHE_SIZE=5000
 SAFE_MODE=0                      # disabled by default
 LOCAL_MODE=0                     # disabled by default
+VERBOSE=1                        # enabled by default (for the provider itself it's disabled by default)
 ```
 
 ## Usage
@@ -116,6 +122,7 @@ These are EVM+ custom RPCs that only exist on Acala/Karura
 - `net_cacheInfo`: get the cache info
 - `net_isSafeMode`: check if this RPC is running in safe mode
 - `net_health`: check the health of the RPC endpoint
+- `net_runtimeVersion`: check the current runtime version of the underlying polkadot.js api
 - `eth_isBlockFinalized`: check if a block is finalized, params: [BlockTag](https://docs.ethers.io/v5/api/providers/types/#providers-BlockTag)
 - `eth_isTransactionFinalized`: check if a transaction is finalized, note that it also returns false for non-exist tx, params: string
 

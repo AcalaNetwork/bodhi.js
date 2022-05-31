@@ -16,16 +16,18 @@ export async function start(): Promise<void> {
   const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
   const WS_PORT = Number(process.env.WS_PORT || 3331);
   const MAX_CACHE_SIZE = Number(process.env.MAX_CACHE_SIZE || 200);
-  const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
-  const LOCAL_MODE = !!Number(process.env.LOCAL_MODE || 0);
   const MAX_BATCH_SIZE = Number(process.env.MAX_BATCH_SIZE || 50);
   const STORAGE_CACHE_SIZE = Number(process.env.STORAGE_CACHE_SIZE || 5000);
+  const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
+  const LOCAL_MODE = !!Number(process.env.LOCAL_MODE || 0);
+  const VERBOSE = !!Number(process.env.VERBOSE || 1);
 
   const provider = EvmRpcProvider.from(ENDPOINT_URL.split(','), {
     safeMode: SAFE_MODE,
     localMode: LOCAL_MODE,
-    maxCacheSize: MAX_CACHE_SIZE,
+    verbose: VERBOSE,
     subqlUrl: SUBQL_URL,
+    maxBlockCacheSize: MAX_CACHE_SIZE,
     storageCacheSize: STORAGE_CACHE_SIZE
   });
 
@@ -57,15 +59,16 @@ export async function start(): Promise<void> {
   --------------------------------------------
                🚀 SERVER STARTED 🚀
   --------------------------------------------
-  version        : ${version}
-  endpoint url   : ${ENDPOINT_URL}
-  subquery url   : ${SUBQL_URL}
-  listening to   : http ${HTTP_PORT} | ws ${WS_PORT}
-  max cacheSize  : ${MAX_CACHE_SIZE}
-  max batchSize  : ${MAX_BATCH_SIZE}
-  max storageSize: ${STORAGE_CACHE_SIZE}
-  safe mode      : ${SAFE_MODE}
-  local mode     : ${LOCAL_MODE}
+  version         : ${version}
+  endpoint url    : ${ENDPOINT_URL}
+  subquery url    : ${SUBQL_URL}
+  listening to    : http ${HTTP_PORT} | ws ${WS_PORT}
+  max blockCache  : ${MAX_CACHE_SIZE}
+  max batchSize   : ${MAX_BATCH_SIZE}
+  max storageSize : ${STORAGE_CACHE_SIZE}
+  safe mode       : ${SAFE_MODE}
+  local mode      : ${LOCAL_MODE}
+  verbose         : ${VERBOSE}
   --------------------------------------------
   `);
 }
