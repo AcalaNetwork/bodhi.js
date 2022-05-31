@@ -22,7 +22,7 @@ rush build -t @acala-network/eth-rpc-adapter
 
 - run the dev server:
 ```
-LOCAL_MODE=1 yarn dev
+LOCAL_MODE=1 yarn start
 ```
 
 #### from docker
@@ -121,7 +121,7 @@ yarn test:dev # all tests
 ```
 
 ## Metamask Integration
-- start the RPC server: `yarn dev`
+- start the RPC server: `yarn start`
 - add a custom network on Metamask:
   - Network Name: Local Mandala
   - New RPC URL: http://localhost:8545  (should be the same as the HTTP_PORT value in your `.env`, defaults to 8545)

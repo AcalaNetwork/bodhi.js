@@ -40,7 +40,7 @@ export interface ServerOpts {
   verbose: boolean;
 }
 
-const DEFAULT_SERVER_OPTS: ServerArgs = {
+const DEFAULT_SERVER_ARGS: ServerArgs = {
   e: undefined,
   h: undefined,
   w: undefined,
@@ -60,7 +60,7 @@ const DEFAULT_SERVER_OPTS: ServerArgs = {
 };
 
 export const parseOptions = (): ServerOpts => {
-  const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_OPTS });
+  const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_ARGS });
   const { e, h, w, s, l, v, endpoint, subql, http, ws, cache, batch, storage, safe, local, verbose } = argv;
 
   dotenv.config();
