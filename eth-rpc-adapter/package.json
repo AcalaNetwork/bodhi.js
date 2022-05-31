@@ -37,7 +37,8 @@
     "pino": "~7.0.0-rc.3",
     "ws": "~8.2.2",
     "dd-trace": "~2.6.0",
-    "minimist": "~1.2.6"
+    "minimist": "~1.2.6",
+    "@types/minimist": "~1.2.2"
   },
   "devDependencies": {
     "@rushstack/eslint-config": "~2.5.4",

@@ -1,10 +1,14 @@
+import { EvmRpcProvider } from '@acala-network/eth-providers';
+import minimist from 'minimist';
 import HTTPServerTransport from './transports/http';
 import WebSocketServerTransport from './transports/websocket';
 import dotenv from 'dotenv';
 import { Eip1193Bridge } from './eip1193-bridge';
-import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Router } from './router';
 import { version } from './_version';
+
+const argv = minimist(process.argv.slice(2));
+console.log(argv);
 
 dotenv.config();
 
