@@ -1,38 +1,22 @@
 import { EvmRpcProvider } from '@acala-network/eth-providers';
-import minimist from 'minimist';
 import HTTPServerTransport from './transports/http';
 import WebSocketServerTransport from './transports/websocket';
-import dotenv from 'dotenv';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { Router } from './router';
 import { version } from './_version';
-
-const argv = minimist(process.argv.slice(2));
-console.log(argv);
-
-dotenv.config();
+import { parseOptions } from './utils';
 
 export async function start(): Promise<void> {
   console.log('starting server ...');
 
-  const ENDPOINT_URL = process.env.ENDPOINT_URL || 'ws://0.0.0.0::9944';
-  const SUBQL_URL = process.env.SUBQL_URL;
-  const HTTP_PORT = Number(process.env.HTTP_PORT || 8545);
-  const WS_PORT = Number(process.env.WS_PORT || 3331);
-  const MAX_CACHE_SIZE = Number(process.env.MAX_CACHE_SIZE || 200);
-  const MAX_BATCH_SIZE = Number(process.env.MAX_BATCH_SIZE || 50);
-  const STORAGE_CACHE_SIZE = Number(process.env.STORAGE_CACHE_SIZE || 5000);
-  const SAFE_MODE = !!Number(process.env.SAFE_MODE || 0);
-  const LOCAL_MODE = !!Number(process.env.LOCAL_MODE || 0);
-  const VERBOSE = !!Number(process.env.VERBOSE || 1);
-
-  const provider = EvmRpcProvider.from(ENDPOINT_URL.split(','), {
-    safeMode: SAFE_MODE,
-    localMode: LOCAL_MODE,
-    verbose: VERBOSE,
-    subqlUrl: SUBQL_URL,
-    maxBlockCacheSize: MAX_CACHE_SIZE,
-    storageCacheSize: STORAGE_CACHE_SIZE
+  const opts = parseOptions();
+  const provider = EvmRpcProvider.from(opts.endpoints.split(','), {
+    safeMode: opts.safeMode,
+    localMode: opts.localMode,
+    verbose: opts.verbose,
+    subqlUrl: opts.subqlUrl,
+    maxBlockCacheSize: opts.maxBlockCacheSize,
+    storageCacheSize: opts.storageCacheSize
   });
 
   const bridge = new Eip1193Bridge(provider);
@@ -40,15 +24,15 @@ export async function start(): Promise<void> {
   const router = new Router(bridge);
 
   const HTTPTransport = new HTTPServerTransport({
-    port: HTTP_PORT,
+    port: opts.httpPort,
     middleware: [],
-    batch_size: MAX_BATCH_SIZE
+    batch_size: opts.maxBatchSize
   });
 
   const WebSocketTransport = new WebSocketServerTransport({
-    port: WS_PORT,
+    port: opts.wsPort,
     middleware: [],
-    batch_size: MAX_BATCH_SIZE
+    batch_size: opts.maxBatchSize
   });
 
   HTTPTransport.addRouter(router as any);
@@ -64,15 +48,15 @@ export async function start(): Promise<void> {
                🚀 SERVER STARTED 🚀
   --------------------------------------------
   version         : ${version}
-  endpoint url    : ${ENDPOINT_URL}
-  subquery url    : ${SUBQL_URL}
-  listening to    : http ${HTTP_PORT} | ws ${WS_PORT}
-  max blockCache  : ${MAX_CACHE_SIZE}
-  max batchSize   : ${MAX_BATCH_SIZE}
-  max storageSize : ${STORAGE_CACHE_SIZE}
-  safe mode       : ${SAFE_MODE}
-  local mode      : ${LOCAL_MODE}
-  verbose         : ${VERBOSE}
+  endpoint url    : ${opts.endpoints}
+  subquery url    : ${opts.subqlUrl}
+  listening to    : http ${opts.httpPort} | ws ${opts.wsPort}
+  max blockCache  : ${opts.maxBlockCacheSize}
+  max batchSize   : ${opts.maxBatchSize}
+  max storageSize : ${opts.storageCacheSize}
+  safe mode       : ${opts.safeMode}
+  local mode      : ${opts.localMode}
+  verbose         : ${opts.verbose}
   --------------------------------------------
   `);
 }

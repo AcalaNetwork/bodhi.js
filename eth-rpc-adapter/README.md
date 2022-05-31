@@ -32,32 +32,20 @@ docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:aa2c8d7 y
 note that docker image might not be most up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 
 ## Options
-- available ENV options:
-  - **ENDPOINT_URL**: acala node WS url
-  - **SUBQL_URL**: subquery service url
-  - **HTTP_PORT**: HTTP port for requests
-  - **WS_PORT**: WS port for requests
-  - **MAX_CACHE_SIZE**: max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network)
-  - **MAX_BATCH_SIZE**: max batch size for RPC request
-  - **STORAGE_CACHE_SIZE**: max storage cache size
-  - **SAFE_MODE**: if enabled, TX and logs can only be found after they are finalized
-  - **LOCAL_MODE**: enable this mode when testing with locally running mandala
-  - **VERBOSE**: print some extra info
+| ENV                | flag equivalent | default             | explanation                                                                                             |
+|--------------------|-----------------|---------------------|---------------------------------------------------------------------------------------------------------|
+| ENDPOINT_URL       | -e, --endpoint  | ws://localhost:9944 | acala node url                                                                                          |
+| SUBQL_URL          | --subql         | undefined           | subquery graphql-engine service url, usually http://localhost:3001                                      |
+| HTTP_PORT          | -h, --http      | 8545                | HTTP port for requests                                                                                  |
+| WS_PORT            | -w, --ws        | 3331                | WS port for requests                                                                                    |
+| MAX_CACHE_SIZE     | --cache         | 200                 | max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network) |
+| MAX_BATCH_SIZE     | --batch         | 50                  | max batch size for RPC request                                                                          |
+| STORAGE_CACHE_SIZE | --storage       | 5000                | max storage cache size                                                                                  |
+| SAFE_MODE          | -s, --safe      | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
+| LOCAL_MODE         | -l, --local     | 0                   | enable this mode when testing with locally running mandala                                              |
+| VERBOSE            | -v, --verbose   | 1                   | print some extra info                                                                                   |
 
-for example checkout `.env.sample`:
-```
-ENDPOINT_URL=ws://localhost:9944 # default WS port that acala node exposes
-SUBQL_URL=http://localhost:3001  # default http port that subquery exposes (default is undefined in RPC adaptor if we don't specify SUBQL_URL explicitly)
-HTTP_PORT=8545                   # default http port for ETH RPC methods
-WS_PORT=3331                     
-MAX_CACHE_SIZE=200               
-MAX_BATCH_SIZE=50
-STORAGE_CACHE_SIZE=5000
-SAFE_MODE=0                      # disabled by default
-LOCAL_MODE=0                     # disabled by default
-VERBOSE=1                        # enabled by default (for the provider itself it's disabled by default)
-```
-
+NOTE: Please don't mix using ENV and flags. `.env.sample` contains an example envs. 
 ## Usage
 Now that the adaptor service is running and listening to HTTP_PORT, we can send EVM related requests to this port.
 
