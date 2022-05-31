@@ -40,27 +40,27 @@ export interface ServerOpts {
   verbose: boolean;
 }
 
-export const parseOptions = (): ServerOpts => {
-  const defaultOpts: ServerArgs = {
-    e: undefined,
-    h: undefined,
-    w: undefined,
-    s: undefined,
-    l: undefined,
-    v: undefined,
-    endpoint: 'ws://0.0.0.0::9944',
-    subql: undefined,
-    http: 8545,
-    ws: 3331,
-    cache: 200,
-    batch: 50,
-    storage: 5000,
-    safe: 0,
-    local: 0,
-    verbose: 1
-  };
+const DEFAULT_SERVER_OPTS: ServerArgs = {
+  e: undefined,
+  h: undefined,
+  w: undefined,
+  s: undefined,
+  l: undefined,
+  v: undefined,
+  endpoint: 'ws://0.0.0.0::9944',
+  subql: undefined,
+  http: 8545,
+  ws: 3331,
+  cache: 200,
+  batch: 50,
+  storage: 5000,
+  safe: 0,
+  local: 0,
+  verbose: 1
+};
 
-  const argv = minimist<ServerArgs>(process.argv.slice(2), { default: defaultOpts });
+export const parseOptions = (): ServerOpts => {
+  const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_OPTS });
   const { e, h, w, s, l, v, endpoint, subql, http, ws, cache, batch, storage, safe, local, verbose } = argv;
 
   dotenv.config();
