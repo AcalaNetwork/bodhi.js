@@ -59,6 +59,7 @@ export default class HTTPServerTransport extends ServerTransport {
       if (req.body.length > this.options.batch_size) {
         const error = new InvalidRequest();
         result = {
+          id: null,
           jsonrpc: '2.0',
           error: {
             code: error.code,

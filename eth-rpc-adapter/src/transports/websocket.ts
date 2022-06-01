@@ -80,6 +80,7 @@ export default class WebSocketServerTransport extends ServerTransport {
     if (req === null) {
       const error = new InvalidRequest();
       const result = {
+        id: null,
         jsonrpc: '2.0',
         error: {
           code: error.code,

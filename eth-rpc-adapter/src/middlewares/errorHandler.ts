@@ -15,6 +15,7 @@ export const errorHandler: ErrorHandleFunction = (err, req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     res.end(
       JSON.stringify({
+        id: null,
         jsonrpc: '2.0',
         error: {
           code: error.code,
