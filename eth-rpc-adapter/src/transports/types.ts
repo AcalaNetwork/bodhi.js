@@ -13,7 +13,7 @@ export interface JSONRPCErrorObject {
 
 export interface JSONRPCResponse {
   jsonrpc: string;
-  id?: string;
+  id: string | null;
   result?: any;
   error?: JSONRPCErrorObject;
 }
