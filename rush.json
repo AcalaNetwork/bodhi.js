@@ -592,6 +592,12 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "hardhat-tutorial-upgradeable-greeter",
+      "projectFolder": "examples/hardhat-tutorials/upgradeable-greeter",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- truffle examples ---------- */
     {
