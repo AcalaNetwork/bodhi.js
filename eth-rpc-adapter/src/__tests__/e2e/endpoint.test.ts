@@ -629,7 +629,7 @@ describe('eth_getTransactionByHash', () => {
     });
   });
 
-  it.only('returns correct result for public mandala transactions', async () => {
+  it('returns correct result for public mandala transactions', async () => {
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
       eth_getTransactionByHash_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
