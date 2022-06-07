@@ -55,7 +55,7 @@ services:
   eth-rpc-adapter-server-with-subql:
     build:
       context: .
-      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
+      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
       target: eth-rpc-adapter-with-subql
     ports:
       - 8545:8545
@@ -127,27 +127,20 @@ services:
     depends_on:
       - mandala-node
     restart: always
-    command:
-      - --endpoint=ws://mandala-node:9944
-      - --http=8545
-      - --ws=3331
-      - --local
 
   eth-rpc-adapter-server-public-mandala:
     build:
       context: .
       dockerfile: docker/eth-rpc-adapter-server.Dockerfile
-      target: eth-rpc-adapter
+      target: eth-rpc-adapter-public-mandala
     ports:
       - 8546:8546
-    depends_on:
-      - mandala-node
     restart: always
-    command:
-      - --endpoint=wss://mandala-tc7-rpcnode.aca-dev.network/ws
-      - --subql=https://tc7-graphql.aca-dev.network
-      - --http=8546
-      - --ws=3332
+    # command:
+    #   - --endpoint=wss://mandala-tc7-rpcnode.aca-dev.network/ws
+    #   - --subql=https://tc7-graphql.aca-dev.network
+    #   - --http=8546
+    #   - --ws=3332
 
   waffle-examples-test:
     build:

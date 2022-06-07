@@ -75,4 +75,45 @@ WORKDIR /app
 COPY eth-rpc-adapter ./eth-rpc-adapter
 
 WORKDIR /app/eth-rpc-adapter
+ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV HTTP_PORT=8545
+ENV WS_PORT=3331
+ENV LOCAL_MODE=1
+CMD ["yarn", "start"]
+
+# =============== eth-rpc-adapter-public-mandala =============== #
+FROM node:16-alpine as eth-rpc-adapter-public-mandala
+COPY --from=bodhi /app /app
+
+WORKDIR /app
+COPY eth-rpc-adapter ./eth-rpc-adapter
+
+WORKDIR /app/eth-rpc-adapter
+ENV ENDPOINT_URL=wss://mandala-tc7-rpcnode.aca-dev.network/ws
+ENV SUBQL_URL=https://tc7-graphql.aca-dev.network
+ENV HTTP_PORT=8546
+ENV WS_PORT=3332
+CMD ["yarn", "start"]
+
+# =============== eth-rpc-adapter with subql =============== #
+FROM node:16-alpine as eth-rpc-adapter-with-subql
+COPY --from=bodhi /app /app
+
+WORKDIR /app
+COPY eth-rpc-adapter ./eth-rpc-adapter
+
+WORKDIR /app/evm-subql
+COPY evm-subql/package.json .
+COPY evm-subql/yarn.lock .
+RUN yarn
+
+COPY evm-subql .
+RUN yarn build
+
+WORKDIR /app/eth-rpc-adapter
+ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV SUBQL_URL=http://graphql-engine:3001
+ENV HTTP_PORT=8545
+ENV WS_PORT=3331
+ENV LOCAL_MODE=1
 CMD ["yarn", "start"]

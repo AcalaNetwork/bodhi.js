@@ -82,11 +82,19 @@ before('env setup', async () => {
       throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
     }
   } catch (e) {
-    console.log('test env setup failed ❌ ');
+    console.log(`
+      ------------------------
+      test env setup failed ❌ 
+      ------------------------
+    `);
     throw e;
   }
 
-  console.log('test env setup OK ✅ ');
+  console.log(`
+      --------------------------
+      test env setup finished ✅  
+      --------------------------
+    `);
 });
 
 describe('eth_getTransactionReceipt', () => {
