@@ -26,7 +26,11 @@ import {
   mandalaBlock1265928,
   mandalaContractCallTxReceipt,
   mandalaContractDeployTxReceipt,
-  mandalaTransferTxReceipt
+  mandalaTransferTxReceipt,
+  deployHelloWorldData,
+  mandalaContractCallTx,
+  mandalaContractDeployTx,
+  mandalaTransferTx
 } from './consts';
 
 dotenv.config();
@@ -244,6 +248,8 @@ describe('eth_getTransactionReceipt', () => {
     res = await eth_getTransactionReceipt(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
     expect(res.status).to.equal(200);
     expect(res.data.result).to.equal(null);
+
+    /* ---------- TODO: pending tx ---------- */
   });
 });
 
@@ -551,8 +557,9 @@ describe('eth_getLogs', () => {
 
 describe('eth_getTransactionByHash', () => {
   const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
+  const eth_getTransactionByHash_mandala = rpcGet('eth_getTransactionByHash', PUBLIC_MANDALA_RPC_URL);
 
-  it('finds correct tx when hash exist', async () => {
+  it('finds correct tx when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
     const tx1 = allTxReceipts[0];
     const tx2 = allTxReceipts[allTxReceipts.length - 1];
@@ -620,6 +627,26 @@ describe('eth_getTransactionByHash', () => {
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
       value: '0xde0b6b3a7640000'
     });
+  });
+
+  it.only('returns correct result for public mandala transactions', async () => {
+    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
+      eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
+      eth_getTransactionByHash_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
+      eth_getTransactionByHash_mandala(['0x3c7839f0e249f40115f0ce97681035023ee375921a59f0b826e2e93cbd020da1'])
+    ]);
+
+    expect(contractCallRes.status).to.equal(200);
+    expect(contractDeployRes.status).to.equal(200);
+    expect(transferRes.status).to.equal(200);
+
+    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTx);
+    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTx);
+    expect(transferRes.data.result).to.deep.equal(mandalaTransferTx);
+  });
+
+  it.skip('returns correct result when tx is pending', async () => {
+    // send a 0 tx to mandala
   });
 
   it('return correct error or null', async () => {
@@ -696,9 +723,6 @@ describe('eth_sendRawTransaction', () => {
   });
 
   describe('deploy contract (hello world)', () => {
-    const deployHelloWorldData =
-      '0x60806040526040518060400160405280600c81526020017f48656c6c6f20576f726c642100000000000000000000000000000000000000008152506000908051906020019061004f929190610062565b5034801561005c57600080fd5b50610166565b82805461006e90610134565b90600052602060002090601f01602090048101928261009057600085556100d7565b82601f106100a957805160ff19168380011785556100d7565b828001600101855582156100d7579182015b828111156100d65782518255916020019190600101906100bb565b5b5090506100e491906100e8565b5090565b5b808211156101015760008160009055506001016100e9565b5090565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000600282049050600182168061014c57607f821691505b602082108114156101605761015f610105565b5b50919050565b61022e806101756000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063c605f76c14610030575b600080fd5b61003861004e565b6040516100459190610175565b60405180910390f35b6000805461005b906101c6565b80601f0160208091040260200160405190810160405280929190818152602001828054610087906101c6565b80156100d45780601f106100a9576101008083540402835291602001916100d4565b820191906000526020600020905b8154815290600101906020018083116100b757829003601f168201915b505050505081565b600081519050919050565b600082825260208201905092915050565b60005b838110156101165780820151818401526020810190506100fb565b83811115610125576000848401525b50505050565b6000601f19601f8301169050919050565b6000610147826100dc565b61015181856100e7565b93506101618185602086016100f8565b61016a8161012b565b840191505092915050565b6000602082019050818103600083015261018f818461013c565b905092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b600060028204905060018216806101de57607f821691505b602082108114156101f2576101f1610197565b5b5091905056fea26469706673582212204d363ed34111d1be492d4fd086e9f2df62b3c625e89ade31f30e63201ed1e24f64736f6c63430008090033';
-
     let partialDeployTx;
 
     before(() => {
