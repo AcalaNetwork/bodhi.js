@@ -11,19 +11,36 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
-import { allLogs, log12, log6, log9, log12, log10, log11, log7, log8 } from './consts';
+import {
+  allLogs,
+  log12,
+  log6,
+  log9,
+  log12,
+  log10,
+  log11,
+  log7,
+  log8,
+  mandalaBlock1265919,
+  mandalaBlock1265918,
+  mandalaBlock1265928,
+  mandalaContractCallTxReceipt,
+  mandalaContractDeployTxReceipt,
+  mandalaTransferTxReceipt
+} from './consts';
 
 dotenv.config();
 
+const PUBLIC_MANDALA_RPC_URL = process.env.PUBLIC_MANDALA_RPC_URL || 'http://127.0.0.1:8546';
 const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
 const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
 
 const subql = new SubqlProvider(SUBQL_URL);
 
 const rpcGet =
-  (method: string) =>
+  (method: string, url?: string = RPC_URL) =>
   (params: any): any =>
-    axios.get(RPC_URL, {
+    axios.get(url, {
       data: {
         id: 0,
         jsonrpc: '2.0',
@@ -48,24 +65,35 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
   );
 };
 
-// some tests depend on the deterministic setup
-// TODO: ideally setup should contain token transfer, contract deployment and call
+// some tests depend on the deterministic setup or mandala node connection
 before('env setup', async () => {
-  console.log('test env setup OK ✅');
-  const res = await rpcGet('eth_blockNumber')();
+  try {
+    const res = await rpcGet('eth_blockNumber')();
+    const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
 
-  const DETERMINISTIC_SETUP_TOTAL_TXs = 12;
-  if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_TXs) {
-    throw new Error(
-      `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_TXs} tx but got ${Number(res.data.result)}`
-    );
+    const DETERMINISTIC_SETUP_TOTAL_TXs = 12;
+    if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_TXs) {
+      throw new Error(
+        `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_TXs} tx but got ${Number(res.data.result)}`
+      );
+    }
+
+    if (!(Number(resMandala.data.result) > 1000000)) {
+      throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+    }
+  } catch (e) {
+    console.log('test env setup failed ❌ ');
+    throw e;
   }
+
+  console.log('test env setup OK ✅ ');
 });
 
 describe('eth_getTransactionReceipt', () => {
   const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
+  const eth_getTransactionReceipt_mandala = rpcGet('eth_getTransactionReceipt', PUBLIC_MANDALA_RPC_URL);
 
-  it('returns correct result when hash exist', async () => {
+  it('returns correct result when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
 
     expect(allTxReceipts.length).to.greaterThan(0);
@@ -177,6 +205,22 @@ describe('eth_getTransactionReceipt', () => {
       status: '0x1',
       type: '0x0'
     });
+  });
+
+  it('returns correct result for public mandala transactions', async () => {
+    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
+      eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
+      eth_getTransactionReceipt_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
+      eth_getTransactionReceipt_mandala(['0x01bbd9bf3f1a56253084e5a54ab1dfc96bc62ef72977f60c2ff3a7d56f4fc8d6'])
+    ]);
+
+    expect(contractCallRes.status).to.equal(200);
+    expect(contractDeployRes.status).to.equal(200);
+    expect(transferRes.status).to.equal(200);
+
+    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTxReceipt);
+    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTxReceipt);
+    expect(transferRes.data.result).to.deep.equal(mandalaTransferTxReceipt);
   });
 
   it('return correct error or null', async () => {
@@ -1180,8 +1224,6 @@ describe('eth_getCode', () => {
 describe('eth_getEthResources', () => {
   const eth_getEthResources = rpcGet('eth_getEthResources');
 
-  const tags = ['latest', 'earliest'];
-
   it('get correct gas', async () => {
     const rawRes = (
       await eth_getEthResources([
@@ -1204,5 +1246,45 @@ describe('net_runtimeVersion', () => {
     const version = (await net_runtimeVersion([])).data.result;
 
     expect(version).to.be.gt(2000);
+  });
+});
+
+describe('eth_getBlockByNumber', () => {
+  const eth_getBlockByNumber_mandala = rpcGet('eth_getBlockByNumber', PUBLIC_MANDALA_RPC_URL);
+
+  it('when there are 0 EVM transactions', async () => {
+    const resFull = (await eth_getBlockByNumber_mandala([1265918, true])).data.result;
+    const res = (await eth_getBlockByNumber_mandala([1265918, false])).data.result;
+
+    const block1265918NotFull = { ...mandalaBlock1265918 };
+    block1265918NotFull.transactions = mandalaBlock1265918.transactions.map((t) => t.hash);
+    block1265918NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+
+    expect(resFull).to.deep.equal(mandalaBlock1265918);
+    expect(res).to.deep.equal(block1265918NotFull);
+  });
+
+  it('when there are 1 EVM transactions', async () => {
+    const resFull = (await eth_getBlockByNumber_mandala([1265928, true])).data.result;
+    const res = (await eth_getBlockByNumber_mandala([1265928, false])).data.result;
+
+    const block1265928NotFull = { ...mandalaBlock1265928 };
+    block1265928NotFull.transactions = mandalaBlock1265928.transactions.map((t) => t.hash);
+    block1265928NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+
+    expect(resFull).to.deep.equal(mandalaBlock1265928);
+    expect(res).to.deep.equal(block1265928NotFull);
+  });
+
+  it('when there are >= 2 EVM transactions', async () => {
+    const resFull = (await eth_getBlockByNumber_mandala([1265919, true])).data.result;
+    const res = (await eth_getBlockByNumber_mandala([1265919, false])).data.result;
+
+    const block1265919NotFull = { ...mandalaBlock1265919 };
+    block1265919NotFull.transactions = mandalaBlock1265919.transactions.map((t) => t.hash);
+    block1265919NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+
+    expect(resFull).to.deep.equal(mandalaBlock1265919);
+    expect(res).to.deep.equal(block1265919NotFull);
   });
 });

@@ -117,4 +117,5 @@ WORKDIR /app/eth-rpc-adapter
 ENV ENDPOINT_URL=ws://mandala-node:9944
 ENV SUBQL_URL=http://graphql-engine:3001
 ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
+ENV PUBLIC_MANDALA_RPC_URL=http://eth-rpc-adapter-server-public-mandala:8546
 CMD ["yarn", "test:CI"]
