@@ -563,9 +563,7 @@ export abstract class BaseProvider extends AbstractProvider {
         })
       );
 
-      total_used_gas = transactions.reduce((r, tx) => {
-        return r.add(tx.gas);
-      }, BIGNUMBER_ZERO);
+      total_used_gas = transactions.reduce((r, tx) => r.add(tx.gas), BIGNUMBER_ZERO);
     }
 
     const data = {
@@ -1738,7 +1736,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ...transactionInfo,
         ...log
       }))
-    }) as any;
+    });
   };
 
   static isProvider(value: any): value is Provider {

@@ -152,7 +152,7 @@ type ExtrinsicWithIndex = {
   extrinsicIndex: number;
 };
 
-export const getEvmExtrinsicIndexes = (events: EventRecord[]) => {
+export const getEvmExtrinsicIndexes = (events: EventRecord[]): number[] => {
   return events
     .filter(
       (event) =>
@@ -173,7 +173,7 @@ export const getEvmExtrinsicIndexes = (events: EventRecord[]) => {
     }, [] as number[]);
 };
 
-export const findEvmEvent = (events: EventRecord[]) => {
+export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
   // For the moment the case of multiple evm events in one transaction is ignored
   return events.find(({ event }) => {
     return (

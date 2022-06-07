@@ -48,11 +48,18 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
   );
 };
 
-describe('env setup', () => {
-  it('has tx in the chain', async () => {
-    const res = await rpcGet('eth_blockNumber')();
-    expect(Number(res.data.result)).to.greaterThan(0);
-  });
+// some tests depend on the deterministic setup
+// TODO: ideally setup should contain token transfer, contract deployment and call
+before('env setup', async () => {
+  console.log('test env setup OK ✅');
+  const res = await rpcGet('eth_blockNumber')();
+
+  const DETERMINISTIC_SETUP_TOTAL_TXs = 12;
+  if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_TXs) {
+    throw new Error(
+      `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_TXs} tx but got ${Number(res.data.result)}`
+    );
+  }
 });
 
 describe('eth_getTransactionReceipt', () => {
@@ -67,19 +74,109 @@ describe('eth_getTransactionReceipt', () => {
     let txR = allTxReceipts[0];
     let res = await eth_getTransactionReceipt([txR.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      contractAddress: null,
+      transactionIndex: '0x0',
+      gasUsed: '0x19b45',
+      logsBloom:
+        '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockHash: txR.blockHash,
+      transactionHash: txR.transactionHash,
+      logs: [
+        {
+          transactionIndex: '0x0',
+          blockNumber: '0xa',
+          transactionHash: txR.transactionHash,
+          address: '0x0000000000000000000000000000000000000803',
+          topics: [
+            '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+          ],
+          data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000748849ea0c000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+          logIndex: '0x0',
+          blockHash: txR.blockHash
+        }
+      ],
+      blockNumber: '0xa',
+      cumulativeGasUsed: '0x0', // FIXME:
+      effectiveGasPrice: '0x1', // FIXME:
+      status: '0x1',
+      type: '0x0'
+    });
 
     // test last one
     txR = allTxReceipts[allTxReceipts.length - 1];
     res = await eth_getTransactionReceipt([txR.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      contractAddress: null,
+      transactionIndex: '0x0',
+      gasUsed: '0x1e7a3',
+      logsBloom:
+        '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockHash: txR.blockHash,
+      transactionHash: txR.transactionHash,
+      logs: [
+        {
+          transactionIndex: '0x0',
+          blockNumber: '0x9',
+          transactionHash: txR.transactionHash,
+          address: '0x0000000000000000000000000000000000000803',
+          topics: [
+            '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+          ],
+          data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
+          logIndex: '0x0',
+          blockHash: txR.blockHash
+        }
+      ],
+      blockNumber: '0x9',
+      cumulativeGasUsed: '0x0',
+      effectiveGasPrice: '0x1',
+      status: '0x1',
+      type: '0x0'
+    });
 
     // test middle one
     txR = allTxReceipts[Math.floor(allTxReceipts.length / 2)];
     res = await eth_getTransactionReceipt([txR.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      contractAddress: null,
+      transactionIndex: '0x0',
+      gasUsed: '0x19b1a',
+      logsBloom:
+        '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockHash: txR.blockHash,
+      transactionHash: txR.transactionHash,
+      logs: [
+        {
+          transactionIndex: '0x0',
+          blockNumber: '0x6',
+          transactionHash: txR.transactionHash,
+          address: '0x0000000000000000000000000000000000000803',
+          topics: [
+            '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+          ],
+          data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000001d131f6171f000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+          logIndex: '0x0',
+          blockHash: txR.blockHash
+        }
+      ],
+      blockNumber: '0x6',
+      cumulativeGasUsed: '0x0',
+      effectiveGasPrice: '0x1',
+      status: '0x1',
+      type: '0x0'
+    });
   });
 
   it('return correct error or null', async () => {
@@ -98,7 +195,6 @@ describe('eth_getTransactionReceipt', () => {
   });
 });
 
-// eth_getLogs tests depend on the deterministic setup
 describe('eth_getLogs', () => {
   const eth_getLogs = rpcGet('eth_getLogs');
   const ALL_BLOCK_RANGE_FILTER = { fromBlock: 'earliest' };
@@ -413,17 +509,65 @@ describe('eth_getTransactionByHash', () => {
     // test first one
     let res = await eth_getTransactionByHash([tx1.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.hash).to.equal(tx1.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      blockHash: tx1.blockHash,
+      blockNumber: '0xa',
+      transactionIndex: '0x0',
+      gasPrice: '0x19654ae7035',
+      gas: '0x1e8481',
+      input:
+        '0x3d8d96200000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+      v: '0x25',
+      r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+      hash: tx1.transactionHash,
+      nonce: '0x6',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      value: '0xde0b6b3a7640000'
+    });
 
     // test last one
     res = await eth_getTransactionByHash([tx2.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.hash).to.equal(tx2.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      blockHash: tx2.blockHash,
+      blockNumber: '0x9',
+      transactionIndex: '0x0',
+      gasPrice: '0x15caa69c265',
+      gas: '0x1e8481',
+      input:
+        '0x3d8d962000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
+      v: '0x25',
+      r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+      hash: tx2.transactionHash,
+      nonce: '0x5',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      value: '0xde0b6b3a7640000'
+    });
 
     // test middle one
     res = await eth_getTransactionByHash([tx3.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.hash).to.equal(tx3.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      blockHash: tx3.blockHash,
+      blockNumber: '0x6',
+      transactionIndex: '0x0',
+      gasPrice: '0x19680020724',
+      gas: '0x1e8481',
+      input:
+        '0x6fc4b4e50000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+      v: '0x25',
+      r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+      hash: tx3.transactionHash,
+      nonce: '0x2',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      value: '0xde0b6b3a7640000'
+    });
   });
 
   it('return correct error or null', async () => {
