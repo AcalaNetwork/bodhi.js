@@ -7,7 +7,7 @@ import { performance } from 'perf_hooks';
  */
 export const buildTracerSpan = (): DataDogTracerSpan | undefined => {
   // Get datadog span from the context
-  const span = process.env.EXTENSIVE_DD_INSTRUMENTATION == 'true' ? tracer.scope().active() : null;
+  const span = process.env.EXTENSIVE_DD_INSTRUMENTATION === 'true' ? tracer.scope().active() : null;
   // Initialize datadog span tags
   const spanTags = span
     ? {

@@ -38,15 +38,13 @@ import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
 import LRUCache from 'lru-cache';
 import {
+  BIGNUMBER_ONE,
   BIGNUMBER_ZERO,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
   DUMMY_BLOCK_MIX_HASH,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
-  DUMMY_R,
-  DUMMY_S,
-  DUMMY_V,
   EFFECTIVE_GAS_PRICE,
   EMPTY_HEX_STRING,
   EMTPY_UNCLES,
@@ -88,20 +86,6 @@ import { SubqlProvider } from './utils/subqlProvider';
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
-
-// export interface _RichBlock extends _Block {
-//   stateRoot: string;
-//   transactionsRoot: string;
-//   mixHash: string;
-// }
-
-// export interface RichBlock extends _RichBlock {
-//   transactions: Array<string>;
-// }
-
-// export interface BlockWithTransactions extends _RichBlock {
-//   transactions: Array<TransactionResponse>;
-// }
 
 export interface BlockData {
   hash: `0x${string}`;
@@ -178,22 +162,6 @@ export interface TXReceipt extends partialTX {
   effectiveGasPrice: BigNumber;
   type: number;
   status?: number;
-}
-
-// TODO: safe to assume this shape?
-export interface ExtrinsicMethodJSON {
-  callIndex: string;
-  args: {
-    action: {
-      [key: string]: string;
-    };
-    input: string;
-    value: number;
-    gas_limit: number;
-    storage_limit: number;
-    access_list: any[];
-    valid_until: number;
-  };
 }
 
 export interface GasConsts {
@@ -460,7 +428,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   isReady = (): Promise<Network> => {
     if (!this._network) {
-      const _getNetwork = async () => {
+      const _getNetwork = async (): Promise<{
+        name: string;
+        chainId: number;
+      }> => {
         try {
           await this.api.isReadyOrError;
 
@@ -1249,7 +1220,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return this._wrapTransaction(transaction, hash, blockNumber, blockHash.toHex());
     } catch (err) {
       const error = err as any;
-      for (let pattern of ERROR_PATTERN) {
+      for (const pattern of ERROR_PATTERN) {
         const match = ((error.toString?.() || '') as string).match(pattern);
         if (match) {
           const errDetails = this.api.registry.findMetaError(new Uint8Array([parseInt(match[1]), parseInt(match[2])]));
@@ -1312,7 +1283,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
         let done = false;
 
-        const alreadyDone = function () {
+        const alreadyDone = function (): boolean {
           if (done) {
             return true;
           }
@@ -1662,23 +1633,14 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
 
-    const args = (targetExtrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
-
     return {
       from: await this.getEvmAddress(targetExtrinsic.signer.toString()),
-      to: args.action.call ? args.action.call : null,
       blockHash: null,
       blockNumber: null,
       transactionIndex: null,
       hash: txHash,
-      nonce: targetExtrinsic.nonce.toNumber(),
-      value: args.value,
       gasPrice: 0, // TODO: reverse calculate using args.storage_limit if needed
-      gas: args.gas_limit,
-      input: args.input,
-      v: DUMMY_V,
-      r: DUMMY_R,
-      s: DUMMY_S
+      ...parseExtrinsic(targetExtrinsic)
     };
   };
 
@@ -1711,32 +1673,64 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
-    const res = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
+    const { extrinsics, extrinsicsEvents } = (await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash)) as {
+      extrinsics: GenericExtrinsic; // fixed type when passed txHash as params
+      extrinsicsEvents: EventRecord[]; // fixed type when passed txHash as params
+    };
 
-    if (!res) {
-      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
+    // if (!res) {
+    //   return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
+    // }
+
+    const evmEvent = findEvmEvent(extrinsicsEvents);
+    if (!evmEvent) {
+      return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
+        blockHash: tx.blockHash,
+        extrinsic: extrinsics.method.toJSON()
+      });
     }
 
-    const data = await parseExtrinsic(
-      tx.blockHash,
-      res.extrinsics as GenericExtrinsic,
-      res.extrinsicsEvents as EventRecord[],
-      this.api
-    );
+    /*  --------------- calculate gas --------------- */
+    const { data: eventData, method: eventMethod } = evmEvent.event;
+
+    let gasPrice = BIGNUMBER_ONE;
+
+    const gasInfoExists =
+      eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
+
+    if (gasInfoExists) {
+      const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
+      const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
+
+      const block = await this.api.rpc.chain.getBlock(tx.blockHash);
+      // use parentHash to get tx fee
+      const payment = await this.api.rpc.payment.queryInfo(extrinsics.toHex(), block.block.header.parentHash);
+      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+      let tx_fee = nativeToEthDecimal(payment.partialFee.toString(), 12);
+
+      // get storage fee
+      // if used_storage > 0, tx_fee include the storage fee.
+      if (used_storage.gt(0)) {
+        tx_fee = tx_fee.add(used_storage.mul(this.api.consts.evm.storageDepositPerByte.toBigInt()));
+      }
+
+      gasPrice = tx_fee.div(used_gas);
+    }
+    /*  --------------------------------------------- */
 
     return {
       blockHash: tx.blockHash,
       blockNumber: tx.blockNumber,
       transactionIndex: tx.transactionIndex,
-      ...data
+      hash: tx.transactionHash,
+      from: tx.from,
+      gasPrice,
+      ...parseExtrinsic(extrinsics)
     };
   };
 
-  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> => {
-    // @TODO
-    // @ts-ignore
-    return this.getTXReceiptByHash(txHash);
-  };
+  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
+    throwNotImplemented('getTransactionReceipt (please use `getTXReceiptByHash` instead)');
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
     const tx = await this._getMinedTXReceipt(txHash);

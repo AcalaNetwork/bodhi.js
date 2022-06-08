@@ -1,4 +1,4 @@
-import { EvmRpcProvider, TX, TXReceipt, hexlifyRpcResult } from '@acala-network/eth-providers';
+import { EvmRpcProvider, TX, hexlifyRpcResult } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
