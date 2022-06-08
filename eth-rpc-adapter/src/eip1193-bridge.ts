@@ -166,7 +166,7 @@ class Eip1193BridgeImpl {
   async eth_getBlockByHash(params: any[]): Promise<any> {
     validate([{ type: 'blockHash' }, { type: 'flag' }], params);
     try {
-      const block = await this.#provider.getBlock(params[0], params[1]);
+      const block = await this.#provider.getBlockData(params[0], params[1]);
       return hexlifyRpcResult(block);
     } catch (error) {
       if (
@@ -190,7 +190,7 @@ class Eip1193BridgeImpl {
   async eth_getBlockByNumber(params: any[]): Promise<any> {
     validate([{ type: 'block' }, { type: 'flag' }], params);
     try {
-      const block = await this.#provider.getBlock(params[0], params[1]);
+      const block = await this.#provider.getBlockData(params[0], params[1]);
       return hexlifyRpcResult(block);
     } catch (error) {
       if (
@@ -248,7 +248,7 @@ class Eip1193BridgeImpl {
    */
   async eth_getBlockTransactionCountByHash(params: any[]): Promise<string> {
     validate([{ type: 'blockHash' }], params);
-    const result = await this.#provider.getBlock(params[0]);
+    const result = await this.#provider.getBlockData(params[0]);
     return hexValue(result.transactions.length);
   }
 
@@ -259,7 +259,7 @@ class Eip1193BridgeImpl {
    */
   async eth_getBlockTransactionCountByNumber(params: any[]): Promise<string> {
     validate([{ type: 'block' }], params);
-    const result = await this.#provider.getBlock(params[0]);
+    const result = await this.#provider.getBlockData(params[0]);
     return hexValue(result.transactions.length);
   }
 

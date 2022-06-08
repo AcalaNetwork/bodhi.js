@@ -1,6 +1,8 @@
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
+  Block,
+  BlockWithTransactions,
   EventType,
   FeeData,
   Filter,
@@ -87,39 +89,51 @@ import { SubqlProvider } from './utils/subqlProvider';
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
 
-// https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-provider/src.ts/index.ts#L61
-export interface _Block {
-  hash: string;
-  parentHash: string;
+// export interface _RichBlock extends _Block {
+//   stateRoot: string;
+//   transactionsRoot: string;
+//   mixHash: string;
+// }
+
+// export interface RichBlock extends _RichBlock {
+//   transactions: Array<string>;
+// }
+
+// export interface BlockWithTransactions extends _RichBlock {
+//   transactions: Array<TransactionResponse>;
+// }
+
+export interface BlockData {
+  hash: `0x${string}`;
+  parentHash: `0x${string}`;
   number: number;
-
+  stateRoot: `0x${string}`;
+  transactionsRoot: `0x${string}`;
   timestamp: number;
-  nonce: string;
+  nonce: `0x${string}`;
+  mixHash: `0x${string}`;
   difficulty: number;
-  _difficulty: BigNumber;
-
-  gasLimit: BigNumber;
-  gasUsed: BigNumber;
+  totalDifficulty: number;
+  gasLimit: BigNumber; // 15m for now. TODO: query this from blockchain
+  gasUsed: BigNumber; // TODO: not full is 0
 
   miner: string;
-  extraData: string;
+  extraData: `0x${string}`;
+  sha3Uncles: `0x${string}`;
+  receiptsRoot: `0x${string}`;
+  logsBloom: `0x${string}`; // TODO: ???
+  size: number;
+  uncles: string[];
 
-  // eslint-disable-next-line @rushstack/no-new-null
-  baseFeePerGas?: null | BigNumber;
+  transactions: `0x${string}`[];
+
+  // baseFeePerGas: BIGNUMBER_ZERO,
+  // with baseFeePerGas Metamask will send token with EIP-1559 format
+  // but we want it to send with legacy format
 }
 
-export interface _RichBlock extends _Block {
-  stateRoot: string;
-  transactionsRoot: string;
-  mixHash: string;
-}
-
-export interface RichBlock extends _RichBlock {
-  transactions: Array<string>;
-}
-
-export interface BlockWithTransactions extends _RichBlock {
-  transactions: Array<TransactionResponse>;
+export interface FullBlockData extends Omit<BlockData, 'transactions'> {
+  transactions: TX[];
 }
 
 export interface CallRequest {
@@ -304,13 +318,13 @@ export abstract class BaseProvider extends AbstractProvider {
       // eth_subscribe
       // TODO: can do some optimizations
       if (this._listeners[NEW_HEADS]?.length > 0) {
-        const block = await this.getBlock(blockNumber);
+        const block = await this.getBlockData(blockNumber, false);
         const response = hexlifyRpcResult(block);
         this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
       }
 
       if (this._listeners[NEW_LOGS]?.length > 0) {
-        const block = await this._getBlock(header.number.toHex(), false);
+        const block = await this.getBlockData(header.number.toHex(), false);
         const receipts = await Promise.all(
           block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, header.number.toHex()))
         );
@@ -495,26 +509,10 @@ export abstract class BaseProvider extends AbstractProvider {
     return header.number.toNumber();
   };
 
-  getBlock = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean | Promise<boolean>): Promise<RichBlock> => {
-    return this._getBlock(blockTag, full) as Promise<RichBlock>;
-  };
-
-  getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
-    return this._getBlock(blockTag, true) as Promise<BlockWithTransactions>;
-  };
-
-  _getBlock = async (
-    _blockTag: BlockTag | Promise<BlockTag>,
-    full?: boolean | Promise<boolean>
-  ): Promise<RichBlock | BlockWithTransactions> => {
+  _getBlock = async (_blockTag: BlockTag | Promise<BlockTag>): Promise<BlockData> => {
     await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
-
-    const { fullTx, header } = await resolveProperties({
-      header: this._getBlockHeader(blockTag),
-      fullTx: full
-    });
-
+    const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
 
     const [block, validators, now, blockEvents] = await Promise.all([
@@ -535,38 +533,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
-    let transactions: any[];
-    let total_used_gas = BIGNUMBER_ZERO;
+    const transactions = evmExtrinsicIndexes.map((extrinsicIndex) =>
+      block.block.extrinsics[extrinsicIndex].hash.toHex()
+    );
 
-    if (!fullTx) {
-      // not full
-      transactions = evmExtrinsicIndexes.map((extrinsicIndex) => {
-        return block.block.extrinsics[extrinsicIndex].hash.toHex();
-      });
-    } else {
-      // full
-      transactions = await Promise.all(
-        evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
-          const extrinsic = block.block.extrinsics[extrinsicIndex];
-          const extrinsicEvents = blockEvents.filter(
-            (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-          );
-
-          const data = await parseExtrinsic(blockHash, extrinsic, extrinsicEvents, this.api);
-
-          return {
-            blockHash,
-            blockNumber,
-            transactionIndex,
-            ...data
-          };
-        })
-      );
-
-      total_used_gas = transactions.reduce((r, tx) => r.add(tx.gas), BIGNUMBER_ZERO);
-    }
-
-    const data = {
+    return {
       hash: blockHash,
       parentHash: headerExtended.parentHash.toHex(),
       number: blockNumber,
@@ -578,27 +549,44 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: total_used_gas, // TODO: not full is 0
+      gasUsed: BIGNUMBER_ZERO, // TODO: not full is 0
 
       miner: author,
       extraData: EMPTY_HEX_STRING,
       sha3Uncles: EMTPY_UNCLE_HASH,
-      receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
+      receiptsRoot: headerExtended.extrinsicsRoot.toHex(),
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
       size: block.encodedLength,
       uncles: EMTPY_UNCLES,
 
       transactions
-
-      // with this field Metamask will send token with EIP-1559 format
-      // but we want it to send with legacy format
-      // baseFeePerGas: BIGNUMBER_ZERO,
     };
-
-    // @TODO remove ts-ignore
-    // @ts-ignore
-    return data;
   };
+
+  _getFullBlock = async (blockTag: BlockTag | Promise<BlockTag>): Promise<FullBlockData> => {
+    const block = await this._getBlock(blockTag);
+    const fullTXs = await Promise.all(
+      block.transactions.map((txHash) => this.getTransactionByHash(txHash) as Promise<TX>)
+    );
+
+    return {
+      ...block,
+      transactions: fullTXs
+    };
+  };
+
+  getBlockData = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData | FullBlockData> => {
+    return full
+      ? ((await this._getFullBlock(blockTag)) as FullBlockData)
+      : ((await this._getBlock(blockTag)) as BlockData);
+  };
+
+  getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
+    throwNotImplemented('getBlock (please use `getBlockData` instead)');
+  getBlockWithTransactions = async (
+    blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
+  ): Promise<BlockWithTransactions> =>
+    throwNotImplemented('getBlockWithTransactions (please use `getBlockData` instead)');
 
   getBalance = async (
     addressOrName: string | Promise<string>,
@@ -1847,8 +1835,8 @@ export abstract class BaseProvider extends AbstractProvider {
       this.latestFinalizedBlockNumber! > this._healthCheckBlockDistance
         ? this.latestFinalizedBlockNumber! - this._healthCheckBlockDistance
         : this.latestFinalizedBlockNumber!;
-    const getBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, false));
-    const getFullBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, true));
+    const getBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, false));
+    const getFullBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, true));
 
     const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
       await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])

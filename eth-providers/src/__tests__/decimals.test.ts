@@ -7,7 +7,7 @@ describe('decimals', () => {
   it('nativeToEthDecimal', async () => {
     expect(nativeToEthDecimal(BigNumber.from('300000000'), 12).toString()).to.equal('300000000000000');
     expect(nativeToEthDecimal(123, 12).toString()).to.equal('123000000');
-    expect(nativeToEthDecimal('111', 12).toString()).to.equal('1110000000000');
+    expect(nativeToEthDecimal('111', 12).toString()).to.equal('111000000');
     expect(nativeToEthDecimal('0xf', 12).toString()).to.equal('16000000');
   });
 
