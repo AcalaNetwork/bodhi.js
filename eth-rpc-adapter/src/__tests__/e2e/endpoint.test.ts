@@ -11,19 +11,40 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
-import { allLogs, log12, log6, log9, log12, log10, log11, log7, log8 } from './consts';
+import {
+  allLogs,
+  log12,
+  log6,
+  log9,
+  log12,
+  log10,
+  log11,
+  log7,
+  log8,
+  mandalaBlock1265919,
+  mandalaBlock1265918,
+  mandalaBlock1265928,
+  mandalaContractCallTxReceipt,
+  mandalaContractDeployTxReceipt,
+  mandalaTransferTxReceipt,
+  deployHelloWorldData,
+  mandalaContractCallTx,
+  mandalaContractDeployTx,
+  mandalaTransferTx
+} from './consts';
 
 dotenv.config();
 
+const PUBLIC_MANDALA_RPC_URL = process.env.PUBLIC_MANDALA_RPC_URL || 'http://127.0.0.1:8546';
 const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
 const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
 
 const subql = new SubqlProvider(SUBQL_URL);
 
 const rpcGet =
-  (method: string) =>
+  (method: string, url?: string = RPC_URL) =>
   (params: any): any =>
-    axios.get(RPC_URL, {
+    axios.get(url, {
       data: {
         id: 0,
         jsonrpc: '2.0',
@@ -48,17 +69,43 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
   );
 };
 
-describe('env setup', () => {
-  it('has tx in the chain', async () => {
+// some tests depend on the deterministic setup or mandala node connection
+before('env setup', async () => {
+  try {
     const res = await rpcGet('eth_blockNumber')();
-    expect(Number(res.data.result)).to.greaterThan(0);
-  });
+    const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
+
+    const DETERMINISTIC_SETUP_TOTAL_TXs = 12;
+    if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_TXs) {
+      throw new Error(
+        `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_TXs} tx but got ${Number(res.data.result)}`
+      );
+    }
+
+    if (!(Number(resMandala.data.result) > 1000000)) {
+      throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+    }
+  } catch (e) {
+    console.log(`
+      ------------------------
+      test env setup failed ❌ 
+      ------------------------
+    `);
+    throw e;
+  }
+
+  console.log(`
+      --------------------------
+      test env setup finished ✅  
+      --------------------------
+    `);
 });
 
 describe('eth_getTransactionReceipt', () => {
   const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
+  const eth_getTransactionReceipt_mandala = rpcGet('eth_getTransactionReceipt', PUBLIC_MANDALA_RPC_URL);
 
-  it('returns correct result when hash exist', async () => {
+  it('returns correct result when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
 
     expect(allTxReceipts.length).to.greaterThan(0);
@@ -67,19 +114,125 @@ describe('eth_getTransactionReceipt', () => {
     let txR = allTxReceipts[0];
     let res = await eth_getTransactionReceipt([txR.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      contractAddress: null,
+      transactionIndex: '0x0',
+      gasUsed: '0x19b45',
+      logsBloom:
+        '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockHash: txR.blockHash,
+      transactionHash: txR.transactionHash,
+      logs: [
+        {
+          transactionIndex: '0x0',
+          blockNumber: '0xa',
+          transactionHash: txR.transactionHash,
+          address: '0x0000000000000000000000000000000000000803',
+          topics: [
+            '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+          ],
+          data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000748849ea0c000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+          logIndex: '0x0',
+          blockHash: txR.blockHash
+        }
+      ],
+      blockNumber: '0xa',
+      cumulativeGasUsed: '0x0', // FIXME:
+      effectiveGasPrice: '0x1', // FIXME:
+      status: '0x1',
+      type: '0x0'
+    });
 
     // test last one
     txR = allTxReceipts[allTxReceipts.length - 1];
     res = await eth_getTransactionReceipt([txR.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      contractAddress: null,
+      transactionIndex: '0x0',
+      gasUsed: '0x1e7a3',
+      logsBloom:
+        '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockHash: txR.blockHash,
+      transactionHash: txR.transactionHash,
+      logs: [
+        {
+          transactionIndex: '0x0',
+          blockNumber: '0x9',
+          transactionHash: txR.transactionHash,
+          address: '0x0000000000000000000000000000000000000803',
+          topics: [
+            '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+          ],
+          data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
+          logIndex: '0x0',
+          blockHash: txR.blockHash
+        }
+      ],
+      blockNumber: '0x9',
+      cumulativeGasUsed: '0x0',
+      effectiveGasPrice: '0x1',
+      status: '0x1',
+      type: '0x0'
+    });
 
     // test middle one
     txR = allTxReceipts[Math.floor(allTxReceipts.length / 2)];
     res = await eth_getTransactionReceipt([txR.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.transactionHash).to.equal(txR.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      contractAddress: null,
+      transactionIndex: '0x0',
+      gasUsed: '0x19b1a',
+      logsBloom:
+        '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      blockHash: txR.blockHash,
+      transactionHash: txR.transactionHash,
+      logs: [
+        {
+          transactionIndex: '0x0',
+          blockNumber: '0x6',
+          transactionHash: txR.transactionHash,
+          address: '0x0000000000000000000000000000000000000803',
+          topics: [
+            '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+          ],
+          data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000001d131f6171f000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+          logIndex: '0x0',
+          blockHash: txR.blockHash
+        }
+      ],
+      blockNumber: '0x6',
+      cumulativeGasUsed: '0x0',
+      effectiveGasPrice: '0x1',
+      status: '0x1',
+      type: '0x0'
+    });
+  });
+
+  it('returns correct result for public mandala transactions', async () => {
+    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
+      eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
+      eth_getTransactionReceipt_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
+      eth_getTransactionReceipt_mandala(['0x01bbd9bf3f1a56253084e5a54ab1dfc96bc62ef72977f60c2ff3a7d56f4fc8d6'])
+    ]);
+
+    expect(contractCallRes.status).to.equal(200);
+    expect(contractDeployRes.status).to.equal(200);
+    expect(transferRes.status).to.equal(200);
+
+    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTxReceipt);
+    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTxReceipt);
+    expect(transferRes.data.result).to.deep.equal(mandalaTransferTxReceipt);
   });
 
   it('return correct error or null', async () => {
@@ -95,10 +248,11 @@ describe('eth_getTransactionReceipt', () => {
     res = await eth_getTransactionReceipt(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
     expect(res.status).to.equal(200);
     expect(res.data.result).to.equal(null);
+
+    /* ---------- TODO: pending tx ---------- */
   });
 });
 
-// eth_getLogs tests depend on the deterministic setup
 describe('eth_getLogs', () => {
   const eth_getLogs = rpcGet('eth_getLogs');
   const ALL_BLOCK_RANGE_FILTER = { fromBlock: 'earliest' };
@@ -403,8 +557,9 @@ describe('eth_getLogs', () => {
 
 describe('eth_getTransactionByHash', () => {
   const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
+  const eth_getTransactionByHash_mandala = rpcGet('eth_getTransactionByHash', PUBLIC_MANDALA_RPC_URL);
 
-  it('finds correct tx when hash exist', async () => {
+  it('finds correct tx when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
     const tx1 = allTxReceipts[0];
     const tx2 = allTxReceipts[allTxReceipts.length - 1];
@@ -413,17 +568,85 @@ describe('eth_getTransactionByHash', () => {
     // test first one
     let res = await eth_getTransactionByHash([tx1.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.hash).to.equal(tx1.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      blockHash: tx1.blockHash,
+      blockNumber: '0xa',
+      transactionIndex: '0x0',
+      gasPrice: '0x19654ae7035',
+      gas: '0x1e8481',
+      input:
+        '0x3d8d96200000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+      v: '0x25',
+      r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+      hash: tx1.transactionHash,
+      nonce: '0x6',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      value: '0xde0b6b3a7640000'
+    });
 
     // test last one
     res = await eth_getTransactionByHash([tx2.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.hash).to.equal(tx2.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      blockHash: tx2.blockHash,
+      blockNumber: '0x9',
+      transactionIndex: '0x0',
+      gasPrice: '0x15caa69c265',
+      gas: '0x1e8481',
+      input:
+        '0x3d8d962000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
+      v: '0x25',
+      r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+      hash: tx2.transactionHash,
+      nonce: '0x5',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      value: '0xde0b6b3a7640000'
+    });
 
     // test middle one
     res = await eth_getTransactionByHash([tx3.transactionHash]);
     expect(res.status).to.equal(200);
-    expect(res.data.result.hash).to.equal(tx3.transactionHash);
+    expect(res.data.result).to.deep.equal({
+      blockHash: tx3.blockHash,
+      blockNumber: '0x6',
+      transactionIndex: '0x0',
+      gasPrice: '0x19680020724',
+      gas: '0x1e8481',
+      input:
+        '0x6fc4b4e50000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
+      v: '0x25',
+      r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+      hash: tx3.transactionHash,
+      nonce: '0x2',
+      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      to: '0x0230135fded668a3f7894966b14f42e65da322e4',
+      value: '0xde0b6b3a7640000'
+    });
+  });
+
+  it('returns correct result for public mandala transactions', async () => {
+    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
+      eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
+      eth_getTransactionByHash_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
+      eth_getTransactionByHash_mandala(['0x3c7839f0e249f40115f0ce97681035023ee375921a59f0b826e2e93cbd020da1'])
+    ]);
+
+    expect(contractCallRes.status).to.equal(200);
+    expect(contractDeployRes.status).to.equal(200);
+    expect(transferRes.status).to.equal(200);
+
+    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTx);
+    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTx);
+    expect(transferRes.data.result).to.deep.equal(mandalaTransferTx);
+  });
+
+  it.skip('returns correct result when tx is pending', async () => {
+    // send a 0 tx to mandala
   });
 
   it('return correct error or null', async () => {
@@ -500,9 +723,6 @@ describe('eth_sendRawTransaction', () => {
   });
 
   describe('deploy contract (hello world)', () => {
-    const deployHelloWorldData =
-      '0x60806040526040518060400160405280600c81526020017f48656c6c6f20576f726c642100000000000000000000000000000000000000008152506000908051906020019061004f929190610062565b5034801561005c57600080fd5b50610166565b82805461006e90610134565b90600052602060002090601f01602090048101928261009057600085556100d7565b82601f106100a957805160ff19168380011785556100d7565b828001600101855582156100d7579182015b828111156100d65782518255916020019190600101906100bb565b5b5090506100e491906100e8565b5090565b5b808211156101015760008160009055506001016100e9565b5090565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b6000600282049050600182168061014c57607f821691505b602082108114156101605761015f610105565b5b50919050565b61022e806101756000396000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063c605f76c14610030575b600080fd5b61003861004e565b6040516100459190610175565b60405180910390f35b6000805461005b906101c6565b80601f0160208091040260200160405190810160405280929190818152602001828054610087906101c6565b80156100d45780601f106100a9576101008083540402835291602001916100d4565b820191906000526020600020905b8154815290600101906020018083116100b757829003601f168201915b505050505081565b600081519050919050565b600082825260208201905092915050565b60005b838110156101165780820151818401526020810190506100fb565b83811115610125576000848401525b50505050565b6000601f19601f8301169050919050565b6000610147826100dc565b61015181856100e7565b93506101618185602086016100f8565b61016a8161012b565b840191505092915050565b6000602082019050818103600083015261018f818461013c565b905092915050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052602260045260246000fd5b600060028204905060018216806101de57607f821691505b602082108114156101f2576101f1610197565b5b5091905056fea26469706673582212204d363ed34111d1be492d4fd086e9f2df62b3c625e89ade31f30e63201ed1e24f64736f6c63430008090033';
-
     let partialDeployTx;
 
     before(() => {
@@ -1036,8 +1256,6 @@ describe('eth_getCode', () => {
 describe('eth_getEthResources', () => {
   const eth_getEthResources = rpcGet('eth_getEthResources');
 
-  const tags = ['latest', 'earliest'];
-
   it('get correct gas', async () => {
     const rawRes = (
       await eth_getEthResources([
@@ -1060,5 +1278,45 @@ describe('net_runtimeVersion', () => {
     const version = (await net_runtimeVersion([])).data.result;
 
     expect(version).to.be.gt(2000);
+  });
+});
+
+describe('eth_getBlockByNumber', () => {
+  const eth_getBlockByNumber_mandala = rpcGet('eth_getBlockByNumber', PUBLIC_MANDALA_RPC_URL);
+
+  it('when there are 0 EVM transactions', async () => {
+    const resFull = (await eth_getBlockByNumber_mandala([1265918, true])).data.result;
+    const res = (await eth_getBlockByNumber_mandala([1265918, false])).data.result;
+
+    const block1265918NotFull = { ...mandalaBlock1265918 };
+    block1265918NotFull.transactions = mandalaBlock1265918.transactions.map((t) => t.hash);
+    block1265918NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+
+    expect(resFull).to.deep.equal(mandalaBlock1265918);
+    expect(res).to.deep.equal(block1265918NotFull);
+  });
+
+  it('when there are 1 EVM transactions', async () => {
+    const resFull = (await eth_getBlockByNumber_mandala([1265928, true])).data.result;
+    const res = (await eth_getBlockByNumber_mandala([1265928, false])).data.result;
+
+    const block1265928NotFull = { ...mandalaBlock1265928 };
+    block1265928NotFull.transactions = mandalaBlock1265928.transactions.map((t) => t.hash);
+    block1265928NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+
+    expect(resFull).to.deep.equal(mandalaBlock1265928);
+    expect(res).to.deep.equal(block1265928NotFull);
+  });
+
+  it('when there are >= 2 EVM transactions', async () => {
+    const resFull = (await eth_getBlockByNumber_mandala([1265919, true])).data.result;
+    const res = (await eth_getBlockByNumber_mandala([1265919, false])).data.result;
+
+    const block1265919NotFull = { ...mandalaBlock1265919 };
+    block1265919NotFull.transactions = mandalaBlock1265919.transactions.map((t) => t.hash);
+    block1265919NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+
+    expect(resFull).to.deep.equal(mandalaBlock1265919);
+    expect(res).to.deep.equal(block1265919NotFull);
   });
 });

@@ -83,29 +83,6 @@ RUN rush build -o .
 ENV ENDPOINT_URL=ws://mandala-node:9944
 CMD ["yarn", "test"]
 
-# =============== eth-rpc-adapter with subql =============== #
-FROM node:16-alpine as eth-rpc-adapter-with-subql
-COPY --from=bodhi /app /app
-
-WORKDIR /app
-COPY eth-rpc-adapter ./eth-rpc-adapter
-
-WORKDIR /app/evm-subql
-COPY evm-subql/package.json .
-COPY evm-subql/yarn.lock .
-RUN yarn
-
-COPY evm-subql .
-RUN yarn build
-
-WORKDIR /app/eth-rpc-adapter
-ENV ENDPOINT_URL=ws://mandala-node:9944
-ENV SUBQL_URL=http://graphql-engine:3001
-ENV HTTP_PORT=8545
-ENV WS_PORT=3331
-ENV LOCAL_MODE=1
-CMD ["yarn", "start"]
-
 # =============== eth-rpc-adapter-test =============== #
 FROM node:16-alpine as eth-rpc-adapter-test
 COPY --from=bodhi /app /app
@@ -117,4 +94,5 @@ WORKDIR /app/eth-rpc-adapter
 ENV ENDPOINT_URL=ws://mandala-node:9944
 ENV SUBQL_URL=http://graphql-engine:3001
 ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
+ENV PUBLIC_MANDALA_RPC_URL=http://eth-rpc-adapter-server-public-mandala:8546
 CMD ["yarn", "test:CI"]
