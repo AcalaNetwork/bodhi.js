@@ -32,11 +32,10 @@ import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
-import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
+import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
 import LRUCache from 'lru-cache';
 import {
-  BIGNUMBER_ONE,
   BIGNUMBER_ZERO,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
@@ -63,7 +62,7 @@ import {
   calcSubstrateTransactionParams,
   computeDefaultEvmAddress,
   computeDefaultSubstrateAddress,
-  convertNativeToken,
+  nativeToEthDecimal,
   filterLog,
   findEvmEvent,
   getEvmExtrinsicIndexes,
@@ -74,6 +73,7 @@ import {
   hexlifyRpcResult,
   isEVMExtrinsic,
   logger,
+  parseExtrinsic,
   PROVIDER_ERRORS,
   runWithRetries,
   runWithTiming,
@@ -552,7 +552,7 @@ export abstract class BaseProvider extends AbstractProvider {
             (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
           );
 
-          const data = await this._parseExtrinsic(blockHash, extrinsic, extrinsicEvents);
+          const data = await parseExtrinsic(blockHash, extrinsic, extrinsicEvents, this.api);
 
           return {
             blockHash,
@@ -600,113 +600,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return data;
   };
 
-  _parseExtrinsic = async (
-    blockHash: string,
-    extrinsic: GenericExtrinsic,
-    extrinsicEvents: EventRecord[]
-  ): Promise<any> => {
-    // logger.info(extrinsic.method.toHuman());
-    // logger.info(extrinsic.method);
-
-    const evmEvent = findEvmEvent(extrinsicEvents);
-    if (!evmEvent) {
-      return logger.throwError(
-        'findEvmEvent failed. extrinsic: ' + extrinsic.method.toJSON(),
-        Logger.errors.UNSUPPORTED_OPERATION
-      );
-    }
-
-    let gas;
-    let value;
-    let input;
-    const from = evmEvent.event.data[0].toString();
-    const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method) ? null : evmEvent.event.data[1].toString();
-
-    // @TODO remove
-    // only work on mandala and karura-testnet
-    // https://github.com/AcalaNetwork/Acala/pull/1985
-    let gasPrice = BIGNUMBER_ONE;
-
-    if (
-      evmEvent.event.data.length > 5 ||
-      (evmEvent.event.data.length === 5 &&
-        (evmEvent.event.method === 'Created' || evmEvent.event.method === 'Executed'))
-    ) {
-      const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
-      const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
-
-      const block = await this.api.rpc.chain.getBlock(blockHash);
-      // use parentHash to get tx fee
-      const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
-      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-      let tx_fee = ethers.utils.parseUnits(payment.partialFee.toString(), 'mwei');
-
-      // get storage fee
-      // if used_storage > 0, tx_fee include the storage fee.
-      if (used_storage.gt(0)) {
-        const { storageDepositPerByte } = this._getGasConsts();
-        tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
-      }
-
-      gasPrice = tx_fee.div(used_gas);
-    }
-
-    switch (extrinsic.method.section.toUpperCase()) {
-      case 'EVM': {
-        const evmExtrinsic: any = extrinsic.method.toJSON();
-        value = evmExtrinsic?.args?.value;
-        gas = evmExtrinsic?.args?.gas_limit;
-        // @TODO remove
-        // only work on mandala and karura-testnet
-        // https://github.com/AcalaNetwork/Acala/pull/1965
-        input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
-        break;
-      }
-      // Not a raw evm transaction, input = 0x
-      // case 'CURRENCIES':
-      // case 'DEX':
-      // case 'HONZONBRIDGE':
-      // case 'PROXY':
-      // case 'SUDO':
-      // case 'TECHNICALCOMMITTEE':
-      // case 'STABLEASSET':
-      // @TODO support utility
-      // case 'UTILITY': {
-      //   return logger.throwError('Unspport utility, blockHash: ' + blockHash, Logger.errors.UNSUPPORTED_OPERATION);
-      // }
-      // default: {
-      //   return logger.throwError(
-      //     'Unspport ' + extrinsic.method.section.toUpperCase() + ' blockHash: ' + blockHash,
-      //     Logger.errors.UNSUPPORTED_OPERATION
-      //   );
-      // }
-
-      // Not a raw evm transaction, input = 0x
-      default: {
-        value = 0;
-        gas = 2_100_000;
-        input = '0x';
-      }
-    }
-
-    // @TODO eip2930, eip1559
-
-    // @TODO Missing data
-    return {
-      gasPrice,
-      gas,
-      input,
-      v: DUMMY_V,
-      r: DUMMY_R,
-      s: DUMMY_S,
-      hash: extrinsic.hash.toHex(),
-      nonce: extrinsic.nonce.toNumber(),
-      from: from,
-      to: to,
-      value: hexValue(value)
-    };
-  };
-
   getBalance = async (
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag>
@@ -727,7 +620,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash
     );
 
-    return convertNativeToken(BigNumber.from(accountInfo.data.free.toBigInt()), this.chainDecimal);
+    return nativeToEthDecimal(accountInfo.data.free.toBigInt(), this.chainDecimal);
   };
 
   getTransactionCount = async (
@@ -1649,11 +1542,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (!txHash) return { extrinsics: block.block.extrinsics, extrinsicsEvents: undefined };
 
-    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
-      txHash.toLowerCase(),
-      block.block.extrinsics,
-      blockEvents
-    );
+    const { extrinsicIndex } = getTransactionIndexAndHash(txHash.toLowerCase(), block.block.extrinsics, blockEvents);
 
     const extrinsicEvents = blockEvents.filter(
       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
@@ -1819,10 +1708,11 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const data = await this._parseExtrinsic(
+    const data = await parseExtrinsic(
       tx.blockHash,
       res.extrinsics as GenericExtrinsic,
-      res.extrinsicsEvents as EventRecord[]
+      res.extrinsicsEvents as EventRecord[],
+      this.api
     );
 
     return {

@@ -1,13 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { isHexString } from '@ethersproject/bytes';
+import { hexValue, isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
+import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { BIGNUMBER_ZERO, EFFECTIVE_GAS_PRICE } from '../consts';
+import { BIGNUMBER_ZERO, EFFECTIVE_GAS_PRICE, BIGNUMBER_ONE, DUMMY_V, DUMMY_R, DUMMY_S } from '../consts';
 import { logger } from './logger';
-
+import { nativeToEthDecimal } from './utils';
 export interface PartialLog {
   removed: boolean;
   address: string;
@@ -228,5 +229,124 @@ export const getTransactionIndexAndHash = (
     transactionHash,
     extrinsicIndex,
     isExtrinsicFailed
+  };
+};
+
+export interface ExtrinsicParsedData {
+  gasPrice: BigNumber;
+  gas: number;
+  input: string;
+  v: string;
+  r: string;
+  s: string;
+  hash: string;
+  nonce: number;
+  from: string;
+  to: string | null;
+  value: string;
+}
+
+export const parseExtrinsic = async (
+  blockHash: string,
+  extrinsic: GenericExtrinsic,
+  extrinsicEvents: EventRecord[],
+  api: ApiPromise
+): Promise<ExtrinsicParsedData> => {
+  // logger.info(extrinsic.method.toHuman());
+  // logger.info(extrinsic.method);
+
+  const evmEvent = findEvmEvent(extrinsicEvents);
+  if (!evmEvent) {
+    return logger.throwError(
+      'findEvmEvent failed. extrinsic: ' + extrinsic.method.toJSON(),
+      Logger.errors.UNSUPPORTED_OPERATION
+    );
+  }
+
+  const { data: eventData, method: eventMethod } = evmEvent.event;
+
+  let gas: number;
+  let value: number;
+  let input: string;
+  let gasPrice = BIGNUMBER_ONE;
+
+  const from = eventData[0].toString();
+  const to = ['Created', 'CreatedFailed'].includes(eventMethod) ? null : eventData[1].toString();
+
+  const gasInfoExists =
+    eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
+
+  if (gasInfoExists) {
+    const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
+    const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
+
+    const block = await api.rpc.chain.getBlock(blockHash);
+    // use parentHash to get tx fee
+    const payment = await api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
+    // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+    let tx_fee = nativeToEthDecimal(payment.partialFee.toString(), 12);
+
+    // get storage fee
+    // if used_storage > 0, tx_fee include the storage fee.
+    if (used_storage.gt(0)) {
+      tx_fee = tx_fee.add(used_storage.mul(api.consts.evm.storageDepositPerByte.toBigInt()));
+    }
+
+    gasPrice = tx_fee.div(used_gas);
+  }
+
+  switch (extrinsic.method.section.toUpperCase()) {
+    case 'EVM': {
+      const evmExtrinsic: any = extrinsic.method.toJSON();
+      value = evmExtrinsic?.args?.value;
+      gas = evmExtrinsic?.args?.gas_limit;
+      // @TODO remove
+      // only work on mandala and karura-testnet
+      // https://github.com/AcalaNetwork/Acala/pull/1965
+      input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
+      break;
+    }
+    // Not a raw evm transaction, input = 0x
+    // case 'CURRENCIES':
+    // case 'DEX':
+    // case 'HONZONBRIDGE':
+    // case 'PROXY':
+    // case 'SUDO':
+    // case 'TECHNICALCOMMITTEE':
+    // case 'STABLEASSET':
+    // @TODO support utility
+    // case 'UTILITY': {
+    //   return logger.throwError('Unspport utility, blockHash: ' + blockHash, Logger.errors.UNSUPPORTED_OPERATION);
+    // }
+    // default: {
+    //   return logger.throwError(
+    //     'Unspport ' + extrinsic.method.section.toUpperCase() + ' blockHash: ' + blockHash,
+    //     Logger.errors.UNSUPPORTED_OPERATION
+    //   );
+    // }
+
+    // Not a raw evm transaction, input = 0x
+    default: {
+      value = 0;
+      gas = 2_100_000;
+      input = '0x';
+    }
+  }
+
+  // @TODO eip2930, eip1559
+
+  // @TODO Missing data
+  return {
+    gasPrice,
+    gas,
+    input,
+    v: DUMMY_V,
+    r: DUMMY_R,
+    s: DUMMY_S,
+    hash: extrinsic.hash.toHex(),
+    nonce: extrinsic.nonce.toNumber(),
+    from: from,
+    to: to,
+    value: hexValue(value)
   };
 };
