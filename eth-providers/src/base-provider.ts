@@ -565,13 +565,34 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getFullBlock = async (blockTag: BlockTag | Promise<BlockTag>): Promise<FullBlockData> => {
     const block = await this._getBlock(blockTag);
-    const fullTXs = await Promise.all(
+    const transactions = await Promise.all(
       block.transactions.map((txHash) => this.getTransactionByHash(txHash) as Promise<TX>)
     );
 
+    // const transactions = await Promise.all(
+    //   evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
+    //     const extrinsic = block.block.extrinsics[extrinsicIndex];
+    //     const extrinsicEvents = blockEvents.filter(
+    //       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+    //     );
+
+    //     const data = await parseExtrinsic(blockHash, extrinsic, extrinsicEvents, this.api);
+
+    //     return {
+    //       blockHash,
+    //       blockNumber,
+    //       transactionIndex,
+    //       ...data
+    //     };
+    //   })
+    // );
+
+    const gasUsed = transactions.reduce((r, tx) => r.add(tx.gas), BIGNUMBER_ZERO);
+
     return {
       ...block,
-      transactions: fullTXs
+      transactions,
+      gasUsed
     };
   };
 
