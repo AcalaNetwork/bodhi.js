@@ -578,6 +578,7 @@ export type TransactionReceipt = Node & {
   blockNumber: Scalars['BigFloat'];
   contractAddress?: Maybe<Scalars['String']>;
   createdAt: Scalars['Datetime'];
+  effectiveGasPrice: Scalars['BigFloat'];
   cumulativeGasUsed: Scalars['BigFloat'];
   from: Scalars['String'];
   gasUsed: Scalars['BigFloat'];

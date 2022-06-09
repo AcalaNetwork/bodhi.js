@@ -295,7 +295,7 @@ export const getEffectiveGasPrice = async (
   evmEvent: EventRecord,
   api: ApiPromise,
   blockHash: string, // TODO: get blockHash from evmEvent?
-  extrinsics: GenericExtrinsic<AnyTuple> // TODO: get blockHash from evmEvent?
+  extrinsic: GenericExtrinsic<AnyTuple> // TODO: get extrinsic from evmEvent?
 ): Promise<BigNumber> => {
   const { data: eventData, method: eventMethod } = evmEvent.event;
 
@@ -310,7 +310,7 @@ export const getEffectiveGasPrice = async (
 
     const block = await api.rpc.chain.getBlock(blockHash);
     // use parentHash to get tx fee
-    const payment = await api.rpc.payment.queryInfo(extrinsics.toHex(), block.block.header.parentHash);
+    const payment = await api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
     // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
     let tx_fee = nativeToEthDecimal(payment.partialFee.toString(), 12);
 

@@ -1615,7 +1615,7 @@ export abstract class BaseProvider extends AbstractProvider {
     //   });
     // }
 
-    const gasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
+    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
 
@@ -1623,7 +1623,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // to and contractAddress may be undefined
     return this.formatter.receipt({
-      gasPrice,
+      effectiveGasPrice,
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
@@ -1719,7 +1719,7 @@ export abstract class BaseProvider extends AbstractProvider {
       transactionIndex: tx.transactionIndex,
       hash: tx.transactionHash,
       from: tx.from,
-      gasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has gasPrice, remove this force type
+      gasPrice: hexValue(tx.effectiveGasPrice),
       ...parseExtrinsic(extrinsic)
     };
   };
@@ -1745,7 +1745,7 @@ export abstract class BaseProvider extends AbstractProvider {
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
       status: tx.status,
-      effectiveGasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has gasPrice, remove this force type
+      effectiveGasPrice: hexValue(tx.effectiveGasPrice),
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
     });
   };
