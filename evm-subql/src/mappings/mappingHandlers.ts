@@ -44,6 +44,8 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   if (gasInfoExists) {
     const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
     const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
+
+    // FIXME: how to query prev block from subql???
     const payment = await api.rpc.payment.queryInfo(extrinsic?.extrinsic.toHex(), block.block.header.parentHash);
 
     // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
@@ -76,7 +78,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
     contractAddress: ret.contractAddress,
     gasUsed: ret.gasUsed.toBigInt(),
     logsBloom: ret.logsBloom,
-    effectiveGasPrice: effectiveGasPrice.toBigInt(),
+    // effectiveGasPrice: effectiveGasPrice.toBigInt(),
     cumulativeGasUsed: ret.cumulativeGasUsed.toBigInt(),
     type: BigInt(ret.type),
     status: BigInt(ret.status),
