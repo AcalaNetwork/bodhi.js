@@ -73,14 +73,14 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
 before('env setup', async () => {
   try {
     const res = await rpcGet('eth_blockNumber')();
-    
+
     const DETERMINISTIC_SETUP_TOTAL_TXs = 12;
     if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_TXs) {
       throw new Error(
         `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_TXs} tx but got ${Number(res.data.result)}`
-        );
-      }
-      
+      );
+    }
+
     if (!process.env.SKIP_PUBLIC) {
       const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
       if (!(Number(resMandala.data.result) > 1000000)) {
@@ -143,7 +143,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0xa',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x1', // FIXME:
+      effectiveGasPrice: '0x19654ae7035',
       status: '0x1',
       type: '0x0'
     });
@@ -178,8 +178,8 @@ describe('eth_getTransactionReceipt', () => {
         }
       ],
       blockNumber: '0x9',
-      cumulativeGasUsed: '0x0',
-      effectiveGasPrice: '0x1',
+      cumulativeGasUsed: '0x0', // FIXME:
+      effectiveGasPrice: '0x15caa69c265',
       status: '0x1',
       type: '0x0'
     });
@@ -214,15 +214,18 @@ describe('eth_getTransactionReceipt', () => {
         }
       ],
       blockNumber: '0x6',
-      cumulativeGasUsed: '0x0',
-      effectiveGasPrice: '0x1',
+      cumulativeGasUsed: '0x0', // FIXME:
+      effectiveGasPrice: '0x19680020724',
       status: '0x1',
       type: '0x0'
     });
   });
 
   it('returns correct result for public mandala transactions', async () => {
-    if (process.env.SKIP_PUBLIC) { console.log('public mandala tests are skipped ❗'); return; }
+    if (process.env.SKIP_PUBLIC) {
+      console.log('public mandala tests are skipped ❗');
+      return;
+    }
 
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
@@ -634,7 +637,10 @@ describe('eth_getTransactionByHash', () => {
   });
 
   it('returns correct result for public mandala transactions', async () => {
-    if (process.env.SKIP_PUBLIC) { console.log('public mandala tests are skipped❗'); return; }
+    if (process.env.SKIP_PUBLIC) {
+      console.log('public mandala tests are skipped❗');
+      return;
+    }
 
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
@@ -1291,6 +1297,11 @@ describe('eth_getBlockByNumber', () => {
   const eth_getBlockByNumber_mandala = rpcGet('eth_getBlockByNumber', PUBLIC_MANDALA_RPC_URL);
 
   it('when there are 0 EVM transactions', async () => {
+    if (process.env.SKIP_PUBLIC) {
+      console.log('public mandala tests are skipped ❗');
+      return;
+    }
+
     const resFull = (await eth_getBlockByNumber_mandala([1265918, true])).data.result;
     const res = (await eth_getBlockByNumber_mandala([1265918, false])).data.result;
 
