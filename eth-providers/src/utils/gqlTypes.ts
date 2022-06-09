@@ -572,6 +572,7 @@ export type SubqueryFilter = {
   version?: Maybe<IntFilter>;
 };
 
+// TODO: these types are not very useful actually, maybe just defined our own type
 export type TransactionReceipt = Node & {
   __typename?: 'TransactionReceipt';
   blockHash: Scalars['String'];

@@ -71,21 +71,21 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
 
 // some tests depend on the deterministic setup or mandala node connection
 before('env setup', async () => {
-  if (process.env.SKIP_PUBLIC) return;
-
   try {
     const res = await rpcGet('eth_blockNumber')();
-    const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
-
+    
     const DETERMINISTIC_SETUP_TOTAL_TXs = 12;
     if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_TXs) {
       throw new Error(
         `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_TXs} tx but got ${Number(res.data.result)}`
-      );
-    }
-
-    if (!(Number(resMandala.data.result) > 1000000)) {
-      throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+        );
+      }
+      
+    if (!process.env.SKIP_PUBLIC) {
+      const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
+      if (!(Number(resMandala.data.result) > 1000000)) {
+        throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+      }
     }
   } catch (e) {
     console.log(`
@@ -222,7 +222,7 @@ describe('eth_getTransactionReceipt', () => {
   });
 
   it('returns correct result for public mandala transactions', async () => {
-    if (process.env.SKIP_PUBLIC) return;
+    if (process.env.SKIP_PUBLIC) { console.log('public mandala tests are skipped ❗'); return; }
 
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
@@ -634,7 +634,7 @@ describe('eth_getTransactionByHash', () => {
   });
 
   it('returns correct result for public mandala transactions', async () => {
-    if (process.env.SKIP_PUBLIC) return;
+    if (process.env.SKIP_PUBLIC) { console.log('public mandala tests are skipped❗'); return; }
 
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),

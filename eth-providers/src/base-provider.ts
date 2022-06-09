@@ -38,14 +38,12 @@ import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
 import LRUCache from 'lru-cache';
 import {
-  BIGNUMBER_ONE,
   BIGNUMBER_ZERO,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
   DUMMY_BLOCK_MIX_HASH,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
-  EFFECTIVE_GAS_PRICE,
   EMPTY_HEX_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
@@ -1680,6 +1678,7 @@ export abstract class BaseProvider extends AbstractProvider {
       res.blockNumber = +res.blockNumber;
       res.transactionIndex = +res.transactionIndex;
       res.gasUsed = BigNumber.from(res.gasUsed);
+      res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
     }
     return res;
   };
@@ -1719,7 +1718,7 @@ export abstract class BaseProvider extends AbstractProvider {
       transactionIndex: tx.transactionIndex,
       hash: tx.transactionHash,
       from: tx.from,
-      gasPrice: hexValue(tx.effectiveGasPrice),
+      gasPrice: tx.effectiveGasPrice,
       ...parseExtrinsic(extrinsic)
     };
   };
@@ -1745,7 +1744,7 @@ export abstract class BaseProvider extends AbstractProvider {
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
       status: tx.status,
-      effectiveGasPrice: hexValue(tx.effectiveGasPrice),
+      effectiveGasPrice: tx.effectiveGasPrice,
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
     });
   };
