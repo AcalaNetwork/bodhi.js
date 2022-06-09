@@ -71,6 +71,8 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
 
 // some tests depend on the deterministic setup or mandala node connection
 before('env setup', async () => {
+  if(process.env.SKIP_CHECK) return;
+
   try {
     const res = await rpcGet('eth_blockNumber')();
     const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();

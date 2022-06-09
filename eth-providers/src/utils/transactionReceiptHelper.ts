@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { isHexString } from '@ethersproject/bytes';
+import { hexValue, isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
@@ -18,17 +18,18 @@ export interface PartialLog {
 // TODO: where to find the actual shape?
 export interface ExtrinsicMethodJSON {
   callIndex: string;
-  args?: {
-    action: {
+  args: {
+    action?: {
       [key: string]: string;
     };
     init?: string;
     input?: string;
+    target?: string;
     value: number;
     gas_limit: number;
     storage_limit: number;
     access_list: any[];
-    valid_until: number;
+    valid_until?: number;
   };
 }
 
@@ -245,7 +246,7 @@ export const getTransactionIndexAndHash = (
 export const parseExtrinsic = (
   extrinsic: GenericExtrinsic
 ): {
-  value: number;
+  value: string;
   gas: number;
   input: string;
   to: string | null;
@@ -264,7 +265,7 @@ export const parseExtrinsic = (
   const nonce = extrinsic.nonce.toNumber();
 
   const NONE_EVM_TX_DEFAULT_DATA = {
-    value: 0,
+    value: '0x',
     gas: 2_100_000,
     input: '0x',
     to: null,
@@ -279,10 +280,10 @@ export const parseExtrinsic = (
   const args = (extrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
 
   return {
-    value: args?.value || 0,
-    gas: args?.gas_limit || 0,
-    input: args?.input || args?.init || '0x',
-    to: args?.action.call ? args?.action.call : null,
+    value: hexValue(args.value || 0),
+    gas: args.gas_limit || 0,
+    input: args.input || args.init || '0x',
+    to: args.action?.call || args.target || null,
     nonce,
     ...DUMMY_V_R_S
   };
