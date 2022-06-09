@@ -71,7 +71,7 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
 
 // some tests depend on the deterministic setup or mandala node connection
 before('env setup', async () => {
-  if(process.env.SKIP_CHECK) return;
+  if (process.env.SKIP_PUBLIC) return;
 
   try {
     const res = await rpcGet('eth_blockNumber')();
@@ -222,6 +222,8 @@ describe('eth_getTransactionReceipt', () => {
   });
 
   it('returns correct result for public mandala transactions', async () => {
+    if (process.env.SKIP_PUBLIC) return;
+
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
       eth_getTransactionReceipt_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
@@ -632,6 +634,8 @@ describe('eth_getTransactionByHash', () => {
   });
 
   it('returns correct result for public mandala transactions', async () => {
+    if (process.env.SKIP_PUBLIC) return;
+
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
       eth_getTransactionByHash_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
