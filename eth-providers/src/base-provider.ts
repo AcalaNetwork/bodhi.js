@@ -539,24 +539,6 @@ export abstract class BaseProvider extends AbstractProvider {
       block.transactions.map((txHash) => this.getTransactionByHash(txHash) as Promise<TX>)
     );
 
-    // const transactions = await Promise.all(
-    //   evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
-    //     const extrinsic = block.block.extrinsics[extrinsicIndex];
-    //     const extrinsicEvents = blockEvents.filter(
-    //       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-    //     );
-
-    //     const data = await parseExtrinsic(blockHash, extrinsic, extrinsicEvents, this.api);
-
-    //     return {
-    //       blockHash,
-    //       blockNumber,
-    //       transactionIndex,
-    //       ...data
-    //     };
-    //   })
-    // );
-
     const gasUsed = transactions.reduce((r, tx) => r.add(tx.gas), BIGNUMBER_ZERO);
 
     return {
@@ -1554,17 +1536,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    // const [block, blockEvents] = await Promise.all([
-    //   this.api.rpc.chain.getBlock(blockHash),
-    //   this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
-    // ]);
-
-    // const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
-    //   hashOrNumber,
-    //   block.block.extrinsics,
-    //   blockEvents
-    // );
-
     const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
       await this._parseTxAtBlock(blockHash, hashOrNumber);
 
@@ -1575,12 +1546,6 @@ export abstract class BaseProvider extends AbstractProvider {
         tx: hashOrNumber
       });
     }
-
-    // const extrinsicEvents = blockEvents.filter(
-    //   (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-    // );
-
-    // const extrinsic = block.block.extrinsic[extrinsicIndex];
 
     if (isExtrinsicFailed) {
       const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
@@ -1602,16 +1567,6 @@ export abstract class BaseProvider extends AbstractProvider {
         blockHash
       });
     }
-
-    // @TODO
-    // const evmEvent = findEvmEvent(extrinsicEvents);
-
-    // if (!evmEvent) {
-    //   return logger.throwError(`evm event not found`, Logger.errors.UNKNOWN_ERROR, {
-    //     hash: transactionHash,
-    //     blockHash
-    //   });
-    // }
 
     const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
 
@@ -1678,8 +1633,16 @@ export abstract class BaseProvider extends AbstractProvider {
       res.blockNumber = +res.blockNumber;
       res.transactionIndex = +res.transactionIndex;
       res.gasUsed = BigNumber.from(res.gasUsed);
-      res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
+      // res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
+
+      // TODO: this is a temp workaround since subquery can't query the prev block
+      // and the effectiveGasPrice calculated is a little bit off
+      // after subql works we can remove this line
+      res.effectiveGasPrice = (
+        await this.getTransactionReceiptAtBlock(res.transactionHash, res.blockNumber)
+      ).effectiveGasPrice;
     }
+
     return res;
   };
 
@@ -1700,18 +1663,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
 
-    // if (!res) {
-    //   return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
-    // }
-
-    // const evmEvent = findEvmEvent(extrinsicsEvents);
-    // if (!evmEvent) {
-    //   return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
-    //     blockHash: tx.blockHash,
-    //     extrinsic: extrinsics.method.toJSON()
-    //   });
-    // }
-
     return {
       blockHash: tx.blockHash,
       blockNumber: tx.blockNumber,
@@ -1720,6 +1671,9 @@ export abstract class BaseProvider extends AbstractProvider {
       from: tx.from,
       gasPrice: tx.effectiveGasPrice,
       ...parseExtrinsic(extrinsic)
+
+      // TODO: can use actual gas from receipt instead of provided gas from parseExtrinsic for consistency
+      // gas: tx.gasUsed,
     };
   };
 
