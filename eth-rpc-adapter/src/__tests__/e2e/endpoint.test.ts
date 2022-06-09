@@ -1294,14 +1294,14 @@ describe('net_runtimeVersion', () => {
 });
 
 describe('eth_getBlockByNumber', () => {
+  if (process.env.SKIP_PUBLIC) {
+    console.log('public mandala tests are skipped ❗');
+    return;
+  }
+
   const eth_getBlockByNumber_mandala = rpcGet('eth_getBlockByNumber', PUBLIC_MANDALA_RPC_URL);
 
   it('when there are 0 EVM transactions', async () => {
-    if (process.env.SKIP_PUBLIC) {
-      console.log('public mandala tests are skipped ❗');
-      return;
-    }
-
     const resFull = (await eth_getBlockByNumber_mandala([1265918, true])).data.result;
     const res = (await eth_getBlockByNumber_mandala([1265918, false])).data.result;
 
