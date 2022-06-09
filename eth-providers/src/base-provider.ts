@@ -78,7 +78,8 @@ import {
   runWithRetries,
   runWithTiming,
   sendTx,
-  throwNotImplemented
+  throwNotImplemented,
+  getEffectiveGasPrice
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -1557,9 +1558,16 @@ export abstract class BaseProvider extends AbstractProvider {
       blockEvents
     );
 
+    // const {
+    //   extrinsics,
+    //   extrinsicsEvents,
+    // } = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
+
     const extrinsicEvents = blockEvents.filter(
       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
+
+    const extrinsic = block.block.extrinsics[extrinsicIndex];
 
     if (isExtrinsicFailed) {
       const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
@@ -1592,12 +1600,17 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
+    /*  --------------- calculate gas --------------- */
+    const gasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
+    /*  --------------------------------------------- */
+
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
 
     const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     // to and contractAddress may be undefined
     return this.formatter.receipt({
+      gasPrice,
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
@@ -1690,41 +1703,13 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    /*  --------------- calculate gas --------------- */
-    const { data: eventData, method: eventMethod } = evmEvent.event;
-
-    let gasPrice = BIGNUMBER_ONE;
-
-    const gasInfoExists =
-      eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
-
-    if (gasInfoExists) {
-      const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
-      const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
-
-      const block = await this.api.rpc.chain.getBlock(tx.blockHash);
-      // use parentHash to get tx fee
-      const payment = await this.api.rpc.payment.queryInfo(extrinsics.toHex(), block.block.header.parentHash);
-      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-      let tx_fee = nativeToEthDecimal(payment.partialFee.toString(), 12);
-
-      // get storage fee
-      // if used_storage > 0, tx_fee include the storage fee.
-      if (used_storage.gt(0)) {
-        tx_fee = tx_fee.add(used_storage.mul(this.api.consts.evm.storageDepositPerByte.toBigInt()));
-      }
-
-      gasPrice = tx_fee.div(used_gas);
-    }
-    /*  --------------------------------------------- */
-
     return {
       blockHash: tx.blockHash,
       blockNumber: tx.blockNumber,
       transactionIndex: tx.transactionIndex,
       hash: tx.transactionHash,
       from: tx.from,
-      gasPrice,
+      gasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has it remove force type
       ...parseExtrinsic(extrinsics)
     };
   };
@@ -1750,7 +1735,7 @@ export abstract class BaseProvider extends AbstractProvider {
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
       status: tx.status,
-      effectiveGasPrice: EFFECTIVE_GAS_PRICE,
+      effectiveGasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has it remove force type
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
     });
   };
