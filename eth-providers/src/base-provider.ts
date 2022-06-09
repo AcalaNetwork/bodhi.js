@@ -1505,33 +1505,42 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
-    const extrinsics = (await this._getExtrinsicsAndEventsAtBlock(blockHash)).extrinsics as GenericExtrinsic[];
-    return extrinsics.map((e) => e.hash.toHex());
+    const block = await this.api.rpc.chain.getBlock(blockHash);
+
+    return block.block.extrinsics.map((e) => e.hash.toHex());
   };
 
-  _getExtrinsicsAndEventsAtBlock = async (
+  _parseTxAtBlock = async (
     blockHash: string,
-    txHash?: string
+    targetTx: string | number
   ): Promise<{
-    extrinsics: GenericExtrinsic | GenericExtrinsic[] | undefined;
-    extrinsicsEvents: EventRecord[] | undefined;
+    extrinsic: GenericExtrinsic;
+    extrinsicEvents: EventRecord[];
+    transactionHash: string;
+    transactionIndex: number;
+    isExtrinsicFailed: boolean;
   }> => {
     const [block, blockEvents] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash.toLowerCase()),
+      this.api.rpc.chain.getBlock(blockHash),
       this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
     ]);
 
-    if (!txHash) return { extrinsics: block.block.extrinsics, extrinsicsEvents: undefined };
-
-    const { extrinsicIndex } = getTransactionIndexAndHash(txHash.toLowerCase(), block.block.extrinsics, blockEvents);
+    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
+      targetTx,
+      block.block.extrinsics,
+      blockEvents
+    );
 
     const extrinsicEvents = blockEvents.filter(
       (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
     );
 
     return {
-      extrinsics: block.block.extrinsics[extrinsicIndex],
-      extrinsicsEvents: extrinsicEvents
+      extrinsic: block.block.extrinsics[extrinsicIndex],
+      extrinsicEvents: extrinsicEvents,
+      transactionHash,
+      transactionIndex,
+      isExtrinsicFailed
     };
   };
 
@@ -1547,27 +1556,33 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const [block, blockEvents] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash),
-      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
-    ]);
+    // const [block, blockEvents] = await Promise.all([
+    //   this.api.rpc.chain.getBlock(blockHash),
+    //   this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
+    // ]);
 
-    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
-      hashOrNumber,
-      block.block.extrinsics,
-      blockEvents
-    );
+    // const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
+    //   hashOrNumber,
+    //   block.block.extrinsics,
+    //   blockEvents
+    // );
 
-    // const {
-    //   extrinsics,
-    //   extrinsicsEvents,
-    // } = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
+    const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
+      await this._parseTxAtBlock(blockHash, hashOrNumber);
 
-    const extrinsicEvents = blockEvents.filter(
-      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-    );
+    const evmEvent = findEvmEvent(extrinsicEvents);
+    if (!evmEvent) {
+      return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
+        blockNumber,
+        tx: hashOrNumber
+      });
+    }
 
-    const extrinsic = block.block.extrinsics[extrinsicIndex];
+    // const extrinsicEvents = blockEvents.filter(
+    //   (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+    // );
+
+    // const extrinsic = block.block.extrinsic[extrinsicIndex];
 
     if (isExtrinsicFailed) {
       const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
@@ -1591,18 +1606,16 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     // @TODO
-    const evmEvent = findEvmEvent(extrinsicEvents);
+    // const evmEvent = findEvmEvent(extrinsicEvents);
 
-    if (!evmEvent) {
-      return logger.throwError(`evm event not found`, Logger.errors.UNKNOWN_ERROR, {
-        hash: transactionHash,
-        blockHash
-      });
-    }
+    // if (!evmEvent) {
+    //   return logger.throwError(`evm event not found`, Logger.errors.UNKNOWN_ERROR, {
+    //     hash: transactionHash,
+    //     blockHash
+    //   });
+    // }
 
-    /*  --------------- calculate gas --------------- */
     const gasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
-    /*  --------------------------------------------- */
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
 
@@ -1686,22 +1699,19 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
-    const { extrinsics, extrinsicsEvents } = (await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash)) as {
-      extrinsics: GenericExtrinsic; // fixed type when passed txHash as params
-      extrinsicsEvents: EventRecord[]; // fixed type when passed txHash as params
-    };
+    const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
 
     // if (!res) {
     //   return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
     // }
 
-    const evmEvent = findEvmEvent(extrinsicsEvents);
-    if (!evmEvent) {
-      return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
-        blockHash: tx.blockHash,
-        extrinsic: extrinsics.method.toJSON()
-      });
-    }
+    // const evmEvent = findEvmEvent(extrinsicsEvents);
+    // if (!evmEvent) {
+    //   return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
+    //     blockHash: tx.blockHash,
+    //     extrinsic: extrinsics.method.toJSON()
+    //   });
+    // }
 
     return {
       blockHash: tx.blockHash,
@@ -1709,8 +1719,8 @@ export abstract class BaseProvider extends AbstractProvider {
       transactionIndex: tx.transactionIndex,
       hash: tx.transactionHash,
       from: tx.from,
-      gasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has it remove force type
-      ...parseExtrinsic(extrinsics)
+      gasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has gasPrice, remove this force type
+      ...parseExtrinsic(extrinsic)
     };
   };
 
@@ -1735,7 +1745,7 @@ export abstract class BaseProvider extends AbstractProvider {
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
       status: tx.status,
-      effectiveGasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has it remove force type
+      effectiveGasPrice: (tx as TransactionReceipt).effectiveGasPrice, // TODO: after subql has gasPrice, remove this force type
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
     });
   };
