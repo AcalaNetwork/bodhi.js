@@ -1539,14 +1539,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
       await this._parseTxAtBlock(blockHash, hashOrNumber);
 
-    const evmEvent = findEvmEvent(extrinsicEvents);
-    if (!evmEvent) {
-      return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
-        blockNumber,
-        tx: hashOrNumber
-      });
-    }
-
     if (isExtrinsicFailed) {
       const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
 
@@ -1565,6 +1557,15 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError(`ExtrinsicFailed: ${message}`, Logger.errors.UNKNOWN_ERROR, {
         hash: transactionHash,
         blockHash
+      });
+    }
+
+    // TODO: deal with multiple events
+    const evmEvent = findEvmEvent(extrinsicEvents);
+    if (!evmEvent) {
+      return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
+        blockNumber,
+        tx: hashOrNumber
       });
     }
 
