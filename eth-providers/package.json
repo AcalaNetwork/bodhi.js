@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.4.12",
+  "version": "2.4.13",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
@@ -15,7 +15,7 @@
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
-    "@acala-network/types": "~4.1.2-11",
+    "@acala-network/types": "~4.1.5",
     "@acala-network/contracts": "~4.2.0",
     "@acala-network/eth-transactions": "workspace:*",
     "@ethersproject/abstract-provider": "~5.5.0",

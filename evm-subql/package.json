@@ -36,8 +36,8 @@
     "@acala-network/eth-providers": "~2.4.11"
   },
   "resolutions": {
-    "@acala-network/api": "~4.0.1",
-    "@acala-network/types": "~4.1.1",
+    "@acala-network/api": "~4.1.5",
+    "@acala-network/types": "~4.1.5",
     "@ethersproject/abstract-provider": "~5.5.0",
     "@ethersproject/address": "~5.5.0",
     "@ethersproject/bignumber": "~5.5.0",
