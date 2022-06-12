@@ -34,31 +34,31 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
   /* ----------------- gasPrice  --------------------------*/
   // TODO: should be able to reuse the getEffectiveGasPrice after published new version, and remove ethers deps
 
-  const { data: eventData, method: eventMethod } = event.event;
+  // const { data: eventData, method: eventMethod } = event.event;
 
-  let effectiveGasPrice = BigNumber.from(1);
+  // let effectiveGasPrice = BigNumber.from(1);
 
-  const gasInfoExists =
-    eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
+  // const gasInfoExists =
+  //   eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
 
-  if (gasInfoExists) {
-    const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
-    const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
+  // if (gasInfoExists) {
+  //   const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
+  //   const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
 
-    // FIXME: how to query prev block from subql???
-    const payment = await api.rpc.payment.queryInfo(extrinsic?.extrinsic.toHex(), block.block.header.parentHash);
+  //   // FIXME: how to query prev block from subql???
+  //   const payment = await api.rpc.payment.queryInfo(extrinsic?.extrinsic.toHex(), block.block.header.parentHash);
 
-    // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-    let tx_fee = BigNumber.from(payment.partialFee.toString(10) + '000000');
+  //   // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+  //   let tx_fee = BigNumber.from(payment.partialFee.toString(10) + '000000');
 
-    // get storage fee
-    // if used_storage > 0, tx_fee include the storage fee.
-    if (used_storage.gt(0)) {
-      tx_fee = tx_fee.add(used_storage.mul((api.consts.evm.storageDepositPerByte as any).toBigInt()));
-    }
+  //   // get storage fee
+  //   // if used_storage > 0, tx_fee include the storage fee.
+  //   if (used_storage.gt(0)) {
+  //     tx_fee = tx_fee.add(used_storage.mul((api.consts.evm.storageDepositPerByte as any).toBigInt()));
+  //   }
 
-    effectiveGasPrice = tx_fee.div(used_gas);
-  }
+  //   effectiveGasPrice = tx_fee.div(used_gas);
+  // }
   /* ----------------------------------------------*/
 
   const receiptId = `${block.block.header.number.toString()}-${extrinsic?.idx ?? event.phase.toString()}`;
