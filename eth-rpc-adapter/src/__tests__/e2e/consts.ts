@@ -248,7 +248,7 @@ export const mandalaContractCallTxReceipt = {
   ],
   blockNumber: '0x1350ff',
   cumulativeGasUsed: '0x0', // FIXME:
-  effectiveGasPrice: '0x1', // FIXME:
+  effectiveGasPrice: '0x5273550847',
   status: '0x1',
   type: '0x0'
 };
@@ -266,7 +266,7 @@ export const mandalaTransferTxReceipt = {
   logs: [],
   blockNumber: '0x1350ff',
   cumulativeGasUsed: '0x0', // FIXME:
-  effectiveGasPrice: '0x1', // FIXME:
+  effectiveGasPrice: '0xac43e5d7a5',
   status: '0x1',
   type: '0x0'
 };
@@ -284,7 +284,7 @@ export const mandalaContractDeployTxReceipt = {
   logs: [],
   blockNumber: '0x134e40',
   cumulativeGasUsed: '0x0', // FIXME:
-  effectiveGasPrice: '0x1', // FIXME:
+  effectiveGasPrice: '0x19d8e791324',
   status: '0x1',
   type: '0x0'
 };

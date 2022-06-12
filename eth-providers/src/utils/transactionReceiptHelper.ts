@@ -1,19 +1,39 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { isHexString } from '@ethersproject/bytes';
+import { hexValue, isHexString } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
+import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { BIGNUMBER_ZERO, EFFECTIVE_GAS_PRICE } from '../consts';
+import { AnyTuple } from '@polkadot/types/types';
+import { BIGNUMBER_ONE, BIGNUMBER_ZERO, DUMMY_R, DUMMY_S, DUMMY_V } from '../consts';
 import { logger } from './logger';
-
+import { nativeToEthDecimal } from './utils';
 export interface PartialLog {
   removed: boolean;
   address: string;
   data: string;
   topics: string[];
   logIndex: number;
+}
+
+// TODO: where to find the actual shape?
+export interface ExtrinsicMethodJSON {
+  callIndex: string;
+  args: {
+    action?: {
+      [key: string]: string;
+    };
+    init?: string;
+    input?: string;
+    target?: string;
+    value: number;
+    gas_limit: number;
+    storage_limit: number;
+    access_list: any[];
+    valid_until?: number;
+  };
 }
 
 export const getPartialLog = (evmLog: EvmLog, logIndex: number): PartialLog => {
@@ -41,7 +61,6 @@ export interface PartialTransactionReceipt {
   type: number;
   gasUsed: BigNumber;
   cumulativeGasUsed: BigNumber;
-  effectiveGasPrice: BigNumber;
   status?: number;
   exitReason?: string;
 }
@@ -56,8 +75,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     byzantium: false,
     // @TODO EIP712
     type: 0,
-    cumulativeGasUsed: BIGNUMBER_ZERO,
-    effectiveGasPrice: EFFECTIVE_GAS_PRICE
+    cumulativeGasUsed: BIGNUMBER_ZERO
   };
 
   switch (event.event.method) {
@@ -147,11 +165,6 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
   return logger.throwError(`unsupported event: ${event.event.method}`);
 };
 
-type ExtrinsicWithIndex = {
-  extrinsic: GenericExtrinsic;
-  extrinsicIndex: number;
-};
-
 export const getEvmExtrinsicIndexes = (events: EventRecord[]): number[] => {
   return events
     .filter(
@@ -229,4 +242,86 @@ export const getTransactionIndexAndHash = (
     extrinsicIndex,
     isExtrinsicFailed
   };
+};
+
+// parse info that can be extracted from extrinsic alone
+export const parseExtrinsic = (
+  extrinsic: GenericExtrinsic
+): {
+  value: string;
+  gas: number;
+  input: string;
+  to: string | null;
+  nonce: number;
+  v: string;
+  r: string;
+  s: string;
+} => {
+  // TODO: get correct V_R_S
+  const DUMMY_V_R_S = {
+    v: DUMMY_V,
+    r: DUMMY_R,
+    s: DUMMY_S
+  };
+
+  const nonce = extrinsic.nonce.toNumber();
+
+  const NONE_EVM_TX_DEFAULT_DATA = {
+    value: '0x',
+    gas: 2_100_000,
+    input: '0x',
+    to: null,
+    nonce,
+    ...DUMMY_V_R_S
+  };
+
+  if (extrinsic.method.section.toUpperCase() !== 'EVM') {
+    return NONE_EVM_TX_DEFAULT_DATA;
+  }
+
+  const args = (extrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
+
+  return {
+    value: hexValue(args.value || 0),
+    gas: args.gas_limit || 0,
+    input: args.input || args.init || '0x',
+    to: args.action?.call || args.target || null,
+    nonce,
+    ...DUMMY_V_R_S
+  };
+};
+
+export const getEffectiveGasPrice = async (
+  evmEvent: EventRecord,
+  api: ApiPromise,
+  blockHash: string, // TODO: get blockHash from evmEvent?
+  extrinsic: GenericExtrinsic<AnyTuple> // TODO: get extrinsic from evmEvent?
+): Promise<BigNumber> => {
+  const { data: eventData, method: eventMethod } = evmEvent.event;
+
+  let gasPrice = BIGNUMBER_ONE;
+
+  const gasInfoExists =
+    eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
+
+  if (gasInfoExists) {
+    const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
+    const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
+
+    const block = await api.rpc.chain.getBlock(blockHash);
+    // use parentHash to get tx fee
+    const payment = await api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
+    // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
+    let tx_fee = nativeToEthDecimal(payment.partialFee.toString(), 12);
+
+    // get storage fee
+    // if used_storage > 0, tx_fee include the storage fee.
+    if (used_storage.gt(0)) {
+      tx_fee = tx_fee.add(used_storage.mul(api.consts.evm.storageDepositPerByte.toBigInt()));
+    }
+
+    gasPrice = tx_fee.div(used_gas);
+  }
+
+  return gasPrice;
 };

@@ -73,7 +73,6 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
 before('env setup', async () => {
   try {
     const res = await rpcGet('eth_blockNumber')();
-    const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
 
     const DETERMINISTIC_SETUP_TOTAL_TXs = 12;
     if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_TXs) {
@@ -82,8 +81,11 @@ before('env setup', async () => {
       );
     }
 
-    if (!(Number(resMandala.data.result) > 1000000)) {
-      throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+    if (!process.env.SKIP_PUBLIC) {
+      const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
+      if (!(Number(resMandala.data.result) > 1000000)) {
+        throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+      }
     }
   } catch (e) {
     console.log(`
@@ -141,7 +143,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0xa',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x1', // FIXME:
+      effectiveGasPrice: '0x19654ae7035',
       status: '0x1',
       type: '0x0'
     });
@@ -176,8 +178,8 @@ describe('eth_getTransactionReceipt', () => {
         }
       ],
       blockNumber: '0x9',
-      cumulativeGasUsed: '0x0',
-      effectiveGasPrice: '0x1',
+      cumulativeGasUsed: '0x0', // FIXME:
+      effectiveGasPrice: '0x15caa69c265',
       status: '0x1',
       type: '0x0'
     });
@@ -212,14 +214,19 @@ describe('eth_getTransactionReceipt', () => {
         }
       ],
       blockNumber: '0x6',
-      cumulativeGasUsed: '0x0',
-      effectiveGasPrice: '0x1',
+      cumulativeGasUsed: '0x0', // FIXME:
+      effectiveGasPrice: '0x19680020724',
       status: '0x1',
       type: '0x0'
     });
   });
 
   it('returns correct result for public mandala transactions', async () => {
+    if (process.env.SKIP_PUBLIC) {
+      console.log('public mandala tests are skipped ❗');
+      return;
+    }
+
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
       eth_getTransactionReceipt_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
@@ -630,6 +637,11 @@ describe('eth_getTransactionByHash', () => {
   });
 
   it('returns correct result for public mandala transactions', async () => {
+    if (process.env.SKIP_PUBLIC) {
+      console.log('public mandala tests are skipped❗');
+      return;
+    }
+
     const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
       eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
       eth_getTransactionByHash_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
@@ -1282,6 +1294,11 @@ describe('net_runtimeVersion', () => {
 });
 
 describe('eth_getBlockByNumber', () => {
+  if (process.env.SKIP_PUBLIC) {
+    console.log('public mandala tests are skipped ❗');
+    return;
+  }
+
   const eth_getBlockByNumber_mandala = rpcGet('eth_getBlockByNumber', PUBLIC_MANDALA_RPC_URL);
 
   it('when there are 0 EVM transactions', async () => {

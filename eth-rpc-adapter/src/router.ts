@@ -42,7 +42,7 @@ export class Router {
       logger.error({ err, methodName, params }, 'request error');
 
       let message = err.message;
-      for (let pattern of ERROR_PATTERN) {
+      for (const pattern of ERROR_PATTERN) {
         const match = message.match(pattern);
         if (match) {
           const error = this.#bridge.provider.api.registry.findMetaError(new Uint8Array([match[1], match[2]]));

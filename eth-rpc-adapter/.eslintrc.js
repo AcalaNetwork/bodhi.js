@@ -17,6 +17,7 @@ module.exports = {
     'no-unused-expressions': 0, // short ciucuit if
     '@typescript-eslint/explicit-function-return-type': 0, // type inference on return type is useful
     '@typescript-eslint/no-parameter-properties': 0,
-    '@typescript-eslint/typedef': 0
+    '@typescript-eslint/typedef': 0,
+    '@typescript-eslint/no-use-before-define': 0
   }
 };

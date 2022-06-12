@@ -1,13 +1,14 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { convertNativeToken } from '../utils';
+import { nativeToEthDecimal } from '../utils';
 import { expect } from 'chai';
 import { hexValue } from '@ethersproject/bytes';
 
 describe('decimals', () => {
-  it('convertNativeToken', async () => {
-    const value = BigNumber.from('300000000');
-    const covertedToken = convertNativeToken(value, 12);
-    expect(covertedToken.toString()).to.equal('300000000000000');
+  it('nativeToEthDecimal', async () => {
+    expect(nativeToEthDecimal(BigNumber.from('300000000'), 12).toString()).to.equal('300000000000000');
+    expect(nativeToEthDecimal(123, 12).toString()).to.equal('123000000');
+    expect(nativeToEthDecimal('111', 12).toString()).to.equal('111000000');
+    expect(nativeToEthDecimal('0xf', 12).toString()).to.equal('15000000');
   });
 
   it('hexValue', async () => {

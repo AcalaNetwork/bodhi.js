@@ -24,6 +24,7 @@ type TransactionReceipt @entity {
   transactionHash: String!
   logs: [Log] @derivedFrom(field: "receipt")
   blockNumber: BigInt!
+  # effectiveGasPrice: BigInt!    # TODO: add it back
   cumulativeGasUsed: BigInt!
   type: BigInt
   status: BigInt!

@@ -1,6 +1,8 @@
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
+  Block,
+  BlockWithTransactions,
   EventType,
   FeeData,
   Filter,
@@ -32,21 +34,16 @@ import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
-import { BigNumber, BigNumberish, ethers, Wallet } from 'ethers';
+import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
 import LRUCache from 'lru-cache';
 import {
-  BIGNUMBER_ONE,
   BIGNUMBER_ZERO,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
   DUMMY_BLOCK_MIX_HASH,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
-  DUMMY_R,
-  DUMMY_S,
-  DUMMY_V,
-  EFFECTIVE_GAS_PRICE,
   EMPTY_HEX_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
@@ -63,7 +60,7 @@ import {
   calcSubstrateTransactionParams,
   computeDefaultEvmAddress,
   computeDefaultSubstrateAddress,
-  convertNativeToken,
+  nativeToEthDecimal,
   filterLog,
   findEvmEvent,
   getEvmExtrinsicIndexes,
@@ -74,11 +71,13 @@ import {
   hexlifyRpcResult,
   isEVMExtrinsic,
   logger,
+  parseExtrinsic,
   PROVIDER_ERRORS,
   runWithRetries,
   runWithTiming,
   sendTx,
-  throwNotImplemented
+  throwNotImplemented,
+  getEffectiveGasPrice
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -87,39 +86,37 @@ import { SubqlProvider } from './utils/subqlProvider';
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
 
-// https://github.com/ethers-io/ethers.js/blob/master/packages/abstract-provider/src.ts/index.ts#L61
-export interface _Block {
-  hash: string;
-  parentHash: string;
+export interface BlockData {
+  hash: `0x${string}`;
+  parentHash: `0x${string}`;
   number: number;
-
+  stateRoot: `0x${string}`;
+  transactionsRoot: `0x${string}`;
   timestamp: number;
-  nonce: string;
+  nonce: `0x${string}`;
+  mixHash: `0x${string}`;
   difficulty: number;
-  _difficulty: BigNumber;
-
-  gasLimit: BigNumber;
-  gasUsed: BigNumber;
+  totalDifficulty: number;
+  gasLimit: BigNumber; // 15m for now. TODO: query this from blockchain
+  gasUsed: BigNumber; // TODO: not full is 0
 
   miner: string;
-  extraData: string;
+  extraData: `0x${string}`;
+  sha3Uncles: `0x${string}`;
+  receiptsRoot: `0x${string}`;
+  logsBloom: `0x${string}`; // TODO: ???
+  size: number;
+  uncles: string[];
 
-  // eslint-disable-next-line @rushstack/no-new-null
-  baseFeePerGas?: null | BigNumber;
+  transactions: `0x${string}`[];
+
+  // baseFeePerGas: BIGNUMBER_ZERO,
+  // with baseFeePerGas Metamask will send token with EIP-1559 format
+  // but we want it to send with legacy format
 }
 
-export interface _RichBlock extends _Block {
-  stateRoot: string;
-  transactionsRoot: string;
-  mixHash: string;
-}
-
-export interface RichBlock extends _RichBlock {
-  transactions: Array<string>;
-}
-
-export interface BlockWithTransactions extends _RichBlock {
-  transactions: Array<TransactionResponse>;
+export interface FullBlockData extends Omit<BlockData, 'transactions'> {
+  transactions: TX[];
 }
 
 export interface CallRequest {
@@ -164,22 +161,6 @@ export interface TXReceipt extends partialTX {
   effectiveGasPrice: BigNumber;
   type: number;
   status?: number;
-}
-
-// TODO: safe to assume this shape?
-export interface ExtrinsicMethodJSON {
-  callIndex: string;
-  args: {
-    action: {
-      [key: string]: string;
-    };
-    input: string;
-    value: number;
-    gas_limit: number;
-    storage_limit: number;
-    access_list: any[];
-    valid_until: number;
-  };
 }
 
 export interface GasConsts {
@@ -304,13 +285,13 @@ export abstract class BaseProvider extends AbstractProvider {
       // eth_subscribe
       // TODO: can do some optimizations
       if (this._listeners[NEW_HEADS]?.length > 0) {
-        const block = await this.getBlock(blockNumber);
+        const block = await this.getBlockData(blockNumber, false);
         const response = hexlifyRpcResult(block);
         this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
       }
 
       if (this._listeners[NEW_LOGS]?.length > 0) {
-        const block = await this._getBlock(header.number.toHex(), false);
+        const block = await this.getBlockData(header.number.toHex(), false);
         const receipts = await Promise.all(
           block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, header.number.toHex()))
         );
@@ -446,7 +427,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   isReady = (): Promise<Network> => {
     if (!this._network) {
-      const _getNetwork = async () => {
+      const _getNetwork = async (): Promise<{
+        name: string;
+        chainId: number;
+      }> => {
         try {
           await this.api.isReadyOrError;
 
@@ -495,26 +479,10 @@ export abstract class BaseProvider extends AbstractProvider {
     return header.number.toNumber();
   };
 
-  getBlock = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean | Promise<boolean>): Promise<RichBlock> => {
-    return this._getBlock(blockTag, full) as Promise<RichBlock>;
-  };
-
-  getBlockWithTransactions = async (blockTag: BlockTag | Promise<BlockTag>): Promise<BlockWithTransactions> => {
-    return this._getBlock(blockTag, true) as Promise<BlockWithTransactions>;
-  };
-
-  _getBlock = async (
-    _blockTag: BlockTag | Promise<BlockTag>,
-    full?: boolean | Promise<boolean>
-  ): Promise<RichBlock | BlockWithTransactions> => {
+  _getBlock = async (_blockTag: BlockTag | Promise<BlockTag>): Promise<BlockData> => {
     await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
-
-    const { fullTx, header } = await resolveProperties({
-      header: this._getBlockHeader(blockTag),
-      fullTx: full
-    });
-
+    const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
 
     const [block, validators, now, blockEvents] = await Promise.all([
@@ -535,38 +503,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
-    let transactions: any[];
-    let total_used_gas = BIGNUMBER_ZERO;
+    const transactions = evmExtrinsicIndexes.map((extrinsicIndex) =>
+      block.block.extrinsics[extrinsicIndex].hash.toHex()
+    );
 
-    if (!fullTx) {
-      // not full
-      transactions = evmExtrinsicIndexes.map((extrinsicIndex) => {
-        return block.block.extrinsics[extrinsicIndex].hash.toHex();
-      });
-    } else {
-      // full
-      transactions = await Promise.all(
-        evmExtrinsicIndexes.map(async (extrinsicIndex, transactionIndex) => {
-          const extrinsic = block.block.extrinsics[extrinsicIndex];
-          const extrinsicEvents = blockEvents.filter(
-            (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-          );
-
-          const data = await this._parseExtrinsic(blockHash, extrinsic, extrinsicEvents);
-
-          return {
-            blockHash,
-            blockNumber,
-            transactionIndex,
-            ...data
-          };
-        })
-      );
-
-      total_used_gas = transactions.reduce((r, tx) => r.add(tx.gas), BIGNUMBER_ZERO);
-    }
-
-    const data = {
+    return {
       hash: blockHash,
       parentHash: headerExtended.parentHash.toHex(),
       number: blockNumber,
@@ -578,134 +519,47 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: total_used_gas, // TODO: not full is 0
+      gasUsed: BIGNUMBER_ZERO, // TODO: not full is 0
 
       miner: author,
       extraData: EMPTY_HEX_STRING,
       sha3Uncles: EMTPY_UNCLE_HASH,
-      receiptsRoot: headerExtended.extrinsicsRoot.toHex(), // TODO: ???
+      receiptsRoot: headerExtended.extrinsicsRoot.toHex(),
       logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
       size: block.encodedLength,
       uncles: EMTPY_UNCLES,
 
       transactions
-
-      // with this field Metamask will send token with EIP-1559 format
-      // but we want it to send with legacy format
-      // baseFeePerGas: BIGNUMBER_ZERO,
     };
-
-    // @TODO remove ts-ignore
-    // @ts-ignore
-    return data;
   };
 
-  _parseExtrinsic = async (
-    blockHash: string,
-    extrinsic: GenericExtrinsic,
-    extrinsicEvents: EventRecord[]
-  ): Promise<any> => {
-    // logger.info(extrinsic.method.toHuman());
-    // logger.info(extrinsic.method);
+  _getFullBlock = async (blockTag: BlockTag | Promise<BlockTag>): Promise<FullBlockData> => {
+    const block = await this._getBlock(blockTag);
+    const transactions = await Promise.all(
+      block.transactions.map((txHash) => this.getTransactionByHash(txHash) as Promise<TX>)
+    );
 
-    const evmEvent = findEvmEvent(extrinsicEvents);
-    if (!evmEvent) {
-      return logger.throwError(
-        'findEvmEvent failed. extrinsic: ' + extrinsic.method.toJSON(),
-        Logger.errors.UNSUPPORTED_OPERATION
-      );
-    }
+    const gasUsed = transactions.reduce((r, tx) => r.add(tx.gas), BIGNUMBER_ZERO);
 
-    let gas;
-    let value;
-    let input;
-    const from = evmEvent.event.data[0].toString();
-    const to = ['Created', 'CreatedFailed'].includes(evmEvent.event.method) ? null : evmEvent.event.data[1].toString();
-
-    // @TODO remove
-    // only work on mandala and karura-testnet
-    // https://github.com/AcalaNetwork/Acala/pull/1985
-    let gasPrice = BIGNUMBER_ONE;
-
-    if (
-      evmEvent.event.data.length > 5 ||
-      (evmEvent.event.data.length === 5 &&
-        (evmEvent.event.method === 'Created' || evmEvent.event.method === 'Executed'))
-    ) {
-      const used_gas = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 2].toString());
-      const used_storage = BigNumber.from(evmEvent.event.data[evmEvent.event.data.length - 1].toString());
-
-      const block = await this.api.rpc.chain.getBlock(blockHash);
-      // use parentHash to get tx fee
-      const payment = await this.api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
-      // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-      let tx_fee = ethers.utils.parseUnits(payment.partialFee.toString(), 'mwei');
-
-      // get storage fee
-      // if used_storage > 0, tx_fee include the storage fee.
-      if (used_storage.gt(0)) {
-        const { storageDepositPerByte } = this._getGasConsts();
-        tx_fee = tx_fee.add(used_storage.mul(storageDepositPerByte));
-      }
-
-      gasPrice = tx_fee.div(used_gas);
-    }
-
-    switch (extrinsic.method.section.toUpperCase()) {
-      case 'EVM': {
-        const evmExtrinsic: any = extrinsic.method.toJSON();
-        value = evmExtrinsic?.args?.value;
-        gas = evmExtrinsic?.args?.gas_limit;
-        // @TODO remove
-        // only work on mandala and karura-testnet
-        // https://github.com/AcalaNetwork/Acala/pull/1965
-        input = evmExtrinsic?.args?.input || evmExtrinsic?.args?.init;
-        break;
-      }
-      // Not a raw evm transaction, input = 0x
-      // case 'CURRENCIES':
-      // case 'DEX':
-      // case 'HONZONBRIDGE':
-      // case 'PROXY':
-      // case 'SUDO':
-      // case 'TECHNICALCOMMITTEE':
-      // case 'STABLEASSET':
-      // @TODO support utility
-      // case 'UTILITY': {
-      //   return logger.throwError('Unspport utility, blockHash: ' + blockHash, Logger.errors.UNSUPPORTED_OPERATION);
-      // }
-      // default: {
-      //   return logger.throwError(
-      //     'Unspport ' + extrinsic.method.section.toUpperCase() + ' blockHash: ' + blockHash,
-      //     Logger.errors.UNSUPPORTED_OPERATION
-      //   );
-      // }
-
-      // Not a raw evm transaction, input = 0x
-      default: {
-        value = 0;
-        gas = 2_100_000;
-        input = '0x';
-      }
-    }
-
-    // @TODO eip2930, eip1559
-
-    // @TODO Missing data
     return {
-      gasPrice,
-      gas,
-      input,
-      v: DUMMY_V,
-      r: DUMMY_R,
-      s: DUMMY_S,
-      hash: extrinsic.hash.toHex(),
-      nonce: extrinsic.nonce.toNumber(),
-      from: from,
-      to: to,
-      value: hexValue(value)
+      ...block,
+      transactions,
+      gasUsed
     };
   };
+
+  getBlockData = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData | FullBlockData> => {
+    return full
+      ? ((await this._getFullBlock(blockTag)) as FullBlockData)
+      : ((await this._getBlock(blockTag)) as BlockData);
+  };
+
+  getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
+    throwNotImplemented('getBlock (please use `getBlockData` instead)');
+  getBlockWithTransactions = async (
+    blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
+  ): Promise<BlockWithTransactions> =>
+    throwNotImplemented('getBlockWithTransactions (please use `getBlockData` instead)');
 
   getBalance = async (
     addressOrName: string | Promise<string>,
@@ -727,7 +581,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash
     );
 
-    return convertNativeToken(BigNumber.from(accountInfo.data.free.toBigInt()), this.chainDecimal);
+    return nativeToEthDecimal(accountInfo.data.free.toBigInt(), this.chainDecimal);
   };
 
   getTransactionCount = async (
@@ -1347,7 +1201,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return this._wrapTransaction(transaction, hash, blockNumber, blockHash.toHex());
     } catch (err) {
       const error = err as any;
-      for (let pattern of ERROR_PATTERN) {
+      for (const pattern of ERROR_PATTERN) {
         const match = ((error.toString?.() || '') as string).match(pattern);
         if (match) {
           const errDetails = this.api.registry.findMetaError(new Uint8Array([parseInt(match[1]), parseInt(match[2])]));
@@ -1410,7 +1264,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
         let done = false;
 
-        const alreadyDone = function () {
+        const alreadyDone = function (): boolean {
           if (done) {
             return true;
           }
@@ -1631,26 +1485,28 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
-    const extrinsics = (await this._getExtrinsicsAndEventsAtBlock(blockHash)).extrinsics as GenericExtrinsic[];
-    return extrinsics.map((e) => e.hash.toHex());
+    const block = await this.api.rpc.chain.getBlock(blockHash);
+
+    return block.block.extrinsics.map((e) => e.hash.toHex());
   };
 
-  _getExtrinsicsAndEventsAtBlock = async (
+  _parseTxAtBlock = async (
     blockHash: string,
-    txHash?: string
+    targetTx: string | number
   ): Promise<{
-    extrinsics: GenericExtrinsic | GenericExtrinsic[] | undefined;
-    extrinsicsEvents: EventRecord[] | undefined;
+    extrinsic: GenericExtrinsic;
+    extrinsicEvents: EventRecord[];
+    transactionHash: string;
+    transactionIndex: number;
+    isExtrinsicFailed: boolean;
   }> => {
     const [block, blockEvents] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash.toLowerCase()),
+      this.api.rpc.chain.getBlock(blockHash),
       this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
     ]);
 
-    if (!txHash) return { extrinsics: block.block.extrinsics, extrinsicsEvents: undefined };
-
     const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
-      txHash.toLowerCase(),
+      targetTx,
       block.block.extrinsics,
       blockEvents
     );
@@ -1660,8 +1516,11 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     return {
-      extrinsics: block.block.extrinsics[extrinsicIndex],
-      extrinsicsEvents: extrinsicEvents
+      extrinsic: block.block.extrinsics[extrinsicIndex],
+      extrinsicEvents: extrinsicEvents,
+      transactionHash,
+      transactionIndex,
+      isExtrinsicFailed
     };
   };
 
@@ -1677,20 +1536,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const [block, blockEvents] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash),
-      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
-    ]);
-
-    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
-      hashOrNumber,
-      block.block.extrinsics,
-      blockEvents
-    );
-
-    const extrinsicEvents = blockEvents.filter(
-      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-    );
+    const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
+      await this._parseTxAtBlock(blockHash, hashOrNumber);
 
     if (isExtrinsicFailed) {
       const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
@@ -1713,15 +1560,16 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    // @TODO
+    // TODO: deal with multiple events
     const evmEvent = findEvmEvent(extrinsicEvents);
-
     if (!evmEvent) {
-      return logger.throwError(`evm event not found`, Logger.errors.UNKNOWN_ERROR, {
-        hash: transactionHash,
-        blockHash
+      return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
+        blockNumber,
+        tx: hashOrNumber
       });
     }
+
+    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
 
@@ -1729,6 +1577,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // to and contractAddress may be undefined
     return this.formatter.receipt({
+      effectiveGasPrice,
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
@@ -1764,23 +1613,14 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
 
-    const args = (targetExtrinsic.method.toJSON() as ExtrinsicMethodJSON).args;
-
     return {
       from: await this.getEvmAddress(targetExtrinsic.signer.toString()),
-      to: args.action.call ? args.action.call : null,
       blockHash: null,
       blockNumber: null,
       transactionIndex: null,
       hash: txHash,
-      nonce: targetExtrinsic.nonce.toNumber(),
-      value: args.value,
       gasPrice: 0, // TODO: reverse calculate using args.storage_limit if needed
-      gas: args.gas_limit,
-      input: args.input,
-      v: DUMMY_V,
-      r: DUMMY_R,
-      s: DUMMY_S
+      ...parseExtrinsic(targetExtrinsic)
     };
   };
 
@@ -1794,7 +1634,16 @@ export abstract class BaseProvider extends AbstractProvider {
       res.blockNumber = +res.blockNumber;
       res.transactionIndex = +res.transactionIndex;
       res.gasUsed = BigNumber.from(res.gasUsed);
+      // res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
+
+      // TODO: this is a temp workaround since subquery can't query the prev block
+      // and the effectiveGasPrice calculated is a little bit off
+      // after subql works we can remove this line
+      res.effectiveGasPrice = (
+        await this.getTransactionReceiptAtBlock(res.transactionHash, res.blockNumber)
+      ).effectiveGasPrice;
     }
+
     return res;
   };
 
@@ -1813,31 +1662,24 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
-    const res = await this._getExtrinsicsAndEventsAtBlock(tx.blockHash, txHash);
-
-    if (!res) {
-      return logger.throwError(`extrinsic not found from hash`, Logger.errors.UNKNOWN_ERROR, { txHash });
-    }
-
-    const data = await this._parseExtrinsic(
-      tx.blockHash,
-      res.extrinsics as GenericExtrinsic,
-      res.extrinsicsEvents as EventRecord[]
-    );
+    const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
 
     return {
       blockHash: tx.blockHash,
       blockNumber: tx.blockNumber,
       transactionIndex: tx.transactionIndex,
-      ...data
+      hash: tx.transactionHash,
+      from: tx.from,
+      gasPrice: tx.effectiveGasPrice,
+      ...parseExtrinsic(extrinsic)
+
+      // TODO: can use actual gas from receipt instead of provided gas from parseExtrinsic for consistency
+      // gas: tx.gasUsed,
     };
   };
 
-  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> => {
-    // @TODO
-    // @ts-ignore
-    return this.getTXReceiptByHash(txHash);
-  };
+  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
+    throwNotImplemented('getTransactionReceipt (please use `getTXReceiptByHash` instead)');
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
     const tx = await this._getMinedTXReceipt(txHash);
@@ -1857,7 +1699,7 @@ export abstract class BaseProvider extends AbstractProvider {
       cumulativeGasUsed: tx.cumulativeGasUsed,
       type: tx.type,
       status: tx.status,
-      effectiveGasPrice: EFFECTIVE_GAS_PRICE,
+      effectiveGasPrice: tx.effectiveGasPrice,
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
     });
   };
@@ -1957,8 +1799,8 @@ export abstract class BaseProvider extends AbstractProvider {
       this.latestFinalizedBlockNumber! > this._healthCheckBlockDistance
         ? this.latestFinalizedBlockNumber! - this._healthCheckBlockDistance
         : this.latestFinalizedBlockNumber!;
-    const getBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, false));
-    const getFullBlockPromise = runWithTiming(async () => this.getBlock(pastNblock, true));
+    const getBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, false));
+    const getFullBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, true));
 
     const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
       await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])

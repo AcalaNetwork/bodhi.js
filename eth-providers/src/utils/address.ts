@@ -4,7 +4,7 @@ import { blake2AsU8a, decodeAddress, encodeAddress } from '@polkadot/util-crypto
 import type { HexString } from '@polkadot/util/types';
 import { logger } from './logger';
 
-export const isSubstrateAddress = (address: HexString | string | Uint8Array) => {
+export const isSubstrateAddress = (address: HexString | string | Uint8Array): boolean => {
   try {
     decodeAddress(address);
     return true;
@@ -13,7 +13,7 @@ export const isSubstrateAddress = (address: HexString | string | Uint8Array) => 
   }
 };
 
-export const isEvmAddress = (address: string) => {
+export const isEvmAddress = (address: string): boolean => {
   try {
     getAddress(address);
     return true;
