@@ -72,8 +72,8 @@ services:
     command:
       - --endpoint=ws://mandala-node:9944
       - --subql=http://graphql-engine:3001
-      - --http=8545
-      - --ws=3331
+      - --http-port=8545
+      - --ws-port=3331
       - --local
 
   eth-rpc-adapter-test:
@@ -142,8 +142,8 @@ services:
     #   - LOCAL_MODE=1
     command:
       - --endpoint=ws://mandala-node:9944
-      - --http=8545
-      - --ws=3331
+      - --http-port=8545
+      - --ws-port=3331
       - --local
 
   eth-rpc-adapter-server-public-mandala:
@@ -162,8 +162,8 @@ services:
     command:
       - --endpoint=wss://mandala-tc7-rpcnode.aca-dev.network/ws
       - --subql=https://tc7-graphql.aca-dev.network
-      - --http=8546
-      - --ws=3332
+      - --http-port=8546
+      - --ws-port=3332
 
   waffle-examples-test:
     build:
