@@ -34,16 +34,16 @@ note that docker image might not be most up-to-date. Latest image can be found [
 ## Options
 | ENV                | flag equivalent | default             | explanation                                                                                             |
 |--------------------|-----------------|---------------------|---------------------------------------------------------------------------------------------------------|
-| ENDPOINT_URL       | -e, --endpoint  | ws://localhost:9944 | acala node url                                                                                          |
-| SUBQL_URL          | --subql         | undefined           | subquery graphql-engine service url, usually http://localhost:3001                                      |
-| HTTP_PORT          | -h, --http      | 8545                | HTTP port for requests                                                                                  |
-| WS_PORT            | -w, --ws        | 3331                | WS port for requests                                                                                    |
-| MAX_CACHE_SIZE     | --cache         | 200                 | max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network) |
-| MAX_BATCH_SIZE     | --batch         | 50                  | max batch size for RPC request                                                                          |
-| STORAGE_CACHE_SIZE | --storage       | 5000                | max storage cache size                                                                                  |
-| SAFE_MODE          | -s, --safe      | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
-| LOCAL_MODE         | -l, --local     | 0                   | enable this mode when testing with locally running mandala                                              |
-| VERBOSE            | -v, --verbose   | 1                   | print some extra info                                                                                   |
+| ENDPOINT_URL       | -e, --endpoint           | ws://localhost:9944 | acala node url                                                                                          |
+| SUBQL_URL          | --subql                  | undefined           | subquery graphql-engine service url, usually http://localhost:3001                                      |
+| HTTP_PORT          | -h, --http-port          | 8545                | HTTP port for requests                                                                                  |
+| WS_PORT            | -w, --ws-port            | 3331                | WS port for requests                                                                                    |
+| MAX_CACHE_SIZE     | --cache-size             | 200                 | max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network) |
+| MAX_BATCH_SIZE     | --max-batch-size         | 50                  | max batch size for RPC request                                                                          |
+| STORAGE_CACHE_SIZE | --max-storage-size       | 5000                | max storage cache size                                                                                  |
+| SAFE_MODE          | -s, --safe               | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
+| LOCAL_MODE         | -l, --local              | 0                   | enable this mode when testing with locally running mandala                                              |
+| VERBOSE            | -v, --verbose            | 1                   | print some extra info                                                                                   |
 
 NOTE: Please don't mix using ENV and flags. `.env.sample` contains an example envs. 
 ## Usage
