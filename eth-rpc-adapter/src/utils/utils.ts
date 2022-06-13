@@ -17,11 +17,11 @@ export interface ServerArgs {
   v?: boolean;
   endpoint: string;
   subql?: string;
-  http: number;
-  ws: number;
-  cache: number;
-  batch: number;
-  storage: number;
+  'http-port': number;
+  'ws-port': number;
+  'cache-size': number;
+  'max-batch-size': number;
+  'max-storage-size': number;
   safe: number;
   local: number;
   verbose: number;
@@ -49,11 +49,11 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
   v: undefined,
   endpoint: 'ws://0.0.0.0::9944',
   subql: undefined,
-  http: 8545,
-  ws: 3331,
-  cache: 200,
-  batch: 50,
-  storage: 5000,
+  'http-port': 8545,
+  'ws-port': 3331,
+  'cache-size': 200,
+  'max-batch-size': 50,
+  'max-storage-size': 5000,
   safe: 0,
   local: 0,
   verbose: 1
@@ -61,7 +61,7 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
 
 export const parseOptions = (): ServerOpts => {
   const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_ARGS });
-  const { e, h, w, s, l, v, endpoint, subql, http, ws, cache, batch, storage, safe, local, verbose } = argv;
+  const { e, h, w, s, l, v, endpoint, subql, safe, local, verbose } = argv;
 
   dotenv.config();
   const {
@@ -80,11 +80,11 @@ export const parseOptions = (): ServerOpts => {
   return {
     endpoints: ENDPOINT_URL || e || endpoint,
     subqlUrl: SUBQL_URL || subql,
-    httpPort: Number(HTTP_PORT || h || http),
-    wsPort: Number(WS_PORT || w || ws),
-    maxBlockCacheSize: Number(MAX_CACHE_SIZE || cache),
-    maxBatchSize: Number(MAX_BATCH_SIZE || batch),
-    storageCacheSize: Number(STORAGE_CACHE_SIZE || storage),
+    httpPort: Number(HTTP_PORT || h || argv['http-port']),
+    wsPort: Number(WS_PORT || w || argv['ws-port']),
+    maxBlockCacheSize: Number(MAX_CACHE_SIZE || argv['cache-size']),
+    maxBatchSize: Number(MAX_BATCH_SIZE || argv['max-batch-size']),
+    storageCacheSize: Number(STORAGE_CACHE_SIZE || argv['max-storage-size']),
     safeMode: !!Number(SAFE_MODE || s || safe),
     localMode: !!Number(LOCAL_MODE || local || l),
     verbose: !!Number(VERBOSE || verbose || v)
