@@ -47,12 +47,16 @@ describe('Dex', () => {
   });
 
   it('getSwapTargetAmount should not works', async () => {
-    await expect(
-      dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.RENBTC, ADDRESS.LDOT], 1000)
-    ).to.be.revertedWith('Dex get_swap_target_amount failed');
-    await expect(
-      dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
-    ).to.be.revertedWith('Dex get_swap_target_amount failed');
+    expect(
+      (
+        await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.RENBTC, ADDRESS.LDOT], 1000)
+      ).toString()
+    ).to.equal('0');
+    expect(
+      (
+        await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
+      ).toString()
+    ).to.equal('0');
     await expect(
       dex.getSwapTargetAmount([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000)
     ).to.be.revertedWith('invalid currency id');
@@ -64,10 +68,11 @@ describe('Dex', () => {
   });
 
   it('getSwapSupplyAmount should not works', async () => {
-    await expect(dex.getSwapSupplyAmount([ADDRESS.ACA], 1000)).to.be.revertedWith('Dex get_swap_supply_amount failed');
-    await expect(
-      dex.getSwapSupplyAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
-    ).to.be.revertedWith('Dex get_swap_supply_amount failed');
+    expect(
+      (
+        await dex.getSwapSupplyAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
+      ).toString()
+    ).to.equal('0');
     await expect(
       dex.getSwapSupplyAmount([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000)
     ).to.be.revertedWith('invalid currency id');
