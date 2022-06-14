@@ -33,6 +33,12 @@ import {
   mandalaTransferTx
 } from './consts';
 
+const bigIntDiff = (x: bigint, y: bigint): bigint => {
+  return x > y
+    ? x - y
+    : y - x;
+};
+
 dotenv.config();
 
 const PUBLIC_MANDALA_RPC_URL = process.env.PUBLIC_MANDALA_RPC_URL || 'http://127.0.0.1:8546';
@@ -705,6 +711,7 @@ describe('eth_sendRawTransaction', () => {
   const eth_chainId = rpcGet('eth_chainId');
   const eth_gasPrice = rpcGet('eth_gasPrice');
   const eth_estimateGas = rpcGet('eth_estimateGas');
+  const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
 
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
@@ -716,6 +723,25 @@ describe('eth_sendRawTransaction', () => {
   let genesisHash: string;
 
   let api: ApiPromise;
+
+  const ETHDigits = 18;
+  const ACADigits = 12;
+  const TX_FEE_OFF_TOLERANCE = 100000;    // 0.0000001 ACA
+
+  const queryEthBalance = async (addr): BigNumber => BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result);
+
+  const queryNativeBalance = async (addr: string) =>
+    (await queryEthBalance(addr)).div(10 ** (ETHDigits - ACADigits));
+
+  const getCalculatedTxFee = async (txHash: string, toNative = true): bigint => {
+    const { gasUsed, effectiveGasPrice } = (await eth_getTransactionReceipt([txHash])).data.result;
+
+    const calculatedTxFee = BigInt(gasUsed) * BigInt(effectiveGasPrice);
+
+    return toNative
+      ? calculatedTxFee / BigInt(10 ** (ETHDigits - ACADigits))
+      : calculatedTxFee;
+  }
 
   before('prepare common variables', async () => {
     chainId = BigNumber.from((await eth_chainId()).data.result).toNumber();
@@ -748,7 +774,9 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with legacy EIP-155 signature', () => {
-      it('serialize, parse, and send tx correctly', async () => {
+      it('serialize, parse, and send tx correctly, and receipt\'s gas info is accurate', async () => {
+        const prevBalance = await queryNativeBalance(wallet1.address);
+
         const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result
@@ -769,12 +797,22 @@ describe('eth_sendRawTransaction', () => {
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
+
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result);
+        const afterBalance = await queryNativeBalance(wallet1.address);
+
+        const realTxFee = prevBalance.sub(afterBalance).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
 
     describe('with EIP-1559 signature', () => {
-      it('serialize, parse, and send tx correctly', async () => {
-        const priorityFee = BigNumber.from(2);
+      it('serialize, parse, and send tx correctly, and receipt\'s gas info is accurate', async () => {
+        const prevBalance = await queryNativeBalance(wallet1.address);
+
+        const priorityFee = BigNumber.from(0);   // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
         const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
@@ -799,11 +837,21 @@ describe('eth_sendRawTransaction', () => {
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
+
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result);
+        const afterBalance = await queryNativeBalance(wallet1.address);
+
+        const realTxFee = prevBalance.sub(afterBalance).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
 
     describe('with EIP-712 signature', () => {
-      it('serialize, parse, and send tx correctly', async () => {
+      it('serialize, parse, and send tx correctly, and receipt\'s gas info is accurate', async () => {
+        const prevBalance = await queryNativeBalance(wallet1.address);
+
         const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
         const storageLimit = 100000;
@@ -835,17 +883,21 @@ describe('eth_sendRawTransaction', () => {
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
+
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result);
+        const afterBalance = await queryNativeBalance(wallet1.address);
+
+        const realTxFee = prevBalance.sub(afterBalance).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
   });
 
   describe('call contract (transfer ACA)', () => {
-    const ETHDigits = 18;
-    const ACADigits = 12;
     const acaContract = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1);
     const iface = new Interface(TokenABI.abi);
-    const queryBalance = async (addr) =>
-      BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result).div(10 ** (ETHDigits - ACADigits));
     const transferAmount = parseUnits('100', ACADigits);
     let partialTransferTX: Partial<AcalaEvmTX>;
 
@@ -861,9 +913,9 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with legacy EIP-155 signature', () => {
-      it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
-        const balance2 = await queryBalance(account2.evmAddress);
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
+        const balance1 = await queryNativeBalance(account1.evmAddress);
+        const balance2 = await queryNativeBalance(account2.evmAddress);
 
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
@@ -876,21 +928,29 @@ describe('eth_sendRawTransaction', () => {
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
-        const _balance1 = await queryBalance(account1.evmAddress);
-        const _balance2 = await queryBalance(account2.evmAddress);
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result);    // this has to come first
+        const [
+          _balance1,
+          _balance2,
+        ] = await Promise.all([
+          queryNativeBalance(account1.evmAddress),
+          queryNativeBalance(account2.evmAddress),
+        ]);
 
-        // TODO: check gasUsed is correct
-        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
 
     describe('with EIP-1559 signature', () => {
-      it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
-        const balance2 = await queryBalance(account2.evmAddress);
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
+        const balance1 = await queryNativeBalance(account1.evmAddress);
+        const balance2 = await queryNativeBalance(account2.evmAddress);
 
-        const priorityFee = BigNumber.from(2);
+        const priorityFee = BigNumber.from(0);   // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
@@ -907,19 +967,27 @@ describe('eth_sendRawTransaction', () => {
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
-        const _balance1 = await queryBalance(account1.evmAddress);
-        const _balance2 = await queryBalance(account2.evmAddress);
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result);    // this has to come first
+        const [
+          _balance1,
+          _balance2,
+        ] = await Promise.all([
+          queryNativeBalance(account1.evmAddress),
+          queryNativeBalance(account2.evmAddress),
+        ]);
 
-        // TODO: check gasUsed is correct
-        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
 
     describe('with EIP-712 signature', () => {
-      it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
-        const balance2 = await queryBalance(account2.evmAddress);
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
+        const balance1 = await queryNativeBalance(account1.evmAddress);
+        const balance2 = await queryNativeBalance(account2.evmAddress);
 
         const gasLimit = BigNumber.from('210000');
         const validUntil = 10000;
@@ -943,20 +1011,25 @@ describe('eth_sendRawTransaction', () => {
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
-        const _balance1 = await queryBalance(account1.evmAddress);
-        const _balance2 = await queryBalance(account2.evmAddress);
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result);    // this has to come first
+        const [
+          _balance1,
+          _balance2,
+        ] = await Promise.all([
+          queryNativeBalance(account1.evmAddress),
+          queryNativeBalance(account2.evmAddress),
+        ]);
 
-        // TODO: check gasUsed is correct
-        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
   });
 
   describe('MetaMask send native ACA token', () => {
-    const ETHDigits = 18;
-    const ACADigits = 12;
-    const queryBalance = async (addr) => BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result);
     const transferAmount = parseUnits('16.8668', ETHDigits);
     let partialNativeTransferTX: Partial<AcalaEvmTX>;
 
@@ -993,9 +1066,14 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with legacy EIP-155 signature', () => {
-      it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
-        const balance2 = await queryBalance(account2.evmAddress);
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
+        const [
+          balance1,
+          balance2,
+        ] = await Promise.all([
+          queryEthBalance(account1.evmAddress),
+          queryEthBalance(account2.evmAddress),
+        ]);
 
         const transferTX: AcalaEvmTX = {
           ...partialNativeTransferTX,
@@ -1009,21 +1087,34 @@ describe('eth_sendRawTransaction', () => {
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
-        const _balance1 = await queryBalance(account1.evmAddress);
-        const _balance2 = await queryBalance(account2.evmAddress);
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result, false);    // this has to come first
+        const [
+          _balance1,
+          _balance2,
+        ] = await Promise.all([
+          queryEthBalance(account1.evmAddress),
+          queryEthBalance(account2.evmAddress),
+        ]);
 
-        // TODO: check gasUsed is correct
-        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
 
     describe('with EIP-1559 signature', () => {
-      it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
-        const balance2 = await queryBalance(account2.evmAddress);
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
+        const [
+          balance1,
+          balance2,
+        ] = await Promise.all([
+          queryEthBalance(account1.evmAddress),
+          queryEthBalance(account2.evmAddress),
+        ]);
 
-        const priorityFee = BigNumber.from(2);
+        const priorityFee = BigNumber.from(0);   // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
         const { gasPrice, gasLimit } = await estimateGas();
         const transferTX: AcalaEvmTX = {
           ...partialNativeTransferTX,
@@ -1042,20 +1133,28 @@ describe('eth_sendRawTransaction', () => {
         expect(res.status).to.equal(200);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
 
-        const _balance1 = await queryBalance(account1.evmAddress);
-        const _balance2 = await queryBalance(account2.evmAddress);
+        const calculatedTxFee = await getCalculatedTxFee(res.data.result, false);    // this has to come first
+        const [
+          _balance1,
+          _balance2,
+        ] = await Promise.all([
+          queryEthBalance(account1.evmAddress),
+          queryEthBalance(account2.evmAddress),
+        ]);
 
-        // TODO: check gasUsed is correct
-        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
         expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+        expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
 
     describe('with EIP-712 signature', () => {
       // TODO: EIP-712 doesn't use ETH gasLimit and gasPrice, do we need to support it?
       it.skip('has correct balance after transfer', async () => {
-        // const balance1 = await queryBalance(account1.evmAddress);
-        // const balance2 = await queryBalance(account2.evmAddress);
+        // const balance1 = await queryEthBalance(account1.evmAddress);
+        // const balance2 = await queryEthBalance(account2.evmAddress);
         // const gasLimit = BigNumber.from('210000');
         // const validUntil = 10000;
         // const storageLimit = 100000;
@@ -1075,11 +1174,18 @@ describe('eth_sendRawTransaction', () => {
         // const res = await eth_sendRawTransaction([rawTx]);
         // expect(res.status).to.equal(200);
         // expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
-        // const _balance1 = await queryBalance(account1.evmAddress);
-        // const _balance2 = await queryBalance(account2.evmAddress);
-        // // TODO: check gasUsed is correct
-        // const gasUsed = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        // const txHash = res.data.result;
+        // const { gasUsed, effectiveGasPrice } = (await eth_getTransactionReceipt([txHash])).data.result;
+        // const calculatedTxFee = BigInt(gasUsed) * BigInt(effectiveGasPrice) / BigInt(10 ** (ETHDigits - ACADigits));
+
+        // const _balance1 = await queryEthBalance(account1.evmAddress);
+        // const _balance2 = await queryEthBalance(account2.evmAddress);
+
+        // const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
+        // const diff = bigIntDiff(realTxFee, calculatedTxFee);
+
         // expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
+        // expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
       });
     });
   });

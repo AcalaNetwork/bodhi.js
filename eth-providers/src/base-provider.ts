@@ -178,6 +178,14 @@ export interface EventListeners {
   [name: string]: EventListener[];
 }
 
+export interface EventData {
+  [index: string]: {
+    weight: number;
+    class: string;
+    paysFee: string;
+  };
+}
+
 export interface BaseProviderOptions {
   safeMode?: boolean;
   localMode?: boolean;
@@ -1524,7 +1532,6 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  // @TODO Testing
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
     _blockTag: BlockTag | Promise<BlockTag>
@@ -1538,6 +1545,17 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
       await this._parseTxAtBlock(blockHash, hashOrNumber);
+
+    const systemEvent = extrinsicEvents.find((event) =>
+      ['ExtrinsicSuccess', 'ExtrinsicFailed'].includes(event.event.method)
+    );
+
+    if (!systemEvent) {
+      return logger.throwError('<getTransactionReceiptAtBlock> find system event failed', Logger.errors.UNKNOWN_ERROR, {
+        hash: transactionHash,
+        blockHash
+      });
+    }
 
     if (isExtrinsicFailed) {
       const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
@@ -1560,6 +1578,8 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
+    const { weight: actualWeight } = (systemEvent.event.data.toJSON() as EventData)[0];
+
     // TODO: deal with multiple events
     const evmEvent = findEvmEvent(extrinsicEvents);
     if (!evmEvent) {
@@ -1569,7 +1589,7 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
+    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic, actualWeight);
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
 
