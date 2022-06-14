@@ -1589,11 +1589,11 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
+    // TODO: `getEffectiveGasPrice` and `getPartialTransactionReceipt` can potentially be merged and refactored
     const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic, actualWeight);
+    const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
-
-    const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     // to and contractAddress may be undefined
     return this.formatter.receipt({
