@@ -714,7 +714,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     // @TODO resolvedPosition
-    const { address, blockHash, resolvedPosition } = await resolveProperties({
+    const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockHash(blockTag),
       resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))

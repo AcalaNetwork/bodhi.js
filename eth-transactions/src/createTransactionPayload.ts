@@ -6,6 +6,7 @@ import { accessListify } from '@ethersproject/transactions';
 
 export const MAX_UINT256 = '0xffffffff';
 
+// eslint-disable-next-line
 export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
   if (!tx.salt) {
     return logger.throwError('eip712tx missing salt');
