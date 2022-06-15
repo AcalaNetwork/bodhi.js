@@ -21,7 +21,7 @@ describe('Dex', () => {
   });
 
   after(async () => {
-    provider.api.disconnect();
+    await provider.api.disconnect();
   });
 
   it('getLiquidityPool works', async () => {

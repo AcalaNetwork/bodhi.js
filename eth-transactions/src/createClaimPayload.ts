@@ -3,6 +3,7 @@ import { decodeAddress } from '@polkadot/util-crypto';
 import { logger } from './logger';
 import { ClaimPayload } from './types';
 
+// eslint-disable-next-line
 export const createClaimPayload = (tx: ClaimPayload) => {
   if (!tx.salt) {
     return logger.throwError('claim payload missing salt');
