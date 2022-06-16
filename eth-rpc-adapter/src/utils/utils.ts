@@ -64,7 +64,7 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
 
 export const parseOptions = (): ServerOpts => {
   const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_ARGS });
-  const { e, h, w, s, l, v, endpoint, subql, safe, local, forward, verbose } = argv;
+  const { e, h, w, s, l, f, v, endpoint, subql, safe, local, forward, verbose } = argv;
 
   dotenv.config();
   const {
@@ -91,7 +91,7 @@ export const parseOptions = (): ServerOpts => {
     storageCacheSize: Number(STORAGE_CACHE_SIZE || argv['max-storage-size']),
     safeMode: !!Number(SAFE_MODE || s || safe),
     localMode: !!Number(LOCAL_MODE || local || l),
-    forwardMode: !!Number(FORWARD_MODE || forward),
+    forwardMode: !!Number(FORWARD_MODE || f || forward),
     verbose: !!Number(VERBOSE || verbose || v)
   };
 };
