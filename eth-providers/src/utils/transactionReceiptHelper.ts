@@ -80,45 +80,33 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
 
   switch (event.event.method) {
     case 'Created': {
-      const [source, evmAddress, logs, used_gas, _used_storage] = event.event.data as unknown as [
-        H160,
-        H160,
-        EvmLog[],
-        u64?,
-        i32?
-      ];
+      const [source, evmAddress, logs, usedGas] = event.event.data as unknown as [H160, H160, EvmLog[], u64?, i32?];
 
       return {
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: BigNumber.from(used_gas?.toString() || 0),
+        gasUsed: BigNumber.from(usedGas?.toString() || 0),
         status: 1,
         logs: getPartialLogs(logs),
         ...defaultValue
       };
     }
     case 'Executed': {
-      const [source, evmAddress, logs, used_gas, _used_storage] = event.event.data as unknown as [
-        H160,
-        H160,
-        EvmLog[],
-        u64?,
-        i32?
-      ];
+      const [source, evmAddress, logs, usedGas] = event.event.data as unknown as [H160, H160, EvmLog[], u64?, i32?];
 
       return {
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: undefined,
-        gasUsed: BigNumber.from(used_gas?.toString() || 0),
+        gasUsed: BigNumber.from(usedGas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 1,
         ...defaultValue
       };
     }
     case 'CreatedFailed': {
-      const [source, evmAddress, _exitReason, logs, used_gas, _used_storage] = event.event.data as unknown as [
+      const [source, evmAddress, _exitReason, logs, usedGas] = event.event.data as unknown as [
         H160,
         H160,
         ExitReason,
@@ -131,7 +119,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         to: undefined,
         from: source.toHex(),
         contractAddress: evmAddress.toString(),
-        gasUsed: BigNumber.from(used_gas?.toString() || 0),
+        gasUsed: BigNumber.from(usedGas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 0,
         exitReason: _exitReason.toString(),
@@ -139,7 +127,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
       };
     }
     case 'ExecutedFailed': {
-      const [source, evmAddress, _exitReason, _output, logs, used_gas, _used_storage] = event.event.data as unknown as [
+      const [source, evmAddress, _exitReason, , logs, usedGas] = event.event.data as unknown as [
         H160,
         H160,
         ExitReason,
@@ -153,7 +141,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         to: evmAddress.toString(),
         from: source.toHex(),
         contractAddress: undefined,
-        gasUsed: BigNumber.from(used_gas?.toString() || 0),
+        gasUsed: BigNumber.from(usedGas?.toString() || 0),
         status: 0,
         exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
@@ -304,34 +292,38 @@ export const parseExtrinsic = (
 export const getEffectiveGasPrice = async (
   evmEvent: EventRecord,
   api: ApiPromise,
-  blockHash: string, // TODO: get blockHash from evmEvent?
-  extrinsic: GenericExtrinsic<AnyTuple> // TODO: get extrinsic from evmEvent?
+  blockHash: string,
+  extrinsic: GenericExtrinsic<AnyTuple>,
+  actualWeight: number
 ): Promise<BigNumber> => {
   const { data: eventData, method: eventMethod } = evmEvent.event;
-
-  let gasPrice = BIGNUMBER_ONE;
 
   const gasInfoExists =
     eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
 
-  if (gasInfoExists) {
-    const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
-    const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
+  if (!gasInfoExists) return BIGNUMBER_ONE;
 
-    const block = await api.rpc.chain.getBlock(blockHash);
-    // use parentHash to get tx fee
-    const payment = await api.rpc.payment.queryInfo(extrinsic.toHex(), block.block.header.parentHash);
-    // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-    let tx_fee = nativeToEthDecimal(payment.partialFee.toString(), 12);
+  const usedGas = BigNumber.from(eventData[eventData.length - 2].toString());
+  const usedStorage = BigNumber.from(eventData[eventData.length - 1].toString());
 
-    // get storage fee
-    // if used_storage > 0, tx_fee include the storage fee.
-    if (used_storage.gt(0)) {
-      tx_fee = tx_fee.add(used_storage.mul(api.consts.evm.storageDepositPerByte.toBigInt()));
-    }
+  const block = await api.rpc.chain.getBlock(blockHash);
 
-    gasPrice = tx_fee.div(used_gas);
+  // use parentHash to get tx fee
+  const parentHash = block.block.header.parentHash;
+  const { weight: estimatedWeight } = await api.rpc.payment.queryInfo(extrinsic.toHex(), parentHash);
+  const { inclusionFee } = await api.rpc.payment.queryFeeDetails(extrinsic.toHex(), parentHash);
+  const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
+
+  const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
+  let txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
+
+  txFee = nativeToEthDecimal(txFee, 12);
+
+  // if usedStorage > 0, txFee include the storage fee.
+  if (usedStorage.gt(0)) {
+    const storageFee = usedStorage.mul(api.consts.evm.storageDepositPerByte.toBigInt());
+    txFee = txFee.add(storageFee);
   }
 
-  return gasPrice;
+  return txFee.div(usedGas);
 };

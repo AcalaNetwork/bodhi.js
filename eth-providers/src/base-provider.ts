@@ -178,6 +178,14 @@ export interface EventListeners {
   [name: string]: EventListener[];
 }
 
+export interface EventData {
+  [index: string]: {
+    weight: number;
+    class: string;
+    paysFee: string;
+  };
+}
+
 export interface BaseProviderOptions {
   safeMode?: boolean;
   localMode?: boolean;
@@ -706,6 +714,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
 
     // @TODO resolvedPosition
+    // eslint-disable-next-line
     const { address, blockHash, resolvedPosition } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockHash(blockTag),
@@ -1524,7 +1533,6 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  // @TODO Testing
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
     _blockTag: BlockTag | Promise<BlockTag>
@@ -1538,6 +1546,17 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
       await this._parseTxAtBlock(blockHash, hashOrNumber);
+
+    const systemEvent = extrinsicEvents.find((event) =>
+      ['ExtrinsicSuccess', 'ExtrinsicFailed'].includes(event.event.method)
+    );
+
+    if (!systemEvent) {
+      return logger.throwError('<getTransactionReceiptAtBlock> find system event failed', Logger.errors.UNKNOWN_ERROR, {
+        hash: transactionHash,
+        blockHash
+      });
+    }
 
     if (isExtrinsicFailed) {
       const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
@@ -1560,6 +1579,8 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
+    const { weight: actualWeight } = (systemEvent.event.data.toJSON() as EventData)[0];
+
     const evmEvent = findEvmEvent(extrinsicEvents);
     if (!evmEvent) {
       return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
@@ -1568,11 +1589,11 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic);
+    // TODO: `getEffectiveGasPrice` and `getPartialTransactionReceipt` can potentially be merged and refactored
+    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic, actualWeight);
+    const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
-
-    const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     // to and contractAddress may be undefined
     return this.formatter.receipt({
