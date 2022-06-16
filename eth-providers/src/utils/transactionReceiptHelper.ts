@@ -187,13 +187,23 @@ export const getEvmExtrinsicIndexes = (events: EventRecord[]): number[] => {
 };
 
 export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
-  // For the moment the case of multiple evm events in one transaction is ignored
-  return events.find(({ event }) => {
-    return (
-      event.section.toUpperCase() === 'EVM' &&
-      ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.method)
-    );
-  });
+  return events
+    .filter(
+      (event) =>
+        event.event.section.toUpperCase() === 'EVM' &&
+        ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.event.method)
+    )
+    .reduce((r, event) => {
+      // For the moment the case of multiple evm events in one transaction only support Executed
+      if (r.event.method === 'Executed' && r.event.method === event.event.method) {
+        const [, , logs, ,] = event.event.data as unknown as [H160, H160, EvmLog[], u64?, i32?];
+
+        const newLogs = (r.event.data as unknown as [H160, H160, EvmLog[], u64?, i32?])[2].concat(logs);
+
+        Object.assign((r.event.data as unknown as [H160, H160, EvmLog[], u64?, i32?])[2], newLogs);
+      }
+      return r;
+    });
 };
 
 export const getTransactionIndexAndHash = (

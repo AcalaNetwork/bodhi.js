@@ -1560,7 +1560,6 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    // TODO: deal with multiple events
     const evmEvent = findEvmEvent(extrinsicEvents);
     if (!evmEvent) {
       return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
