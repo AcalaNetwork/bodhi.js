@@ -40,7 +40,13 @@ export abstract class ServerTransport {
     // Initialize datadog span and get spanTags from the context
     const spanTags = DataDogUtil.buildTracerSpan();
 
-    const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
+    let routerForMethod = undefined;
+    for (const r of this.routers) {
+      if (await r.isMethodImplemented(method)) {
+        routerForMethod = r;
+        break;
+      }
+    }
 
     let res: JSONRPCResponse = {
       id,

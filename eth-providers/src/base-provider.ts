@@ -196,16 +196,6 @@ export interface BaseProviderOptions {
   healthCheckBlockDistance?: number;
 }
 
-export const defaultOpts: BaseProviderOptions = {
-  safeMode: false,
-  localMode: false,
-  verbose: false,
-  subqlUrl: undefined,
-  maxBlockCacheSize: 200,
-  storageCacheSize: 5000,
-  healthCheckBlockDistance: 100
-};
-
 export type NewBlockListener = (header: Header) => any;
 
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
@@ -242,7 +232,7 @@ export abstract class BaseProvider extends AbstractProvider {
     maxBlockCacheSize = 200,
     storageCacheSize = 5000,
     healthCheckBlockDistance = 100
-  }: BaseProviderOptions = defaultOpts) {
+  }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};

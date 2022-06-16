@@ -1,9 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber';
 
+export const EMPTY_HEX_STRING = '0x';
 export const ZERO = 0;
 export const BIGNUMBER_ONE = BigNumber.from(1);
-export const EMPTY_HEX_STRING = '0x';
-
 export const BIGNUMBER_ZERO = BigNumber.from(ZERO);
 
 export const GAS_PRICE = BIGNUMBER_ONE;
@@ -56,6 +55,12 @@ export const PROD_MODE_MSG = `
 export const SAFE_MODE_WARNING_MSG = `
   ------------------------------- WARNING -----------------------------
   🔒 SafeMode is ON, and RPCs behave very differently than usual world!
+  ---------------------------------------------------------------------
+`;
+
+export const FORWARD_MODE_WARNING_MSG = `
+  ------------------------------- WARNING -----------------------------
+  ↗️ ForwardMode is ON, substrate RPCs will be forwarded!
   ---------------------------------------------------------------------
 `;
 

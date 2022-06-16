@@ -4,17 +4,24 @@ import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
 import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
+import { logger } from 'ethers';
 import EventEmitter from 'events';
 import { InvalidParams, MethodNotFound } from './errors';
 import { validate } from './validate';
 
-const HEX_ZERO = '0x0';
+export interface Eip1193BridgeOpts {
+  forwardMode?: boolean;
+}
 export class Eip1193Bridge extends EventEmitter {
+  readonly forwardMode: boolean;
   readonly provider: EvmRpcProvider;
   readonly #impl: Eip1193BridgeImpl;
 
-  constructor(provider: EvmRpcProvider, signer?: Signer) {
+  substrateRPCs?: Set<string>;
+
+  constructor(provider: EvmRpcProvider, signer?: Signer, opts: Eip1193BridgeOpts = {}) {
     super();
+    this.forwardMode = opts.forwardMode || false;
     this.provider = provider;
     this.#impl = new Eip1193BridgeImpl(provider, signer);
   }
@@ -23,18 +30,41 @@ export class Eip1193Bridge extends EventEmitter {
     return this.send(request.method, request.params || []);
   }
 
-  isMethodValid(method: string): boolean {
-    return method.startsWith('eth_') || method.startsWith('net_') || method.startsWith('web3_');
+  async fetchSubstrateRPCs(): Promise<void> {
+    await this.provider.isReady();
+
+    const res = await this.provider._api!.rpc.rpc.methods();
+    const methods = new Set(res.methods.toArray().map((m) => m.toString()));
+
+    this.substrateRPCs = methods;
   }
 
-  isMethodImplemented(method: string): method is keyof Eip1193BridgeImpl {
-    return this.isMethodValid(method) && method in this.#impl;
+  async isSubstrateRPC(method: string): Promise<boolean> {
+    if (!this.substrateRPCs) {
+      await this.fetchSubstrateRPCs();
+    }
+
+    logger.info(this.substrateRPCs);
+    logger.info(method);
+    logger.info(this.substrateRPCs?.has(method));
+
+    return this.substrateRPCs!.has(method);
+  }
+
+  isMethodImplemented(method: string): boolean {
+    logger.info('isMethodImplemented');
+    return method in this.#impl || (this.forwardMode && (await this.isSubstrateRPC()));
   }
 
   async send(method: string, params: any[] = [], cb?: any): Promise<any> {
     if (this.isMethodImplemented(method)) {
       // isMethodImplemented ensuress this cannot be used to access other unrelated methods
       return this.#impl[method](params, cb);
+    } else if (await this.isSubstrateRPC(method)) {
+      logger.info('isSubstrateRPC');
+      const [module, section] = method.split('_');
+
+      return this.provider._api!.rpc[module][section].apply(null, params);
     }
 
     throw new MethodNotFound('Method not available', `The method ${method} is not available.`);
@@ -397,13 +427,13 @@ class Eip1193BridgeImpl {
   async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {
     validate([{ type: 'blockHash' }], params);
 
-    return HEX_ZERO;
+    return '0x0';
   }
 
   async eth_getUncleCountByBlockNumber(params: any[]): Promise<any> {
     validate([{ type: 'block' }], params);
 
-    return HEX_ZERO;
+    return '0x0';
   }
 
   async eth_getUncleByBlockHashAndIndex(params: any[]): Promise<any> {

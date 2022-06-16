@@ -55,7 +55,7 @@ export class Router {
     }
   }
 
-  public isMethodImplemented(methodName: string): boolean {
-    return this.#bridge.isMethodImplemented(methodName);
+  public async isMethodImplemented(methodName: string): Promise<boolean> {
+    return await this.#bridge.isMethodImplemented(methodName);
   }
 }

@@ -19,7 +19,7 @@ export async function start(): Promise<void> {
     storageCacheSize: opts.storageCacheSize
   });
 
-  const bridge = new Eip1193Bridge(provider);
+  const bridge = new Eip1193Bridge(provider, undefined, { forwardMode: opts.forwardMode });
 
   const router = new Router(bridge);
 
@@ -56,6 +56,7 @@ export async function start(): Promise<void> {
   max storageSize : ${opts.storageCacheSize}
   safe mode       : ${opts.safeMode}
   local mode      : ${opts.localMode}
+  forward mode    : ${opts.forwardMode}
   verbose         : ${opts.verbose}
   --------------------------------------------
   `);

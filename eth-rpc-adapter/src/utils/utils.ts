@@ -8,7 +8,7 @@ export const DataDogUtil = {
   assignTracerSpan
 };
 
-export interface ServerArgs {
+export interface ServerCliArgs {
   e?: string;
   h?: number;
   w?: number;
@@ -22,9 +22,10 @@ export interface ServerArgs {
   'cache-size': number;
   'max-batch-size': number;
   'max-storage-size': number;
-  safe: number;
-  local: number;
-  verbose: number;
+  safe: number | boolean;
+  local: number | boolean;
+  forward: number | boolean;
+  verbose: number | boolean;
 }
 
 export interface ServerOpts {
@@ -37,10 +38,11 @@ export interface ServerOpts {
   storageCacheSize: number;
   safeMode: boolean;
   localMode: boolean;
+  forwardMode: boolean;
   verbose: boolean;
 }
 
-const DEFAULT_SERVER_ARGS: ServerArgs = {
+const DEFAULT_SERVER_ARGS: ServerCliArgs = {
   e: undefined,
   h: undefined,
   w: undefined,
@@ -56,12 +58,13 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
   'max-storage-size': 5000,
   safe: 0,
   local: 0,
+  forward: 0,
   verbose: 1
 };
 
 export const parseOptions = (): ServerOpts => {
-  const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_ARGS });
-  const { e, h, w, s, l, v, endpoint, subql, safe, local, verbose } = argv;
+  const argv = minimist<ServerCliArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_ARGS });
+  const { e, h, w, s, l, v, endpoint, subql, safe, local, forward, verbose } = argv;
 
   dotenv.config();
   const {
@@ -74,6 +77,7 @@ export const parseOptions = (): ServerOpts => {
     STORAGE_CACHE_SIZE,
     SAFE_MODE,
     LOCAL_MODE,
+    FORWARD_MODE,
     VERBOSE
   } = process.env;
 
@@ -86,7 +90,8 @@ export const parseOptions = (): ServerOpts => {
     maxBatchSize: Number(MAX_BATCH_SIZE || argv['max-batch-size']),
     storageCacheSize: Number(STORAGE_CACHE_SIZE || argv['max-storage-size']),
     safeMode: !!Number(SAFE_MODE || s || safe),
-    localMode: !!Number(LOCAL_MODE || local || l),
-    verbose: !!Number(VERBOSE || verbose || v)
+    localMode: !!Number(LOCAL_MODE || l || local),
+    forwardMode: !!Number(FORWARD_MODE || forward),
+    verbose: !!Number(VERBOSE || v || verbose)
   };
 };
