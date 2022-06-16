@@ -22,9 +22,10 @@ export interface ServerArgs {
   'cache-size': number;
   'max-batch-size': number;
   'max-storage-size': number;
-  safe: number;
-  local: number;
-  verbose: number;
+  safe: number | boolean;
+  local: number | boolean;
+  forward: number | boolean;
+  verbose: number | boolean;
 }
 
 export interface ServerOpts {
@@ -37,6 +38,7 @@ export interface ServerOpts {
   storageCacheSize: number;
   safeMode: boolean;
   localMode: boolean;
+  forwardMode: boolean;
   verbose: boolean;
 }
 
@@ -54,6 +56,7 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
   'cache-size': 200,
   'max-batch-size': 50,
   'max-storage-size': 5000,
+  forward: 0,
   safe: 0,
   local: 0,
   verbose: 1
@@ -61,7 +64,7 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
 
 export const parseOptions = (): ServerOpts => {
   const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_ARGS });
-  const { e, h, w, s, l, v, endpoint, subql, safe, local, verbose } = argv;
+  const { e, h, w, s, l, v, endpoint, subql, safe, local, forward, verbose } = argv;
 
   dotenv.config();
   const {
@@ -74,6 +77,7 @@ export const parseOptions = (): ServerOpts => {
     STORAGE_CACHE_SIZE,
     SAFE_MODE,
     LOCAL_MODE,
+    FORWARD_MODE,
     VERBOSE
   } = process.env;
 
@@ -87,6 +91,7 @@ export const parseOptions = (): ServerOpts => {
     storageCacheSize: Number(STORAGE_CACHE_SIZE || argv['max-storage-size']),
     safeMode: !!Number(SAFE_MODE || s || safe),
     localMode: !!Number(LOCAL_MODE || local || l),
+    forwardMode: !!Number(FORWARD_MODE || forward),
     verbose: !!Number(VERBOSE || verbose || v)
   };
 };
