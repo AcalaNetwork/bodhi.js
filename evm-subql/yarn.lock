@@ -29,14 +29,14 @@
   resolved "https://registry.yarnpkg.com/@acala-network/contracts/-/contracts-4.2.0.tgz#171040db0117bdd9b33bb0a449b4a940363de75e"
   integrity sha512-IT63HPWsHPeHy8zCr71wAztghrFdscLzZlYdcvewEuBGWkRpHFlZ4i32kADYPv6UAT9ew7en6nqOWJa48CaliQ==
 
-"@acala-network/eth-providers@~2.4.11":
-  version "2.4.11"
-  resolved "https://registry.yarnpkg.com/@acala-network/eth-providers/-/eth-providers-2.4.11.tgz#1985edf33654c63724f405d3b90f26ae684a4276"
-  integrity sha512-lDSWLNMGbB2HSB/P8g7NLHkBSjds0nH+/ZYeXHKWecoxv2QSqk+EuDPesuRLZAdBUg8mRIfH83lCtaC849Yivg==
+"@acala-network/eth-providers@^2.4.14":
+  version "2.4.14"
+  resolved "https://registry.npmmirror.com/@acala-network/eth-providers/-/eth-providers-2.4.14.tgz#60209234b3a6248a81afbbd87ca92f36b6198e4b"
+  integrity sha512-SvA1THx8SNrgKNIksGz0/zV2JqyAs2FtaqeyXDv3hiljKtjAqIEJzXhJgtE5NPdo8WiJwH2gQX1k9pGeIDxViw==
   dependencies:
     "@acala-network/contracts" "~4.2.0"
-    "@acala-network/eth-transactions" "2.4.11"
-    "@acala-network/types" "~4.1.2-11"
+    "@acala-network/eth-transactions" "2.4.14"
+    "@acala-network/types" "~4.1.5"
     "@ethersproject/abstract-provider" "~5.5.0"
     "@ethersproject/address" "~5.5.0"
     "@ethersproject/bignumber" "~5.5.0"
@@ -60,10 +60,10 @@
     graphql-request "~3.6.1"
     lru-cache "~7.8.2"
 
-"@acala-network/eth-transactions@2.4.11":
-  version "2.4.11"
-  resolved "https://registry.yarnpkg.com/@acala-network/eth-transactions/-/eth-transactions-2.4.11.tgz#155f96290c171a2d72b66c2a9e8283c5aa9f9dc3"
-  integrity sha512-PK5YRU143/W/VaX9r9wikTIwQzbpGxDyjCl400WKG9vgcUC8z2vw5YMOxTLoJ/ssRdc/PL8sXTg3CCabuRyOuA==
+"@acala-network/eth-transactions@2.4.14":
+  version "2.4.14"
+  resolved "https://registry.npmmirror.com/@acala-network/eth-transactions/-/eth-transactions-2.4.14.tgz#c7fed059529a12ee0e8bfe3f0ff39af4db721794"
+  integrity sha512-pTgVJk4Um0tyrXGEFYv+yZGKu5IaIOyjfVTFQ+zFLocKoHojptMuHimP6jxy+mNsLLC0m+Sv/LvPnoMFcqGRkg==
   dependencies:
     "@ethersproject/address" "~5.5.0"
     "@ethersproject/bignumber" "~5.5.0"
@@ -83,7 +83,7 @@
   dependencies:
     "@open-web3/orml-type-definitions" "^1.1.4"
 
-"@acala-network/types@4.1.5", "@acala-network/types@~4.1.2-11", "@acala-network/types@~4.1.5":
+"@acala-network/types@4.1.5", "@acala-network/types@~4.1.5":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@acala-network/types/-/types-4.1.5.tgz#ae3ced6dcac911d7f36416881b95fcc4e1ebe6f5"
   integrity sha512-MTT0d+AFCMrm/ngNDoPJDAS8XSayFgLRUH9wT5Nvks/6n3WCzgNyGGZsgQI0PWGer/fdvAryJmNCX2xbKq4ghA==
