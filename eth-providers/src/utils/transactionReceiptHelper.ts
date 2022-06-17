@@ -242,6 +242,7 @@ export const getTransactionIndexAndHash = (
 };
 
 // parse info that can be extracted from extrinsic alone
+// only works for EVM extrinsics
 export const parseExtrinsic = (
   extrinsic: GenericExtrinsic
 ): {
