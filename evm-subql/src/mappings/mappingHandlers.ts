@@ -88,9 +88,11 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
 
   await transactionReceipt.save();
 
+  const existedIdx = (await Log.getByReceiptId(receiptId)).length;
+
   for (const [idx, evmLog] of ret.logs.entries()) {
     const log = Log.create({
-      id: `${receiptId}-${idx}`,
+      id: `${receiptId}-${idx + existedIdx}`,
       transactionHash,
       blockNumber: block.block.header.number.toBigInt(),
       blockHash: block.block.hash.toHex(),
@@ -99,7 +101,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
       address: evmLog.address,
       data: evmLog.data,
       topics: evmLog.topics,
-      logIndex: BigInt(idx),
+      logIndex: BigInt(idx + existedIdx),
       receiptId,
       ...transactionInfo
     });
