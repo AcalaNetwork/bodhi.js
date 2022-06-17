@@ -1693,8 +1693,8 @@ export abstract class BaseProvider extends AbstractProvider {
       gasPrice: tx.effectiveGasPrice,
       ...parseExtrinsic(extrinsic),
 
-      // overrides to in parseExtrinsic, in case of non-evm events, such as dex
-      to: tx.to || null,
+      // overrides to in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
+      to: tx.to || null
     };
   };
 

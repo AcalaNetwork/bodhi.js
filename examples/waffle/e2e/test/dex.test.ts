@@ -95,7 +95,6 @@ describe('dex test', () => {
       hash: txHash,
       from: aliceEvmAddress,
       to: hexlifyRpcResult(TokenA.address),
-      // gasPrice: '0x8acaa7f7df',
       gas: '0x200b20',
       input: '0x',
       value: '0x'
