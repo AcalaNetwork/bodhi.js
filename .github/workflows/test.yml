@@ -6,7 +6,7 @@ on:
 
 jobs:
   cancel-prev-runs:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     steps:
       - name: Cancel Previous Runs
         # Only cancel non-master branch runs
@@ -16,7 +16,7 @@ jobs:
           access_token: ${{ github.token }}
 
   eth-providers:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -45,7 +45,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v1
 
   eth-rpc-adaptor:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -74,7 +74,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v1
 
   waffle-examples:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -103,7 +103,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v1
 
   # waffle-tutorials:
-  #   runs-on: ubuntu-latest
+  #   runs-on: [self-hosted, linux]
   #   needs: cancel-prev-runs
   #   steps:
   #     - name: checkout
@@ -132,7 +132,7 @@ jobs:
   #       uses: jwalton/gh-docker-logs@v1
 
   hardhat-tutorials:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -161,7 +161,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v1
 
   truffle-tutorials:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -190,7 +190,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v1
 
   bodhi:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -215,7 +215,7 @@ jobs:
           NPM_TOKEN: doesnt-matter
 
   eth-transactions:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
