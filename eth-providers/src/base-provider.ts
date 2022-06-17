@@ -1526,7 +1526,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return {
       extrinsic: block.block.extrinsics[extrinsicIndex],
-      extrinsicEvents: extrinsicEvents,
+      extrinsicEvents,
       transactionHash,
       transactionIndex,
       isExtrinsicFailed
@@ -1691,10 +1691,10 @@ export abstract class BaseProvider extends AbstractProvider {
       hash: tx.transactionHash,
       from: tx.from,
       gasPrice: tx.effectiveGasPrice,
-      ...parseExtrinsic(extrinsic)
+      ...parseExtrinsic(extrinsic),
 
-      // TODO: can use actual gas from receipt instead of provided gas from parseExtrinsic for consistency
-      // gas: tx.gasUsed,
+      // overrides to in parseExtrinsic, in case of non-evm events, such as dex
+      to: tx.to || null,
     };
   };
 

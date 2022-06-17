@@ -5,6 +5,7 @@ import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
 import { EvmRpcProvider, hexlifyRpcResult } from '@acala-network/eth-providers';
 import TestToken from '../build/TestToken.json';
 import { getTestProvider } from '../../utils';
+import { getAddress } from 'ethers/lib/utils';
 
 use(evmChai);
 
@@ -83,15 +84,26 @@ describe('dex test', () => {
     await send(swapWithExactSupplyExtrinsic, await alice.getSubstrateAddress());
 
     const txHash = swapWithExactSupplyExtrinsic.hash.toHex();
-    const tx = await evmProvider.getTransactionByHash(swapWithExactSupplyExtrinsic.hash.toHex());
-    console.log(tx);
+    const tx = await evmProvider.getTransactionByHash(txHash);
+    console.log(hexlifyRpcResult(tx));
 
-    const receipt = await evmProvider.getTXReceiptByHash(swapWithExactSupplyExtrinsic.hash.toHex());
+    const receipt = await evmProvider.getTXReceiptByHash(txHash);
     console.log(receipt);
+
+    const aliceEvmAddress = (await alice.getAddress()).toLowerCase();
+    expect(hexlifyRpcResult(tx)).to.contain({
+      hash: txHash,
+      from: aliceEvmAddress,
+      to: hexlifyRpcResult(TokenA.address),
+      // gasPrice: '0x8acaa7f7df',
+      gas: '0x200b20',
+      input: '0x',
+      value: '0x'
+    });
 
     expect(hexlifyRpcResult(receipt)).deep.eq({
       to: hexlifyRpcResult(TokenA.address),
-      from: hexlifyRpcResult(tx.from),
+      from: aliceEvmAddress,
       contractAddress: null,
       transactionIndex: hexlifyRpcResult(tx.transactionIndex),
       gasUsed: hexlifyRpcResult(receipt.gasUsed),
