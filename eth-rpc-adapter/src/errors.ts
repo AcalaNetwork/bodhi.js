@@ -15,6 +15,14 @@ export class JSONRPCError extends Error {
   static isJSONRPCError(obj: any): obj is JSONRPCError {
     return obj._isJSONRPCError;
   }
+
+  json() {
+    return {
+      code: this.code,
+      data: this.data,
+      message: this.message
+    };
+  }
 }
 
 export class InvalidRequest extends JSONRPCError {
@@ -38,5 +46,11 @@ export class MethodNotFound extends JSONRPCError {
 export class InvalidParams extends JSONRPCError {
   constructor(message: string, data?: any) {
     super(message, -32602, data);
+  }
+}
+
+export class BatchSizeError extends JSONRPCError {
+  constructor(maximumSize: number, actualSize: number) {
+    super('exceeded maximum batch size', -32600, `maximum batch size is ${maximumSize}, but received ${actualSize}`);
   }
 }

@@ -6,13 +6,13 @@ import ServerTransport from './server-transport';
 import type { JSONRPCRequest, JSONRPCResponse } from './types';
 import { logger } from '../logger';
 import { errorHandler } from '../middlewares';
-import { InvalidRequest } from '../errors';
+import { BatchSizeError } from '../errors';
 
 export interface HTTPServerTransportOptions extends ServerOptions {
   middleware: HandleFunction[];
   port: number;
   cors?: cors.CorsOptions;
-  batch_size: number;
+  batchSize: number;
 }
 
 export default class HTTPServerTransport extends ServerTransport {
@@ -52,32 +52,29 @@ export default class HTTPServerTransport extends ServerTransport {
     this.server.close();
   }
 
-  private async httpRouterHandler(req: any, res: any): Promise<void> {
+  private async httpRouterHandler(req: any, res: http.ServerResponse, next: (err?: any) => void): Promise<void> {
     logger.debug(req.body, 'incoming request');
     let result = null;
     if (req.body instanceof Array) {
-      if (req.body.length > this.options.batch_size) {
-        const error = new InvalidRequest();
-        result = {
-          id: null,
-          jsonrpc: '2.0',
-          error: {
-            code: error.code,
-            data: error.data,
-            message: `Exceeded maximum batch size ${this.options.batch_size}`
-          }
-        };
+      if (req.body.length > this.options.batchSize) {
+        return next(new BatchSizeError(this.options.batchSize, req.body.length));
       } else {
         result = await Promise.all(req.body.map((r: JSONRPCRequest) => super.routerHandler(r)));
       }
     } else {
-      result = await super.routerHandler(req.body);
+      try {
+        result = await super.routerHandler(req.body);
+      } catch (e) {
+        return next(e);
+      }
     }
+
     if (!(result as JSONRPCResponse).error) {
       logger.debug(result, 'request completed');
     } else {
       logger.error(result, 'request completed');
     }
+
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(result));
   }

@@ -5,7 +5,9 @@ export const errorHandler: ErrorHandleFunction = (err, req, res, next) => {
   if (err) {
     let error: JSONRPCError;
 
-    if (err.type === 'entity.parse.failed') {
+    if (JSONRPCError.isJSONRPCError(err)) {
+      error = err;
+    } else if (err.type === 'entity.parse.failed') {
       error = new InvalidRequest();
     } else {
       error = new InternalError();
@@ -17,11 +19,7 @@ export const errorHandler: ErrorHandleFunction = (err, req, res, next) => {
       JSON.stringify({
         id: null,
         jsonrpc: '2.0',
-        error: {
-          code: error.code,
-          message: error.message,
-          data: error.data
-        }
+        error: error.json()
       })
     );
   }
