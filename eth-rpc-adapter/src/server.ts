@@ -2,6 +2,7 @@ import { EvmRpcProvider } from '@acala-network/eth-providers';
 import HTTPServerTransport from './transports/http';
 import WebSocketServerTransport from './transports/websocket';
 import { Eip1193Bridge } from './eip1193-bridge';
+import { RpcForward } from './rpc-forward';
 import { Router } from './router';
 import { version } from './_version';
 import { parseOptions } from './utils';
@@ -21,7 +22,9 @@ export async function start(): Promise<void> {
 
   const bridge = new Eip1193Bridge(provider);
 
-  const router = new Router(bridge);
+  const rpcForward = opts.forwardMode ? new RpcForward(provider) : undefined;
+
+  const router = new Router(bridge, rpcForward);
 
   const HTTPTransport = new HTTPServerTransport({
     port: opts.httpPort,
@@ -43,6 +46,11 @@ export async function start(): Promise<void> {
 
   await provider.isReady();
 
+  // init rpc methods
+  if (rpcForward) {
+    await rpcForward.initRpcMethods();
+  }
+
   console.log(`
   --------------------------------------------
                🚀 SERVER STARTED 🚀
@@ -56,6 +64,7 @@ export async function start(): Promise<void> {
   max storageSize : ${opts.storageCacheSize}
   safe mode       : ${opts.safeMode}
   local mode      : ${opts.localMode}
+  forward mode    : ${opts.forwardMode}
   verbose         : ${opts.verbose}
   --------------------------------------------
   `);
