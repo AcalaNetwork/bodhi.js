@@ -1,75 +1,71 @@
 import {
   getPartialTransactionReceipt,
   PartialTransactionReceipt,
-  getTransactionIndexAndHash
+  getTransactionIndexAndHash,
+  getEffectiveGasPrice,
+  findEvmEvent
 } from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
-import { SubstrateEvent } from '@subql/types';
+import { EventData } from '@acala-network/eth-providers/lib/base-provider';
+import { SubstrateEvent, SubstrateBlock } from '@subql/types';
 import '@polkadot/api-augment';
 import { Log, TransactionReceipt } from '../types';
 import { BigNumber } from '@ethersproject/bignumber/lib/bignumber';
+import { Extrinsic } from '@polkadot/types/interfaces';
 
-const NOT_EXIST_TRANSACTION_INDEX = BigInt(0xffff);
-const DUMMY_TX_HASH = '0x6666666666666666666666666666666666666666666666666666666666666666';
+export async function handleEvmExtrinsic(block: SubstrateBlock, extrinsic: Extrinsic): Promise<void> {
+  const blockHash = block.block.hash.toHex();
+  const blockNumber = block.block.header.number.toBigInt();
+  const blockEvents = block.events;
+  const txHash = extrinsic.hash.toHex();
 
-export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
-  const { block, extrinsic } = event;
-
-  const transactionHash = extrinsic?.extrinsic.hash.toHex() || DUMMY_TX_HASH;
-  let transactionIndex = NOT_EXIST_TRANSACTION_INDEX;
-
+  let transactionIndex: number;
+  let transactionHash: string;
+  let isExtrinsicFailed: boolean;
+  let extrinsicIndex: number;
   try {
-    const tx = getTransactionIndexAndHash(transactionHash, block.block.extrinsics, block.events);
-    transactionIndex = BigInt(tx.transactionIndex);
-  } catch (error) {
-    logger.error(error);
+    ({ transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
+      txHash,
+      block.block.extrinsics,
+      blockEvents
+    ));
+  } catch (e) {
+    logger.warn(
+      `❗️ non evm extrinsic skipped, this is usually a dex.xxx operation that does not involve any erc20 tokens. ${JSON.stringify(
+        { blockNumber: blockNumber.toString(), txHash }
+      )}`
+    );
+    return;
+  }
+
+  const extrinsicEvents = blockEvents.filter(
+    (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
+  );
+
+  const evmEvent = findEvmEvent(extrinsicEvents);
+  const systemEvent = extrinsicEvents.find((event) =>
+    ['ExtrinsicSuccess', 'ExtrinsicFailed'].includes(event.event.method)
+  );
+
+  const { weight: actualWeight } = (systemEvent.event.data.toJSON() as EventData)[0];
+
+  let ret: PartialTransactionReceipt;
+  let effectiveGasPrice: BigNumber;
+  try {
+    ret = getPartialTransactionReceipt(evmEvent);
+    effectiveGasPrice = await getEffectiveGasPrice(evmEvent, global.unsafeApi, blockHash, extrinsic, actualWeight);
+  } catch (e) {
+    logger.warn(e, '❗️ event skipped due to error -- ');
+    return;
   }
 
   const transactionInfo = {
+    transactionIndex: BigInt(transactionIndex),
+    blockHash,
     transactionHash,
-    blockNumber: block.block.header.number.toBigInt(),
-    blockHash: block.block.hash.toHex(),
-    transactionIndex
+    blockNumber
   };
 
-  /* ----------------- gasPrice  --------------------------*/
-  // TODO: should be able to reuse the getEffectiveGasPrice after published new version, and remove ethers deps
-
-  // const { data: eventData, method: eventMethod } = event.event;
-
-  // let effectiveGasPrice = BigNumber.from(1);
-
-  // const gasInfoExists =
-  //   eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
-
-  // if (gasInfoExists) {
-  //   const used_gas = BigNumber.from(eventData[eventData.length - 2].toString());
-  //   const used_storage = BigNumber.from(eventData[eventData.length - 1].toString());
-
-  //   // FIXME: how to query prev block from subql???
-  //   const payment = await api.rpc.payment.queryInfo(extrinsic?.extrinsic.toHex(), block.block.header.parentHash);
-
-  //   // ACA/KAR decimal is 12. Mul 10^6 to make it 18.
-  //   let tx_fee = BigNumber.from(payment.partialFee.toString(10) + '000000');
-
-  //   // get storage fee
-  //   // if used_storage > 0, tx_fee include the storage fee.
-  //   if (used_storage.gt(0)) {
-  //     tx_fee = tx_fee.add(used_storage.mul((api.consts.evm.storageDepositPerByte as any).toBigInt()));
-  //   }
-
-  //   effectiveGasPrice = tx_fee.div(used_gas);
-  // }
-  /* ----------------------------------------------*/
-
-  const receiptId = `${block.block.header.number.toString()}-${extrinsic?.idx ?? event.phase.toString()}`;
-
-  let ret: PartialTransactionReceipt;
-  try {
-    ret = getPartialTransactionReceipt(event);
-  } catch (e) {
-    logger.warn(e, 'event skipped due to error -- ');
-    return;
-  }
+  const receiptId = `${blockNumber.toString()}-${extrinsicIndex}`;
 
   const transactionReceipt = TransactionReceipt.create({
     id: receiptId,
@@ -78,7 +74,7 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
     contractAddress: ret.contractAddress,
     gasUsed: ret.gasUsed.toBigInt(),
     logsBloom: ret.logsBloom,
-    // effectiveGasPrice: effectiveGasPrice.toBigInt(),
+    effectiveGasPrice: effectiveGasPrice.toBigInt(),
     cumulativeGasUsed: ret.cumulativeGasUsed.toBigInt(),
     type: BigInt(ret.type),
     status: BigInt(ret.status),
@@ -88,24 +84,31 @@ export async function handleEvmEvent(event: SubstrateEvent): Promise<void> {
 
   await transactionReceipt.save();
 
-  const existedIdx = (await Log.getByReceiptId(receiptId)).length;
-
   for (const [idx, evmLog] of ret.logs.entries()) {
     const log = Log.create({
-      id: `${receiptId}-${idx + existedIdx}`,
+      id: `${receiptId}-${idx}`,
       transactionHash,
-      blockNumber: block.block.header.number.toBigInt(),
-      blockHash: block.block.hash.toHex(),
-      transactionIndex,
+      blockNumber,
+      blockHash,
+      transactionIndex: BigInt(transactionIndex),
       removed: evmLog.removed,
       address: evmLog.address,
       data: evmLog.data,
       topics: evmLog.topics,
-      logIndex: BigInt(idx + existedIdx),
+      logIndex: BigInt(idx),
       receiptId,
       ...transactionInfo
     });
 
     await log.save();
   }
+}
+
+export async function handleBlock(block: SubstrateBlock): Promise<void> {
+  const TARGET_MODULES = ['EVM', 'DEX'];
+  const targetExtrinsics = block.block.extrinsics.filter((e) =>
+    TARGET_MODULES.includes(e.method.section.toUpperCase())
+  );
+
+  await Promise.all(targetExtrinsics.map((e) => handleEvmExtrinsic(block, e)));
 }

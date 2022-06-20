@@ -1654,14 +1654,7 @@ export abstract class BaseProvider extends AbstractProvider {
       res.blockNumber = +res.blockNumber;
       res.transactionIndex = +res.transactionIndex;
       res.gasUsed = BigNumber.from(res.gasUsed);
-      // res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
-
-      // TODO: this is a temp workaround since subquery can't query the prev block
-      // and the effectiveGasPrice calculated is a little bit off
-      // after subql works we can remove this line
-      res.effectiveGasPrice = (
-        await this.getTransactionReceiptAtBlock(res.transactionHash, res.blockNumber)
-      ).effectiveGasPrice;
+      res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
     }
 
     return res;
