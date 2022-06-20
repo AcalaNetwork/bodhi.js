@@ -1526,7 +1526,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return {
       extrinsic: block.block.extrinsics[extrinsicIndex],
-      extrinsicEvents: extrinsicEvents,
+      extrinsicEvents,
       transactionHash,
       transactionIndex,
       isExtrinsicFailed
@@ -1581,7 +1581,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { weight: actualWeight } = (systemEvent.event.data.toJSON() as EventData)[0];
 
-    // TODO: deal with multiple events
     const evmEvent = findEvmEvent(extrinsicEvents);
     if (!evmEvent) {
       return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
@@ -1692,10 +1691,10 @@ export abstract class BaseProvider extends AbstractProvider {
       hash: tx.transactionHash,
       from: tx.from,
       gasPrice: tx.effectiveGasPrice,
-      ...parseExtrinsic(extrinsic)
+      ...parseExtrinsic(extrinsic),
 
-      // TODO: can use actual gas from receipt instead of provided gas from parseExtrinsic for consistency
-      // gas: tx.gasUsed,
+      // overrides to in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
+      to: tx.to || null
     };
   };
 

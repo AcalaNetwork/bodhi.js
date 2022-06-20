@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "@acala-network/bodhi": "workspace:*",
+    "@acala-network/eth-providers": "workspace:*",
     "@acala-network/contracts": "~4.2.0",
+    "@openzeppelin/contracts": "^4.4.2",
     "@polkadot/keyring": "^9.0.1",
     "@polkadot/api": "8.1.1"
   }

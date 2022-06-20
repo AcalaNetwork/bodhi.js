@@ -175,13 +175,22 @@ export const getEvmExtrinsicIndexes = (events: EventRecord[]): number[] => {
 };
 
 export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
-  // For the moment the case of multiple evm events in one transaction is ignored
-  return events.find(({ event }) => {
-    return (
-      event.section.toUpperCase() === 'EVM' &&
-      ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.method)
-    );
-  });
+  return events
+    .filter(
+      (event) =>
+        event.event.section.toUpperCase() === 'EVM' &&
+        ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.event.method)
+    )
+    .reduce((r, event) => {
+      // For the moment the case of multiple evm events in one transaction only support Executed
+      if (r.event.method === 'Executed' && r.event.method === event.event.method) {
+        const logs = event.event.data[2] as unknown as EvmLog[];
+        const newLogs = (r.event.data[2] as unknown as EvmLog[]).concat(logs);
+
+        r.event.data[2] = newLogs as any;
+      }
+      return r;
+    });
 };
 
 export const getTransactionIndexAndHash = (
@@ -233,6 +242,7 @@ export const getTransactionIndexAndHash = (
 };
 
 // parse info that can be extracted from extrinsic alone
+// only works for EVM extrinsics
 export const parseExtrinsic = (
   extrinsic: GenericExtrinsic
 ): {
