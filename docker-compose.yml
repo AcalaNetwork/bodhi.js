@@ -85,8 +85,9 @@ services:
     depends_on:
       - eth-rpc-adapter-server-with-subql
       - eth-rpc-adapter-server-public-mandala
-    # environment:
-    #   - SKIP_PUBLIC=1
+    # TODO: remove me after public mandala subql finished indexing
+    environment:
+      - SKIP_PUBLIC=1
 
   # ------------------------------------ #
   # ---------- No Subql Realm ---------- #
