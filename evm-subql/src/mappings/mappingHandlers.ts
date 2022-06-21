@@ -12,30 +12,17 @@ import { Log, TransactionReceipt } from '../types';
 import { BigNumber } from '@ethersproject/bignumber/lib/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 
-export async function handleEvmExtrinsic(block: SubstrateBlock, extrinsic: Extrinsic): Promise<void> {
+export async function handleEvmExtrinsic(
+  block: SubstrateBlock,
+  extrinsic: Extrinsic,
+  evmInfo: ReturnType<typeof getTransactionIndexAndHash>
+): Promise<void> {
   const blockHash = block.block.hash.toHex();
   const blockNumber = block.block.header.number.toBigInt();
   const blockEvents = block.events;
   const txHash = extrinsic.hash.toHex();
 
-  let transactionIndex: number;
-  let transactionHash: string;
-  let isExtrinsicFailed: boolean;
-  let extrinsicIndex: number;
-  try {
-    ({ transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
-      txHash,
-      block.block.extrinsics,
-      blockEvents
-    ));
-  } catch (e) {
-    logger.warn(
-      `❗️ non evm extrinsic skipped, this is usually a dex.xxx operation that does not involve any erc20 tokens. ${JSON.stringify(
-        { blockNumber: blockNumber.toString(), txHash }
-      )}`
-    );
-    return;
-  }
+  const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = evmInfo;
 
   const extrinsicEvents = blockEvents.filter(
     (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
@@ -105,10 +92,23 @@ export async function handleEvmExtrinsic(block: SubstrateBlock, extrinsic: Extri
 }
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {
-  const TARGET_MODULES = ['EVM', 'DEX'];
-  const targetExtrinsics = block.block.extrinsics.filter((e) =>
-    TARGET_MODULES.includes(e.method.section.toUpperCase())
-  );
+  const blockHash = block.block.hash.toHex();
+  const blockNumber = block.block.header.number.toBigInt();
+  const blockEvents = block.events;
+  const { extrinsics } = block.block;
 
-  await Promise.all(targetExtrinsics.map((e) => handleEvmExtrinsic(block, e)));
+  const evmExtrinsics = extrinsics
+    .map((extrinsic) => {
+      try {
+        const evmInfo = getTransactionIndexAndHash(extrinsic.hash.toHex(), extrinsics, blockEvents);
+
+        return { extrinsic, ...evmInfo };
+      } catch (e) {
+        // throw error means this transaction is not related to evm
+        return null;
+      }
+    })
+    .filter((x) => !!x);
+
+  await Promise.all(evmExtrinsics.map(({ extrinsic, ...evmInfo }) => handleEvmExtrinsic(block, extrinsic, evmInfo)));
 }
