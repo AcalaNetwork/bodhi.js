@@ -42,6 +42,7 @@ note that docker image might not be most up-to-date. Latest image can be found [
 | MAX_BATCH_SIZE     | --max-batch-size         | 50                  | max batch size for RPC request                                                                          |
 | STORAGE_CACHE_SIZE | --max-storage-size       | 5000                | max storage cache size                                                                                  |
 | SAFE_MODE          | -s, --safe               | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
+| FORWARD_MODE          | -f, --forward         | 0                   | if enabled, the Substrate rpc will be forwarded to the Substrate node                                  |
 | LOCAL_MODE         | -l, --local              | 0                   | enable this mode when testing with locally running mandala                                              |
 | VERBOSE            | -v, --verbose            | 1                   | print some extra info                                                                                   |
 
