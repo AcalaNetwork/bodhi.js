@@ -11,6 +11,7 @@ build_all() {
     -t evm-waffle-example-evm \
     -t evm-waffle-example-evm-accounts \
     -t evm-waffle-example-hello-world \
+    -t evm-waffle-example-homa \
     -t evm-waffle-example-oracle \
     -t evm-waffle-example-scheduler'
 }
@@ -24,6 +25,7 @@ rebuild_all() {
     -t evm-waffle-example-evm \
     -t evm-waffle-example-evm-accounts \
     -t evm-waffle-example-hello-world \
+    -t evm-waffle-example-homa \
     -t evm-waffle-example-oracle \
     -t evm-waffle-example-scheduler'
 }
@@ -37,6 +39,7 @@ test_all() {
     "evm"
     "evm-accounts"
     "hello-world"
+    "homa"
     "oracle"
     "scheduler"
     "uniswap"

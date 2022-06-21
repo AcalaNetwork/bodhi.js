@@ -507,6 +507,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "evm-waffle-example-homa",
+      "projectFolder": "examples/waffle/homa",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
       "packageName": "evm-waffle-example-oracle",
       "projectFolder": "examples/waffle/oracle",
       "reviewCategory": "tests",
