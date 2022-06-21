@@ -1,5 +1,5 @@
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
-import ADDRESS from '@acala-network/contracts/utils/Address';
+import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
 import { SubqlProvider } from '@acala-network/eth-providers/lib/utils/subqlProvider';
 import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers/src/consts';
 import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "@acala-network/contracts/oracle/IOracle.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/AcalaAddress.sol";
 
 contract Prices is ADDRESS {
     IOracle oracle = IOracle(ADDRESS.Oracle);

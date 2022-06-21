@@ -4,38 +4,41 @@ failed=0
 
 build_all() {
   sh -c 'rush build \
-    -t evm-waffle-example-hello-world \
+    -t evm-waffle-example-arbitrager \
     -t evm-waffle-example-dex \
     -t evm-waffle-example-e2e \
     -t evm-waffle-example-erc20 \
-    -t evm-waffle-example-oracle \
     -t evm-waffle-example-evm \
-    -t evm-waffle-example-arbitrager \
+    -t evm-waffle-example-evm-accounts \
+    -t evm-waffle-example-hello-world \
+    -t evm-waffle-example-oracle \
     -t evm-waffle-example-scheduler'
 }
 
 rebuild_all() {
   sh -c 'rush rebuild \
-    -t evm-waffle-example-hello-world \
+    -t evm-waffle-example-arbitrager \
     -t evm-waffle-example-dex \
     -t evm-waffle-example-e2e \
     -t evm-waffle-example-erc20 \
-    -t evm-waffle-example-oracle \
     -t evm-waffle-example-evm \
-    -t evm-waffle-example-arbitrager \
+    -t evm-waffle-example-evm-accounts \
+    -t evm-waffle-example-hello-world \
+    -t evm-waffle-example-oracle \
     -t evm-waffle-example-scheduler'
 }
 
 test_all() {
   examples=(
-    "hello-world"
+    "arbitrager"
     "dex"
-    "oracle"
+    "e2e"
     "erc20"
     "evm"
-    "e2e"
+    "evm-accounts"
+    "hello-world"
+    "oracle"
     "scheduler"
-    "arbitrager"
     "uniswap"
   )
 

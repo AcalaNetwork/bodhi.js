@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@acala-network/contracts/schedule/ISchedule.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/AcalaAddress.sol";
 
 contract RecurringPayment is ADDRESS {
     uint period;

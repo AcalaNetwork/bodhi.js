@@ -3,7 +3,7 @@ import { ethers, Contract, BigNumber } from 'ethers';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
-import ADDRESS from '@acala-network/contracts/utils/Address';
+import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
 import { getTestProvider } from '../../utils';
 
 use(solidity);

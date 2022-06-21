@@ -66,8 +66,8 @@
 
     // these are mostly alternative versions used by tutorials
     "@acala-network/contracts": [
-      "~2.2.0",
-      "^4.2.0"
+      "~2.3.0",
+      "^4.3.0"
     ],
     "@openzeppelin/contracts": [
       "~3.4.2",

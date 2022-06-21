@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@acala-network/contracts/schedule/ISchedule.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/AcalaAddress.sol";
 
 contract RecurringTokenPayment is ADDRESS {
     using SafeERC20 for IERC20;

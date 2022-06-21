@@ -8,7 +8,7 @@ import '@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol';
 
 import "@acala-network/contracts/oracle/IOracle.sol";
 import "@acala-network/contracts/schedule/ISchedule.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/AcalaAddress.sol";
 
 /// @title Arbitrager example
 /// @notice You can use this contract to deploy your arbitrager that uses the Scheduler to periodically swap tokens based on their value
