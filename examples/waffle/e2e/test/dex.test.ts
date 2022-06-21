@@ -29,6 +29,7 @@ describe('dex test', () => {
 
   before(async () => {
     [alice] = await provider.getWallets();
+    await evmProvider.isReady();
   });
 
   after(async () => {
