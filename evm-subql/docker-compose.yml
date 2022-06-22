@@ -48,6 +48,7 @@ services:
       - --network-endpoint=ws://mandala-node:9944
       - --db-schema=acala_evm
       - --log-level=debug
+      - --unsafe
 
   graphql-engine:
     image: onfinality/subql-query:v0.14.1

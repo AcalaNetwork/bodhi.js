@@ -25,7 +25,5 @@ dataSources:
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleEvmEvent
-          kind: substrate/EventHandler
-          filter:
-            module: evm
+        - handler: handleBlock
+          kind: substrate/BlockHandler

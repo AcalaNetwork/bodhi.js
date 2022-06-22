@@ -67,22 +67,6 @@ RUN rush build \
   -t @acala-network/bodhi \
   -t @acala-network/eth-rpc-adapter
 
-# =============== feed-tx =============== #
-FROM node:16-alpine as feed-tx
-COPY --from=bodhi /app /app
-RUN npm install -g @microsoft/rush@5.55.0
-
-WORKDIR /app
-COPY examples/waffle ./examples/waffle
-COPY rush.json .
-COPY common ./common
-
-WORKDIR /app/examples/waffle/dex
-RUN rush build -o .
-
-ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test"]
-
 # =============== eth-providers-test =============== #
 FROM node:16-alpine as eth-providers-test
 COPY --from=bodhi /app /app
