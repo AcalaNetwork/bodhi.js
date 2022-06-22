@@ -8,14 +8,14 @@ import { logger } from '../logger';
 import ServerTransport from './server-transport';
 import type { JSONRPCRequest, JSONRPCResponse } from './types';
 import { errorHandler } from '../middlewares';
-import { InvalidRequest } from '../errors';
+import { BatchSizeError, InvalidRequest } from '../errors';
 
 export interface WebSocketServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];
   port: number;
   cors?: cors.CorsOptions;
   allowHTTP1?: boolean;
-  batch_size: number;
+  batchSize: number;
 }
 
 export default class WebSocketServerTransport extends ServerTransport {
@@ -78,19 +78,15 @@ export default class WebSocketServerTransport extends ServerTransport {
   private async webSocketRouterHandler(rawReq: any, wsSend: any): Promise<void> {
     const req = this.praseRequest(rawReq);
     if (req === null) {
-      const error = new InvalidRequest();
       const result = {
         id: null,
         jsonrpc: '2.0',
-        error: {
-          code: error.code,
-          data: error.data,
-          message: error.message
-        }
+        error: new InvalidRequest().json()
       };
       wsSend(JSON.stringify(result));
       return;
     }
+
     const respondWith = (data: any): void =>
       wsSend(
         JSON.stringify({
@@ -102,16 +98,12 @@ export default class WebSocketServerTransport extends ServerTransport {
 
     let result = null;
     logger.debug(req, 'WS incoming request');
+
     if (req instanceof Array) {
-      if (req.length > this.options.batch_size) {
-        const error = new InvalidRequest();
+      if (req.length > this.options.batchSize) {
         result = {
           jsonrpc: '2.0',
-          error: {
-            code: error.code,
-            data: error.data,
-            message: `Exceeded maximum batch size ${this.options.batch_size}`
-          }
+          error: new BatchSizeError(this.options.batchSize, req.length).json()
         };
       } else {
         result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, respondWith)));
@@ -119,6 +111,7 @@ export default class WebSocketServerTransport extends ServerTransport {
     } else {
       result = await super.routerHandler(req, respondWith);
     }
+
     if (!(result as JSONRPCResponse).error) {
       logger.debug(result, 'request completed');
     } else {

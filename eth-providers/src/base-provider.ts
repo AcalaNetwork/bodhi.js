@@ -1613,15 +1613,17 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this.localMode
-      ? await runWithRetries(this._cache!.getBlockNumber.bind(this._cache!), [txHash])
-      : this._cache?.getBlockNumber(txHash);
-
+    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
     if (!targetBlockNumber) return null;
 
-    const targetBlockHash = this.localMode
-      ? await runWithRetries(async () => this.api.rpc.chain.getBlockHash(targetBlockNumber))
-      : await this.api.rpc.chain.getBlockHash(targetBlockNumber);
+    let targetBlockHash;
+    try {
+      targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
+    } catch (e) {
+      // this should only happen in local mode when head subscription notification
+      // is faster than node new head setup
+      return null;
+    }
 
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
@@ -1672,7 +1674,9 @@ export abstract class BaseProvider extends AbstractProvider {
       if (pendingTX) return pendingTX;
     }
 
-    const tx = await this._getMinedTXReceipt(txHash);
+    const tx = this.localMode
+      ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
+      : await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
@@ -1695,7 +1699,9 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransactionReceipt (please use `getTXReceiptByHash` instead)');
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
-    const tx = await this._getMinedTXReceipt(txHash);
+    const tx = this.localMode
+      ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
+      : await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     return this.formatter.receipt({
