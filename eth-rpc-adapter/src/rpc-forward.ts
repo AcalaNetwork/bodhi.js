@@ -15,7 +15,7 @@ export class RpcForward extends EventEmitter {
     const result = await this.provider.api.rpc.rpc.methods();
     this.methods = result.methods.toJSON() as string[];
     // rpc_methods did not include rpc_methods https://github.com/paritytech/substrate/issues/11728
-    if (!this.methods?.includes('rpc_methods')) {
+    if (Array.isArray(this.methods) && !this.methods.includes('rpc_methods')) {
       this.methods = this.methods.concat('rpc_methods');
     }
   }
