@@ -77,11 +77,17 @@ import {
   runWithTiming,
   sendTx,
   throwNotImplemented,
-  getEffectiveGasPrice
+  getEffectiveGasPrice,
+  parseBlockTag
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
+
+export interface Eip1898BlockTag {
+  blockNumber: string | number;
+  blockHash: string;
+}
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -359,9 +365,9 @@ export abstract class BaseProvider extends AbstractProvider {
   queryStorage = async <T = any>(
     module: `${string}.${string}`,
     args: any[],
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<T> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
     const blockHash = await this._getBlockHash(blockTag);
 
     const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
@@ -571,10 +577,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getBalance = async (
     addressOrName: string | Promise<string>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<BigNumber> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -594,9 +600,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getTransactionCount = async (
     addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<number> => {
-    return this.getEvmTransactionCount(addressOrName, blockTag);
+    return this.getEvmTransactionCount(addressOrName, await parseBlockTag(blockTag));
   };
 
   // TODO: test pending
@@ -649,10 +655,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getCode = async (
     addressOrName: string | Promise<string>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     if ((await blockTag) === 'pending') return '0x';
 
@@ -678,10 +684,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   call = async (
     transaction: Deferrable<TransactionRequest>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
@@ -708,10 +714,10 @@ export abstract class BaseProvider extends AbstractProvider {
   getStorageAt = async (
     addressOrName: string | Promise<string>,
     position: BigNumberish | Promise<BigNumberish>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     // @TODO resolvedPosition
     // eslint-disable-next-line
@@ -982,7 +988,7 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<Option<EvmAccountInfo>> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     // pending tag
     const resolvedBlockTag = await blockTag;
@@ -1537,7 +1543,7 @@ export abstract class BaseProvider extends AbstractProvider {
     hashOrNumber: number | string | Promise<string>,
     _blockTag: BlockTag | Promise<BlockTag>
   ): Promise<TransactionReceipt> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);

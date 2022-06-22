@@ -1,6 +1,7 @@
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
 import { BigNumber } from 'ethers';
+import { BlockTag, Eip1898BlockTag } from 'src/base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
 
@@ -230,3 +231,13 @@ export const runWithTiming = async <F extends AnyFunction>(
 const ETH_DECIMALS = 18;
 export const nativeToEthDecimal = (value: any, nativeDecimals: number = 12): BigNumber =>
   BigNumber.from(value).mul(10 ** (ETH_DECIMALS - nativeDecimals));
+
+export const parseBlockTag = async (
+  _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag | undefined
+): Promise<string | number | undefined> => {
+  const blockTag = await _blockTag;
+
+  if (!blockTag || typeof blockTag !== 'object') return blockTag;
+
+  return blockTag.blockHash || blockTag.blockNumber;
+};

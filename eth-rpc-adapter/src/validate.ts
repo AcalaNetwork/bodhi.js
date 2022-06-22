@@ -50,8 +50,13 @@ export const validateBlock = (data: any) => {
     return Number.isInteger(data) && data >= 0;
   }
 
+  // eip-1898
+  if (typeof data === 'object' && (data.blockNumber || data.blockHash)) {
+    data = data.blockNumber || data.blockHash;
+  }
+
   if (typeof data !== 'string') {
-    throw new Error(`invalid block tag, expected type String or number`);
+    throw new Error(`invalid block tag, expected type string, number, or object`);
   }
 
   if (!['latest', 'earliest', 'pending'].includes(data)) {
