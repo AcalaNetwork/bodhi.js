@@ -51,8 +51,8 @@ export const isEVMExtrinsic = (e: Extrinsic): boolean => e.method.section.toUppe
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,
   args: any[] = [],
-  maxRetries: number = 200,
-  interval: number = 100
+  maxRetries: number = 20,
+  interval: number = 1000
 ): Promise<F extends (...args: any[]) => infer R ? R : never> => {
   let res;
   let tries = 0;
