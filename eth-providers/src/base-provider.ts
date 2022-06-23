@@ -986,7 +986,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   queryAccountInfo = async (
     addressOrName: string | Promise<string>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<Option<EvmAccountInfo>> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
@@ -1541,7 +1541,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
-    _blockTag: BlockTag | Promise<BlockTag>
+    _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<TransactionReceipt> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
