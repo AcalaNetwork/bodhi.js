@@ -1,4 +1,5 @@
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
+import DEXABI from '@acala-network/contracts/build/contracts/DEX.json';
 import ADDRESS from '@acala-network/contracts/utils/Address';
 import { SubqlProvider } from '@acala-network/eth-providers/lib/utils/subqlProvider';
 import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers/src/consts';
@@ -13,6 +14,7 @@ import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import {
+  evmAccounts,
   allLogs,
   log12,
   log6,
@@ -780,17 +782,6 @@ describe('eth_accounts', () => {
   });
 });
 
-const evmAccounts = [
-  {
-    privateKey: '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f',
-    evmAddress: '0x75E480dB528101a381Ce68544611C169Ad7EB342'
-  },
-  {
-    privateKey: '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269acd85c',
-    evmAddress: '0xb00cB924ae22b2BBb15E10c17258D6a2af980421'
-  }
-];
-
 describe('eth_sendRawTransaction', () => {
   const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction');
   const eth_getTransactionCount = rpcGet('eth_getTransactionCount');
@@ -1252,27 +1243,23 @@ describe('eth_sendRawTransaction', () => {
   });
 });
 
-describe('eth_call', () => {
+describe.only('eth_call', () => {
   const eth_call = rpcGet('eth_call');
   const eth_blockNumber = rpcGet('eth_blockNumber');
+  const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
 
-  type Call = (address: string) => Promise<string | bigint>;
-  const _call =
-    (method: string): Call =>
-    async (address) => {
-      const iface = new Interface(TokenABI.abi);
+  const callRequest = (abi: any) => async (address: string, method: string, params?: any[], blockTag?: any) => {
+    const iface = new Interface(abi);
 
-      const data = iface.encodeFunctionData(method);
-      const blockNumber = (await eth_blockNumber()).data.result;
-      const rawRes = (await eth_call([{ to: address, data }, blockNumber])).data.result;
-      const [res] = iface.decodeFunctionResult(method, rawRes);
+    const data = iface.encodeFunctionData(method, params);
+    const block = blockTag || (await eth_blockNumber()).data.result;
+    const rawRes = (await eth_call([{ to: address, data }, block])).data.result;
 
-      return res;
-    };
+    return iface.decodeFunctionResult(method, rawRes);
+  };
 
-  const getName = _call('name');
-  const getSymbol = _call('symbol');
-  const getDecimals = _call('decimals');
+  const callToken = callRequest(TokenABI.abi);
+  const callDex = callRequest(DEXABI.abi);
 
   it('get correct procompile token info', async () => {
     // https://github.com/AcalaNetwork/Acala/blob/a5d9e61c74/node/service/src/chain_spec/mandala.rs#L628-L636
@@ -1311,9 +1298,9 @@ describe('eth_call', () => {
     ];
 
     const tests = tokenMetaData.map(async ({ address, name, symbol, decimals }) => {
-      const _name = await getName(address);
-      const _symbol = await getSymbol(address);
-      const _decimals = await getDecimals(address);
+      const [_name] = await callToken(address, 'name');
+      const [_symbol] = await callToken(address, 'symbol');
+      const [_decimals] = await callToken(address, 'decimals');
 
       expect(_name).to.equal(name);
       expect(_symbol).to.equal(symbol);
@@ -1325,6 +1312,32 @@ describe('eth_call', () => {
 
   it.skip('get correct custom token info', async () => {
     // TODO: deploy custom erc20 and get correct info
+  });
+
+  it('supports calling historical blocks', async () => {
+    const dexAddr = '0x0230135fded668a3f7894966b14f42e65da322e4'; // created at block 5
+    const before = await callDex(dexAddr, 'getLiquidityPool', [ADDRESS.ACA, ADDRESS.AUSD], { blockNumber: '0x5' });
+    // swap happens at block 6
+    const block7Hash = (await eth_getBlockByNumber([7, false])).data.result.hash;
+    const after = await callDex(dexAddr, 'getLiquidityPool', [ADDRESS.ACA, ADDRESS.AUSD], { blockHash: block7Hash });
+
+    expect(before.map(BigInt)).to.deep.equal([1000000000000000000n, 2000000000000000000n]);
+    expect(after.map(BigInt)).to.deep.equal([1000002000000000000n, 1999996004007985992n]);
+  });
+
+  it('throws correct error for invalid tag', async () => {
+    const dexAddr = '0x0230135fded668a3f7894966b14f42e65da322e4';
+    const data = '0x123123123';
+
+    expect((await eth_call([{ to: dexAddr, data }, { hahaha: 13542 }])).data.error).to.deep.equal({
+      code: -32602,
+      message: 'invalid argument 1: invalid eip-1898 blocktag, expected to contain blockNumber or blockHash'
+    });
+
+    expect((await eth_call([{ to: dexAddr, data }, { blockHash: 123 }])).data.error).to.deep.equal({
+      code: -32602,
+      message: 'invalid argument 1: invalid block hash, expected type String'
+    });
   });
 });
 
@@ -1429,6 +1442,14 @@ describe('eth_getCode', () => {
       const res = (await eth_getCode([randAddr, t])).data.result;
       expect(res).to.equal('0x');
     }
+  });
+
+  it('supports calling historical blocks', async () => {
+    const dexAddr = '0x0230135fded668a3f7894966b14f42e65da322e4'; // created at block 5
+    expect((await eth_getCode([dexAddr, { blockNumber: 1 }])).data.result).to.equal('0x');
+    expect((await eth_getCode([dexAddr, { blockNumber: 5 }])).data.result.length).to.greaterThan(2);
+    expect((await eth_getCode([dexAddr, { blockNumber: 8 }])).data.result.length).to.greaterThan(2);
+    expect((await eth_getCode([dexAddr, 7])).data.result.length).to.greaterThan(2);
   });
 });
 

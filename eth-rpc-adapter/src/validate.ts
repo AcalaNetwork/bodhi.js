@@ -46,17 +46,23 @@ export const validateAddress = (data: any) => {
 };
 
 export const validateBlock = (data: any) => {
+  // eip-1898
+  if (typeof data === 'object') {
+    if (data.blockNumber) {
+      data = data.blockNumber;
+    } else if (data.blockHash) {
+      return validateBlockHash(data.blockHash);
+    } else {
+      throw new Error(`invalid eip-1898 blocktag, expected to contain blockNumber or blockHash`);
+    }
+  }
+
   if (typeof data === 'number') {
     return Number.isInteger(data) && data >= 0;
   }
 
-  // eip-1898
-  if (typeof data === 'object' && (data.blockNumber || data.blockHash)) {
-    data = data.blockNumber || data.blockHash;
-  }
-
   if (typeof data !== 'string') {
-    throw new Error(`invalid block tag, expected type string, number, or object`);
+    throw new Error(`invalid block tag, expected type string, number, or eip-1898 blocktag`);
   }
 
   if (!['latest', 'earliest', 'pending'].includes(data)) {
