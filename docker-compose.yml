@@ -83,8 +83,12 @@ services:
       dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: eth-rpc-adapter-test
     depends_on:
-      - eth-rpc-adapter-server-with-subql
-      - eth-rpc-adapter-server-public-mandala
+      feed-tx-step-2:
+        condition: service_completed_successfully
+      eth-rpc-adapter-server-with-subql:
+        condition: service_started
+      eth-rpc-adapter-server-public-mandala:
+        condition: service_started
     # TODO: remove me after public mandala subql finished indexing
     environment:
       - SKIP_PUBLIC=1
