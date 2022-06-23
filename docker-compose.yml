@@ -62,7 +62,7 @@ services:
       - 8545:8545
     depends_on:
       feed-tx-step-2:
-        condition: service_completed_successfully
+        condition: service_started
       postgres:
         condition: service_started
       subquery-node:
