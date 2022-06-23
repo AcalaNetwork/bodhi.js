@@ -14,6 +14,7 @@ import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import {
+  ADDRESS_ALICE,
   evmAccounts,
   allLogs,
   log12,
@@ -149,7 +150,7 @@ describe('eth_getTransactionReceipt', () => {
     expect(res.status).to.equal(200);
     expect(res.data.result).to.deep.equal({
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
       gasUsed: '0x19b45',
@@ -183,7 +184,7 @@ describe('eth_getTransactionReceipt', () => {
     expect(res.status).to.equal(200);
     expect(res.data.result).to.deep.equal({
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
       gasUsed: '0x1e7a3',
@@ -217,7 +218,7 @@ describe('eth_getTransactionReceipt', () => {
     expect(res.status).to.equal(200);
     expect(res.data.result).to.deep.equal({
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
       gasUsed: '0x19b1a',
@@ -252,7 +253,7 @@ describe('eth_getTransactionReceipt', () => {
     expect(res.status).to.equal(200);
     expect(res.data.result).to.deep.equal({
       to: '0x532394de2ca885b7e0306a2e258074cca4e42449',
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
       gasUsed: '0xcc6c',
@@ -665,7 +666,7 @@ describe('eth_getTransactionByHash', () => {
       s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
       hash: tx1.transactionHash,
       nonce: '0x6',
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
       value: '0xde0b6b3a7640000'
     });
@@ -685,7 +686,7 @@ describe('eth_getTransactionByHash', () => {
       s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
       hash: tx2.transactionHash,
       nonce: '0x5',
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
       value: '0xde0b6b3a7640000'
     });
@@ -705,7 +706,7 @@ describe('eth_getTransactionByHash', () => {
       s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
       hash: tx3.transactionHash,
       nonce: '0x2',
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
       value: '0xde0b6b3a7640000'
     });
@@ -718,7 +719,7 @@ describe('eth_getTransactionByHash', () => {
       blockNumber: '0x14',
       transactionIndex: '0x0',
       hash: tx4.transactionHash,
-      from: '0x82a258cb20e2adb4788153cd5eb5839615ece9a0',
+      from: ADDRESS_ALICE,
       gasPrice: '0x7d610b6f2b',
       value: '0x',
       gas: '0x200b20',
@@ -1243,7 +1244,7 @@ describe('eth_sendRawTransaction', () => {
   });
 });
 
-describe.only('eth_call', () => {
+describe('eth_call', () => {
   const eth_call = rpcGet('eth_call');
   const eth_blockNumber = rpcGet('eth_blockNumber');
   const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
@@ -1523,5 +1524,39 @@ describe('eth_getBlockByNumber', () => {
 
     expect(resFull).to.deep.equal(mandalaBlock1265919);
     expect(res).to.deep.equal(block1265919NotFull);
+  });
+});
+
+describe('eth_getBalance', () => {
+  const eth_getBalance = rpcGet('eth_getBalance');
+  const eth_blockNumber = rpcGet('eth_blockNumber');
+
+  it('get correct balance', async () => {
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 1])).data.result)).to.equal(8999999986402744000000000n);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x5'])).data.result)).to.equal(8999997714052854289000000n);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(
+      8999994561761823172000000n
+    );
+
+    const curBlock = (await eth_blockNumber([])).data.result;
+    expect(Number((await eth_getBalance([ADDRESS_ALICE, { blockNumber: curBlock }])).data.result)).to.equal(
+      Number((await eth_getBalance([ADDRESS_ALICE, 'latest'])).data.result)
+    );
+  });
+});
+
+describe('eth_getTransactionCount', () => {
+  const eth_getTransactionCount = rpcGet('eth_getTransactionCount');
+  const eth_blockNumber = rpcGet('eth_blockNumber');
+
+  it('get correct transaction', async () => {
+    expect(Number((await eth_getTransactionCount([ADDRESS_ALICE, 1])).data.result)).to.equal(0);
+    expect(Number((await eth_getTransactionCount([ADDRESS_ALICE, '0x5'])).data.result)).to.equal(1);
+    expect(Number((await eth_getTransactionCount([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(4);
+
+    const curBlock = (await eth_blockNumber([])).data.result;
+    expect(Number((await eth_getTransactionCount([ADDRESS_ALICE, { blockNumber: curBlock }])).data.result)).to.equal(
+      Number((await eth_getTransactionCount([ADDRESS_ALICE, 'latest'])).data.result)
+    );
   });
 });
