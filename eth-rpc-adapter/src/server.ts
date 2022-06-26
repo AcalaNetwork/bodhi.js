@@ -46,6 +46,11 @@ export async function start(): Promise<void> {
   HTTPTransport.start();
   WebSocketTransport.start();
 
+  // init rpc methods
+  if (rpcForward) {
+    await rpcForward.initRpcMethods();
+  }
+
   console.log(`
   --------------------------------------------
                🚀 SERVER STARTED 🚀
