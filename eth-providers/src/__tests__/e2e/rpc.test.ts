@@ -2,6 +2,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { EvmRpcProvider } from '../../rpc-provider';
 import dotenv from 'dotenv';
+import { sleep } from '../../utils';
 
 dotenv.config();
 
@@ -15,6 +16,9 @@ const { expect } = chai;
 
 describe('rpc test', () => {
   before(async () => {
+    const START_DELAY = process.env.START_DELAY || 0;
+    await sleep(START_DELAY);
+
     await provider.isReady();
   });
 

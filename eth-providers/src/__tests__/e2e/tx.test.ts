@@ -11,7 +11,7 @@ import chaiAsPromised from 'chai-as-promised';
 import dotenv from 'dotenv';
 import { Interface, parseUnits } from 'ethers/lib/utils';
 import { EvmRpcProvider } from '../../rpc-provider';
-import { calcEthereumTransactionParams, sendTx } from '../../utils';
+import { calcEthereumTransactionParams, sendTx, sleep } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
 import evmAccounts from '../evmAccounts';
 
@@ -41,6 +41,9 @@ describe('transaction tests', () => {
   let txGasPrice: BigNumber;
 
   before('prepare common variables', async () => {
+    const START_DELAY = process.env.START_DELAY || 0;
+    await sleep(START_DELAY);
+
     await provider.isReady();
 
     chainId = await provider.chainId();

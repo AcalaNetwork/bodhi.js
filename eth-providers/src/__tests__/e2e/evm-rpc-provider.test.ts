@@ -10,8 +10,6 @@ const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 describe('EvmRpcProvider', () => {
   before('wait for mandala node to start', async () => {
     const START_DELAY = process.env.START_DELAY || 0;
-    console.log(`waiting ${START_DELAY}ms ...`);
-
     await sleep(START_DELAY);
   });
 
