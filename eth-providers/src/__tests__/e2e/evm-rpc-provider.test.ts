@@ -1,18 +1,12 @@
 import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
 import dotenv from 'dotenv';
-import { sleep } from '../../utils';
 
 dotenv.config();
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
 describe('EvmRpcProvider', () => {
-  before('wait for mandala node to start', async () => {
-    const START_DELAY = process.env.START_DELAY || 0;
-    await sleep(START_DELAY);
-  });
-
   it('connect chain', async () => {
     const provider = EvmRpcProvider.from(endpoint);
     await provider.isReady();

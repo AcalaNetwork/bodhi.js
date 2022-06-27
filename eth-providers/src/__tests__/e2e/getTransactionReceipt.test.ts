@@ -7,13 +7,10 @@ import { Wallet } from '@ethersproject/wallet';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect } from 'chai';
 import { EvmRpcProvider } from '../../rpc-provider';
-import { sendTx, sleep } from '../../utils';
+import { sendTx } from '../../utils';
 import evmAccounts from '../evmAccounts';
 
 it('getTransactionReceipt', async () => {
-  const START_DELAY = process.env.START_DELAY || 0;
-  await sleep(START_DELAY);
-
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];

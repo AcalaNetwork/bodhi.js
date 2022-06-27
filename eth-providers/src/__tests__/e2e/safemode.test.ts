@@ -20,9 +20,6 @@ const newBlock = async (finalize: boolean): Promise<void> => {
 
 describe('safe mode', () => {
   before(async () => {
-    const START_DELAY = process.env.START_DELAY || 0;
-    await sleep(START_DELAY);
-
     await Promise.all([safeProvider.isReady(), provider.isReady()]);
   });
 
