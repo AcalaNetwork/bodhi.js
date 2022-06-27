@@ -1,11 +1,23 @@
 import { expect } from 'chai';
-import { computeDefaultEvmAddress, computeDefaultSubstrateAddress, isEvmAddress, isSubstrateAddress } from '../utils';
+import {
+  computeDefaultEvmAddress,
+  computeDefaultSubstrateAddress,
+  isEvmAddress,
+  isSubstrateAddress,
+  sleep
+} from '../utils';
 
 console.log('account test start...');
 
 const AliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
 describe('account test', () => {
+  before('wait for mandala node to start', async () => {
+    const START_DELAY = process.env.START_DELAY || 0;
+
+    await sleep(START_DELAY);
+  });
+
   it('computeDefaultEvmAddress', async () => {
     const result = computeDefaultEvmAddress(AliceAddress);
     expect(result).to.equal('0x82A258cb20E2ADB4788153cd5eb5839615EcE9a0');
