@@ -598,6 +598,12 @@
       "reviewCategory": "tests",
       "shouldPublish": false
     },
+    {
+      "packageName": "hardhat-tutorial-advanced-escrow",
+      "projectFolder": "examples/hardhat-tutorials/advanced-escrow",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
 
     /* ---------- truffle examples ---------- */
     {
@@ -639,6 +645,12 @@
     {
       "packageName": "truffle-tutorial-evm",
       "projectFolder": "examples/truffle-tutorials/EVM",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "truffle-tutorial-advanced-escrow",
+      "projectFolder": "examples/truffle-tutorials/advanced-escrow",
       "reviewCategory": "tests",
       "shouldPublish": false
     }

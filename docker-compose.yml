@@ -136,11 +136,11 @@ services:
       dockerfile: docker/eth-providers-test.Dockerfile
       target: eth-providers-test
     depends_on:
-      feed-tx:
-        condition: service_completed_successfully
+      # feed-tx:
+      #   condition: service_completed_successfully
       # mandala-node is the actual dependency, this is just a work around to delay start
       # so to make sure mandala node is up and *running* before tests start
-      # - mandala-node
+      - mandala-node
   eth-rpc-adapter-server:
     build:
       context: .
