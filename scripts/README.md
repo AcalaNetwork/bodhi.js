@@ -15,3 +15,12 @@ get precompile contracts info (token, oracle, EVM).
 `yarn iterate`
 - binary search the contract creation block
 - batch iterate blocks for some logic (such as checking if a contract exist) with retry
+
+### rpc tests
+`yarn rpc`
+goes over some rpc calls:
+- basic calls
+- historical calls that involves subquery
+- subscription call
+
+helpful for quickly testing the setup of a new RPC endpoint
