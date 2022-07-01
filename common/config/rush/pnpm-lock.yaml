@@ -360,7 +360,7 @@ importers:
 
   ../../examples/hardhat-tutorials/advanced-escrow:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@acala-network/eth-providers': ^2.4.11
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
@@ -371,7 +371,7 @@ importers:
       ethers: ~5.5.0
       hardhat: ^2.6.8
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@acala-network/eth-providers': 2.4.11
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
@@ -546,7 +546,7 @@ importers:
 
   ../../examples/truffle-tutorials/advanced-escrow:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@openzeppelin/contracts': ^4.4.2
       '@polkadot/api': 8.1.1
       '@truffle/hdwallet-provider': ^1.6.0
@@ -557,7 +557,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@openzeppelin/contracts': 4.4.2
       '@polkadot/api': 8.1.1
       '@truffle/hdwallet-provider': 1.7.0
@@ -1072,6 +1072,10 @@ packages:
 
   /@acala-network/contracts/4.2.0:
     resolution: {integrity: sha512-IT63HPWsHPeHy8zCr71wAztghrFdscLzZlYdcvewEuBGWkRpHFlZ4i32kADYPv6UAT9ew7en6nqOWJa48CaliQ==}
+
+  /@acala-network/contracts/4.3.2:
+    resolution: {integrity: sha512-y/55NNNkbicesWq2lbWsnuIl8PBTXfE7xkIilrWeaj6k7nHnkS1ugXuRdHKTAlEoxewdKbnLtbCXe79wqMhzEA==}
+    dev: true
 
   /@acala-network/eth-providers/2.4.11:
     resolution: {integrity: sha512-lDSWLNMGbB2HSB/P8g7NLHkBSjds0nH+/ZYeXHKWecoxv2QSqk+EuDPesuRLZAdBUg8mRIfH83lCtaC849Yivg==}
