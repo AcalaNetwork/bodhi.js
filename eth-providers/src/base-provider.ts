@@ -1873,7 +1873,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     this._listeners[eventName] = this._listeners[eventName] || [];
     this._listeners[eventName].push({ cb: eventCallBack, filter, id });
-
     return id;
   };
 
