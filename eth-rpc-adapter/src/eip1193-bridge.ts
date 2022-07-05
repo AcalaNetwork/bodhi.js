@@ -1,10 +1,11 @@
-import { EvmRpcProvider, TX, hexlifyRpcResult } from '@acala-network/eth-providers';
+import { EvmRpcProvider, hexlifyRpcResult, TX } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
 import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
+import WebSocket from 'ws';
 import { InvalidParams, MethodNotFound } from './errors';
 import { validate } from './validate';
 
@@ -31,10 +32,10 @@ export class Eip1193Bridge extends EventEmitter {
     return this.isMethodValid(method) && method in this.#impl;
   }
 
-  async send(method: string, params: any[] = [], cb?: any): Promise<any> {
+  async send(method: string, params: any[] = [], ws?: WebSocket): Promise<any> {
     if (this.isMethodImplemented(method)) {
       // isMethodImplemented ensuress this cannot be used to access other unrelated methods
-      return this.#impl[method](params, cb);
+      return this.#impl[method](params, ws);
     }
 
     throw new MethodNotFound('Method not available', `The method ${method} is not available.`);
@@ -458,13 +459,37 @@ class Eip1193BridgeImpl {
     return hexlifyRpcResult(result);
   }
 
-  async eth_subscribe(params: any[], cb: any): Promise<any> {
+  async eth_subscribe(params: any[], ws?: WebSocket): Promise<any> {
+    if (!ws) throw new Error('HTTP endpoint does not have subscriptions, use WebSockets instead');
     validate([{ type: 'eventName' }, { type: 'object?' }], params);
-    return this.#provider.addEventListener(params[0], cb, params[1]);
+
+    const reply = (data: any) =>
+      ws.send(
+        JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'eth_subscription',
+          params: data
+        })
+      );
+
+    const id = this.#provider.addEventListener(params[0], reply, params[1]);
+
+    ws.on('close', () => {
+      this.#provider.removeEventListener(id);
+    });
+
+    ws.on('error', () => {
+      this.#provider.removeEventListener(id);
+    });
+
+    return id;
   }
 
-  async eth_unsubscribe(params: any[], cb: any): Promise<any> {
+  async eth_unsubscribe(params: any[], ws?: WebSocket): Promise<any> {
+    if (!ws) throw new Error('HTTP endpoint does not have subscriptions, use WebSockets instead');
+
     validate([{ type: 'address' }], params);
+
     return this.#provider.removeEventListener(params[0]);
   }
 }
