@@ -287,7 +287,7 @@ importers:
 
   ../../examples/hardhat-tutorials/DEX:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@acala-network/eth-providers': ^2.4.11
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
@@ -300,7 +300,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@acala-network/eth-providers': 2.4.11
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
@@ -312,7 +312,7 @@ importers:
 
   ../../examples/hardhat-tutorials/EVM:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@acala-network/eth-providers': ^2.4.11
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
@@ -325,7 +325,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@acala-network/eth-providers': 2.4.11
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
@@ -426,7 +426,7 @@ importers:
 
   ../../examples/hardhat-tutorials/precompiled-token:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.2
@@ -438,7 +438,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
       '@openzeppelin/contracts': 4.4.2
@@ -499,7 +499,7 @@ importers:
 
   ../../examples/truffle-tutorials/DEX:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@openzeppelin/contracts': ^4.4.2
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.0
@@ -508,7 +508,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
@@ -516,7 +516,7 @@ importers:
 
   ../../examples/truffle-tutorials/EVM:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@openzeppelin/contracts': ^4.4.2
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.0
@@ -525,7 +525,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
@@ -585,7 +585,7 @@ importers:
 
   ../../examples/truffle-tutorials/precompiled-token:
     specifiers:
-      '@acala-network/contracts': ^4.2.0
+      '@acala-network/contracts': ^4.3.2
       '@openzeppelin/contracts': ^4.4.2
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.0
@@ -594,7 +594,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.2.0
+      '@acala-network/contracts': 4.3.2
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
