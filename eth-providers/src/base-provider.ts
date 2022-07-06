@@ -1,5 +1,6 @@
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
+import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import {
   Block,
   BlockWithTransactions,
@@ -216,6 +217,8 @@ export type NewBlockListener = (header: Header) => any;
 
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
+export type Storages = [string, string][];
+
 const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
 const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
@@ -239,6 +242,7 @@ export abstract class BaseProvider extends AbstractProvider {
   latestFinalizedBlockHash: string | undefined;
   latestFinalizedBlockNumber: number | undefined;
   runtimeVersion: number | undefined;
+  snapshots: Storages[];
 
   constructor({
     safeMode = false,
@@ -261,6 +265,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.maxBlockCacheSize = maxBlockCacheSize;
     this._storageCache = new LRUCache({ max: storageCacheSize });
     this._healthCheckBlockDistance = healthCheckBlockDistance;
+    this.snapshots = [];
 
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     this.verbose && logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
@@ -1892,4 +1897,126 @@ export abstract class BaseProvider extends AbstractProvider {
   listeners = (eventName?: EventType): Array<Listener> => throwNotImplemented('listeners');
   off = (eventName: EventType, listener?: Listener): Provider => throwNotImplemented('off');
   removeAllListeners = (eventName?: EventType): Provider => throwNotImplemented('removeAllListeners');
+
+  _getEvmStorage = async (): Promise<[string, string][]> => {
+    const prefixes = [
+      '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9' /* System.account */,
+      '0xc2261276cc9d1f8598ea4b6a74b15c2f' /* Balances */,
+      '0x1da53b775b270400e7e61ed5cbc5a146' /* EVM */,
+      '0xcf0c70dd409fefa08af26a0e93f12579' /* evmAccounts */,
+      '0x99971b5749ac43e0235e41b0d3786918' /* Tokens */,
+
+      /* ---------- TODO: might not need these ---------- */
+      '0xbd2a529379475088d3e29a918cd47872' /* RandomnessCollectiveFlip */,
+      '0xf0c365c3cf59d671eb72da0e7a4113c4' /* Timestamp */,
+      '0x1a736d37504c2e3fb73dad160c55b291' /* Indices */,
+      '0x3f1467a096bcd71a5b6a0c8155e20810' /* TransactionPayment */,
+      '0xd57bce545fb382c34570e5dfbf338f5e' /* Authorship */,
+      '0x5f3e4907f716ac89b6347d15ececedca' /* Staking */,
+      '0xd5c41b52a371aa36c9254ce34324f2a5' /* Offences */,
+      '0xcec5070d609dd3497f72bde07fc96ba0' /* Session */,
+      '0x2b06af9719ac64d755623cda8ddd9b94' /* ImOnline */,
+      '0x2099d7f109d6e535fb000bba623fd440' /* AuthorityDiscovery */,
+      '0xf2794c22e353e9a839f12faab03a911b' /* Democracy */,
+      '0x11f3ba2e1cdd6d62f2ff9b5589e7ff81' /* Instance1Collective */,
+      '0x8985776095addd4789fccbce8ca77b23' /* Instance2Collective */,
+      '0xe2e62dd81c48a88f73b6f6463555fd8e' /* PhragmenElection */,
+      '0x492a52699edf49c972c21db794cfcf57' /* Instance1Membership */,
+      '0x89d139e01a5eb2256f222e5fc5dbe6b3' /* Treasury */,
+      '0x9c5d795d0297be56027a4b2464e33397' /* Claims */,
+      '0x0b76934f4cc08dee01012d059e1b83ee' /* Parachains */,
+      '0xae394d879ddf7f99595bc0dd36e355b5' /* Attestations */,
+      '0x6ac983d82528bf1595ab26438ae5b2cf' /* Slots */,
+      '0x3fba98689ebed1138735e0e7a5a790ab' /* Registrar */,
+      '0xd5e1a2fa16732ce6906189438c0a82c6' /* Utility */,
+      '0x2aeddc77fe58c98d50bd37f1b90840f9' /* Identity */,
+      '0x426e15054d267946093858132eb537f1' /* Society */,
+      '0xa2ce73642c549ae79c14f0a671cf45f9' /* Recovery */,
+      '0x5f27b51b5ec208ee9cb25b55d8728243' /* Vesting */,
+      '0x3db7a24cfdc9de785974746c14a99df9' /* Scheduler */,
+      '0x1809d78346727a0ef58c0fa03bafa323' /* Proxy */,
+      '0x7474449cca95dc5d0c00e71735a6d17d' /* Multisig */,
+
+      '0x27d8f27ebb1cb80e1480db4fc4cfccb5' /* EVMBridge */,
+      '0x6f90f7f374a081c4f7c5e6b64be8a12e' /* Currencies */,
+      '0x6e9a9b71050cd23f2d7d1b72e8c1a625' /* AssetRegistry */,
+      '0x8d4649c9ee31ba6b2d10c66f5fcc252e' /* UnknownTokens */
+    ];
+
+    const allStorage = await this.api.rpc.state.getPairs('0x');
+    const evmStorage = allStorage.filter((pair) => prefixes.some((prefix) => pair[0].toJSON().startsWith(prefix)));
+    const data = evmStorage.map((s) => s.toJSON() as [string, string]);
+    console.log('evm storage length:', data.length);
+
+    return data;
+  };
+
+  snapshot = async (): Promise<number> => {
+    if (!this.localMode)
+      logger.throwError('evm_snapshot is only available in local mode', Logger.errors.NOT_IMPLEMENTED);
+
+    const data = await this._getEvmStorage();
+
+    // if (!require('fs').existsSync(require('path').join(__dirname, './snapshot.json'))) {
+    //   require('fs').writeFile(require('path').join(__dirname, './snapshot.json'), JSON.stringify(data), console.log)
+    // }
+
+    const id = this.snapshots.push(data) - 1;
+    logger.info(`
+      ----------------------------------------
+      succesfully snapshot #${id}
+      ----------------------------------------
+    `);
+
+    return id;
+  };
+
+  revert = async (_id: number): Promise<string> => {
+    if (!this.localMode) logger.throwError('evm_revert is only available in local mode', Logger.errors.NOT_IMPLEMENTED);
+
+    const { alice: sudoPair } = createTestPairs();
+    const id = _id || this.snapshots.length - 1;
+    const snapshot = this.snapshots[id];
+    // const snapshot = require(require('path').join(__dirname, './snapshot.json')) as [string, string][];
+
+    if (!snapshot) {
+      logger.throwError('snapshot not found', Logger.errors.INVALID_ARGUMENT, { id });
+    }
+
+    const curData = await this._getEvmStorage();
+
+    // TODO: dynamic generate it?
+    const ALICE_STORAGE_KEY =
+      '0x26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da9de1e86a9a8c739864cf3cc5ec2bea59fd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d';
+
+    // clear all evm storage except alice, otherwise she won't have balance to send setStorage tx
+    const prefix2Remove = curData.map((x) => x[0]).filter((x) => x !== ALICE_STORAGE_KEY);
+
+    const killTx = await this.api.tx.sudo.sudo(this.api.tx.system.killStorage(prefix2Remove));
+
+    await new Promise((resolve, reject) => {
+      killTx
+        .signAndSend(sudoPair, (result) => {
+          // TODO: factor out sendtx with timeout
+          (result.status.isInBlock || result.status.isFinalized) && resolve(result.txHash.toHex());
+        })
+        .catch((e) => logger.throwError('error'));
+    });
+
+    const tx = await this.api.tx.sudo.sudo(this.api.tx.system.setStorage(snapshot));
+
+    const hash = await new Promise((resolve, reject) => {
+      tx.signAndSend(sudoPair, (result) => {
+        (result.status.isInBlock || result.status.isFinalized) && resolve(result.txHash.toHex());
+      }).catch((e) => logger.throwError('error'));
+    });
+
+    logger.info(`
+      ----------------------------------------
+      succesfully reverted to snapshot #${id}
+      ----------------------------------------
+    `);
+
+    return hash as string;
+  };
 }

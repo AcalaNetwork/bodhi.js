@@ -24,7 +24,9 @@ export class Eip1193Bridge extends EventEmitter {
   }
 
   isMethodValid(method: string): boolean {
-    return method.startsWith('eth_') || method.startsWith('net_') || method.startsWith('web3_');
+    return (
+      method.startsWith('eth_') || method.startsWith('net_') || method.startsWith('web3_') || method.startsWith('evm_')
+    );
   }
 
   isMethodImplemented(method: string): method is keyof Eip1193BridgeImpl {
@@ -466,5 +468,15 @@ class Eip1193BridgeImpl {
   async eth_unsubscribe(params: any[], cb: any): Promise<any> {
     validate([{ type: 'address' }], params);
     return this.#provider.removeEventListener(params[0]);
+  }
+
+  async evm_snapshot(params: any[], cb: any): Promise<any> {
+    validate([], params);
+    return this.#provider.snapshot();
+  }
+
+  async evm_revert(params: any[], cb: any): Promise<any> {
+    // validate([{ type: 'number' }], params);
+    return this.#provider.revert(params[0]);
   }
 }
