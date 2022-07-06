@@ -39,7 +39,7 @@ npm i -g @subql/node @subql/query
 
 - run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port 9944 (in terminal 1)
 ```
-docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-2c8b71e --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe --tmp -levm=debug --instant-sealing
+docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-0910ce3 --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe --tmp -levm=debug --instant-sealing
 ```
 
 - feed some EVM transactions to Acala node (this step is *REQUIRED* if run acala node with `--instant-sealing`, otherwise it is optional)
@@ -114,4 +114,4 @@ query {
 ```
 
 ## Notes
-- Other packages in `bodhi.js` use `rush` to manage, but we use `yarn` for this one. Since `rush update` will cause tslib import problem, because `rush` uses symlink so pacakges point to outside, but `subql/node`'s NodeVM doesn't allow import from outside. 
+- Other packages in `bodhi.js` use `rush` to manage, but we use `yarn` for this one. Since `rush update` will cause tslib import problem, because `rush` uses symlink so pacakges point to outside, but `subql/node`'s NodeVM doesn't allow import from outside.
