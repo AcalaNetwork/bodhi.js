@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
+    "test-dex": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/dex.test.ts",
     "build": "waffle waffle.json"
   },
   "devDependencies": {

@@ -1,11 +1,11 @@
-import { Logger as EthLogger } from '@ethersproject/logger';
 import { ERROR_PATTERN } from '@acala-network/eth-providers';
+import { Logger as EthLogger } from '@ethersproject/logger';
+import WebSocket from 'ws';
 import { Eip1193Bridge } from './eip1193-bridge';
-import { RpcForward } from './rpc-forward';
 import { InvalidParams, JSONRPCError, MethodNotFound } from './errors';
 import { logger } from './logger';
+import { RpcForward } from './rpc-forward';
 import { JSONRPCResponse } from './transports/types';
-
 export class Router {
   readonly #bridge: Eip1193Bridge;
   readonly #rpcForward?: RpcForward;
@@ -15,10 +15,10 @@ export class Router {
     this.#rpcForward = rpcForward;
   }
 
-  public async call(methodName: string, params: unknown[], cb?: any): Promise<Partial<JSONRPCResponse>> {
+  public async call(methodName: string, params: unknown[], ws?: WebSocket): Promise<Partial<JSONRPCResponse>> {
     if (this.#bridge.isMethodImplemented(methodName)) {
       try {
-        return { result: await this.#bridge.send(methodName, params, cb) };
+        return { result: await this.#bridge.send(methodName, params, ws) };
       } catch (err: any) {
         if (JSONRPCError.isJSONRPCError(err)) {
           return { error: { code: err.code, message: err.message, data: err.data } };
@@ -39,7 +39,7 @@ export class Router {
           }
 
           if (error) {
-            return { error: { code: error.code, message: error.message, data: error.data } };
+            return { error: error.json() };
           }
         }
 
@@ -55,14 +55,12 @@ export class Router {
           }
         }
 
-        return { error: { code: 6969, message: `Error: ${message}` } };
+        return { error: new JSONRPCError(`Error: ${message}`, 6969) };
       }
     } else if (this.#rpcForward && this.#rpcForward.isMethodValid(methodName)) {
       return { result: await this.#rpcForward.send(methodName, params) };
     } else {
-      const error = new MethodNotFound('Method not found', `The method ${methodName} does not exist`);
-
-      return { error: { code: error.code, message: error.message, data: error.data } };
+      return { error: new MethodNotFound('Method not found', `The method ${methodName} does not exist`).json() };
     }
   }
 

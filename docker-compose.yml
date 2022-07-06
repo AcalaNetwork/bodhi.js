@@ -31,6 +31,7 @@ services:
       - --network-endpoint=ws://mandala-node:9944
       - --db-schema=acala_evm
       - --log-level=debug
+      - --unsafe
 
   graphql-engine:
     image: onfinality/subql-query:v0.14.1
@@ -60,8 +61,8 @@ services:
     ports:
       - 8545:8545
     depends_on:
-      feed-tx:
-        condition: service_completed_successfully
+      feed-tx-step-2:
+        condition: service_started
       postgres:
         condition: service_started
       subquery-node:
@@ -82,10 +83,15 @@ services:
       dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: eth-rpc-adapter-test
     depends_on:
-      - eth-rpc-adapter-server-with-subql
-      - eth-rpc-adapter-server-public-mandala
-    # environment:
-    #   - SKIP_PUBLIC=1
+      feed-tx-step-2:
+        condition: service_completed_successfully
+      eth-rpc-adapter-server-with-subql:
+        condition: service_started
+      eth-rpc-adapter-server-public-mandala:
+        condition: service_started
+    # TODO: remove me after public mandala subql finished indexing
+    environment:
+      - SKIP_PUBLIC=1
 
   # ------------------------------------ #
   # ---------- No Subql Realm ---------- #
@@ -110,10 +116,20 @@ services:
   feed-tx:
     build:
       context: .
-      dockerfile: docker/eth-providers-test.Dockerfile
+      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: feed-tx
     depends_on:
       - mandala-node
+
+  feed-tx-step-2:
+    build:
+      context: .
+      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
+      target: feed-tx-dex-erc20
+    depends_on:
+      feed-tx:
+        condition: service_completed_successfully
+
   eth-providers-test:
     build:
       context: .

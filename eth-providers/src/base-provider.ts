@@ -77,11 +77,17 @@ import {
   runWithTiming,
   sendTx,
   throwNotImplemented,
-  getEffectiveGasPrice
+  getEffectiveGasPrice,
+  parseBlockTag
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
+
+export interface Eip1898BlockTag {
+  blockNumber: string | number;
+  blockHash: string;
+}
 
 export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
@@ -227,7 +233,6 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _storageCache: LRUCache<string, Uint8Array | null>;
   readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old nth block (since most oldest block takes longer to fetch)
 
-  _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
   _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
@@ -246,7 +251,6 @@ export abstract class BaseProvider extends AbstractProvider {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
-    this._newBlockListeners = [];
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.verbose = verbose;
@@ -314,18 +318,6 @@ export abstract class BaseProvider extends AbstractProvider {
       }
     }) as unknown as void;
 
-    // for getTXhashFromNextBlock
-    this.api.rpc.chain.subscribeNewHeads((header: Header) => {
-      this._newBlockListeners.forEach((cb) => {
-        try {
-          cb(header);
-        } catch {
-          /* swallow */
-        }
-      });
-      this._newBlockListeners = [];
-    }) as unknown as void;
-
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
       const blockNumber = header.number.toNumber();
       this.latestFinalizedBlockNumber = blockNumber;
@@ -359,9 +351,9 @@ export abstract class BaseProvider extends AbstractProvider {
   queryStorage = async <T = any>(
     module: `${string}.${string}`,
     args: any[],
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<T> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
     const blockHash = await this._getBlockHash(blockTag);
 
     const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
@@ -571,10 +563,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getBalance = async (
     addressOrName: string | Promise<string>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<BigNumber> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
@@ -594,9 +586,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getTransactionCount = async (
     addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<number> => {
-    return this.getEvmTransactionCount(addressOrName, blockTag);
+    return this.getEvmTransactionCount(addressOrName, await parseBlockTag(blockTag));
   };
 
   // TODO: test pending
@@ -649,10 +641,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getCode = async (
     addressOrName: string | Promise<string>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     if ((await blockTag) === 'pending') return '0x';
 
@@ -678,10 +670,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   call = async (
     transaction: Deferrable<TransactionRequest>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const resolved = await resolveProperties({
       transaction: this._getTransactionRequest(transaction),
@@ -708,10 +700,10 @@ export abstract class BaseProvider extends AbstractProvider {
   getStorageAt = async (
     addressOrName: string | Promise<string>,
     position: BigNumberish | Promise<BigNumberish>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     await this.getNetwork();
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     // @TODO resolvedPosition
     // eslint-disable-next-line
@@ -980,9 +972,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
   queryAccountInfo = async (
     addressOrName: string | Promise<string>,
-    _blockTag?: BlockTag | Promise<BlockTag>
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<Option<EvmAccountInfo>> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     // pending tag
     const resolvedBlockTag = await blockTag;
@@ -1535,9 +1527,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
-    _blockTag: BlockTag | Promise<BlockTag>
+    _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<TransactionReceipt> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     hashOrNumber = await hashOrNumber;
     const header = await this._getBlockHeader(blockTag);
@@ -1613,15 +1605,17 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this.localMode
-      ? await runWithRetries(this._cache!.getBlockNumber.bind(this._cache!), [txHash])
-      : this._cache?.getBlockNumber(txHash);
-
+    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
     if (!targetBlockNumber) return null;
 
-    const targetBlockHash = this.localMode
-      ? await runWithRetries(async () => this.api.rpc.chain.getBlockHash(targetBlockNumber))
-      : await this.api.rpc.chain.getBlockHash(targetBlockNumber);
+    let targetBlockHash;
+    try {
+      targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
+    } catch (e) {
+      // this should only happen in local mode when head subscription notification
+      // is faster than node new head setup
+      return null;
+    }
 
     return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
   };
@@ -1654,14 +1648,7 @@ export abstract class BaseProvider extends AbstractProvider {
       res.blockNumber = +res.blockNumber;
       res.transactionIndex = +res.transactionIndex;
       res.gasUsed = BigNumber.from(res.gasUsed);
-      // res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
-
-      // TODO: this is a temp workaround since subquery can't query the prev block
-      // and the effectiveGasPrice calculated is a little bit off
-      // after subql works we can remove this line
-      res.effectiveGasPrice = (
-        await this.getTransactionReceiptAtBlock(res.transactionHash, res.blockNumber)
-      ).effectiveGasPrice;
+      res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
     }
 
     return res;
@@ -1679,7 +1666,9 @@ export abstract class BaseProvider extends AbstractProvider {
       if (pendingTX) return pendingTX;
     }
 
-    const tx = await this._getMinedTXReceipt(txHash);
+    const tx = this.localMode
+      ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
+      : await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
@@ -1702,7 +1691,9 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransactionReceipt (please use `getTXReceiptByHash` instead)');
 
   getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
-    const tx = await this._getMinedTXReceipt(txHash);
+    const tx = this.localMode
+      ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
+      : await this._getMinedTXReceipt(txHash);
     if (!tx) return null;
 
     return this.formatter.receipt({
@@ -1868,7 +1859,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     this._listeners[eventName] = this._listeners[eventName] || [];
     this._listeners[eventName].push({ cb: eventCallBack, filter, id });
-
     return id;
   };
 

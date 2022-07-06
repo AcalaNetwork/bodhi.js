@@ -29,22 +29,22 @@ export async function start(): Promise<void> {
   const HTTPTransport = new HTTPServerTransport({
     port: opts.httpPort,
     middleware: [],
-    batch_size: opts.maxBatchSize
+    batchSize: opts.maxBatchSize
   });
 
   const WebSocketTransport = new WebSocketServerTransport({
     port: opts.wsPort,
     middleware: [],
-    batch_size: opts.maxBatchSize
+    batchSize: opts.maxBatchSize
   });
 
   HTTPTransport.addRouter(router as any);
   WebSocketTransport.addRouter(router as any);
 
+  await provider.isReady();
+
   HTTPTransport.start();
   WebSocketTransport.start();
-
-  await provider.isReady();
 
   // init rpc methods
   if (rpcForward) {

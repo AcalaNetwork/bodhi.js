@@ -11,7 +11,7 @@ use(evmChai);
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
-const evmProvider = EvmRpcProvider.from(endpoint);
+const evmProvider = EvmRpcProvider.from(endpoint, { localMode: true });
 const provider = getTestProvider();
 
 const send = async (extrinsic: any, sender: any) => {
@@ -29,6 +29,7 @@ describe('dex test', () => {
 
   before(async () => {
     [alice] = await provider.getWallets();
+    await evmProvider.isReady();
   });
 
   after(async () => {

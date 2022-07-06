@@ -2,7 +2,15 @@ import { hexValue } from '@ethersproject/bytes';
 import chai from 'chai';
 import chaiSubset from 'chai-subset';
 import FakeTimer from '@sinonjs/fake-timers';
-import { EthCallTimingResult, getHealthResult, hexlifyRpcResult, isEVMExtrinsic, runWithTiming, sleep } from '../utils';
+import {
+  parseBlockTag,
+  EthCallTimingResult,
+  getHealthResult,
+  hexlifyRpcResult,
+  isEVMExtrinsic,
+  runWithTiming,
+  sleep
+} from '../utils';
 import { CacheInspect } from '../utils/BlockCache';
 import { _Metadata } from '../utils/gqlTypes';
 
@@ -330,5 +338,31 @@ describe('getHealthResult', () => {
         }
       });
     });
+  });
+});
+
+describe('parseBlockTag', () => {
+  const blockNumber = 123;
+  const blockNumberHex = '0x13568';
+  const blockHash = '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3';
+
+  it('correctly parse normal tags', async () => {
+    expect(await parseBlockTag(blockNumberHex)).to.equal(blockNumberHex);
+    expect(await parseBlockTag(blockNumber)).to.equal(blockNumber);
+    expect(await parseBlockTag(blockHash)).to.equal(blockHash);
+    expect(await parseBlockTag('latest')).to.equal('latest');
+    expect(await parseBlockTag(undefined)).to.equal(undefined);
+
+    expect(await parseBlockTag(Promise.resolve(blockNumberHex))).to.equal(blockNumberHex);
+    expect(await parseBlockTag(Promise.resolve(blockNumber))).to.equal(blockNumber);
+    expect(await parseBlockTag(Promise.resolve(blockHash))).to.equal(blockHash);
+    expect(await parseBlockTag(Promise.resolve('latest'))).to.equal('latest');
+    expect(await parseBlockTag(Promise.resolve(undefined))).to.equal(undefined);
+  });
+
+  it('correctly parse EIP-1898 tags', async () => {
+    expect(await parseBlockTag({ blockNumber: blockNumberHex })).to.equal(blockNumberHex);
+    expect(await parseBlockTag({ blockNumber })).to.equal(blockNumber);
+    expect(await parseBlockTag({ blockHash })).to.equal(blockHash);
   });
 });

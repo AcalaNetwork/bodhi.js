@@ -121,6 +121,7 @@ export const TX_RECEIPT_NODES = `
     transactionHash
     blockNumber
     cumulativeGasUsed
+    effectiveGasPrice,
     type
     status
     logs {

@@ -44,6 +44,11 @@ describe('rpc forward test', () => {
     expect(typeof result).equal('string');
   });
 
+  it('rpc_methods', async () => {
+    const result = await rpcForward.send('rpc_methods', []);
+    expect(Array.isArray(result.methods)).true;
+  });
+
   after(() => {
     provider.disconnect();
   });
