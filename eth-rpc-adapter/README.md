@@ -91,8 +91,6 @@ These are ETH compatible RPCs, the interface and functionalities match https://e
 - `eth_estimateGas`
 - `eth_getTransactionByHash`
 - `eth_getTransactionReceipt`
-- `eth_sign`
-- `eth_sendTransaction`
 - `eth_getTransactionByBlockHashAndIndex`
 - `eth_getTransactionByBlockNumberAndIndex`
 - `eth_getUncleCountByBlockHash`

@@ -233,7 +233,6 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _storageCache: LRUCache<string, Uint8Array | null>;
   readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old nth block (since most oldest block takes longer to fetch)
 
-  _newBlockListeners: NewBlockListener[];
   _network?: Promise<Network>;
   _cache?: BlockCache;
   latestFinalizedBlockHash: string | undefined;
@@ -252,7 +251,6 @@ export abstract class BaseProvider extends AbstractProvider {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
-    this._newBlockListeners = [];
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.verbose = verbose;
@@ -318,18 +316,6 @@ export abstract class BaseProvider extends AbstractProvider {
           response.forEach((log: any) => cb(log));
         });
       }
-    }) as unknown as void;
-
-    // for getTXhashFromNextBlock
-    this.api.rpc.chain.subscribeNewHeads((header: Header) => {
-      this._newBlockListeners.forEach((cb) => {
-        try {
-          cb(header);
-        } catch {
-          /* swallow */
-        }
-      });
-      this._newBlockListeners = [];
     }) as unknown as void;
 
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
@@ -1873,7 +1859,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     this._listeners[eventName] = this._listeners[eventName] || [];
     this._listeners[eventName].push({ cb: eventCallBack, filter, id });
-
     return id;
   };
 

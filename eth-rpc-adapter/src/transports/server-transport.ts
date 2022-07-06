@@ -1,8 +1,9 @@
-import { Router } from '../router';
-import type { JSONRPCRequest, JSONRPCResponse } from './types';
-import { MethodNotFound, InvalidRequest } from '../errors';
-import { DataDogUtil } from '../utils';
+import WebSocket from 'ws';
+import { InvalidRequest, MethodNotFound } from '../errors';
 import { logger } from '../logger';
+import { Router } from '../router';
+import { DataDogUtil } from '../utils';
+import type { JSONRPCRequest, JSONRPCResponse } from './types';
 
 export abstract class ServerTransport {
   public routers: Router[] = [];
@@ -20,7 +21,7 @@ export abstract class ServerTransport {
     throw new Error('Transport missing start implementation');
   }
 
-  protected async routerHandler({ id, method, params }: JSONRPCRequest, cb?: any): Promise<JSONRPCResponse> {
+  protected async routerHandler({ id, method, params }: JSONRPCRequest, ws?: WebSocket): Promise<JSONRPCResponse> {
     let res: JSONRPCResponse = {
       id: id || null,
       jsonrpc: '2.0'
@@ -53,7 +54,7 @@ export abstract class ServerTransport {
     } else {
       res = {
         ...res,
-        ...(await routerForMethod.call(method, params as any, cb))
+        ...(await routerForMethod.call(method, params as any, ws))
       };
     }
     // Add span tags to the datadog span

@@ -4,11 +4,11 @@ import cors from 'cors';
 import http from 'http';
 import http2, { Http2SecureServer, SecureServerOptions } from 'http2';
 import WebSocket from 'ws';
+import { BatchSizeError, InvalidRequest } from '../errors';
 import { logger } from '../logger';
+import { errorHandler } from '../middlewares';
 import ServerTransport from './server-transport';
 import type { JSONRPCRequest, JSONRPCResponse } from './types';
-import { errorHandler } from '../middlewares';
-import { BatchSizeError, InvalidRequest } from '../errors';
 
 export interface WebSocketServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];
@@ -52,8 +52,37 @@ export default class WebSocketServerTransport extends ServerTransport {
     this.wss = new WebSocket.Server({ server: this.server as any });
 
     this.wss.on('connection', (ws: WebSocket) => {
-      ws.on('message', (message: string) => this.webSocketRouterHandler(message, ws.send.bind(ws)));
-      ws.on('close', () => ws.removeAllListeners());
+      // @ts-ignore
+      ws.isAlive = true;
+
+      ws.on('pong', () => {
+        // @ts-ignore
+        ws.isAlive = true;
+      });
+
+      ws.on('message', (message: string) => this.webSocketRouterHandler(message, ws));
+
+      ws.on('close', () => {
+        ws.removeAllListeners();
+      });
+      ws.on('error', () => {
+        ws.removeAllListeners();
+      });
+    });
+
+    const interval = setInterval(() => {
+      for (const ws of this.wss.clients) {
+        // @ts-ignore
+        if (ws.isAlive === false) return ws.terminate();
+
+        // @ts-ignore
+        ws.isAlive = false;
+        ws.ping();
+      }
+    }, 30000);
+
+    this.wss.on('close', () => {
+      clearInterval(interval);
     });
   }
 
@@ -75,7 +104,7 @@ export default class WebSocketServerTransport extends ServerTransport {
     }
   }
 
-  private async webSocketRouterHandler(rawReq: any, wsSend: any): Promise<void> {
+  private async webSocketRouterHandler(rawReq: any, ws: WebSocket): Promise<void> {
     const req = this.praseRequest(rawReq);
     if (req === null) {
       const result = {
@@ -83,18 +112,9 @@ export default class WebSocketServerTransport extends ServerTransport {
         jsonrpc: '2.0',
         error: new InvalidRequest().json()
       };
-      wsSend(JSON.stringify(result));
+      ws.send(JSON.stringify(result));
       return;
     }
-
-    const respondWith = (data: any): void =>
-      wsSend(
-        JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'eth_subscription',
-          params: data
-        })
-      );
 
     let result = null;
     logger.debug(req, 'WS incoming request');
@@ -106,10 +126,10 @@ export default class WebSocketServerTransport extends ServerTransport {
           error: new BatchSizeError(this.options.batchSize, req.length).json()
         };
       } else {
-        result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, respondWith)));
+        result = await Promise.all(req.map((r: JSONRPCRequest) => super.routerHandler(r, ws)));
       }
     } else {
-      result = await super.routerHandler(req, respondWith);
+      result = await super.routerHandler(req, ws);
     }
 
     if (!(result as JSONRPCResponse).error) {
@@ -117,6 +137,6 @@ export default class WebSocketServerTransport extends ServerTransport {
     } else {
       logger.error(result, 'request completed');
     }
-    wsSend(JSON.stringify(result));
+    ws.send(JSON.stringify(result));
   }
 }
