@@ -19,7 +19,7 @@ services:
       - --tmp
 
   eth-rpc-adaptor:
-    image: acala/eth-rpc-adapter:7e4b68b
+    image: acala/eth-rpc-adapter:bd84462
     ports:
       - 8545:8545
     depends_on:
