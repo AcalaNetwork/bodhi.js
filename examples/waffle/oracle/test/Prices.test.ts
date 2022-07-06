@@ -4,7 +4,7 @@ import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, BigNumber } from 'ethers';
 import Prices from '../build/Prices.json';
-import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { getTestProvider } from '../../utils';
 
 use(solidity);

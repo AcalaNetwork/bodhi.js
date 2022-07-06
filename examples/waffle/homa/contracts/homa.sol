@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@acala-network/contracts/homa/IHoma.sol";
-import "@acala-network/contracts/utils/AcalaAddress.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract Homa is ADDRESS {
     IHoma homa = IHoma(ADDRESS.Homa);

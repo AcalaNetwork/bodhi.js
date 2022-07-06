@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@acala-network/contracts/dex/IDEX.sol";
-import "@acala-network/contracts/utils/AcalaAddress.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract Dex is ADDRESS {
     IDEX dex = IDEX(ADDRESS.DEX);

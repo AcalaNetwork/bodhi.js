@@ -5,7 +5,7 @@ import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import RecurringPayment from '../build/RecurringPayment.json';
 import Subscription from '../build/Subscription.json';
-import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { getTestProvider } from '../../utils';
 
 use(evmChai);

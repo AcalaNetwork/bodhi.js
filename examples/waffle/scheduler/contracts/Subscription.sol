@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@acala-network/contracts/schedule/ISchedule.sol";
-import "@acala-network/contracts/utils/AcalaAddress.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract Subscription is ADDRESS {
   address payable public owner;

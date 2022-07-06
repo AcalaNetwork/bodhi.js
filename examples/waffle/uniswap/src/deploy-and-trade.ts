@@ -1,5 +1,5 @@
 import { Contract, BigNumber, ContractFactory } from 'ethers';
-import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { expect, use } from 'chai';
 import { evmChai } from '@acala-network/bodhi';
 

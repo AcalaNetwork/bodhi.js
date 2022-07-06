@@ -4,7 +4,7 @@ import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, ethers } from 'ethers';
 import EVMAccounts from '../build/EVMAccounts.json';
-import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { getTestProvider } from '../../utils';
 import { Keyring } from '@polkadot/keyring';
 import { randomAsHex, blake2AsU8a } from '@polkadot/util-crypto';

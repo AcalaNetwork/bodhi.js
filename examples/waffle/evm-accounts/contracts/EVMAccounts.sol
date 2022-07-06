@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@acala-network/contracts/evm-accounts/IEVMAccounts.sol";
-import "@acala-network/contracts/utils/AcalaAddress.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract EVMAccounts is ADDRESS {
     IEVMAccounts evmAccounts = IEVMAccounts(ADDRESS.EVMAccounts);

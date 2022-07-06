@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { InterfaceIncentives } from "@acala-network/contracts/incentives/InterfaceIncentives.sol";
-import "@acala-network/contracts/utils/AcalaAddress.sol";
+import "@acala-network/contracts/incentives/InterfaceIncentives.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract Incentives is ADDRESS {
     InterfaceIncentives incentives = InterfaceIncentives(ADDRESS.Incentives);

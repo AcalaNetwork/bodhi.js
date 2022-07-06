@@ -3,7 +3,7 @@ import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, ethers } from 'ethers';
 import Dex from '../build/Dex.json';
-import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { getTestProvider } from '../../utils';
 
 use(solidity);
