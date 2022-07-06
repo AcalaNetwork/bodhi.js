@@ -5,7 +5,7 @@ import "@acala-network/contracts/homa/IHoma.sol";
 import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract Homa is ADDRESS {
-    IHoma homa = IHoma(ADDRESS.Homa);
+    IHoma homa = IHoma(ADDRESS.HOMA);
 
     function mint(uint256 mintAmount) public returns (bool) {
         return homa.mint(mintAmount);

@@ -9,7 +9,7 @@ contract RecurringPayment is ADDRESS {
     uint amount;
     address payable to;
     bool private initialized;
-    ISchedule scheduler = ISchedule(ADDRESS.Schedule);
+    ISchedule scheduler = ISchedule(ADDRESS.SCHEDULE);
 
     constructor(uint _period, uint _count, uint _amount, address payable _to) public {
         period = _period;

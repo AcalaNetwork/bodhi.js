@@ -5,7 +5,7 @@ import "@acala-network/contracts/evm-accounts/IEVMAccounts.sol";
 import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract EVMAccounts is ADDRESS {
-    IEVMAccounts evmAccounts = IEVMAccounts(ADDRESS.EVMAccounts);
+    IEVMAccounts evmAccounts = IEVMAccounts(ADDRESS.EVM_ACCOUNTS);
 
     function getAccountId(address evmAddress) public view returns (bytes32) {
         return evmAccounts.getAccountId(evmAddress);

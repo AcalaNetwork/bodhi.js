@@ -13,7 +13,7 @@ contract Subscription is ADDRESS {
   mapping (address => uint) public subTokensOf;
   mapping (address => uint) public monthsSubscribed;
 
-  ISchedule scheduler = ISchedule(ADDRESS.Schedule);
+  ISchedule scheduler = ISchedule(ADDRESS.SCHEDULE);
 
   constructor(uint _subscriptionPrice, uint _subscriptionPeriod) public payable {
     owner = msg.sender;

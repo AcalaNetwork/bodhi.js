@@ -5,7 +5,7 @@ import "@acala-network/contracts/incentives/InterfaceIncentives.sol";
 import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract Incentives is ADDRESS {
-    InterfaceIncentives incentives = InterfaceIncentives(ADDRESS.Incentives);
+    InterfaceIncentives incentives = InterfaceIncentives(ADDRESS.INCENTIVES);
 
     function getIncentiveRewardAmount(InterfaceIncentives.PoolId pool, address poolCurrencyId, address rewardCurrencyId) public view returns (uint256) {
         return incentives.getIncentiveRewardAmount(pool, poolCurrencyId, rewardCurrencyId);

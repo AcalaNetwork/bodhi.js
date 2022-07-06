@@ -105,7 +105,7 @@ const getOracleInfo = async () => {
     try {
       const res = await eth_call([
         {
-          to: ADDRESS.Oracle,
+          to: ADDRESS.ORACLE,
           data
         },
         blockNumber

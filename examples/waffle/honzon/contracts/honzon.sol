@@ -5,7 +5,7 @@ import "@acala-network/contracts/honzon/IHonzon.sol";
 import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract Honzon is ADDRESS {
-    IHonzon honzon = IHonzon(ADDRESS.Honzon);
+    IHonzon honzon = IHonzon(ADDRESS.HONZON);
 
     function adjustLoan(address currencyId, int128 collateralAdjustment, int128 debitAdjustment) public returns (bool) {
         return honzon.adjustLoan(currencyId, collateralAdjustment, debitAdjustment);

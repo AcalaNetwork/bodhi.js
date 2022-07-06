@@ -39,7 +39,7 @@ describe('Schedule', () => {
 
   before(async () => {
     [wallet, walletTo, subscriber] = await provider.getWallets();
-    schedule = await new ethers.Contract(ADDRESS.Schedule, SCHEDULE_CALL_ABI, wallet as any);
+    schedule = await new ethers.Contract(ADDRESS.SCHEDULE, SCHEDULE_CALL_ABI, wallet as any);
   });
 
   after(async () => {
