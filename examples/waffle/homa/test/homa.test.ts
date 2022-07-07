@@ -39,7 +39,7 @@ describe('homa', () => {
   before(async () => {
     [wallet, walletTo] = await provider.getWallets();
     homa = await deployContract(wallet as any, Homa);
-    homaPredeployed = new ethers.Contract(ADDRESS.Homa, HomaABI, wallet as any);
+    homaPredeployed = new ethers.Contract(ADDRESS.HOMA, HomaABI, wallet as any);
   });
 
   after(async () => {

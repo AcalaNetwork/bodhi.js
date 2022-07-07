@@ -57,7 +57,7 @@ describe('Prices', () => {
 
     expect(await prices.getPrice(ADDRESS.AUSD)).to.equal(BigNumber.from(1).mul(BigNumber.from(10).pow(18)).toString());
 
-    expect(await prices.getPrice(ADDRESS.LP_RENBTC_AUSD)).to.equal(0);
+    expect(await prices.getPrice(ADDRESS.LP_ACA_AUSD)).to.equal(0);
   });
 
   it('ignores invalid address as CurrencyId::erc20', async () => {

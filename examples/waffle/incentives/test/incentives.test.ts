@@ -39,7 +39,7 @@ describe('incentives', () => {
   before(async () => {
     [wallet, walletTo] = await provider.getWallets();
     incentives = await deployContract(wallet as any, Incentives);
-    incentivesPredeployed = new ethers.Contract(ADDRESS.Incentives, IncentivesABI, wallet as any);
+    incentivesPredeployed = new ethers.Contract(ADDRESS.INCENTIVES, IncentivesABI, wallet as any);
   });
 
   after(async () => {

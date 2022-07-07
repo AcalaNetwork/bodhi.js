@@ -39,7 +39,7 @@ describe('honzon', () => {
   before(async () => {
     [wallet, walletTo] = await provider.getWallets();
     honzon = await deployContract(wallet as any, Honzon);
-    honzonPredeployed = new ethers.Contract(ADDRESS.Honzon, HonzonABI, wallet as any);
+    honzonPredeployed = new ethers.Contract(ADDRESS.HONZON, HonzonABI, wallet as any);
   });
 
   after(async () => {
@@ -52,7 +52,10 @@ describe('honzon', () => {
 
     expect((await honzon.getLiquidationRatio(ADDRESS.DOT)).toString()).to.eq('1500000000000000000');
 
-    expect((await honzon.getCurrentCollateralRatio(evmAddress, ADDRESS.DOT)).toString()).to.eq('0');
+    // u128 max
+    expect((await honzon.getCurrentCollateralRatio(evmAddress, ADDRESS.DOT)).toString()).to.eq(
+      '340282366920938463463374607431768211455'
+    );
 
     expect((await honzon.getDebitExchangeRate(ADDRESS.DOT)).toString()).to.eq('100000000000000000');
 

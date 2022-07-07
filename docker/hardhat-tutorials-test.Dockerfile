@@ -56,6 +56,7 @@ COPY examples/waffle/honzon/package.json examples/waffle/honzon/package.json
 COPY examples/waffle/incentives/package.json examples/waffle/incentives/package.json
 COPY examples/waffle/oracle/package.json examples/waffle/oracle/package.json
 COPY examples/waffle/scheduler/package.json examples/waffle/scheduler/package.json
+COPY examples/waffle/stable-asset/package.json examples/waffle/stable-asset/package.json
 COPY examples/waffle/uniswap/package.json examples/waffle/uniswap/package.json
 
 RUN rush update

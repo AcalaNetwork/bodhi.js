@@ -26,7 +26,7 @@ describe('EVM Accounts', () => {
   before(async () => {
     [wallet, walletTo] = await provider.getWallets();
     evmAccounts = await deployContract(wallet as any, EVMAccounts);
-    evmAccountsPredeployed = new ethers.Contract(ADDRESS.EVMAccounts, EVMAccountsABI, wallet as any);
+    evmAccountsPredeployed = new ethers.Contract(ADDRESS.EVM_ACCOUNTS, EVMAccountsABI, wallet as any);
   });
 
   after(async () => {

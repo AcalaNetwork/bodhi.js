@@ -513,6 +513,18 @@
       "shouldPublish": false
     },
     {
+      "packageName": "evm-waffle-example-honzon",
+      "projectFolder": "examples/waffle/honzon",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-incentives",
+      "projectFolder": "examples/waffle/incentives",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
       "packageName": "evm-waffle-example-oracle",
       "projectFolder": "examples/waffle/oracle",
       "reviewCategory": "tests",
@@ -521,6 +533,12 @@
     {
       "packageName": "evm-waffle-example-scheduler",
       "projectFolder": "examples/waffle/scheduler",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-stable-asset",
+      "projectFolder": "examples/waffle/stable-asset",
       "reviewCategory": "tests",
       "shouldPublish": false
     },

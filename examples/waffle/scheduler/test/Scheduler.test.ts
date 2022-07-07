@@ -83,9 +83,9 @@ describe('Schedule', () => {
     expect(event.length).above(0);
 
     let decode_log = iface.parseLog((event[event.length - 1].event.data.toJSON() as any)[2][0]);
-    await expect(schedule.cancelCall(ethers.utils.hexlify(decode_log.args.task_id)))
+    await expect(schedule.cancelCall(ethers.utils.hexlify(decode_log.args.taskId)))
       .to.emit(schedule, 'CanceledCall')
-      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.task_id));
+      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.taskId));
   });
 
   it('RescheduleCall works', async () => {
@@ -105,9 +105,9 @@ describe('Schedule', () => {
     expect(event.length).above(0);
 
     let decode_log = iface.parseLog((event[event.length - 1].event.data.toJSON() as any)[2][0]);
-    await expect(schedule.rescheduleCall(5, ethers.utils.hexlify(decode_log.args.task_id)))
+    await expect(schedule.rescheduleCall(5, ethers.utils.hexlify(decode_log.args.taskId)))
       .to.emit(schedule, 'RescheduledCall')
-      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.task_id));
+      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.taskId));
   });
 
   it('works with RecurringPayment', async () => {

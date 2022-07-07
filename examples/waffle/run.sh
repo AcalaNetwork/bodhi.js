@@ -12,8 +12,11 @@ build_all() {
     -t evm-waffle-example-evm-accounts \
     -t evm-waffle-example-hello-world \
     -t evm-waffle-example-homa \
+    -t evm-waffle-example-honzon \
+    -t evm-waffle-example-incentives \
     -t evm-waffle-example-oracle \
-    -t evm-waffle-example-scheduler'
+    -t evm-waffle-example-scheduler \
+    -t evm-waffle-example-stable-asset'
 }
 
 rebuild_all() {
@@ -26,8 +29,11 @@ rebuild_all() {
     -t evm-waffle-example-evm-accounts \
     -t evm-waffle-example-hello-world \
     -t evm-waffle-example-homa \
+    -t evm-waffle-example-honzon \
+    -t evm-waffle-example-incentives \
     -t evm-waffle-example-oracle \
-    -t evm-waffle-example-scheduler'
+    -t evm-waffle-example-scheduler \
+    -t evm-waffle-example-stable-asset'
 }
 
 test_all() {
@@ -40,8 +46,11 @@ test_all() {
     "evm-accounts"
     "hello-world"
     "homa"
+    "honzon"
+    "incentives"
     "oracle"
     "scheduler"
+    "stable-asset"
     "uniswap"
   )
 
