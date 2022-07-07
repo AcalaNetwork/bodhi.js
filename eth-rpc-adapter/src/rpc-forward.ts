@@ -74,11 +74,11 @@ export class RpcForward extends EventEmitter {
     subId = (await wsProvider.subscribe(subType, request.method, request.params || [], callback)) as string;
 
     ws.on('close', () => {
-      wsProvider.unsubscribe(subType, unsubMethod, subId);
+      return wsProvider.unsubscribe(subType, unsubMethod, subId);
     });
 
     ws.on('error', () => {
-      wsProvider.unsubscribe(subType, unsubMethod, subId);
+      return wsProvider.unsubscribe(subType, unsubMethod, subId);
     });
 
     return subId;
