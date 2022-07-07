@@ -209,4 +209,4 @@ services:
       dockerfile: docker/truffle-tutorials-test.Dockerfile
       target: truffle-tutorials
     depends_on:
-      - eth-rpc-adapter-server
+      - eth-rpc-adapter-server-with-subql
