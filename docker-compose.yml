@@ -77,6 +77,25 @@ services:
       - --ws-port=3331
       - --local
 
+  eth-rpc-adapter-server-with-empty-subql:
+    build:
+      context: .
+      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
+      target: eth-rpc-adapter
+    ports:
+      - 8545:8545
+    depends_on:
+      - postgres
+      - subquery-node
+      - graphql-engine
+    restart: always
+    command:
+      - --endpoint=ws://mandala-node:9944
+      - --subql=http://graphql-engine:3001
+      - --http-port=8545
+      - --ws-port=3331
+      - --local
+
   eth-rpc-adapter-test:
     build:
       context: .
@@ -209,4 +228,4 @@ services:
       dockerfile: docker/truffle-tutorials-test.Dockerfile
       target: truffle-tutorials
     depends_on:
-      - eth-rpc-adapter-server-with-subql
+      - eth-rpc-adapter-server-with-empty-subql
