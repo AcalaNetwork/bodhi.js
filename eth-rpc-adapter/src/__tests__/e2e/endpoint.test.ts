@@ -367,10 +367,6 @@ describe('eth_getLogs', () => {
         const expectedLogs = allLogs.filter((l) => l.address === log.address);
         expectLogsEqual(res.data.result, expectedLogs);
       }
-
-      /* ---------- multiple address ---------- */
-      // TODO: interestingly, current Filter type says address can only be string
-      // can support string[] filter if we needed in the future
     });
   });
 
@@ -501,6 +497,14 @@ describe('eth_getLogs', () => {
       expect(res.status).to.equal(200);
       expectLogsEqual(res.data.result, allLogs);
 
+      res = await eth_getLogs([{ topics: [[]], ...ALL_BLOCK_RANGE_FILTER }]);
+      expect(res.status).to.equal(200);
+      expectLogsEqual(res.data.result, allLogs);
+
+      res = await eth_getLogs([{ topics: [null, [], null, [], 'hahahahaha', 'hohoho'], ...ALL_BLOCK_RANGE_FILTER }]);
+      expect(res.status).to.equal(200);
+      expectLogsEqual(res.data.result, allLogs);
+
       /* ---------- should return no logs ---------- */
       res = await eth_getLogs([{ topics: ['XXX'], ...ALL_BLOCK_RANGE_FILTER }]);
       expect(res.data.result).to.deep.equal([]);
@@ -508,17 +512,28 @@ describe('eth_getLogs', () => {
       /* ---------- should return some logs ---------- */
       for (const log of allLogs) {
         res = await eth_getLogs([{ topics: log.topics, ...ALL_BLOCK_RANGE_FILTER }]);
-        expectedLogs = allLogs.filter((l) => log.topics.every((t) => l.topics.includes(t)));
+        expectedLogs = allLogs.filter(
+          (l) => log.topics.length === l.topics.length && log.topics.every((t, i) => l.topics[i] === t)
+        );
         expect(res.status).to.equal(200);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ topics: [log.topics[0]], ...ALL_BLOCK_RANGE_FILTER }]);
-        expectedLogs = allLogs.filter((l) => l.topics.includes(log.topics[0]));
+        expectedLogs = allLogs.filter((l) => l.topics[0] === log.topics[0]);
         expect(res.status).to.equal(200);
         expectLogsEqual(res.data.result, expectedLogs);
 
-        res = await eth_getLogs([{ topics: [log.topics.at(-1)], ...ALL_BLOCK_RANGE_FILTER }]);
-        expectedLogs = allLogs.filter((l) => l.topics.includes(log.topics.at(-1)));
+        res = await eth_getLogs([
+          { topics: [['ooo', log.topics[0], 'xxx', 'yyy'], null, []], ...ALL_BLOCK_RANGE_FILTER }
+        ]);
+        expectedLogs = allLogs.filter((l) => l.topics[0] === log.topics[0]);
+        expect(res.status).to.equal(200);
+        expectLogsEqual(res.data.result, expectedLogs);
+
+        res = await eth_getLogs([
+          { topics: [...new Array(log.topics.length - 1).fill(null), log.topics.at(-1)], ...ALL_BLOCK_RANGE_FILTER }
+        ]);
+        expectedLogs = allLogs.filter((l) => l.topics[log.topics.length - 1] === log.topics.at(-1));
         expect(res.status).to.equal(200);
         expectLogsEqual(res.data.result, expectedLogs);
       }
