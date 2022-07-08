@@ -1,3 +1,6 @@
+## v2.4.18 2022/07/8
+- logs filter is now more standard and supports nested filter
+
 ## v2.4.12 2022/05/25
 - bug fixes and improvements
 
