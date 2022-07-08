@@ -528,31 +528,41 @@ describe('eth_getLogs', () => {
       const allLogsFromSubql = await subql.getAllLogs();
 
       /* -------------------- match block range -------------------- */
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
+      expectedLogs = allLogs.filter((l) => (
+        parseInt(l.blockNumber) >= 8 &&
+        parseInt(l.blockNumber) <= 11
+      ));
       res = await eth_getLogs([{ fromBlock: 8, toBlock: 11, topics: [[], null, []] }]);
       expectLogsEqual(res.data.result, expectedLogs);
 
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= 15);
-      res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 15, topics: [[], null, []] }]);
+      expectedLogs = allLogs.filter((l) => (
+        parseInt(l.blockNumber) <= 15
+      ));
+      res = await eth_getLogs([{ fromBlock: "earliest", toBlock: 15, topics: [[], null, []] }]);
       expectLogsEqual(res.data.result, expectedLogs);
 
       for (const log of allLogsFromSubql) {
         /* -------------------- match blockhash -------------------- */
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
+        expectedLogs = allLogs.filter((l) => (
+          parseInt(l.blockNumber) === parseInt(log.blockNumber)
+        ));
         res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         /* -------------------- match first topic -------------------- */
-        expectedLogs = allLogs.filter(
-          (l) => parseInt(l.blockNumber) === parseInt(log.blockNumber) && l.topics[0] === log.topics[0]
-        );
+        expectedLogs = allLogs.filter((l) => (
+          parseInt(l.blockNumber) === parseInt(log.blockNumber) &&
+          l.topics[0] === log.topics[0]
+        ));
         res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[log.topics[0], 'xxx'], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         /* -------------------- match range and topics -------------------- */
-        expectedLogs = allLogs.filter(
-          (l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 15 && l.topics[0] === log.topics[0]
-        );
+        expectedLogs = allLogs.filter((l) => (
+          parseInt(l.blockNumber) >= 8 &&
+          parseInt(l.blockNumber) <= 15 &&
+          l.topics[0] === log.topics[0]
+        ));
         res = await eth_getLogs([{ fromBlock: 8, toBlock: 15, topics: [['xxx', log.topics[0]]] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 

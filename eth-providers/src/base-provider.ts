@@ -1778,8 +1778,8 @@ export abstract class BaseProvider extends AbstractProvider {
       filter.toBlock = toBlockNumber;
     }
 
-    const rawLogs = await this.subql.getFilteredLogs(filter);
-    const filteredLogs = rawLogs.filter((log) => filterLogByTopics(log, filter.topics));
+    const subqlLogs = await this.subql.getFilteredLogs(filter); // only filtered by blockNumber and address
+    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
