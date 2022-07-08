@@ -32,11 +32,58 @@ describe('filterLog', () => {
     ...partialLog
   };
 
-  const log3 = {
-    address: addr3,
-    topics: [topic3],
-    ...partialLog
-  };
+  const goodAddrFilter2 = [
+    [],
+    addr2,
+    addr2.toUpperCase(),
+    [addr2],
+    [addr2, addr2],
+    [addr2, addr1],
+    [addr2.toLowerCase(), addr1]
+  ];
+
+  const badAddrFilter2 = [addr1, [addr1], [addr3, addr1], addr1.toUpperCase(), [addr3.toLowerCase(), addr1]];
+
+  const goodTopicsFilter1 = [
+    [],
+    [null],
+    [[]],
+    [[], null, [], null],
+    [[], null, [], null, 'overflowwwwwwwww', 'overflowwwwwwwww', 'overflowwwwwwwww'],
+    [topic1],
+    [[topic1]],
+    [[topic2, topic1, 'xxxxx']],
+    [topic1.toUpperCase()],
+    [topic1, null]
+  ];
+
+  const badTopicsFilter1 = [[topic2], [topic1, topic2], [null, [topic1]], [null, [topic2]]];
+
+  const goodTopicsFilter2 = [
+    [],
+    [null],
+    [[]],
+    [[], null, [], null],
+    [null, null, null],
+    [[], null, [], null, 'overflowwwwwwwww', 'overflowwwwwwwww', 'overflowwwwwwwww'],
+    [topic1],
+    [topic1, topic2.toUpperCase(), null, [], 'overflowwwwwwwww'],
+    [topic1.toUpperCase(), topic2, topic3],
+    [null, topic2, topic3],
+    [[topic2, topic1, 'xxxxx'], null, topic3, [], 'overflowwwwwwwww'],
+    [topic1.toUpperCase(), [topic2, topic1, 'xxxxx'], [], [], [], []],
+    [null, topic2, [topic3], []],
+    [[topic2, topic1, 'xxxxx'], null, [topic3], []]
+  ];
+
+  const badTopicsFilter2 = [
+    [topic3],
+    [[topic3]],
+    [[topic3], null, []],
+    [topic1, topic3],
+    [null, ['xxxxx']],
+    [null, null, null, ['xxxxx']]
+  ];
 
   it('when no filter', () => {
     expect(filterLog(log1, {})).to.equal(true);
@@ -44,50 +91,56 @@ describe('filterLog', () => {
   });
 
   it('filter by address', () => {
-    expect(filterLog(log1, { address: addr1 })).to.equal(true);
-    expect(filterLog(log1, { address: [addr1] })).to.equal(true);
-    expect(filterLog(log1, { address: [addr2, addr1] })).to.equal(true);
-    expect(filterLog(log1, { address: addr1.toUpperCase() })).to.equal(true);
-    expect(filterLog(log1, { address: [addr2.toLowerCase(), addr1] })).to.equal(true);
+    for (const address of goodAddrFilter2) {
+      expect(filterLog(log2, { address })).to.equal(true);
+    }
 
-    expect(filterLog(log3, { address: addr1 })).to.equal(false);
-    expect(filterLog(log3, { address: [addr1] })).to.equal(false);
-    expect(filterLog(log3, { address: [addr2, addr1] })).to.equal(false);
+    for (const address of badAddrFilter2) {
+      expect(filterLog(log2, { address })).to.equal(false);
+    }
   });
 
   it('filter by topics', () => {
-    expect(filterLog(log1, { topics: [topic1] })).to.equal(true);
-    expect(filterLog(log1, { topics: [topic1, topic2] })).to.equal(true);
-    expect(filterLog(log1, { topics: [null, [topic1], [topic2], null] })).to.equal(true);
+    for (const topics of goodTopicsFilter1) {
+      expect(filterLog(log1, { topics })).to.equal(true);
+    }
 
-    expect(filterLog(log1, { topics: [topic1.toUpperCase()] })).to.equal(true);
-    expect(filterLog(log1, { topics: [topic1, topic2.toLowerCase()] })).to.equal(true);
-    expect(filterLog(log1, { topics: [null, [topic1.toUpperCase()], [topic2.toLowerCase()], null] })).to.equal(true);
+    for (const topics of badTopicsFilter1) {
+      expect(filterLog(log1, { topics })).to.equal(false);
+    }
 
-    expect(filterLog(log2, { topics: [topic1] })).to.equal(true);
-    expect(filterLog(log2, { topics: [topic1, topic2] })).to.equal(true);
-    expect(filterLog(log2, { topics: [null, [topic1], [topic2], null] })).to.equal(true);
+    for (const topics of goodTopicsFilter2) {
+      expect(filterLog(log2, { topics })).to.equal(true);
+    }
 
-    expect(filterLog(log3, { topics: [topic1] })).to.equal(false);
-    expect(filterLog(log3, { topics: [topic1, topic2] })).to.equal(false);
-    expect(filterLog(log3, { topics: [null, [topic1], [topic2], null] })).to.equal(false);
+    for (const topics of badTopicsFilter2) {
+      expect(filterLog(log2, { topics })).to.equal(false);
+    }
   });
 
   it('filter by topics and logs', () => {
-    // addr1
-    expect(filterLog(log1, { address: addr1, topics: [topic1] })).to.equal(true);
-    expect(filterLog(log1, { address: addr1.toUpperCase(), topics: [topic1, topic3.toLowerCase()] })).to.equal(true);
-    expect(filterLog(log1, { address: addr1, topics: [null, [topic1.toUpperCase()], [topic2], null] })).to.equal(true);
+    for (const address of goodAddrFilter2) {
+      for (const topics of goodTopicsFilter2) {
+        expect(filterLog(log2, { address, topics })).to.equal(true);
+      }
+    }
 
-    expect(filterLog(log1, { address: addr2, topics: [topic1] })).to.equal(false);
-    expect(filterLog(log1, { address: addr2, topics: [topic1, topic3] })).to.equal(false);
-    expect(filterLog(log1, { address: addr2, topics: [null, [topic1], [topic2], null] })).to.equal(false);
-    expect(filterLog(log1, { address: addr1, topics: [topic2] })).to.equal(false);
-    expect(filterLog(log1, { address: addr1, topics: [null, [topic2], [topic3], null] })).to.equal(false);
+    for (const address of badAddrFilter2) {
+      for (const topics of goodTopicsFilter2) {
+        expect(filterLog(log2, { address, topics })).to.equal(false);
+      }
+    }
 
-    // addr2
-    expect(filterLog(log2, { address: addr2.toLowerCase(), topics: [topic1, topic2.toUpperCase()] })).to.equal(true);
-    expect(filterLog(log2, { address: addr2, topics: [topic2] })).to.equal(true);
-    expect(filterLog(log2, { address: addr1, topics: [topic1, topic2, topic3] })).to.equal(false);
+    for (const address of goodAddrFilter2) {
+      for (const topics of badTopicsFilter2) {
+        expect(filterLog(log2, { address, topics })).to.equal(false);
+      }
+    }
+
+    for (const address of badAddrFilter2) {
+      for (const topics of badTopicsFilter2) {
+        expect(filterLog(log2, { address, topics })).to.equal(false);
+      }
+    }
   });
 });

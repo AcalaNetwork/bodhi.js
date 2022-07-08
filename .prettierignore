@@ -94,3 +94,5 @@ lib
 
 # Prettier reformats code blocks inside Markdown, which affects rendered output
 *.md
+
+eth-rpc-adapter/src/__tests__/e2e/endpoint.test.ts
