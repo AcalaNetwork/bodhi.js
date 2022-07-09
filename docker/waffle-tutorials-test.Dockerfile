@@ -21,6 +21,7 @@ COPY eth-providers/package.json eth-providers/package.json
 COPY eth-rpc-adapter/package.json eth-rpc-adapter/package.json
 COPY eth-transactions/package.json eth-transactions/package.json
 
+COPY examples/hardhat-tutorials/advanced-escrow/package.json examples/hardhat-tutorials/advanced-escrow/package.json
 COPY examples/hardhat-tutorials/hello-world/package.json examples/hardhat-tutorials/hello-world/package.json
 COPY examples/hardhat-tutorials/echo/package.json examples/hardhat-tutorials/echo/package.json
 COPY examples/hardhat-tutorials/token/package.json examples/hardhat-tutorials/token/package.json

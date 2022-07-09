@@ -581,6 +581,12 @@
 
     /* ---------- hardhat examples ---------- */
     {
+      "packageName": "hardhat-tutorial-advanced-escrow",
+      "projectFolder": "examples/hardhat-tutorials/advanced-escrow",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
       "packageName": "hardhat-tutorial-hello-world",
       "projectFolder": "examples/hardhat-tutorials/hello-world",
       "reviewCategory": "tests",
