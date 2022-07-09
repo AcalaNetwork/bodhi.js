@@ -520,6 +520,27 @@ importers:
       '@truffle/hdwallet-provider': 1.7.0
       truffle-assertions: 0.9.2
 
+  ../../examples/truffle-tutorials/advanced-escrow:
+    specifiers:
+      '@acala-network/contracts': ^4.3.2
+      '@openzeppelin/contracts': ^4.4.2
+      '@polkadot/api': 8.1.1
+      '@truffle/hdwallet-provider': ^1.6.0
+      console.mute: ^0.3.0
+      ethers: ~5.5.0
+      truffle: ^5.4.19
+      truffle-assertions: ^0.9.2
+    dependencies:
+      truffle: 5.4.26
+    devDependencies:
+      '@acala-network/contracts': 4.3.2
+      '@openzeppelin/contracts': 4.4.2
+      '@polkadot/api': 8.1.1
+      '@truffle/hdwallet-provider': 1.7.0
+      console.mute: 0.3.0
+      ethers: 5.5.4
+      truffle-assertions: 0.9.2
+
   ../../examples/truffle-tutorials/echo:
     specifiers:
       '@truffle/hdwallet-provider': ^1.6.0

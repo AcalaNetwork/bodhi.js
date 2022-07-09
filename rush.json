@@ -631,6 +631,12 @@
 
     /* ---------- truffle examples ---------- */
     {
+      "packageName": "truffle-tutorial-advanced-escrow",
+      "projectFolder": "examples/truffle-tutorials/advanced-escrow",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
       "packageName": "truffle-tutorial-hello-world",
       "projectFolder": "examples/truffle-tutorials/hello-world",
       "reviewCategory": "tests",

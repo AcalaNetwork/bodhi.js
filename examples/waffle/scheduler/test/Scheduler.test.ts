@@ -148,7 +148,8 @@ describe('Schedule', () => {
     expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(3000).toString());
 
     current_block_number = Number(await provider.api.query.system.number());
-    while (current_block_number < inital_block_number + 17) {
+    // ISchedule task needs one more block
+    while (current_block_number < inital_block_number + 17 + 1) {
       await next_block(current_block_number);
       current_block_number = Number(await provider.api.query.system.number());
     }
@@ -157,9 +158,9 @@ describe('Schedule', () => {
     expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
     if (!process.argv.includes('--with-ethereum-compatibility')) {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(
-        formatAmount('4_999_959_514_791_933_000_000')
+        formatAmount('4_999_959_514_761_933_000_000')
       );
-      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_959_514_791_933'));
+      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_959_514_761_933'));
     } else {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(dollar.mul(5000000000).toString());
       expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(5000).toString());
