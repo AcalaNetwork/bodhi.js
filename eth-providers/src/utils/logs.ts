@@ -1,49 +1,58 @@
 import { Filter, Log, BlockTag } from '@ethersproject/abstract-provider';
 import { Log as LogGQL } from './gqlTypes';
 
-/* ---------------------------------------------------------- */
-/* --------------- log util for eth_subscribe --------------- */
-/* ---------------------------------------------------------- */
+export type TopicsFilter = (string | string[] | null)[] | undefined;
+export type AddressFilter = string | string[] | undefined;
+export interface SubscriptionLogFilter {
+  address?: string | string[];
+  topics?: TopicsFilter;
+}
 
-// TODO: optimize it to better bloom filter
-export const filterLog = (log: Log, filter: any): boolean => {
-  const { address: targetAddr, topics: targetTopics } = filter;
+// https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_newfilter
+export const filterLogByTopics = (log: Log, topics: TopicsFilter): boolean => {
+  if (!topics || topics.length === 0) return true;
 
-  if (targetAddr) {
-    if (typeof targetAddr === 'string') {
-      if (log.address.toLowerCase() !== targetAddr.toLowerCase()) return false;
-    } else if (Array.isArray(targetAddr)) {
-      if (!targetAddr.map((x: string) => x.toLowerCase()).includes(log.address.toLowerCase())) return false;
+  for (const [i, targetTopic] of topics.entries()) {
+    if (i > 3) break; // max 4 topics
+
+    const curTopic = log.topics[i]?.toLowerCase();
+    if (typeof targetTopic === 'string') {
+      if (curTopic !== targetTopic.toLowerCase()) return false;
+    } else if (Array.isArray(targetTopic) && targetTopic.length > 0) {
+      if (!targetTopic.map((x) => x.toLowerCase()).includes(curTopic)) return false;
     }
-  }
-
-  if (targetTopics?.length > 0) {
-    if (!log.topics?.length) return false;
-
-    const _targetTopics = targetTopics
-      .flat()
-      .filter((x: any) => x)
-      .map((x: string) => x.toLowerCase());
-    for (const t of log.topics) {
-      if (_targetTopics.includes(t.toLowerCase())) return true;
-    }
-
-    return false;
   }
 
   return true;
 };
 
+export const filterLogByAddress = (log: Log, targetAddr: AddressFilter): boolean => {
+  if (!targetAddr || (Array.isArray(targetAddr) && targetAddr.length === 0)) return true;
+
+  const logAddr = log.address.toLowerCase();
+  if (typeof targetAddr === 'string') {
+    if (logAddr !== targetAddr.toLowerCase()) return false;
+  } else if (Array.isArray(targetAddr)) {
+    if (!targetAddr.map((x) => x.toLowerCase()).includes(logAddr)) return false;
+  }
+
+  return true;
+};
+
+// it's for eth_subscribe, and a little bit different than general log filter
+export const filterLog = (log: Log, filter: SubscriptionLogFilter): boolean =>
+  filterLogByAddress(log, filter.address) && filterLogByTopics(log, filter.topics);
+
 /* --------------------------------------------------- */
 /* --------------- log utils for Subql --------------- */
 /* --------------------------------------------------- */
 
-const isDefined = (x: any): boolean => x !== undefined && x !== null;
-const isAnyDefined = (arr: any[]): boolean => arr.some((a) => isDefined(a));
+const isEffectiveFilter = (x: any): boolean => x !== undefined && x !== null && !(Array.isArray(x) && x.length === 0);
+const isAnyFilterEffective = (arr: any[]): boolean => arr.some((a) => isEffectiveFilter(a));
 
 const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTag | undefined): string => {
-  const fromBlockFilter = isDefined(fromBlock) ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
-  const toBlockFilter = isDefined(toBlock) ? `lessThanOrEqualTo: "${toBlock}"` : '';
+  const fromBlockFilter = isEffectiveFilter(fromBlock) ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
+  const toBlockFilter = isEffectiveFilter(toBlock) ? `lessThanOrEqualTo: "${toBlock}"` : '';
 
   return !!fromBlockFilter || !!toBlockFilter
     ? `blockNumber: {
@@ -56,32 +65,20 @@ const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTa
 const _getAddressFilter = (address: string | undefined): string =>
   address ? `address: { inInsensitive: ${JSON.stringify(Array.isArray(address) ? address : [address])}}` : '';
 
-const _getTopicsFilter = (topics: Array<string | Array<string> | null> | undefined): string => {
-  // NOTE: if needed in the future, we can implement actual nested topic filter.
-  // Now we just flat all topics
-  const allTopics = (topics?.length! > 0 ? topics!.flat() : []).filter((t) => t) as string[];
-
-  return `
-    topics: {
-      contains: ${JSON.stringify(allTopics)}
-    }
-  `;
-};
-
 export const getLogsQueryFilter = (filter: Filter): string => {
-  const { fromBlock, toBlock, address, topics } = filter;
-  if (!isAnyDefined([fromBlock, toBlock, address, topics])) {
+  const { fromBlock, toBlock, address } = filter;
+  if (!isAnyFilterEffective([fromBlock, toBlock, address])) {
     return '';
   }
 
   const addressFilter = _getAddressFilter(address);
   const blockNumberFilter = _getBlockNumberFilter(fromBlock, toBlock);
-  const topicsFilter = _getTopicsFilter(topics);
 
+  // subql don't filter topics since it's impossible to implement standard bloom filter here
+  // can still add some first round loose topics filter to decrease result size if needed
   const queryFilter = `(filter: {
     ${addressFilter}
     ${blockNumberFilter}
-    ${topicsFilter}
   })`;
 
   return queryFilter;

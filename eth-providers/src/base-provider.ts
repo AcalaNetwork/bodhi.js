@@ -78,7 +78,8 @@ import {
   sendTx,
   throwNotImplemented,
   getEffectiveGasPrice,
-  parseBlockTag
+  parseBlockTag,
+  filterLogByTopics
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -1777,7 +1778,8 @@ export abstract class BaseProvider extends AbstractProvider {
       filter.toBlock = toBlockNumber;
     }
 
-    const filteredLogs = await this.subql.getFilteredLogs(filter);
+    const subqlLogs = await this.subql.getFilteredLogs(filter); // only filtered by blockNumber and address
+    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
