@@ -89,9 +89,6 @@ services:
         condition: service_started
       eth-rpc-adapter-server-public-mandala:
         condition: service_started
-    # TODO: remove me after public mandala subql finished indexing
-    environment:
-      - SKIP_PUBLIC=1
 
   # ------------------------------------ #
   # ---------- No Subql Realm ---------- #
