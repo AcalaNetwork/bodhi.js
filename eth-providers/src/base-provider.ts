@@ -16,7 +16,7 @@ import {
   TransactionResponse
 } from '@ethersproject/abstract-provider';
 import { getAddress } from '@ethersproject/address';
-import { hexDataLength, hexlify, hexValue, isHexString, joinSignature } from '@ethersproject/bytes';
+import { hexDataLength, hexlify, hexValue, hexZeroPad, isHexString, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
@@ -706,15 +706,13 @@ export abstract class BaseProvider extends AbstractProvider {
     await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    // @TODO resolvedPosition
-    // eslint-disable-next-line
     const { address, blockHash, resolvedPosition } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockHash(blockTag),
       resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))
     });
 
-    const code = await this.queryStorage('evm.accountStorages', [address, position], blockHash);
+    const code = await this.queryStorage('evm.accountStorages', [address, hexZeroPad(resolvedPosition, 32)], blockHash);
 
     return code.toHex();
   };
