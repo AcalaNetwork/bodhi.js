@@ -1508,3 +1508,32 @@ describe('eth_getTransactionCount', () => {
     );
   });
 });
+
+describe.only('eth_getStorageAt', () => {
+  if (process.env.SKIP_PUBLIC) {
+    console.log('public mandala tests are skipped ❗');
+    return;
+  }
+
+  const eth_getStorageAt = rpcGet('eth_getStorageAt', PUBLIC_MANDALA_RPC_URL);
+
+  it('get correct storage from public mandala', async () => {
+    expect((await eth_getStorageAt([
+      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
+      1500000,
+    ])).data.result).to.equal('0x000000000000000000000000f4030f873d1f987908fee66dd2ebb9f9c5eda864');
+
+    expect((await eth_getStorageAt([
+      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
+      "0x0",
+      1500000,
+    ])).data.result).to.equal('0x000000000000000000000000f4030f873d1f987908fee66dd2ebb9f9c5eda864');
+
+    expect((await eth_getStorageAt([
+      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
+      "0x3",
+      1500000,
+    ])).data.result).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001');
+  });
+});
