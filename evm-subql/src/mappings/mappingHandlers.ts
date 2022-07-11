@@ -20,6 +20,7 @@ export async function handleEvmExtrinsic(
   const blockHash = block.block.hash.toHex();
   const blockNumber = block.block.header.number.toBigInt();
   const blockEvents = block.events;
+  const timestamp = block.timestamp;
   const txHash = extrinsic.hash.toHex();
 
   const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = evmInfo;
@@ -84,6 +85,7 @@ export async function handleEvmExtrinsic(
       topics: evmLog.topics,
       logIndex: BigInt(idx),
       receiptId,
+      timestamp,
       ...transactionInfo
     });
 
