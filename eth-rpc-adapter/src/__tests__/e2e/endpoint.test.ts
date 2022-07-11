@@ -1509,7 +1509,7 @@ describe('eth_getTransactionCount', () => {
   });
 });
 
-describe.only('eth_getStorageAt', () => {
+describe('eth_getStorageAt', () => {
   if (process.env.SKIP_PUBLIC) {
     console.log('public mandala tests are skipped ❗');
     return;
