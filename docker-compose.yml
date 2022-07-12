@@ -208,5 +208,7 @@ services:
       context: .
       dockerfile: docker/truffle-tutorials-test.Dockerfile
       target: truffle-tutorials
+    environment:
+      - ENDPOINT_URL=ws://mandala-node:9944
     depends_on:
       - eth-rpc-adapter-server
