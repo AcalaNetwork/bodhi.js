@@ -10,6 +10,7 @@ type Log @entity {
   transactionHash: String!
   logIndex: BigInt!
   receipt: TransactionReceipt
+  timestamp: Date
 }
 
 type TransactionReceipt @entity {
@@ -29,4 +30,5 @@ type TransactionReceipt @entity {
   type: BigInt
   status: BigInt!
   exitReason: String
+  timestamp: Date
 }
