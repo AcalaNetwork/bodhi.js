@@ -67,6 +67,7 @@ export async function handleEvmExtrinsic(
     type: BigInt(ret.type),
     status: BigInt(ret.status),
     exitReason: ret.exitReason,
+    timestamp,
     ...transactionInfo
   });
 

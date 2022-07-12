@@ -30,4 +30,5 @@ type TransactionReceipt @entity {
   type: BigInt
   status: BigInt!
   exitReason: String
+  timestamp: Date
 }
