@@ -465,32 +465,14 @@
     /* ---------- waffle examples ---------- */
     // TODO: combine them all to one repo?
     {
-      "packageName": "evm-waffle-example-dex",
-      "projectFolder": "examples/waffle/dex",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "evm-waffle-example-erc20",
-      "projectFolder": "examples/waffle/erc20",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "evm-waffle-example-oracle",
-      "projectFolder": "examples/waffle/oracle",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "evm-waffle-example-evm",
-      "projectFolder": "examples/waffle/evm",
-      "reviewCategory": "tests",
-      "shouldPublish": false
-    },
-    {
       "packageName": "evm-waffle-example-arbitrager",
       "projectFolder": "examples/waffle/arbitrager",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-dex",
+      "projectFolder": "examples/waffle/dex",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
@@ -501,20 +483,68 @@
       "shouldPublish": false
     },
     {
-      "packageName": "evm-waffle-example-scheduler",
-      "projectFolder": "examples/waffle/scheduler",
+      "packageName": "evm-waffle-example-erc20",
+      "projectFolder": "examples/waffle/erc20",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
-      "packageName": "evm-waffle-example-uniswap",
-      "projectFolder": "examples/waffle/uniswap",
+      "packageName": "evm-waffle-example-evm",
+      "projectFolder": "examples/waffle/evm",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-evm-accounts",
+      "projectFolder": "examples/waffle/evm-accounts",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
     {
       "packageName": "evm-waffle-example-hello-world",
       "projectFolder": "examples/waffle/hello-world",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-homa",
+      "projectFolder": "examples/waffle/homa",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-honzon",
+      "projectFolder": "examples/waffle/honzon",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-incentives",
+      "projectFolder": "examples/waffle/incentives",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-oracle",
+      "projectFolder": "examples/waffle/oracle",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-scheduler",
+      "projectFolder": "examples/waffle/scheduler",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-stable-asset",
+      "projectFolder": "examples/waffle/stable-asset",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "evm-waffle-example-uniswap",
+      "projectFolder": "examples/waffle/uniswap",
       "reviewCategory": "tests",
       "shouldPublish": false
     },
@@ -550,6 +580,12 @@
     },
 
     /* ---------- hardhat examples ---------- */
+    {
+      "packageName": "hardhat-tutorial-advanced-escrow",
+      "projectFolder": "examples/hardhat-tutorials/advanced-escrow",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
     {
       "packageName": "hardhat-tutorial-hello-world",
       "projectFolder": "examples/hardhat-tutorials/hello-world",
@@ -600,6 +636,12 @@
     },
 
     /* ---------- truffle examples ---------- */
+    {
+      "packageName": "truffle-tutorial-advanced-escrow",
+      "projectFolder": "examples/truffle-tutorials/advanced-escrow",
+      "reviewCategory": "tests",
+      "shouldPublish": false
+    },
     {
       "packageName": "truffle-tutorial-hello-world",
       "projectFolder": "examples/truffle-tutorials/hello-world",

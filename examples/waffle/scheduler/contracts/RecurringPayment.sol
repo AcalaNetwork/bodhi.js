@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@acala-network/contracts/schedule/ISchedule.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract RecurringPayment is ADDRESS {
     uint period;
@@ -9,7 +9,7 @@ contract RecurringPayment is ADDRESS {
     uint amount;
     address payable to;
     bool private initialized;
-    ISchedule scheduler = ISchedule(ADDRESS.Schedule);
+    ISchedule scheduler = ISchedule(ADDRESS.SCHEDULE);
 
     constructor(uint _period, uint _count, uint _amount, address payable _to) public {
         period = _period;

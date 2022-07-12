@@ -5,7 +5,7 @@ import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import RecurringPayment from '../build/RecurringPayment.json';
 import Subscription from '../build/Subscription.json';
-import ADDRESS from '@acala-network/contracts/utils/Address';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { getTestProvider } from '../../utils';
 
 use(evmChai);
@@ -39,7 +39,7 @@ describe('Schedule', () => {
 
   before(async () => {
     [wallet, walletTo, subscriber] = await provider.getWallets();
-    schedule = await new ethers.Contract(ADDRESS.Schedule, SCHEDULE_CALL_ABI, wallet as any);
+    schedule = await new ethers.Contract(ADDRESS.SCHEDULE, SCHEDULE_CALL_ABI, wallet as any);
   });
 
   after(async () => {
@@ -83,9 +83,9 @@ describe('Schedule', () => {
     expect(event.length).above(0);
 
     let decode_log = iface.parseLog((event[event.length - 1].event.data.toJSON() as any)[2][0]);
-    await expect(schedule.cancelCall(ethers.utils.hexlify(decode_log.args.task_id)))
+    await expect(schedule.cancelCall(ethers.utils.hexlify(decode_log.args.taskId)))
       .to.emit(schedule, 'CanceledCall')
-      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.task_id));
+      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.taskId));
   });
 
   it('RescheduleCall works', async () => {
@@ -105,9 +105,9 @@ describe('Schedule', () => {
     expect(event.length).above(0);
 
     let decode_log = iface.parseLog((event[event.length - 1].event.data.toJSON() as any)[2][0]);
-    await expect(schedule.rescheduleCall(5, ethers.utils.hexlify(decode_log.args.task_id)))
+    await expect(schedule.rescheduleCall(5, ethers.utils.hexlify(decode_log.args.taskId)))
       .to.emit(schedule, 'RescheduledCall')
-      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.task_id));
+      .withArgs(await wallet.getAddress(), ethers.utils.hexlify(decode_log.args.taskId));
   });
 
   it('works with RecurringPayment', async () => {
@@ -148,7 +148,8 @@ describe('Schedule', () => {
     expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(3000).toString());
 
     current_block_number = Number(await provider.api.query.system.number());
-    while (current_block_number < inital_block_number + 17) {
+    // ISchedule task needs one more block
+    while (current_block_number < inital_block_number + 17 + 1) {
       await next_block(current_block_number);
       current_block_number = Number(await provider.api.query.system.number());
     }
@@ -157,9 +158,9 @@ describe('Schedule', () => {
     expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
     if (!process.argv.includes('--with-ethereum-compatibility')) {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(
-        formatAmount('4_999_969_076_152_000_000_000')
+        formatAmount('4_999_959_514_761_933_000_000')
       );
-      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_969_076_152_000'));
+      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_959_514_761_933'));
     } else {
       expect((await provider.getBalance(transferTo)).toString()).to.equal(dollar.mul(5000000000).toString());
       expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(5000).toString());

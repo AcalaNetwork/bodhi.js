@@ -1,5 +1,5 @@
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
-import ADDRESS from '@acala-network/contracts/utils/Address';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { parseTransaction } from '@acala-network/eth-transactions';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';

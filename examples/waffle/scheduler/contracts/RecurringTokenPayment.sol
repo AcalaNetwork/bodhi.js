@@ -4,13 +4,13 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@acala-network/contracts/schedule/ISchedule.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract RecurringTokenPayment is ADDRESS {
     using SafeERC20 for IERC20;
     using SafeMath for uint;
 
-    ISchedule scheduler = ISchedule(ADDRESS.Schedule);
+    ISchedule scheduler = ISchedule(ADDRESS.SCHEDULE);
 
     function schedule(IERC20 _token, uint _period, uint _count, uint _amount, address _to) payable public {
         require(_count > 0, "invalid _count");

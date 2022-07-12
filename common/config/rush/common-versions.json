@@ -58,20 +58,23 @@
 
     // tutorials use these public versions instead of workspace:*
     "@acala-network/bodhi": [
-      "^2.4.11"
+      "^2.4.11",
+      "^2.4.12"
     ],
     "@acala-network/eth-providers": [
-      "^2.4.11"
+      "^2.4.11",
+      "^2.4.12"
     ],
 
     // these are mostly alternative versions used by tutorials
     "@acala-network/contracts": [
-      "~2.2.0",
-      "^4.2.0"
+      "~2.3.2",
+      "^4.3.2"
     ],
     "@openzeppelin/contracts": [
       "~3.4.2",
-      "~4.4.2"
+      "~4.4.2",
+      "^4.6.2"
     ],
     "@types/chai": [
       "^4.2.22"

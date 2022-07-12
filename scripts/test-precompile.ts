@@ -2,11 +2,8 @@ import { parseUnits, Interface } from 'ethers/lib/utils';
 import tokenAbi from '@acala-network/contracts/build/contracts/Token.json';
 import evmAbi from '@acala-network/contracts/build/contracts/EVM.json';
 import oracleAbi from '@acala-network/contracts/build/contracts/Oracle.json';
-import ADDRESS from '@acala-network/contracts/utils/Address';
-import {
-  eth_call,
-  eth_blockNumber,
-} from './utils';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
+import { eth_call, eth_blockNumber } from './utils';
 
 const TOKENS = [
   'ACA',
@@ -108,7 +105,7 @@ const getOracleInfo = async () => {
     try {
       const res = await eth_call([
         {
-          to: ADDRESS.Oracle,
+          to: ADDRESS.ORACLE,
           data
         },
         blockNumber

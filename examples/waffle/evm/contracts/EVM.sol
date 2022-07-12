@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@acala-network/contracts/evm/IEVM.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 contract EVM is ADDRESS {
     IEVM evm = IEVM(ADDRESS.EVM);
@@ -15,8 +15,8 @@ contract EVM is ADDRESS {
         return evm.storageDepositPerByte();
     }
 
-    function maintainerOf(address contract_address) public view returns (address) {
-        return evm.maintainerOf(contract_address);
+    function maintainerOf(address contractAddress) public view returns (address) {
+        return evm.maintainerOf(contractAddress);
     }
 
     function developerDeposit() public view returns (uint256) {
@@ -27,8 +27,8 @@ contract EVM is ADDRESS {
         return evm.publicationFee();
     }
 
-    function transferMaintainer(address contract_address, address new_maintainer) public returns (bool) {
-        return evm.transferMaintainer(contract_address, new_maintainer);
+    function transferMaintainer(address contractAddress, address newMaintainer) public returns (bool) {
+        return evm.transferMaintainer(contractAddress, newMaintainer);
     }
 
     function developerEnable() public returns (bool) {
@@ -43,7 +43,7 @@ contract EVM is ADDRESS {
         return evm.developerStatus(developer);
     }
 
-    function publishContract(address contract_address) public returns (bool) {
-        return evm.publishContract(contract_address);
+    function publishContract(address contractAddress) public returns (bool) {
+        return evm.publishContract(contractAddress);
     }
 }

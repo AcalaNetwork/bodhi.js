@@ -1,6 +1,6 @@
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import DEXABI from '@acala-network/contracts/build/contracts/DEX.json';
-import ADDRESS from '@acala-network/contracts/utils/Address';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { SubqlProvider } from '@acala-network/eth-providers/lib/utils/subqlProvider';
 import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers/src/consts';
 import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';
@@ -152,7 +152,7 @@ describe('eth_getTransactionReceipt', () => {
       from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
-      gasUsed: '0x19b45',
+      gasUsed: '0x19b03',
       logsBloom: DUMMY_LOGS_BLOOM,
       blockHash: txR.blockHash,
       transactionHash: txR.transactionHash,
@@ -173,7 +173,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0xa',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x6cdecaa4bc',
+      effectiveGasPrice: '0x7b501b0da7',
       status: '0x1',
       type: '0x0'
     });
@@ -185,7 +185,7 @@ describe('eth_getTransactionReceipt', () => {
       from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
-      gasUsed: '0x1e7a3',
+      gasUsed: '0x1e761',
       logsBloom: DUMMY_LOGS_BLOOM,
       blockHash: txR.blockHash,
       transactionHash: txR.transactionHash,
@@ -206,7 +206,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0x9',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x646a054c01',
+      effectiveGasPrice: '0x71ca23a4e3',
       status: '0x1',
       type: '0x0'
     });
@@ -218,7 +218,7 @@ describe('eth_getTransactionReceipt', () => {
       from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
-      gasUsed: '0x19b1a',
+      gasUsed: '0x19b5c',
       logsBloom: DUMMY_LOGS_BLOOM,
       blockHash: txR.blockHash,
       transactionHash: txR.transactionHash,
@@ -239,7 +239,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0x6',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x6ce88121dc',
+      effectiveGasPrice: '0x7b3ad33de2',
       status: '0x1',
       type: '0x0'
     });
@@ -288,7 +288,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0x14',
       cumulativeGasUsed: '0x0',
-      effectiveGasPrice: '0x7d610b6f2b',
+      effectiveGasPrice: '0x8885941ca0',
       status: '0x1',
       type: '0x0'
     });
@@ -621,7 +621,7 @@ describe('eth_getTransactionByHash', () => {
       blockHash: tx1.blockHash,
       blockNumber: '0xa',
       transactionIndex: '0x0',
-      gasPrice: '0x6cdecaa4bc',
+      gasPrice: '0x7b501b0da7',
       gas: '0x1e8481',
       input:
         '0x3d8d96200000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
@@ -640,7 +640,7 @@ describe('eth_getTransactionByHash', () => {
       blockHash: tx2.blockHash,
       blockNumber: '0x9',
       transactionIndex: '0x0',
-      gasPrice: '0x646a054c01',
+      gasPrice: '0x71ca23a4e3',
       gas: '0x1e8481',
       input:
         '0x3d8d962000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
@@ -659,7 +659,7 @@ describe('eth_getTransactionByHash', () => {
       blockHash: tx3.blockHash,
       blockNumber: '0x6',
       transactionIndex: '0x0',
-      gasPrice: '0x6ce88121dc',
+      gasPrice: '0x7b3ad33de2',
       gas: '0x1e8481',
       input:
         '0x6fc4b4e50000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
@@ -681,7 +681,7 @@ describe('eth_getTransactionByHash', () => {
       transactionIndex: '0x0',
       hash: tx4.transactionHash,
       from: ADDRESS_ALICE,
-      gasPrice: '0x7d610b6f2b',
+      gasPrice: '0x8885941ca0',
       value: '0x',
       gas: '0x200b20',
       input: '0x',
@@ -1480,10 +1480,10 @@ describe('eth_getBalance', () => {
   const eth_blockNumber = rpcGet('eth_blockNumber');
 
   it('get correct balance', async () => {
-    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 1])).data.result)).to.equal(8999999986402744000000000n);
-    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x5'])).data.result)).to.equal(8999997714052854289000000n);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 1])).data.result)).to.equal(8999999985535771315000000n);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x5'])).data.result)).to.equal(8999997676617576914000000n);
     expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(
-      8999994561761823172000000n
+      8999994504171725362000000n
     );
 
     const curBlock = (await eth_blockNumber([])).data.result;

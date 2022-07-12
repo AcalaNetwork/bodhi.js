@@ -8,7 +8,7 @@ import '@uniswap/v2-periphery/contracts/libraries/UniswapV2Library.sol';
 
 import "@acala-network/contracts/oracle/IOracle.sol";
 import "@acala-network/contracts/schedule/ISchedule.sol";
-import "@acala-network/contracts/utils/Address.sol";
+import "@acala-network/contracts/utils/MandalaAddress.sol";
 
 /// @title Arbitrager example
 /// @notice You can use this contract to deploy your arbitrager that uses the Scheduler to periodically swap tokens based on their value
@@ -58,7 +58,7 @@ contract Arbitrager is ADDRESS {
         initialized = true;
 
         // Call Scheduler smart contract and schedule a call of trigger() function
-        ISchedule(ADDRESS.Schedule).scheduleCall(
+        ISchedule(ADDRESS.SCHEDULE).scheduleCall(
                                         address(this),
                                         0,
                                         1000000,
@@ -74,7 +74,7 @@ contract Arbitrager is ADDRESS {
     function trigger() public {
         require(msg.sender == address(this), "Can only be called by this smart contract.");
         // Schedule another call with Scheduler
-        ISchedule(ADDRESS.Schedule).scheduleCall(
+        ISchedule(ADDRESS.SCHEDULE).scheduleCall(
                                         address(this),
                                         0,
                                         1000000,
@@ -84,8 +84,8 @@ contract Arbitrager is ADDRESS {
                                     );
 
         // Get prices of the tokens from the Oracle
-        uint256 priceA = IOracle(ADDRESS.Oracle).getPrice(address(tokenA));
-        uint256 priceB = IOracle(ADDRESS.Oracle).getPrice(address(tokenB));
+        uint256 priceA = IOracle(ADDRESS.ORACLE).getPrice(address(tokenA));
+        uint256 priceB = IOracle(ADDRESS.ORACLE).getPrice(address(tokenB));
 
         // Get balances of the tokens from the respective smart contracts
         uint256 balA = tokenA.balanceOf(address(this));
