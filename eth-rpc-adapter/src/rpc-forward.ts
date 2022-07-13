@@ -52,8 +52,7 @@ export class RpcForward extends EventEmitter {
 
     const callback = (error: Error | null, data: any) => {
       if (!subId) throw new Error('subscription id does not exist');
-      // @TODO does errors need to be sent to the client
-      logger.debug(`subscribt ${subId}`);
+      // @TODO Does the errors need to be sent to the client?
       if (error) {
         logger.error('forward subscription error', error);
         return;

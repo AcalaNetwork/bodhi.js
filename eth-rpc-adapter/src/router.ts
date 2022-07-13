@@ -58,7 +58,13 @@ export class Router {
         return { error: new JSONRPCError(`Error: ${message}`, 6969) };
       }
     } else if (this.#rpcForward && this.#rpcForward.isMethodValid(methodName)) {
-      return { result: await this.#rpcForward.send(methodName, params, ws) };
+      try {
+        return { result: await this.#rpcForward.send(methodName, params, ws) };
+      } catch (err: any) {
+        logger.error({ err, methodName, params }, 'forward request error');
+
+        return { error: new JSONRPCError(err.message, 6969) };
+      }
     } else {
       return { error: new MethodNotFound('Method not found', `The method ${methodName} does not exist`).json() };
     }
