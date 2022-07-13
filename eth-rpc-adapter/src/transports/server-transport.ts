@@ -23,7 +23,7 @@ export abstract class ServerTransport {
 
   protected async routerHandler({ id, method, params }: JSONRPCRequest, ws?: WebSocket): Promise<JSONRPCResponse> {
     let res: JSONRPCResponse = {
-      id: id || null,
+      id: id ?? null,
       jsonrpc: '2.0'
     };
 
