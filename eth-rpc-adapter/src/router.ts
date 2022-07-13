@@ -16,52 +16,57 @@ export class Router {
   }
 
   public async call(methodName: string, params: unknown[], ws?: WebSocket): Promise<Partial<JSONRPCResponse>> {
-    try {
-      if (this.#bridge.isMethodImplemented(methodName)) {
+    if (this.#bridge.isMethodImplemented(methodName)) {
+      try {
         return { result: await this.#bridge.send(methodName, params, ws) };
+      } catch (err: any) {
+        if (JSONRPCError.isJSONRPCError(err)) {
+          return { error: { code: err.code, message: err.message, data: err.data } };
+        }
+        if (typeof err === 'object' && err.code) {
+          let error = null;
+
+          if (err.code === EthLogger.errors.INVALID_ARGUMENT) {
+            error = new InvalidParams(err.message);
+          }
+
+          if (err.code === EthLogger.errors.UNSUPPORTED_OPERATION) {
+            error = new InvalidParams(err.message);
+          }
+
+          if (err.code === EthLogger.errors.NOT_IMPLEMENTED) {
+            error = new MethodNotFound(err.message);
+          }
+
+          if (error) {
+            return { error: error.json() };
+          }
+        }
+
+        logger.error({ err, methodName, params }, 'request error');
+
+        let message = err.message;
+        for (const pattern of ERROR_PATTERN) {
+          const match = message.match(pattern);
+          if (match) {
+            const error = this.#bridge.provider.api.registry.findMetaError(new Uint8Array([match[1], match[2]]));
+            message = `${error.section}.${error.name}: ${error.docs}`;
+            break;
+          }
+        }
+
+        return { error: new JSONRPCError(`Error: ${message}`, 6969) };
       }
-      if (this.#rpcForward && this.#rpcForward.isMethodValid(methodName)) {
+    } else if (this.#rpcForward && this.#rpcForward.isMethodValid(methodName)) {
+      try {
         return { result: await this.#rpcForward.send(methodName, params, ws) };
-      }
+      } catch (err: any) {
+        logger.error({ err, methodName, params }, 'forward request error');
 
+        return { error: new JSONRPCError(err.message, 6969) };
+      }
+    } else {
       return { error: new MethodNotFound('Method not found', `The method ${methodName} does not exist`).json() };
-    } catch (err: any) {
-      if (JSONRPCError.isJSONRPCError(err)) {
-        return { error: { code: err.code, message: err.message, data: err.data } };
-      }
-      if (typeof err === 'object' && err.code) {
-        let error = null;
-
-        if (err.code === EthLogger.errors.INVALID_ARGUMENT) {
-          error = new InvalidParams(err.message);
-        }
-
-        if (err.code === EthLogger.errors.UNSUPPORTED_OPERATION) {
-          error = new InvalidParams(err.message);
-        }
-
-        if (err.code === EthLogger.errors.NOT_IMPLEMENTED) {
-          error = new MethodNotFound(err.message);
-        }
-
-        if (error) {
-          return { error: error.json() };
-        }
-      }
-
-      logger.error({ err, methodName, params }, 'request error');
-
-      let message = err.message;
-      for (const pattern of ERROR_PATTERN) {
-        const match = message.match(pattern);
-        if (match) {
-          const error = this.#bridge.provider.api.registry.findMetaError(new Uint8Array([match[1], match[2]]));
-          message = `${error.section}.${error.name}: ${error.docs}`;
-          break;
-        }
-      }
-
-      return { error: new JSONRPCError(`Error: ${message}`, 6969) };
     }
   }
 
