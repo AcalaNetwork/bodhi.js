@@ -1,1 +1,1 @@
-export const version: string = 'bodhi.js/transactions/2.4.18';
+export const version: string = 'bodhi.js/transactions/2.4.19';
