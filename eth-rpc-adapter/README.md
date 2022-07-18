@@ -44,6 +44,7 @@ note that docker image might not be most up-to-date. Latest image can be found [
 | SAFE_MODE          | -s, --safe               | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
 | FORWARD_MODE          | -f, --forward         | 0                   | if enabled, the Substrate rpc will be forwarded to the Substrate node                                  |
 | LOCAL_MODE         | -l, --local              | 0                   | enable this mode when testing with locally running mandala                                              |
+| RICH_MODE         | -r, --rich              | 0                   | if enabled, default gas params is big enough for most contract deployment and calls                                              |
 | VERBOSE            | -v, --verbose            | 1                   | print some extra info                                                                                   |
 
 NOTE: Please don't mix using ENV and flags. `.env.sample` contains an example envs. 

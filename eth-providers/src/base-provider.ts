@@ -50,6 +50,7 @@ import {
   ERROR_PATTERN,
   LOCAL_MODE_MSG,
   PROD_MODE_MSG,
+  RICH_MODE_WARNING_MSG,
   SAFE_MODE_WARNING_MSG,
   U32MAX,
   U64MAX,
@@ -196,22 +197,13 @@ export interface EventData {
 export interface BaseProviderOptions {
   safeMode?: boolean;
   localMode?: boolean;
+  richMode?: boolean;
   verbose?: boolean;
   subqlUrl?: string;
   maxBlockCacheSize?: number;
   storageCacheSize?: number;
   healthCheckBlockDistance?: number;
 }
-
-export const defaultOpts: BaseProviderOptions = {
-  safeMode: false,
-  localMode: false,
-  verbose: false,
-  subqlUrl: undefined,
-  maxBlockCacheSize: 200,
-  storageCacheSize: 5000,
-  healthCheckBlockDistance: 100
-};
 
 export type NewBlockListener = (header: Header) => any;
 
@@ -227,6 +219,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly _listeners: EventListeners;
   readonly safeMode: boolean;
   readonly localMode: boolean;
+  readonly richMode: boolean;
   readonly verbose: boolean;
   readonly subql?: SubqlProvider;
   readonly maxBlockCacheSize: number;
@@ -243,17 +236,19 @@ export abstract class BaseProvider extends AbstractProvider {
   constructor({
     safeMode = false,
     localMode = false,
+    richMode = false,
     verbose = false,
     subqlUrl,
     maxBlockCacheSize = 200,
     storageCacheSize = 5000,
     healthCheckBlockDistance = 100
-  }: BaseProviderOptions = defaultOpts) {
+  }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
     this._listeners = {};
     this.safeMode = safeMode;
     this.localMode = localMode;
+    this.richMode = richMode;
     this.verbose = verbose;
     this.latestFinalizedBlockHash = undefined;
     this.latestFinalizedBlockNumber = undefined;
@@ -261,6 +256,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this._storageCache = new LRUCache({ max: storageCacheSize });
     this._healthCheckBlockDistance = healthCheckBlockDistance;
 
+    richMode && logger.warn(RICH_MODE_WARNING_MSG);
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     this.verbose && logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
 
@@ -746,6 +742,10 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getGasPrice = async (): Promise<BigNumber> => {
+    if (this.richMode) {
+      return (await this._getEthGas()).gasPrice;
+    }
+
     // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
     const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
     const currentHeader = await this.api.rpc.chain.getHeader();

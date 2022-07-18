@@ -25,6 +25,7 @@ export interface ServerArgs {
   safe: number | boolean;
   local: number | boolean;
   forward: number | boolean;
+  rich: number | boolean;
   verbose: number | boolean;
 }
 
@@ -39,6 +40,7 @@ export interface ServerOpts {
   safeMode: boolean;
   localMode: boolean;
   forwardMode: boolean;
+  richMode: boolean;
   verbose: boolean;
 }
 
@@ -59,12 +61,13 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
   forward: 0,
   safe: 0,
   local: 0,
+  rich: 0,
   verbose: 1
 };
 
 export const parseOptions = (): ServerOpts => {
   const argv = minimist<ServerArgs>(process.argv.slice(2), { default: DEFAULT_SERVER_ARGS });
-  const { e, h, w, s, l, f, v, endpoint, subql, safe, local, forward, verbose } = argv;
+  const { e, h, w, s, l, f, r, v, endpoint, subql, safe, local, forward, rich, verbose } = argv;
 
   dotenv.config();
   const {
@@ -78,6 +81,7 @@ export const parseOptions = (): ServerOpts => {
     SAFE_MODE,
     LOCAL_MODE,
     FORWARD_MODE,
+    RICH_MODE,
     VERBOSE
   } = process.env;
 
@@ -92,6 +96,7 @@ export const parseOptions = (): ServerOpts => {
     safeMode: !!Number(SAFE_MODE || s || safe),
     localMode: !!Number(LOCAL_MODE || local || l),
     forwardMode: !!Number(FORWARD_MODE || f || forward),
+    richMode: !!Number(RICH_MODE || r || rich),
     verbose: !!Number(VERBOSE || verbose || v)
   };
 };
