@@ -59,6 +59,12 @@ export const SAFE_MODE_WARNING_MSG = `
   ---------------------------------------------------------------------
 `;
 
+export const RICH_MODE_WARNING_MSG = `
+  ------------------------------------------- WARNING --------------------------------------------
+  🔥 RichMode is ON, default gas params are much bigger than normal in favor of testing contracts!
+  ------------------------------------------------------------------------------------------------
+`;
+
 export const CACHE_SIZE_WARNING = `
   ------------------- WARNING -------------------
   Max cached blocks is big, please be cautious!

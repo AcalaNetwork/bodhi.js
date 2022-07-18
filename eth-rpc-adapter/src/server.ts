@@ -14,6 +14,7 @@ export async function start(): Promise<void> {
   const provider = EvmRpcProvider.from(opts.endpoints.split(','), {
     safeMode: opts.safeMode,
     localMode: opts.localMode,
+    richMode: opts.richMode,
     verbose: opts.verbose,
     subqlUrl: opts.subqlUrl,
     maxBlockCacheSize: opts.maxBlockCacheSize,
@@ -65,6 +66,7 @@ export async function start(): Promise<void> {
   safe mode       : ${opts.safeMode}
   local mode      : ${opts.localMode}
   forward mode    : ${opts.forwardMode}
+  rich mode       : ${opts.richMode}
   verbose         : ${opts.verbose}
   --------------------------------------------
   `);
