@@ -25,6 +25,7 @@ export interface ServerArgs {
   safe: number | boolean;
   local: number | boolean;
   forward: number | boolean;
+  rich: number | boolean;
   verbose: number | boolean;
 }
 
@@ -60,6 +61,7 @@ const DEFAULT_SERVER_ARGS: ServerArgs = {
   forward: 0,
   safe: 0,
   local: 0,
+  rich: 0,
   verbose: 1
 };
 
