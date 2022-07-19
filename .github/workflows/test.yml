@@ -163,8 +163,6 @@ jobs:
       - name: build
         run: node common/scripts/install-run-rush.js build -t @acala-network/bodhi
 
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
         run: cd bodhi && yarn test
         env:
@@ -189,8 +187,5 @@ jobs:
 
       - name: build
         run: node common/scripts/install-run-rush.js build -t @acala-network/eth-transactions
-
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
         run: cd eth-transactions && yarn test
