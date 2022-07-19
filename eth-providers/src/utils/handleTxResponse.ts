@@ -2,17 +2,23 @@
 import { ApiPromise, SubmittableResult } from '@polkadot/api';
 import { hexToString } from '@polkadot/util';
 
+// https://ethereum.stackexchange.com/questions/84545/how-to-get-reason-revert-using-web3-eth-call
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
-export function decodeMessage(reason: any, code: string): string {
+export function decodeMessage(reason: any, code?: string): string {
   const reasonString = JSON.stringify(reason).toLowerCase();
-  let codeString = `0x${code.substr(138)}`.replace(/0+$/, '');
 
-  // If the codeString is an odd number of characters, add a trailing 0
-  if (codeString.length % 2 === 1) {
-    codeString += '0';
+  if (code) {
+    let codeString = `0x${code.substring(138)}`.replace(/0+$/, '');
+
+    // If the codeString is an odd number of characters, add a trailing 0
+    if (codeString.length % 2 === 1) {
+      codeString += '0';
+    }
+
+    return `${reasonString} ${hexToString(codeString)}`;
+  } else {
+    return reasonString;
   }
-
-  return `${reasonString} ${hexToString(codeString)}`;
 }
 
 function makeError<T>(message: string, props: T): Error {
@@ -58,10 +64,13 @@ export function handleTxResponse(
 
             reject(makeError(message, { result }));
           } else if (method === 'ExtrinsicSuccess') {
-            const failed = createdFailed || executedFailed;
-            if (failed) {
+            if (createdFailed || executedFailed) {
+              const [exitReason, output] = createdFailed
+                ? [createdFailed.event.data[2].toJSON(), '']
+                : [executedFailed!.event.data[2].toJSON(), executedFailed!.event.data[3].toJSON() || ''];
+
               reject(
-                makeError(decodeMessage(failed.event.data[2].toJSON(), failed.event.data[3].toJSON() as string), {
+                makeError(decodeMessage(exitReason, output as string), {
                   result
                 })
               );
