@@ -4,3 +4,4 @@ export * from './SigningKey';
 export * from './AccountSigningKey';
 export * from './TestProvider';
 export * from './evmChai';
+export * from './utils';
