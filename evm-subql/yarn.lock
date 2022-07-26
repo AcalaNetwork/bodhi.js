@@ -24,18 +24,18 @@
     "@polkadot/api" "^8.5.1"
     "@polkadot/rpc-core" "^8.5.1"
 
-"@acala-network/contracts@~4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@acala-network/contracts/-/contracts-4.2.0.tgz#171040db0117bdd9b33bb0a449b4a940363de75e"
-  integrity sha512-IT63HPWsHPeHy8zCr71wAztghrFdscLzZlYdcvewEuBGWkRpHFlZ4i32kADYPv6UAT9ew7en6nqOWJa48CaliQ==
+"@acala-network/contracts@~4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@acala-network/contracts/-/contracts-4.3.2.tgz#1a886d7d67d9aea2e9923e68e830b4295ae55cb3"
+  integrity sha512-y/55NNNkbicesWq2lbWsnuIl8PBTXfE7xkIilrWeaj6k7nHnkS1ugXuRdHKTAlEoxewdKbnLtbCXe79wqMhzEA==
 
-"@acala-network/eth-providers@^2.4.15":
-  version "2.4.15"
-  resolved "https://registry.npmjs.org/@acala-network/eth-providers/-/eth-providers-2.4.15.tgz#17db215e8bd45a4dd1745a1b8a6a2ebadfbe3600"
-  integrity sha512-LMB7P1BfnkFXpf40Ry1fGdNgXmGQha9CPXxF2pIWfoy7bwDSfnt0VBcW4bETVuesBHIOveyoAdMbEC+h3H2x2g==
+"@acala-network/eth-providers@^2.4.20":
+  version "2.4.20"
+  resolved "https://registry.yarnpkg.com/@acala-network/eth-providers/-/eth-providers-2.4.20.tgz#e1f994391722ef188117d00d4f66950300d5d9cb"
+  integrity sha512-ZY1dov2gms6mWYIypVr0Yd8hcp/EhEepcm4Q5XxlQocl541s1PAIrfdRAeDdzHv2hUsGQiDGYZ5NuMbPhbpGGg==
   dependencies:
-    "@acala-network/contracts" "~4.2.0"
-    "@acala-network/eth-transactions" "2.4.15"
+    "@acala-network/contracts" "~4.3.2"
+    "@acala-network/eth-transactions" "2.4.20"
     "@acala-network/types" "~4.1.5"
     "@ethersproject/abstract-provider" "~5.5.0"
     "@ethersproject/address" "~5.5.0"
@@ -60,10 +60,10 @@
     graphql-request "~3.6.1"
     lru-cache "~7.8.2"
 
-"@acala-network/eth-transactions@2.4.15":
-  version "2.4.15"
-  resolved "https://registry.npmjs.org/@acala-network/eth-transactions/-/eth-transactions-2.4.15.tgz#14fd7a81d0b9ee920991630c1fe5cbb6cfd85df0"
-  integrity sha512-pZt+iGJPGJBViZbL5io6E6ivF8PdYUq72jBwBoiM263mJxIoOFYgoq0xdWYFvYS1Yp3KDL9dyMiiC9BxWbaBkg==
+"@acala-network/eth-transactions@2.4.20":
+  version "2.4.20"
+  resolved "https://registry.yarnpkg.com/@acala-network/eth-transactions/-/eth-transactions-2.4.20.tgz#f5b544b8a5e913900687625aa0a476979e120e97"
+  integrity sha512-LsXJcAJwfgEn9bnnuWsrmjqoXOkoJsZN/FJew+6pM2u0H7EbIdgpzwpE0RlK2yvK93QkyyTp0wl7oTXp5zKYuA==
   dependencies:
     "@ethersproject/address" "~5.5.0"
     "@ethersproject/bignumber" "~5.5.0"
