@@ -5,17 +5,23 @@ dotenv.config();
 
 export const MANDALA_RPC = 'https://tc7-eth.aca-dev.network';
 export const MANDALA_RPC_WS = 'wss://tc7-eth.aca-dev.network/ws';
-export const MANDALA_RPC_SUBQL = 'https://mandala-eth-rpc-adapter.thechaindata.com/public';
-export const MANDALA_RPC_WS_SUBQL = 'wss://mandala-eth-rpc-adapter.thechaindata.com/public-ws';
+
+export const MANDALA_RPC_SUBQL_OLD = 'https://acala-mandala-adapter.api.onfinality.io/public';
+export const MANDALA_RPC_WS_SUBQL_OLD = 'wss://acala-mandala-adapter.api.onfinality.io/public-ws';
+
+export const MANDALA_RPC_SUBQL = 'https://acala-mandala.api.onfinality.io/public';
+export const MANDALA_RPC_WS_SUBQL = 'wss://acala-mandala.api.onfinality.io/public-ws';
+
 export const KARURA_TESTNET_RPC = 'https://karura-dev.aca-dev.network/eth/http';
 export const ACALA_TESTNET_RPC = 'https://acala-dev.aca-dev.network/eth/http';
+
 export const KARURA_MAINNET_RPC = 'https://eth-rpc-karura.aca-api.network';
 export const RPC_URL = process.env.RPC_URL || MANDALA_RPC;
 
 // console.log('RPC_URL: ', RPC_URL)
 
 export const rpcGet =
-  (method: string, url?: string = RPC_URL) =>
+  (method: string, url: string = RPC_URL) =>
   (params: any): any =>
     axios.get(url, {
       data: {
@@ -26,6 +32,8 @@ export const rpcGet =
       }
     });
 
+export const rpcGetBatch = (data: any[], url: string = RPC_URL) => axios.get(url, { data });
+
 export const eth_call = rpcGet('eth_call');
 export const eth_blockNumber = rpcGet('eth_blockNumber');
 export const eth_getCode = rpcGet('eth_getCode');
@@ -33,7 +41,7 @@ export const eth_getCode = rpcGet('eth_getCode');
 export const sleep = (interval = 1000): Promise<null> =>
   new Promise((resolve) => setTimeout(() => resolve(null), interval));
 
-export const runWithRetries = async <F extends AnyFunction>(
+export const runWithRetries = async <F>(
   fn: F,
   args: any[] = [],
   maxRetries: number = 1000,
@@ -58,7 +66,7 @@ export const runWithRetries = async <F extends AnyFunction>(
 };
 
 const TIME_OUT = 20000; // 20s
-export const runWithTiming = async <F extends AnyFunction>(
+export const runWithTiming = async <F>(
   fn: F
 ): Promise<{
   time: number;

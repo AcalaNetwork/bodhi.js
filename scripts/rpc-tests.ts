@@ -6,7 +6,9 @@ import {
   runWithTiming,
   sleep,
   MANDALA_RPC_WS,
-  MANDALA_RPC_WS_SUBQL
+  MANDALA_RPC_WS_SUBQL,
+  rpcGetBatch,
+  MANDALA_RPC_SUBQL_OLD
 } from './utils';
 
 const queryBothRpc = async (method: string, params: any = []): Promise<void> => {
@@ -16,7 +18,27 @@ const queryBothRpc = async (method: string, params: any = []): Promise<void> => 
     runWithTiming(async () => (await rpcGet(method, MANDALA_RPC_SUBQL)(params)).data.result)
   ]);
 
-  console.log(res1, res2);
+  if (process.env.TIME_ONLY) {
+    console.log(res1.time, res2.time);
+  } else {
+    console.log(res1, res2);
+  }
+  console.log('--------------------------------------------');
+  console.log('');
+};
+
+const queryBothRpcBatch = async (data: any): Promise<void> => {
+  console.log(`===== batch calls =====`);
+  const [res1, res2] = await Promise.all([
+    runWithTiming(async () => (await rpcGetBatch(data, MANDALA_RPC)).data),
+    runWithTiming(async () => (await rpcGetBatch(data, MANDALA_RPC_SUBQL)).data)
+  ]);
+
+  if (process.env.TIME_ONLY) {
+    console.log(res1.time, res2.time);
+  } else {
+    console.log(res1, res2);
+  }
   console.log('--------------------------------------------');
   console.log('');
 };
@@ -35,6 +57,28 @@ const run = async () => {
   await queryBothRpc('eth_gasPrice');
   await queryBothRpc('eth_getEthGas');
   await queryBothRpc('eth_getTransactionCount', ['0x75E480dB528101a381Ce68544611C169Ad7EB342', 'latest']);
+
+  /* --------------- batch queries --------------- */
+  await queryBothRpcBatch([
+    {
+      id: 0,
+      jsonrpc: '2.0',
+      method: 'eth_blockNumber',
+      params: []
+    },
+    {
+      id: 0,
+      jsonrpc: '2.0',
+      method: 'eth_gasPrice',
+      params: []
+    },
+    {
+      id: 0,
+      jsonrpc: '2.0',
+      method: 'eth_getEthGas',
+      params: []
+    }
+  ]);
 
   /* --------------- subquery --------------- */
   await queryBothRpc('eth_getTransactionReceipt', [
