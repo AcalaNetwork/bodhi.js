@@ -173,7 +173,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0xa',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x7b501b0da7',
+      effectiveGasPrice: '0x7b0bab919c',
       status: '0x1',
       type: '0x0'
     });
@@ -206,7 +206,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0x9',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x71ca23a4e3',
+      effectiveGasPrice: '0x718ab767b7',
       status: '0x1',
       type: '0x0'
     });
@@ -239,7 +239,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0x6',
       cumulativeGasUsed: '0x0', // FIXME:
-      effectiveGasPrice: '0x7b3ad33de2',
+      effectiveGasPrice: '0x7af66a81f4',
       status: '0x1',
       type: '0x0'
     });
@@ -288,7 +288,7 @@ describe('eth_getTransactionReceipt', () => {
       ],
       blockNumber: '0x14',
       cumulativeGasUsed: '0x0',
-      effectiveGasPrice: '0x8885941ca0',
+      effectiveGasPrice: '0x88509146bb',
       status: '0x1',
       type: '0x0'
     });
@@ -621,7 +621,7 @@ describe('eth_getTransactionByHash', () => {
       blockHash: tx1.blockHash,
       blockNumber: '0xa',
       transactionIndex: '0x0',
-      gasPrice: '0x7b501b0da7',
+      gasPrice: '0x7b0bab919c',
       gas: '0x1e8481',
       input:
         '0x3d8d96200000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
@@ -640,7 +640,7 @@ describe('eth_getTransactionByHash', () => {
       blockHash: tx2.blockHash,
       blockNumber: '0x9',
       transactionIndex: '0x0',
-      gasPrice: '0x71ca23a4e3',
+      gasPrice: '0x718ab767b7',
       gas: '0x1e8481',
       input:
         '0x3d8d962000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
@@ -659,7 +659,7 @@ describe('eth_getTransactionByHash', () => {
       blockHash: tx3.blockHash,
       blockNumber: '0x6',
       transactionIndex: '0x0',
-      gasPrice: '0x7b3ad33de2',
+      gasPrice: '0x7af66a81f4',
       gas: '0x1e8481',
       input:
         '0x6fc4b4e50000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
@@ -681,7 +681,7 @@ describe('eth_getTransactionByHash', () => {
       transactionIndex: '0x0',
       hash: tx4.transactionHash,
       from: ADDRESS_ALICE,
-      gasPrice: '0x8885941ca0',
+      gasPrice: '0x88509146bb',
       value: '0x',
       gas: '0x200b20',
       input: '0x',
@@ -1480,10 +1480,10 @@ describe('eth_getBalance', () => {
   const eth_blockNumber = rpcGet('eth_blockNumber');
 
   it('get correct balance', async () => {
-    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 1])).data.result)).to.equal(8999999985535771315000000n);
-    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x5'])).data.result)).to.equal(8999997676617576914000000n);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 1])).data.result)).to.equal(8999999985551883010000000n);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x5'])).data.result)).to.equal(8999997677492936234000000n);
     expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(
-      8999994504171725362000000n
+      8999994505421550638000000n
     );
 
     const curBlock = (await eth_blockNumber([])).data.result;
