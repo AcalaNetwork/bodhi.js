@@ -5,11 +5,20 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "heft build --clean",
-    "build:watch": "heft build",
-    "watch": "rush build:watch --to @acala-network/bodhi",
+    "build": "rimraf dist && rollup -c",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "mocha **/*.test.ts"
+  },
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
@@ -49,6 +58,7 @@
     "rollup-plugin-node-externals": "^4.1.1",
     "@types/node": "~16.10.1",
     "rollup-plugin-typescript2": "~0.32.1",
-    "tslib": "~2.4.0"
+    "tslib": "~2.4.0",
+    "rimraf": "~3.0.2"
   }
 }

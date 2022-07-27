@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { SignerProvider } from '@acala-network/eth-providers';
-import { handleTxResponse } from '@acala-network/eth-providers/lib';
+import { handleTxResponse } from '@acala-network/eth-providers/utils';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
 import {

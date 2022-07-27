@@ -1,7 +1,7 @@
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import DEXABI from '@acala-network/contracts/build/contracts/DEX.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { SubqlProvider } from '@acala-network/eth-providers/lib/utils/subqlProvider';
+import { SubqlProvider } from '@acala-network/eth-providers/utils';
 import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers/src/consts';
 import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { Log } from '@ethersproject/abstract-provider';

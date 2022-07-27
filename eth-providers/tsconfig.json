@@ -3,13 +3,13 @@
     "transpileOnly": true
   },
   "compilerOptions": {
-    "outDir": "lib",
+    "outDir": "dist",
     "rootDirs": ["src", "/node_modules"],
 
     "declaration": true,
     "declarationMap": true,
 
-    "module": "commonjs",
+    "module": "esnext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2020",
@@ -20,7 +20,10 @@
     "baseUrl": ".",
     "strict": true,
     "allowJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@acala-network/eth-transactions": ["../eth-transactions/src/index.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules/*", "**/__tests__"]

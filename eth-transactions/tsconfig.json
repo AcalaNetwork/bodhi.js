@@ -3,13 +3,13 @@
     "transpileOnly": true
   },
   "compilerOptions": {
-    "outDir": "lib",
+    "outDir": "dist",
     "rootDirs": ["src", "/node_modules"],
 
     "declaration": true,
     "declarationMap": true,
 
-    "module": "commonjs",
+    "module": "esnext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2020",

@@ -6,15 +6,24 @@
   "author": "Acala Developers <hello@acala.network>",
   "bin": "./bin/eth-rpc-adapter.js",
   "scripts": {
-    "build": "heft build --clean",
-    "build:watch": "heft build",
-    "watch": "rush build:watch --to @acala-network/eth-rpc-adapter",
+    "build": "rimraf dist && rollup -c",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "mocha **/*.test.ts --ignore **/e2e/**",
     "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",
     "test:CI": "mocha **/*.test.ts --timeout 300000",
     "start": "ts-node src/index",
     "dev": "nodemon --watch \"*\" --ext \"js,ts,json\" --ignore \"src/**/*.{spec,test}.ts\" --exec \"ts-node src/index.ts\" | pino-pretty"
+  },
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs"
+    }
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
@@ -60,6 +69,16 @@
     "pino-pretty": "~7.0.1",
     "ts-node": "~10.7.0",
     "typescript": "~4.6.3",
-    "@polkadot/types": "8.1.1"
+    "@polkadot/types": "8.1.1",
+    "@rollup/plugin-alias": "^3.1.9",
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.77.0",
+    "rollup-plugin-dts": "^4.2.2",
+    "rollup-plugin-node-externals": "^4.1.1",
+    "rollup-plugin-typescript2": "~0.32.1",
+    "tslib": "~2.4.0",
+    "rimraf": "~3.0.2"
   }
 }

@@ -20,7 +20,11 @@
     "baseUrl": ".",
     "strict": true,
     "allowJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@acala-network/eth-providers": ["../eth-providers/src/index.ts"],
+      "@acala-network/eth-providers/utils": ["../eth-providers/src/utils/index.ts"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules/*", "**/e2e/*", "**/*.(test|spec).ts"]
