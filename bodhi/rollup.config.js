@@ -1,50 +1,35 @@
-import { builtinModules } from 'module';
-import esbuild from 'rollup-plugin-esbuild';
-import dts from 'rollup-plugin-dts';
-import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-import alias from '@rollup/plugin-alias';
+import resolve from '@rollup/plugin-node-resolve';
+import { builtinModules } from 'module';
 import { defineConfig } from 'rollup';
+import externals from 'rollup-plugin-node-externals';
+import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 
 const entries = {
-  index: 'src/index.ts',
-  server: 'src/server.ts',
-  types: 'src/types.ts',
-  client: 'src/client.ts',
-  utils: 'src/utils.ts',
-  cli: 'src/cli.ts',
-  hmr: 'src/hmr/index.ts'
+  index: 'src/index.ts'
 };
 
 const external = [
   ...builtinModules,
   ...Object.keys(pkg.dependencies || {}),
-  ...Object.keys(pkg.peerDependencies || {}),
-  'pathe',
-  'birpc',
-  'vite',
-  'url',
-  'events'
+  ...Object.keys(pkg.peerDependencies || {})
 ];
 
 const plugins = [
-  alias({
-    entries: [{ find: /^node:(.+)$/, replacement: '$1' }]
-  }),
+  externals(),
   resolve({
     preferBuiltins: true
   }),
   json(),
   commonjs(),
-  esbuild({
-    target: 'node14'
-  })
+  typescript()
 ];
 
 function onwarn(message) {
   if (message.code === 'EMPTY_BUNDLE') return;
+  if (message.code === 'PREFER_NAMED_EXPORTS') return;
   console.error(message);
 }
 
@@ -71,17 +56,6 @@ export default defineConfig([
     },
     external,
     plugins,
-    onwarn
-  },
-  {
-    input: entries,
-    output: {
-      dir: 'dist',
-      entryFileNames: '[name].d.ts',
-      format: 'esm'
-    },
-    external,
-    plugins: [dts({ respectExternal: true })],
     onwarn
   }
 ]);

@@ -16,7 +16,7 @@ import { Logger } from '@ethersproject/logger';
 import { Deferrable, defineReadOnly } from '@ethersproject/properties';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { SubmittableResult } from '@polkadot/api';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { SigningKey } from './SigningKey';
