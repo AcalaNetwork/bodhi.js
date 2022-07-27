@@ -16,7 +16,7 @@ export const RPC_URL = process.env.RPC_URL || MANDALA_RPC;
 
 export const rpcGet =
   (method: string, url?: string = RPC_URL) =>
-  (params: any): any =>
+  (params: any = []): any =>
     axios.get(url, {
       data: {
         id: 0,
