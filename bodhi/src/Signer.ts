@@ -253,6 +253,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     // @TODO create contract
     if (!tx.to) {
       extrinsic = this.provider.api.tx.evm.create(
+        // @ts-ignore
         tx.data,
         toBN(tx.value),
         toBN(gasLimit),
@@ -262,6 +263,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     } else {
       extrinsic = this.provider.api.tx.evm.call(
         tx.to,
+        // @ts-ignore
         tx.data,
         toBN(tx.value),
         toBN(gasLimit),
