@@ -46,6 +46,23 @@ export interface HealthData {
 export const sleep = (interval = 1000): Promise<null> =>
   new Promise((resolve) => setTimeout(() => resolve(null), interval));
 
+export const promiseWithTimeout = <T>(value: any, interval = 1000) => {
+  let timeoutHandle: any;
+  const timeoutPromise = new Promise((resolve) => {
+    timeoutHandle = setTimeout(() => resolve(null), interval);
+  });
+
+  return Promise.race([value, timeoutPromise])
+    .then((result) => {
+      clearTimeout(timeoutHandle);
+      return result;
+    })
+    .catch((error) => {
+      clearTimeout(timeoutHandle);
+      return Promise.reject(error);
+    });
+};
+
 export const isEVMExtrinsic = (e: Extrinsic): boolean => e.method.section.toUpperCase() === 'EVM';
 
 export const runWithRetries = async <F extends AnyFunction>(
@@ -205,7 +222,7 @@ export const runWithTiming = async <F extends AnyFunction>(
 
   try {
     for (let i = 0; i < repeats; i++) {
-      res = await Promise.race([fn(), sleep(TIME_OUT)]);
+      res = await promiseWithTimeout(fn(), TIME_OUT);
 
       // fn should always return something
       if (res === null) {
