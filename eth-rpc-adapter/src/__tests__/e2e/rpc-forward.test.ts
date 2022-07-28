@@ -2,7 +2,7 @@ import { EvmRpcProvider } from '@acala-network/eth-providers';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import dotenv from 'dotenv';
-import { describe, it } from 'vitest';
+import { describe, it, afterAll } from 'vitest';
 import { RpcForward } from '../../rpc-forward';
 
 dotenv.config();
@@ -49,7 +49,7 @@ describe('rpc forward test', () => {
     expect(Array.isArray(result.methods)).true;
   });
 
-  after(() => {
+  afterAll(() => {
     provider.disconnect();
   });
 });

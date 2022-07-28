@@ -13,7 +13,7 @@ import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
 import { Interface, parseUnits } from 'ethers/lib/utils';
-import { describe, it } from 'vitest';
+import { describe, it, afterAll, beforeAll } from 'vitest';
 import {
   ADDRESS_ALICE, allLogs, deployHelloWorldData, evmAccounts, log22_0,
   log22_1, mandalaBlock1265918, mandalaBlock1265919, mandalaBlock1265928, mandalaContractCallTx, mandalaContractCallTxReceipt, mandalaContractDeployTx, mandalaContractDeployTxReceipt, mandalaTransferTx, mandalaTransferTxReceipt
@@ -60,7 +60,7 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
 };
 
 // some tests depend on the deterministic setup or mandala node connection
-before('env setup', async () => {
+beforeAll('env setup', async () => {
   if (process.env.SKIP_CHECK) return;
 
   try {
@@ -771,7 +771,7 @@ describe('eth_sendRawTransaction', () => {
     genesisHash = api.genesisHash.toHex(); // TODO: why EIP-712 salt has to be genesis hash?
   });
 
-  after(async () => {
+  afterAll(async () => {
     await api.disconnect();
   });
 
