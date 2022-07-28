@@ -1,15 +1,14 @@
 {
   "name": "@acala-network/eth-providers",
   "version": "2.4.20",
-  "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
-    "test": "mocha **/*.test.ts --ignore **/e2e/**",
-    "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",
-    "test:CI": "mocha **/*.test.ts --timeout 300000",
+    "test": "vitest __tests__",
+    "test:dev": "vitest __tests__",
+    "test:CI": "vitest --run __tests__",
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "type": "module",
@@ -85,6 +84,7 @@
     "tslib": "~2.4.0",
     "rimraf": "~3.0.2",
     "rollup-plugin-esbuild": "^4.9.1",
-    "esbuild": "~0.14.49"
+    "esbuild": "~0.14.49",
+    "vitest": "~0.19.1"
   }
 }

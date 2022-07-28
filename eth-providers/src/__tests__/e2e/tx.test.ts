@@ -10,6 +10,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import dotenv from 'dotenv';
 import { Interface, parseUnits } from 'ethers/lib/utils';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { calcEthereumTransactionParams, sendTx } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
@@ -40,7 +41,7 @@ describe('transaction tests', () => {
   let txGasLimit: BigNumber;
   let txGasPrice: BigNumber;
 
-  before('prepare common variables', async () => {
+  beforeAll('prepare common variables', async () => {
     await provider.isReady();
 
     chainId = await provider.chainId();
@@ -56,7 +57,7 @@ describe('transaction tests', () => {
     }));
   });
 
-  after('clean up', async () => {
+  afterAll('clean up', async () => {
     await provider.disconnect();
   });
 
@@ -152,7 +153,7 @@ describe('transaction tests', () => {
 
     let partialDeployTx;
 
-    before(() => {
+    beforeAll(() => {
       partialDeployTx = {
         chainId,
         gasLimit: txGasLimit,
@@ -320,7 +321,7 @@ describe('transaction tests', () => {
     const transferAmount = parseUnits('100', ACADigits);
     let partialTransferTX: any;
 
-    before(() => {
+    beforeAll(() => {
       partialTransferTX = {
         chainId,
         to: ADDRESS.ACA,

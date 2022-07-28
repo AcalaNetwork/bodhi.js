@@ -7,7 +7,7 @@
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
-    "test": "mocha **/*.test.ts"
+    "test": "vitest --run __tests__"
   },
   "type": "module",
   "main": "./dist/index.mjs",
@@ -37,8 +37,7 @@
     "@polkadot/util-crypto": "^9.0.1",
     "@types/bn.js": "~5.1.0",
     "bn.js": "~5.2.0",
-    "ethers": "~5.5.0",
-    "vitest": "~0.19.1"
+    "ethers": "~5.5.0"
   },
   "devDependencies": {
     "@rushstack/eslint-config": "~2.5.4",
@@ -61,6 +60,7 @@
     "tslib": "~2.4.0",
     "rimraf": "~3.0.2",
     "rollup-plugin-esbuild": "^4.9.1",
-    "esbuild": "~0.14.49"
+    "esbuild": "~0.14.49",
+    "vitest": "~0.19.1"
   }
 }
