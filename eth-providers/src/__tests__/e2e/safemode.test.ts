@@ -2,7 +2,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
-import { afterAll, beforeAll, describe, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { sleep } from '../../utils';
 

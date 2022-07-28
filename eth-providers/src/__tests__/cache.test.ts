@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { it } from 'mocha';
-import { describe } from 'vitest';
+import { describe, beforeEach } from 'vitest';
 import { BlockCache } from '../utils/BlockCache';
 
 const randFakeHash = (): string => Math.floor(Math.random() * 66666666).toString(16);
