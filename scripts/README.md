@@ -24,3 +24,7 @@ goes over some rpc calls:
 - subscription call
 
 helpful for quickly testing the setup of a new RPC endpoint
+
+### tx confirmation test
+`KEY=<your-mandala-private-key> yarn confirmation`
+test a tx confirmation time and blocks.
