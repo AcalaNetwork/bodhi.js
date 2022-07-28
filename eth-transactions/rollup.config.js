@@ -4,7 +4,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import { builtinModules } from 'module';
 import { defineConfig } from 'rollup';
 import externals from 'rollup-plugin-node-externals';
-import typescript from 'rollup-plugin-typescript2';
+import esbuild from 'rollup-plugin-esbuild';
 import pkg from './package.json';
 
 const entries = {
@@ -24,7 +24,9 @@ const plugins = [
   }),
   json(),
   commonjs(),
-  typescript()
+  esbuild({
+    target: 'node14'
+  })
 ];
 
 function onwarn(message) {

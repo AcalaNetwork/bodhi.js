@@ -1,31 +1,4 @@
 {
-  "ts-node": {
-    "transpileOnly": true
-  },
-  "compilerOptions": {
-    "outDir": "dist",
-    "rootDirs": ["src", "/node_modules"],
-
-    "declaration": true,
-    "declarationMap": true,
-
-    "module": "esnext",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ES2020",
-    "noImplicitAny": false,
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "strict": true,
-    "allowJs": true,
-    "skipLibCheck": true,
-    "paths": {
-      "@acala-network/eth-providers": ["../eth-providers/src/index.ts"],
-      "@acala-network/eth-providers/utils": ["../eth-providers/src/utils/index.ts"]
-    }
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules/*", "**/e2e/*", "**/*.(test|spec).ts"]
+  "extends": "../tsconfig.json",
+  "exclude": ["./dist"]
 }

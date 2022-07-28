@@ -222,7 +222,7 @@ class Eip1193BridgeImpl {
    */
   async eth_accounts(params: any[]): Promise<any> {
     validate([], params);
-    const result = [];
+    const result: string[] = [];
     if (this.#signer) {
       const address = await this.#signer.getAddress();
       result.push(address);

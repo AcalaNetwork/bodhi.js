@@ -2,6 +2,7 @@ import { u8aConcat, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress } from '@polkadot/util-crypto';
 import { expect } from 'chai';
 import { Provider } from '..';
+import { describe, it } from 'vitest';
 
 describe('bodhi', () => {
   it('should export the Provider', () => {

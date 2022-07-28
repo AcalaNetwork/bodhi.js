@@ -1,0 +1,30 @@
+{
+  "ts-node": {
+    "transpileOnly": true
+  },
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["esnext", "dom"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipDefaultLibCheck": true,
+    "outDir": "./dist",
+    "declaration": true,
+    "inlineSourceMap": true,
+    "skipLibCheck": true,
+    "strict": true,
+
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "declaration": false,
+
+    "paths": {
+      "@acala-network/eth-providers": ["./eth-providers/src/index.ts"],
+      "@acala-network/eth-providers/utils": ["./eth-providers/src/utils/index.ts"],
+      "@acala-network/eth-transactions": ["./eth-transactions/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules/*", "**/e2e/*", "**/*.(test|spec).ts", "**/__tests__"]
+}

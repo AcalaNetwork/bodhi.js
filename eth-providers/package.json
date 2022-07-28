@@ -12,6 +12,7 @@
     "test:CI": "mocha **/*.test.ts --timeout 300000",
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
+  "type": "module",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -22,9 +23,9 @@
       "import": "./dist/index.mjs"
     },
     "./utils": {
-      "types": "./dist/utils/index.d.ts",
-      "require": "./dist/utils/index.cjs",
-      "import": "./dist/utils/index.mjs"
+      "types": "./dist/utils.d.ts",
+      "require": "./dist/utils.cjs",
+      "import": "./dist/utils.mjs"
     }
   },
   "dependencies": {
@@ -82,6 +83,8 @@
     "rollup-plugin-node-externals": "^4.1.1",
     "rollup-plugin-typescript2": "~0.32.1",
     "tslib": "~2.4.0",
-    "rimraf": "~3.0.2"
+    "rimraf": "~3.0.2",
+    "rollup-plugin-esbuild": "^4.9.1",
+    "esbuild": "~0.14.49"
   }
 }

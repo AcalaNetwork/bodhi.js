@@ -1,5 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { toBN } from '../utils';
 
 describe('utils', () => {
