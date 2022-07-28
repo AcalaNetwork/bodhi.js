@@ -1,9 +1,10 @@
 import { joinSignature } from '@ethersproject/bytes';
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { parseTransaction } from '../parseTransaction';
 import { serializeTransaction } from '../serializeTransaction';
-import { transactionHash } from '../transactionHash';
 import { signTransaction } from '../signTransaction';
+import { transactionHash } from '../transactionHash';
 
 const privateKey = '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269acd85c';
 const address = '0xb00cB924ae22b2BBb15E10c17258D6a2af980421';

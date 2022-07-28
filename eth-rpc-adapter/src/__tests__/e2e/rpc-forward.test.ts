@@ -1,9 +1,9 @@
 import { EvmRpcProvider } from '@acala-network/eth-providers';
-import { Wallet } from '@ethersproject/wallet';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { RpcForward } from '../../rpc-forward';
 import dotenv from 'dotenv';
+import { describe, it } from 'vitest';
+import { RpcForward } from '../../rpc-forward';
 
 dotenv.config();
 

@@ -1,9 +1,6 @@
-import { arrayify } from '@ethersproject/bytes';
-import { _TypedDataEncoder } from '@ethersproject/hash';
-import { verifyTypedData, Wallet } from '@ethersproject/wallet';
-import { recoverTypedSignature, signTypedData, SignTypedDataVersion, TypedDataUtils } from '@metamask/eth-sig-util';
+import { verifyTypedData } from '@ethersproject/wallet';
 import { expect } from 'chai';
-import { getAddress } from '@ethersproject/address';
+import { describe, it } from 'vitest';
 import { createTransactionPayload } from '../createTransactionPayload';
 import { signTransaction } from '../signTransaction';
 import { transactionHash } from '../transactionHash';

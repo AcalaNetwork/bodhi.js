@@ -1,42 +1,22 @@
-import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import DEXABI from '@acala-network/contracts/build/contracts/DEX.json';
+import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { SubqlProvider } from '@acala-network/eth-providers/utils';
 import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers/src/consts';
-import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';
+import { SubqlProvider } from '@acala-network/eth-providers/utils';
+import { AcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { Log } from '@ethersproject/abstract-provider';
+import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
-import { BigNumber } from '@ethersproject/bignumber';
-import { parseUnits, Interface } from 'ethers/lib/utils';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import axios from 'axios';
 import { expect } from 'chai';
 import dotenv from 'dotenv';
+import { Interface, parseUnits } from 'ethers/lib/utils';
+import { describe, it } from 'vitest';
 import {
-  ADDRESS_ALICE,
-  evmAccounts,
-  allLogs,
-  log12,
-  log6,
-  log9,
-  log12,
-  log10,
-  log11,
-  log7,
-  log8,
-  mandalaBlock1265919,
-  mandalaBlock1265918,
-  mandalaBlock1265928,
-  mandalaContractCallTxReceipt,
-  mandalaContractDeployTxReceipt,
-  mandalaTransferTxReceipt,
-  deployHelloWorldData,
-  mandalaContractCallTx,
-  mandalaContractDeployTx,
-  mandalaTransferTx,
-  log22_0,
-  log22_1
+  ADDRESS_ALICE, allLogs, deployHelloWorldData, evmAccounts, log22_0,
+  log22_1, mandalaBlock1265918, mandalaBlock1265919, mandalaBlock1265928, mandalaContractCallTx, mandalaContractCallTxReceipt, mandalaContractDeployTx, mandalaContractDeployTxReceipt, mandalaTransferTx, mandalaTransferTxReceipt
 } from './consts';
 
 export const bigIntDiff = (x: bigint, y: bigint): bigint => {

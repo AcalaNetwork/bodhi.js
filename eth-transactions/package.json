@@ -6,8 +6,8 @@
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
-    "test": "mocha **/*.test.ts --ignore **/e2e/**",
-    "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts"
+    "test": "vitest __tests__",
+    "test:dev": "vitest __tests__"
   },
   "type": "module",
   "main": "./dist/index.mjs",

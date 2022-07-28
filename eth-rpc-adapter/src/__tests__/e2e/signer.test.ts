@@ -1,8 +1,9 @@
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { verifyMessage, Wallet } from '@ethersproject/wallet';
 import { expect } from 'chai';
-import { Eip1193Bridge } from '../../eip1193-bridge';
 import dotenv from 'dotenv';
+import { describe, it } from 'vitest';
+import { Eip1193Bridge } from '../../eip1193-bridge';
 
 dotenv.config();
 
