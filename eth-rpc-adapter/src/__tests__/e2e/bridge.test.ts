@@ -2,8 +2,9 @@ import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Wallet } from '@ethersproject/wallet';
 import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { Eip1193Bridge } from '../../eip1193-bridge';
 import dotenv from 'dotenv';
+import { describe, afterAll, it } from 'vitest';
+import { Eip1193Bridge } from '../../eip1193-bridge';
 
 dotenv.config();
 
@@ -47,7 +48,7 @@ describe('e2e test', () => {
     ).rejectedWith('header not found');
   });
 
-  after(() => {
+  afterAll(() => {
     provider.disconnect();
   });
 });

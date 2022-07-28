@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { SignerProvider } from '@acala-network/eth-providers';
-import { handleTxResponse } from '@acala-network/eth-providers/lib';
+import { handleTxResponse } from '@acala-network/eth-providers/utils';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
 import {
@@ -16,7 +16,7 @@ import { Logger } from '@ethersproject/logger';
 import { Deferrable, defineReadOnly } from '@ethersproject/properties';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { SubmittableResult } from '@polkadot/api';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { SigningKey } from './SigningKey';
@@ -253,6 +253,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     // @TODO create contract
     if (!tx.to) {
       extrinsic = this.provider.api.tx.evm.create(
+        // @ts-ignore
         tx.data,
         toBN(tx.value),
         toBN(gasLimit),
@@ -262,6 +263,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     } else {
       extrinsic = this.provider.api.tx.evm.call(
         tx.to,
+        // @ts-ignore
         tx.data,
         toBN(tx.value),
         toBN(gasLimit),

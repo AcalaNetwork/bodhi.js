@@ -1,7 +1,7 @@
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
 import { BigNumber } from 'ethers';
-import { BlockTag, Eip1898BlockTag } from 'src/base-provider';
+import { BlockTag, Eip1898BlockTag } from '../base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
 
@@ -88,7 +88,7 @@ export const getHealthResult = ({
   let isSubqlOK = true;
   let isCacheOK = true;
   let isRPCOK = true;
-  const msg = [];
+  const msg: string[] = [];
 
   /* --------------- cache --------------- */
   const maxCachedBlocks = cacheInfo?.maxCachedBlocks || 0;
@@ -198,7 +198,7 @@ export const runWithTiming = async <F extends AnyFunction>(
   time: number;
   res: F extends (...args: any[]) => infer R ? R | string : any;
 }> => {
-  let res = null;
+  let res: any = null;
   const t0 = performance.now();
   let runningErr = false;
   let timedout = false;

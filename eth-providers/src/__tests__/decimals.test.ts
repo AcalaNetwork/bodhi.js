@@ -1,7 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { nativeToEthDecimal } from '../utils';
-import { expect } from 'chai';
 import { hexValue } from '@ethersproject/bytes';
+import { expect } from 'chai';
+import { describe, it } from 'vitest';
+import { nativeToEthDecimal } from '../utils';
 
 describe('decimals', () => {
   it('nativeToEthDecimal', async () => {

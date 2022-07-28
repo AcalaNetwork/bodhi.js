@@ -1,5 +1,5 @@
 import { EvmRpcProvider, hexlifyRpcResult, TX } from '@acala-network/eth-providers';
-import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
+import { PROVIDER_ERRORS } from '@acala-network/eth-providers/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
 import { getAddress } from '@ethersproject/address';
@@ -222,7 +222,7 @@ class Eip1193BridgeImpl {
    */
   async eth_accounts(params: any[]): Promise<any> {
     validate([], params);
-    const result = [];
+    const result: string[] = [];
     if (this.#signer) {
       const address = await this.#signer.getAddress();
       result.push(address);

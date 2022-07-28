@@ -1,8 +1,9 @@
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { verifyMessage, Wallet } from '@ethersproject/wallet';
 import { expect } from 'chai';
-import { Eip1193Bridge } from '../../eip1193-bridge';
 import dotenv from 'dotenv';
+import { describe, it, afterAll } from 'vitest';
+import { Eip1193Bridge } from '../../eip1193-bridge';
 
 dotenv.config();
 
@@ -34,7 +35,7 @@ describe('eth_accounts', () => {
     expect(verifyMessage('123', result)).equal('0x57a2423D1A30D90cECeC14c3844d88983F70659f');
   });
 
-  after(() => {
+  afterAll(() => {
     provider.disconnect();
   });
 });
