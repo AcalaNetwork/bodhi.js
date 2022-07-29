@@ -9,7 +9,8 @@
     "rpc": "TS_NODE_TRANSPILE_ONLY=true ts-node rpc-tests.ts",
     "precompile": "TS_NODE_TRANSPILE_ONLY=true ts-node test-precompile.ts",
     "iterate": "TS_NODE_TRANSPILE_ONLY=true ts-node block-iterator.ts",
-    "confirmation": "TS_NODE_TRANSPILE_ONLY=true ts-node tx-confirmation-test.ts"
+    "confirmation": "TS_NODE_TRANSPILE_ONLY=true ts-node tx-confirmation-test.ts",
+    "batch": "TS_NODE_TRANSPILE_ONLY=true ts-node batch-tx-gas-test.ts"
   },
   "devDependencies": {
     "@acala-network/contracts": "^3.2.0",
