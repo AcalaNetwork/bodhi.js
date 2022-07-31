@@ -53,42 +53,42 @@ services:
       - --playground
       - --indexer=http://subquery-node:3000
 
-  eth-rpc-adapter-server-with-subql:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
-      target: eth-rpc-adapter
-    ports:
-      - 8545:8545
-    depends_on:
-      feed-tx-step-2:
-        condition: service_started
-      postgres:
-        condition: service_started
-      subquery-node:
-        condition: service_started
-      graphql-engine:
-        condition: service_started
-    restart: always
-    command:
-      - --endpoint=ws://mandala-node:9944
-      - --subql=http://graphql-engine:3001
-      - --http-port=8545
-      - --ws-port=3331
-      - --local
+  # eth-rpc-adapter-server-with-subql:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/eth-rpc-adapter-server.Dockerfile
+  #     target: eth-rpc-adapter
+  #   ports:
+  #     - 8545:8545
+  #   depends_on:
+  #     # feed-tx-step-2:
+  #     #   condition: service_started
+  #     postgres:
+  #       condition: service_started
+  #     subquery-node:
+  #       condition: service_started
+  #     graphql-engine:
+  #       condition: service_started
+  #   restart: always
+  #   command:
+  #     - --endpoint=ws://mandala-node:9944
+  #     - --subql=http://graphql-engine:3001
+  #     - --http-port=8545
+  #     - --ws-port=3331
+  #     - --local
 
-  eth-rpc-adapter-test:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
-      target: eth-rpc-adapter-test
-    depends_on:
-      feed-tx-step-2:
-        condition: service_completed_successfully
-      eth-rpc-adapter-server-with-subql:
-        condition: service_started
-      eth-rpc-adapter-server-public-mandala:
-        condition: service_started
+  # eth-rpc-adapter-test:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/eth-rpc-adapter-test.Dockerfile
+  #     target: eth-rpc-adapter-test
+  #   depends_on:
+  #     # feed-tx-step-2:
+  #     #   condition: service_completed_successfully
+  #     eth-rpc-adapter-server-with-subql:
+  #       condition: service_started
+  #     eth-rpc-adapter-server-public-mandala:
+  #       condition: service_started
 
   # ------------------------------------ #
   # ---------- No Subql Realm ---------- #
@@ -110,34 +110,34 @@ services:
       - --instant-sealing
       - --tmp
 
-  feed-tx:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
-      target: feed-tx
-    depends_on:
-      - mandala-node
+  # feed-tx:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/eth-rpc-adapter-test.Dockerfile
+  #     target: feed-tx
+  #   depends_on:
+  #     - mandala-node
 
-  feed-tx-step-2:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
-      target: feed-tx-dex-erc20
-    depends_on:
-      feed-tx:
-        condition: service_completed_successfully
+  # feed-tx-step-2:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/eth-rpc-adapter-test.Dockerfile
+  #     target: feed-tx-dex-erc20
+  #   depends_on:
+  #     feed-tx:
+  #       condition: service_completed_successfully
 
-  eth-providers-test:
-    build:
-      context: .
-      dockerfile: docker/eth-providers-test.Dockerfile
-      target: eth-providers-test
-    depends_on:
-      feed-tx:
-        condition: service_completed_successfully
-      # mandala-node is the actual dependency, this is just a work around to delay start
-      # so to make sure mandala node is up and *running* before tests start
-      # - mandala-node
+  # eth-providers-test:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/eth-providers-test.Dockerfile
+  #     target: eth-providers-test
+  # depends_on:
+  # feed-tx:
+  #   condition: service_completed_successfully
+  # mandala-node is the actual dependency, this is just a work around to delay start
+  # so to make sure mandala node is up and *running* before tests start
+  # - mandala-node
   eth-rpc-adapter-server:
     build:
       context: .

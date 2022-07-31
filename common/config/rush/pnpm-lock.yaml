@@ -24,11 +24,13 @@ importers:
       '@rushstack/eslint-config': ~2.5.4
       '@rushstack/heft': ~0.44.13
       '@types/bn.js': 5.1.0
+      '@types/chai': ~4.2.22
       bn.js: 4.12.0
+      chai: ~4.3.4
       eslint: ~7.32.0
       ethers: ~5.5.0
+      ts-node: ~10.7.0
       typescript: ~4.6.3
-      vitest: ~0.19.1
     dependencies:
       '@acala-network/eth-providers': link:../eth-providers
       '@ethersproject/abstract-provider': 5.5.1
@@ -50,9 +52,11 @@ importers:
     devDependencies:
       '@rushstack/eslint-config': 2.5.4_eslint@7.32.0+typescript@4.6.4
       '@rushstack/heft': 0.44.13
+      '@types/chai': 4.2.22
+      chai: 4.3.6
       eslint: 7.32.0
+      ts-node: 10.7.0_typescript@4.6.4
       typescript: 4.6.4
-      vitest: 0.19.1
 
   ../../eth-providers:
     specifiers:
