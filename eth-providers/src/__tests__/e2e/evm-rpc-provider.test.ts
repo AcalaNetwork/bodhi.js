@@ -1,6 +1,7 @@
 import { expect } from 'chai';
-import { EvmRpcProvider } from '../../rpc-provider';
 import dotenv from 'dotenv';
+import { describe, it } from 'vitest';
+import { EvmRpcProvider } from '../../rpc-provider';
 
 dotenv.config();
 

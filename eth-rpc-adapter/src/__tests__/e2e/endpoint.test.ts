@@ -1,43 +1,22 @@
-import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import DEXABI from '@acala-network/contracts/build/contracts/DEX.json';
+import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { SubqlProvider } from '@acala-network/eth-providers/lib/utils/subqlProvider';
 import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers/src/consts';
-import { serializeTransaction, AcalaEvmTX, parseTransaction, signTransaction } from '@acala-network/eth-transactions';
+import { AcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { Log } from '@ethersproject/abstract-provider';
+import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
-import { BigNumber } from '@ethersproject/bignumber';
-import { parseUnits, Interface } from 'ethers/lib/utils';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import axios from 'axios';
-import { expect } from 'chai';
 import dotenv from 'dotenv';
+import { Interface, parseUnits } from 'ethers/lib/utils';
 import {
-  ADDRESS_ALICE,
-  evmAccounts,
-  allLogs,
-  log12,
-  log6,
-  log9,
-  log12,
-  log10,
-  log11,
-  log7,
-  log8,
-  mandalaBlock1265919,
-  mandalaBlock1265918,
-  mandalaBlock1265928,
-  mandalaContractCallTxReceipt,
-  mandalaContractDeployTxReceipt,
-  mandalaTransferTxReceipt,
-  deployHelloWorldData,
-  mandalaContractCallTx,
-  mandalaContractDeployTx,
-  mandalaTransferTx,
-  log22_0,
-  log22_1
+  ADDRESS_ALICE, allLogs, deployHelloWorldData, evmAccounts, log22_0,
+  log22_1, mandalaBlock1265918, mandalaBlock1265919, mandalaBlock1265928, mandalaContractCallTx, mandalaContractCallTxReceipt, mandalaContractDeployTx, mandalaContractDeployTxReceipt, mandalaTransferTx, mandalaTransferTxReceipt
 } from './consts';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 export const bigIntDiff = (x: bigint, y: bigint): bigint => {
   return x > y ? x - y : y - x;
@@ -52,7 +31,7 @@ const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
 const subql = new SubqlProvider(SUBQL_URL);
 
 const rpcGet =
-  (method: string, url?: string = RPC_URL) =>
+  (method: string, url: string = RPC_URL) =>
   (params: any): any =>
     axios.get(url, {
       data: {
@@ -69,7 +48,7 @@ export const logsEq = (a: Log[], b: Log[]): boolean =>
     b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
   );
 
-const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
+const expectLogsEqual = (a: Log[], b: Log[]): void => {
   expect(a.length).to.greaterThan(0);
   expect(a.length).to.equal(b.length);
   expect(
@@ -80,7 +59,7 @@ const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
 };
 
 // some tests depend on the deterministic setup or mandala node connection
-before('env setup', async () => {
+beforeAll(async () => {
   if (process.env.SKIP_CHECK) return;
 
   try {
@@ -140,7 +119,7 @@ describe('eth_getTransactionReceipt', () => {
   const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
   const eth_getTransactionReceipt_mandala = rpcGet('eth_getTransactionReceipt', PUBLIC_MANDALA_RPC_URL);
 
-  it('returns correct result when hash exist for local transactions', async () => {
+  it.only('returns correct result when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
 
     expect(allTxReceipts.length).to.greaterThan(0);
@@ -778,7 +757,8 @@ describe('eth_sendRawTransaction', () => {
     return toNative ? calculatedTxFee / BigInt(10 ** (ETHDigits - ACADigits)) : calculatedTxFee;
   };
 
-  before('prepare common variables', async () => {
+  // prepare common variables
+  beforeAll(async () => {
     chainId = BigNumber.from((await eth_chainId()).data.result).toNumber();
 
     txGasLimit = BigNumber.from(34132001);
@@ -791,14 +771,14 @@ describe('eth_sendRawTransaction', () => {
     genesisHash = api.genesisHash.toHex(); // TODO: why EIP-712 salt has to be genesis hash?
   });
 
-  after(async () => {
+  afterAll(async () => {
     await api.disconnect();
   });
 
   describe('deploy contract (hello world)', () => {
     let partialDeployTx;
 
-    before(() => {
+    beforeAll(() => {
       partialDeployTx = {
         chainId,
         gasLimit: txGasLimit,
@@ -933,7 +913,7 @@ describe('eth_sendRawTransaction', () => {
     const transferAmount = parseUnits('100', ACADigits);
     let partialTransferTX: Partial<AcalaEvmTX>;
 
-    before(() => {
+    beforeAll(() => {
       partialTransferTX = {
         chainId,
         to: ADDRESS.ACA,
@@ -1076,7 +1056,7 @@ describe('eth_sendRawTransaction', () => {
       };
     };
 
-    before(() => {
+    beforeAll(() => {
       partialNativeTransferTX = {
         chainId,
         to: account2.evmAddress,

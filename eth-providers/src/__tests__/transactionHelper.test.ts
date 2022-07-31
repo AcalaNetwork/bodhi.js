@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { it } from 'vitest';
 import { calcEthereumTransactionParams, calcSubstrateTransactionParams } from '../utils';
 
 it('transactionHelper', async () => {
