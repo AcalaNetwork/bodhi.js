@@ -1119,7 +1119,6 @@ export abstract class BaseProvider extends AbstractProvider {
     // check excuted error
     const callRequest: CallRequest = {
       from: ethTx.from,
-      // @TODO Support create
       to: ethTx.to,
       gasLimit: gasLimit,
       storageLimit: storageLimit,
@@ -1128,7 +1127,7 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: ethTx.accessList
     };
 
-    await (this.api.rpc as any).evm.call(callRequest);
+    await this.api.rpc.evm.call(callRequest);
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -1155,15 +1154,6 @@ export abstract class BaseProvider extends AbstractProvider {
       nonce: ethTx.nonce,
       tip
     });
-
-    logger.debug(
-      {
-        evmAddr: ethTx.from,
-        address: subAddr,
-        hash: extrinsic.hash.toHex()
-      },
-      'sending raw transaction'
-    );
 
     return {
       extrinsic,

@@ -132,11 +132,8 @@ export default class WebSocketServerTransport extends ServerTransport {
       result = await super.routerHandler(req, ws);
     }
 
-    if (!(result as JSONRPCResponse).error) {
-      logger.debug(result, 'request completed');
-    } else {
-      logger.error(result, 'request completed');
-    }
+    logger.debug(result, 'request completed');
+
     ws.send(JSON.stringify(result));
   }
 }

@@ -26,20 +26,25 @@ export class JSONRPCError extends Error {
 }
 
 export class InvalidRequest extends JSONRPCError {
-  constructor() {
-    super('invalid json request', -32600);
-  }
-}
-
-export class InternalError extends JSONRPCError {
-  constructor() {
-    super('internal error', -32603);
+  constructor(data?: any) {
+    super('invalid json request', -32600, data);
   }
 }
 
 export class MethodNotFound extends JSONRPCError {
   constructor(message: string, data?: any) {
     super(message, -32601, data);
+  }
+}
+
+export class InternalError extends JSONRPCError {
+  constructor(data?: any) {
+    super(
+      `internal JSON-RPC error ${
+        data && `[${data}]`
+      }. More info: https://evmdocs.acala.network/reference/common-errors`,
+      -32603
+    );
   }
 }
 

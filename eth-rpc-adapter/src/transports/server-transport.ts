@@ -28,10 +28,13 @@ export abstract class ServerTransport {
     };
 
     if (id === null || id === undefined || !method) {
-      logger.error(`invalid json request: id: ${id}, method: ${method}, params: ${params}`);
       return {
         ...res,
-        error: new InvalidRequest().json()
+        error: new InvalidRequest({
+          id: id || null,
+          method: method || null,
+          params: params || null
+        }).json()
       };
     }
 

@@ -10,14 +10,18 @@ import { Wallet } from '@ethersproject/wallet';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseUnits, Interface } from 'ethers/lib/utils';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import axios from 'axios';
 import { expect } from 'chai';
-import dotenv from 'dotenv';
+import {
+  bigIntDiff,
+  rpcGet,
+  PUBLIC_MANDALA_RPC_URL,
+  RPC_URL,
+  SUBQL_URL,
+} from './utils';
 import {
   ADDRESS_ALICE,
   evmAccounts,
   allLogs,
-  log12,
   log6,
   log9,
   log12,
@@ -39,29 +43,7 @@ import {
   log22_1
 } from './consts';
 
-export const bigIntDiff = (x: bigint, y: bigint): bigint => {
-  return x > y ? x - y : y - x;
-};
-
-dotenv.config();
-
-const PUBLIC_MANDALA_RPC_URL = process.env.PUBLIC_MANDALA_RPC_URL || 'http://127.0.0.1:8546';
-const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
-const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
-
 const subql = new SubqlProvider(SUBQL_URL);
-
-const rpcGet =
-  (method: string, url?: string = RPC_URL) =>
-  (params: any): any =>
-    axios.get(url, {
-      data: {
-        id: 0,
-        jsonrpc: '2.0',
-        method,
-        params
-      }
-    });
 
 export const logsEq = (a: Log[], b: Log[]): boolean =>
   a.length === b.length &&

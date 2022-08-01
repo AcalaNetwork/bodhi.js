@@ -69,11 +69,7 @@ export default class HTTPServerTransport extends ServerTransport {
       }
     }
 
-    if (!(result as JSONRPCResponse).error) {
-      logger.debug(result, 'request completed');
-    } else {
-      logger.error(result, 'request completed');
-    }
+    logger.debug(result, 'request completed');
 
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(result));
