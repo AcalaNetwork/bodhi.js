@@ -3,7 +3,7 @@ import connect, { HandleFunction } from 'connect';
 import cors from 'cors';
 import http, { ServerOptions } from 'http';
 import ServerTransport from './server-transport';
-import type { JSONRPCRequest, JSONRPCResponse } from './types';
+import type { JSONRPCRequest } from './types';
 import { logger } from '../logger';
 import { errorHandler } from '../middlewares';
 import { BatchSizeError } from '../errors';

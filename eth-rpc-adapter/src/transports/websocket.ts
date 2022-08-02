@@ -8,7 +8,7 @@ import { BatchSizeError, InvalidRequest } from '../errors';
 import { logger } from '../logger';
 import { errorHandler } from '../middlewares';
 import ServerTransport from './server-transport';
-import type { JSONRPCRequest, JSONRPCResponse } from './types';
+import type { JSONRPCRequest } from './types';
 
 export interface WebSocketServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];

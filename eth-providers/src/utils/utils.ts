@@ -46,7 +46,7 @@ export interface HealthData {
 export const sleep = (interval = 1000): Promise<null> =>
   new Promise((resolve) => setTimeout(() => resolve(null), interval));
 
-export const promiseWithTimeout = <T>(value: any, interval = 1000) => {
+export const promiseWithTimeout = <T = any>(value: any, interval = 1000): Promise<T> => {
   let timeoutHandle: any;
   const timeoutPromise = new Promise((resolve) => {
     timeoutHandle = setTimeout(() => resolve(null), interval);
