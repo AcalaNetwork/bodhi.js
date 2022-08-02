@@ -3,7 +3,6 @@ import { ApiPromise, SubmittableResult } from '@polkadot/api';
 import { hexToString } from '@polkadot/util';
 
 // https://ethereum.stackexchange.com/questions/84545/how-to-get-reason-revert-using-web3-eth-call
-// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-module-boundary-types
 export function decodeMessage(reason: any, code?: string): string {
   const reasonString = JSON.stringify(reason).toLowerCase();
 

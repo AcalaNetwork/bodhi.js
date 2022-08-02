@@ -8,7 +8,7 @@ import { BatchSizeError, InvalidRequest } from '../errors';
 import { logger } from '../logger';
 import { errorHandler } from '../middlewares';
 import ServerTransport from './server-transport';
-import type { JSONRPCRequest, JSONRPCResponse } from './types';
+import type { JSONRPCRequest } from './types';
 
 export interface WebSocketServerTransportOptions extends SecureServerOptions {
   middleware: HandleFunction[];
@@ -132,11 +132,8 @@ export default class WebSocketServerTransport extends ServerTransport {
       result = await super.routerHandler(req, ws);
     }
 
-    if (!(result as JSONRPCResponse).error) {
-      logger.debug(result, 'request completed');
-    } else {
-      logger.error(result, 'request completed');
-    }
+    logger.debug(result, 'request completed');
+
     ws.send(JSON.stringify(result));
   }
 }

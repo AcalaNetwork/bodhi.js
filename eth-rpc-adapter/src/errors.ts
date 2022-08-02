@@ -26,14 +26,14 @@ export class JSONRPCError extends Error {
 }
 
 export class InvalidRequest extends JSONRPCError {
-  constructor() {
-    super('invalid json request', -32600);
+  constructor(data?: any) {
+    super('invalid json request', -32600, data);
   }
 }
 
-export class InternalError extends JSONRPCError {
-  constructor() {
-    super('internal error', -32603);
+export class BatchSizeError extends JSONRPCError {
+  constructor(maximumSize: number, actualSize: number) {
+    super('exceeded maximum batch size', -32600, `maximum batch size is ${maximumSize}, but received ${actualSize}`);
   }
 }
 
@@ -49,8 +49,13 @@ export class InvalidParams extends JSONRPCError {
   }
 }
 
-export class BatchSizeError extends JSONRPCError {
-  constructor(maximumSize: number, actualSize: number) {
-    super('exceeded maximum batch size', -32600, `maximum batch size is ${maximumSize}, but received ${actualSize}`);
+export class InternalError extends JSONRPCError {
+  constructor(data?: any) {
+    super(
+      `internal JSON-RPC error ${
+        data && `[${data}]`
+      }. More info: https://evmdocs.acala.network/reference/common-errors`,
+      -32603
+    );
   }
 }
