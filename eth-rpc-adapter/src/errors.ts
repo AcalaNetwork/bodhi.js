@@ -31,9 +31,21 @@ export class InvalidRequest extends JSONRPCError {
   }
 }
 
+export class BatchSizeError extends JSONRPCError {
+  constructor(maximumSize: number, actualSize: number) {
+    super('exceeded maximum batch size', -32600, `maximum batch size is ${maximumSize}, but received ${actualSize}`);
+  }
+}
+
 export class MethodNotFound extends JSONRPCError {
   constructor(message: string, data?: any) {
     super(message, -32601, data);
+  }
+}
+
+export class InvalidParams extends JSONRPCError {
+  constructor(message: string, data?: any) {
+    super(message, -32602, data);
   }
 }
 
@@ -45,17 +57,5 @@ export class InternalError extends JSONRPCError {
       }. More info: https://evmdocs.acala.network/reference/common-errors`,
       -32603
     );
-  }
-}
-
-export class InvalidParams extends JSONRPCError {
-  constructor(message: string, data?: any) {
-    super(message, -32602, data);
-  }
-}
-
-export class BatchSizeError extends JSONRPCError {
-  constructor(maximumSize: number, actualSize: number) {
-    super('exceeded maximum batch size', -32600, `maximum batch size is ${maximumSize}, but received ${actualSize}`);
   }
 }

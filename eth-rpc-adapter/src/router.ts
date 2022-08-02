@@ -3,7 +3,6 @@ import { Logger as EthLogger } from '@ethersproject/logger';
 import WebSocket from 'ws';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { InternalError, InvalidParams, JSONRPCError, MethodNotFound } from './errors';
-import { logger } from './logger';
 import { RpcForward } from './rpc-forward';
 import { JSONRPCResponse } from './transports/types';
 export class Router {
@@ -20,8 +19,6 @@ export class Router {
       try {
         return { result: await this.#bridge.send(methodName, params, ws) };
       } catch (err: any) {
-        // console.log('!!!!!!!!!!!!!!!!!', typeof err === 'object', err.code, err.message)
-
         if (JSONRPCError.isJSONRPCError(err)) {
           return { error: err.json() };
         }
@@ -53,10 +50,6 @@ export class Router {
             case 1010:
               error = new InternalError(message);
               break;
-
-            // error = new InternalError(`${message}. Usually a transaction identical to this one has recently failed. Please refer to our doc: https://evmdocs.acala.network/reference/common-errors#value-code-23603-data-code-6969-messages-error-1012-invalid-transaction-transaction-is-temporary-ban`); break;
-
-            // error = new InternalError(`${message}. Please refer to our doc: https://evmdocs.acala.network/reference/common-errors#value-code-23603-data-code-6969-messages-error-1010-invalid-transaction-transaction-is-outdated`); break;
 
             default:
               break;
