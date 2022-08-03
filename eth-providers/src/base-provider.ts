@@ -70,7 +70,7 @@ import {
   getTransactionIndexAndHash,
   HealthResult,
   hexlifyRpcResult,
-  isEVMExtrinsic,
+  isEvmExtrinsic,
   logger,
   parseExtrinsic,
   PROVIDER_ERRORS,
@@ -80,7 +80,8 @@ import {
   throwNotImplemented,
   getEffectiveGasPrice,
   parseBlockTag,
-  filterLogByTopics
+  filterLogByTopics,
+  isEvmEvent
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -605,7 +606,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ]);
 
       pendingNonce = pendingExtrinsics.filter(
-        (e) => isEVMExtrinsic(e) && e.signer.toString() === substrateAddress
+        (e) => isEvmExtrinsic(e) && e.signer.toString() === substrateAddress
       ).length;
     }
 
@@ -1614,7 +1615,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find((e) => e.hash.toHex() === txHash);
 
-    if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
+    if (!(targetExtrinsic && isEvmExtrinsic(targetExtrinsic))) return null;
 
     return {
       from: await this.getEvmAddress(targetExtrinsic.signer.toString()),
@@ -1770,6 +1771,21 @@ export abstract class BaseProvider extends AbstractProvider {
     const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
+  };
+
+  getAllLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<any[]> => {
+    const blockHash = await this._getBlockHash(blockTag);
+    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
+
+    allEvents.forEach((e) => {
+      console.log(e.phase.isApplyExtrinsic, e.event.method);
+    });
+
+    return allEvents
+      .filter(isEvmEvent)
+      .map(getPartialTransactionReceipt)
+      .map((r) => r.logs)
+      .flat();
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
