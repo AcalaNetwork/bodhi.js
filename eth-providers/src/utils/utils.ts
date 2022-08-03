@@ -68,6 +68,7 @@ export const isEvmExtrinsic = (e: Extrinsic): boolean => e.method.section.toLowe
 export const isEvmEvent = (e: FrameSystemEventRecord): boolean =>
   e.event.section.toLowerCase() === 'evm' &&
   ['Created', 'Executed', 'CreatedFailed', 'ExecutedFailed'].includes(e.event.method);
+export const isPhantomEvmEvent = (e: FrameSystemEventRecord): boolean => isEvmEvent(e) && !e.phase.isApplyExtrinsic;
 
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,

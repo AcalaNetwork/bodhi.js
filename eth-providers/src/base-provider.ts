@@ -35,7 +35,7 @@ import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
-import { AccessListish } from 'ethers/lib/utils';
+import { AccessListish, keccak256 } from 'ethers/lib/utils';
 import LRUCache from 'lru-cache';
 import {
   BIGNUMBER_ZERO,
@@ -81,7 +81,7 @@ import {
   getEffectiveGasPrice,
   parseBlockTag,
   filterLogByTopics,
-  isEvmEvent
+  isPhantomEvmEvent
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -301,12 +301,14 @@ export abstract class BaseProvider extends AbstractProvider {
       }
 
       if (this._listeners[NEW_LOGS]?.length > 0) {
-        const block = await this.getBlockData(header.number.toHex(), false);
-        const receipts = await Promise.all(
-          block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, header.number.toHex()))
-        );
+        const block = await this.getBlockData(blockNumber, false);
+        const [phantomLogs, ...receipts] = await Promise.all([
+          this._getPhantomLogsAtBlock(blockNumber),
+          ...block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
+        ]);
 
-        const logs = receipts.map((r) => r.logs).flat();
+        const normalLogs = receipts.map((r) => r.logs).flat();
+        const logs = normalLogs.concat(phantomLogs);
 
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
@@ -1773,15 +1775,26 @@ export abstract class BaseProvider extends AbstractProvider {
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
-  getAllLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<any[]> => {
+  _getPhantomLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<any[]> => {
     const blockHash = await this._getBlockHash(blockTag);
+    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
 
-    return allEvents
-      .filter(isEvmEvent)
+    const evmLogs = allEvents
+      .filter(isPhantomEvmEvent)
       .map(getPartialTransactionReceipt)
-      .map((r) => r.logs)
+      .map((receipt, i) =>
+        receipt.logs.map((log) => ({
+          ...log,
+          transactionIndex: 0,
+          transactionHash: keccak256(blockHash + i + i),
+          blockHash,
+          blockNumber
+        }))
+      )
       .flat();
+
+    return hexlifyRpcResult(evmLogs);
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
