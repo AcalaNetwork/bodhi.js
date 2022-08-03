@@ -1777,10 +1777,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = await this._getBlockHash(blockTag);
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
 
-    allEvents.forEach((e) => {
-      console.log(e.phase.isApplyExtrinsic, e.event.method);
-    });
-
     return allEvents
       .filter(isEvmEvent)
       .map(getPartialTransactionReceipt)
