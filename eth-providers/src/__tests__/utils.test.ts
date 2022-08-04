@@ -64,8 +64,8 @@ describe('isEvmExtrinsic', () => {
     const fakeEVMExtrinsic = {
       method: {
         section: {
-          toUpperCase() {
-            return 'EVM';
+          toLowerCase() {
+            return 'evm';
           }
         }
       }
@@ -74,8 +74,8 @@ describe('isEvmExtrinsic', () => {
     const fakeSUDOExtrinsic = {
       method: {
         section: {
-          toUpperCase() {
-            return 'SUDO';
+          toLowerCase() {
+            return 'sudo';
           }
         }
       }
