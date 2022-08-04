@@ -6,11 +6,12 @@ import {
   findEvmEvent
 } from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
 import { EventData } from '@acala-network/eth-providers/lib/base-provider';
-import { SubstrateEvent, SubstrateBlock } from '@subql/types';
+import { SubstrateBlock } from '@subql/types';
 import '@polkadot/api-augment';
 import { Log, TransactionReceipt } from '../types';
 import { BigNumber } from '@ethersproject/bignumber/lib/bignumber';
 import { EventRecord, Extrinsic } from '@polkadot/types/interfaces';
+import { hexToU8a, nToU8a } from '@polkadot/util';
 import { keccak256 } from 'ethers/lib/utils';
 
 export async function handleEvmExtrinsic(
@@ -94,7 +95,7 @@ export async function handleEvmExtrinsic(
   }
 }
 
-export async function handlePhantomEvmEvent(event: EventRecord, idx: number, block: SubstrateBlock): Promise<void> {
+export async function handleOrphanEvmEvent(event: EventRecord, idx: number, block: SubstrateBlock): Promise<void> {
   const blockHash = block.block.hash.toHex();
   const blockNumber = block.block.header.number.toBigInt();
   const timestamp = block.timestamp;
@@ -108,7 +109,7 @@ export async function handlePhantomEvmEvent(event: EventRecord, idx: number, blo
     return;
   }
 
-  const transactionHash = keccak256(blockHash + idx + idx);
+  const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(idx)]);
   const receiptId = `${blockNumber.toString()}-${transactionHash.substring(54)}`;
 
   const transactionInfo = {
@@ -162,8 +163,8 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
     })
     .filter((x) => !!x);
 
-  // TODO: reuse isPhantomEvmEvent
-  const phantomEvmEvents = blockEvents.filter(
+  // TODO: reuse isOrphanEvmEvent
+  const orphanEvmEvents = blockEvents.filter(
     (e) =>
       e.event.section.toLowerCase() === 'evm' &&
       ['Created', 'Executed', 'CreatedFailed', 'ExecutedFailed'].includes(e.event.method) &&
@@ -171,7 +172,7 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
   );
 
   await Promise.all([
-    ...phantomEvmEvents.map((e, i) => handlePhantomEvmEvent(e, i, block)),
+    ...orphanEvmEvents.map((e, i) => handleOrphanEvmEvent(e, i, block)),
     ...evmExtrinsics.map(({ extrinsic, ...evmInfo }) => handleEvmExtrinsic(block, extrinsic, evmInfo))
   ]);
 }

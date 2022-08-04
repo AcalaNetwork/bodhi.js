@@ -32,7 +32,7 @@ import { decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
 import type { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
-import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { hexToU8a, isNull, nToU8a, u8aToHex, u8aToU8a } from '@polkadot/util';
 import type BN from 'bn.js';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish, keccak256 } from 'ethers/lib/utils';
@@ -81,7 +81,7 @@ import {
   getEffectiveGasPrice,
   parseBlockTag,
   filterLogByTopics,
-  isPhantomEvmEvent
+  isOrphanEvmEvent
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -302,13 +302,13 @@ export abstract class BaseProvider extends AbstractProvider {
 
       if (this._listeners[NEW_LOGS]?.length > 0) {
         const block = await this.getBlockData(blockNumber, false);
-        const [phantomLogs, ...receipts] = await Promise.all([
-          this._getPhantomLogsAtBlock(blockNumber),
+        const [orphanLogs, ...receipts] = await Promise.all([
+          this._getOrphanLogsAtBlock(blockNumber),
           ...block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
         ]);
 
         const normalLogs = receipts.map((r) => r.logs).flat();
-        const logs = normalLogs.concat(phantomLogs);
+        const logs = normalLogs.concat(orphanLogs);
 
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
@@ -1775,19 +1775,19 @@ export abstract class BaseProvider extends AbstractProvider {
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
-  _getPhantomLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<any[]> => {
+  _getOrphanLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<any[]> => {
     const blockHash = await this._getBlockHash(blockTag);
     const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
 
     const evmLogs = allEvents
-      .filter(isPhantomEvmEvent)
+      .filter(isOrphanEvmEvent)
       .map(getPartialTransactionReceipt)
       .map((receipt, i) =>
         receipt.logs.map((log) => ({
           ...log,
           transactionIndex: 0,
-          transactionHash: keccak256(blockHash + i + i),
+          transactionHash: keccak256([...hexToU8a(blockHash), ...nToU8a(i)]),
           blockHash,
           blockNumber
         }))
