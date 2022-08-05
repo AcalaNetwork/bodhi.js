@@ -1479,7 +1479,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
     const block = await this.api.rpc.chain.getBlock(blockHash);
-    const normalTxHashes = block.block.extrinsics.filter(isEvmExtrinsic).map((e) => e.hash.toHex());
+    const normalTxHashes = block.block.extrinsics.map((e) => e.hash.toHex());
 
     const orphanLogs = await this._getOrphanLogsAtBlock(blockHash);
     const virtualHashes = [...new Set(orphanLogs.map(log => log.transactionHash))];
