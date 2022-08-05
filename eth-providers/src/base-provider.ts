@@ -1479,8 +1479,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
     const block = await this.api.rpc.chain.getBlock(blockHash);
+    const normalTxHashes = block.block.extrinsics.filter(isEvmExtrinsic).map((e) => e.hash.toHex());
 
-    return block.block.extrinsics.map((e) => e.hash.toHex());
+    const orphanLogs = await this._getOrphanLogsAtBlock(blockHash);
+    const virtualHashes = [...new Set(orphanLogs.map(log => log.transactionHash))];
+
+    return [...normalTxHashes, ...virtualHashes];
   };
 
   _parseTxAtBlock = async (
@@ -1522,11 +1526,80 @@ export abstract class BaseProvider extends AbstractProvider {
     _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<TransactionReceipt> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
-
     hashOrNumber = await hashOrNumber;
+
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
-    const blockNumber = header.number.toNumber();
+
+    const [normalReceipt, virtualReceipt] = await Promise.allSettled([
+      this.getNormalTxReceiptAtBlock(hashOrNumber, blockHash),
+      this.getVirtualTxReceiptAtBlock(hashOrNumber, blockHash),
+    ]);
+
+    console.log(virtualReceipt)
+    if (normalReceipt.status === 'fulfilled') {
+      return normalReceipt.value;
+    } else if (virtualReceipt.status === 'fulfilled' && virtualReceipt.value) {
+      return virtualReceipt.value;
+    } else {
+      return logger.throwError('receipt not found');
+    }
+  };
+
+  getVirtualTxReceiptAtBlock = async (
+    hashOrNumber: number | string | Promise<string>,
+    blockHash: string,
+  ): Promise<TransactionReceipt | null> => {
+    if (typeof hashOrNumber !== 'string') return null;
+
+    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
+    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
+
+    const virtualReceipt = allEvents
+      .filter(isOrphanEvmEvent)
+      .map(getPartialTransactionReceipt)
+      .map((partialReceipt, i) => {
+        const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(i)]);
+        console.log('!!!!', transactionHash)
+        const txInfo = {
+          transactionIndex: 0,
+          transactionHash,
+          blockHash,
+          blockNumber
+        };      
+
+        const logs = partialReceipt.logs.map((log) => ({
+          ...log,
+          ...txInfo,
+        }));
+
+        return {
+          ...partialReceipt,
+          ...txInfo,
+          logs,
+        }
+      }).find(r => r.transactionHash === hashOrNumber);
+
+    if (!virtualReceipt) return null;
+
+    // console.log({
+    //   ...virtualReceipt[0].receipt,
+    //   confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
+    //   effectiveGasPrice: BIGNUMBER_ZERO,
+    // })
+    
+    return this.formatter.receipt({
+      ...virtualReceipt,
+      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
+      effectiveGasPrice: BIGNUMBER_ZERO,
+    });
+  }
+
+  getNormalTxReceiptAtBlock = async (
+    hashOrNumber: number | string,
+    blockHash: string
+  ): Promise<TransactionReceipt> => {
+    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
 
     const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
       await this._parseTxAtBlock(blockHash, hashOrNumber);
@@ -1590,7 +1663,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ...log
       }))
     });
-  };
+  }
 
   static isProvider(value: any): value is Provider {
     return !!(value && value._isProvider);
@@ -1775,7 +1848,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
-  _getOrphanLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<any[]> => {
+  _getOrphanLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Log[]> => {
     const blockHash = await this._getBlockHash(blockTag);
     const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
