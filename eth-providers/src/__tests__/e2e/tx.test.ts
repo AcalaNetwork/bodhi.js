@@ -56,6 +56,15 @@ describe('transaction tests', () => {
       txFeePerGas,
       storageByteDeposit
     }));
+
+    // make sure wallet 1 has balance
+    await wallet3.sendTransaction({
+      chainId,
+      to: wallet1.address,
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice,
+      value: 100000000000000000000n
+    });
   });
 
   // clean up
