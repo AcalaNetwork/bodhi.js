@@ -1554,6 +1554,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
 
+    // TODO: can abstract some helper and reuse
     const virtualReceipt = allEvents
       .filter(isOrphanEvmEvent)
       .map(getPartialTransactionReceipt)
