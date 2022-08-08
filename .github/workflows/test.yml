@@ -1,5 +1,5 @@
 name: Tests
-#testing aws runners #1
+#testing aws runners #2
 on:
   push:
     paths-ignore:
