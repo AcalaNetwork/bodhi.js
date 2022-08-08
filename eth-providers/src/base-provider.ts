@@ -1536,7 +1536,6 @@ export abstract class BaseProvider extends AbstractProvider {
       this.getVirtualTxReceiptAtBlock(hashOrNumber, blockHash),
     ]);
 
-    console.log(virtualReceipt)
     if (normalReceipt.status === 'fulfilled') {
       return normalReceipt.value;
     } else if (virtualReceipt.status === 'fulfilled' && virtualReceipt.value) {
