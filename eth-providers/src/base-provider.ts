@@ -1559,7 +1559,6 @@ export abstract class BaseProvider extends AbstractProvider {
       .map(getPartialTransactionReceipt)
       .map((partialReceipt, i) => {
         const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(i)]);
-        console.log('!!!!', transactionHash)
         const txInfo = {
           transactionIndex: 0,
           transactionHash,
@@ -1581,12 +1580,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (!virtualReceipt) return null;
 
-    // console.log({
-    //   ...virtualReceipt[0].receipt,
-    //   confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
-    //   effectiveGasPrice: BIGNUMBER_ZERO,
-    // })
-    
     return this.formatter.receipt({
       ...virtualReceipt,
       confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
