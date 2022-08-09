@@ -1,13 +1,14 @@
 import { hexValue } from '@ethersproject/bytes';
+import FakeTimer from '@sinonjs/fake-timers';
 import chai from 'chai';
 import chaiSubset from 'chai-subset';
-import FakeTimer from '@sinonjs/fake-timers';
+import { describe, it } from 'vitest';
 import {
-  parseBlockTag,
   EthCallTimingResult,
   getHealthResult,
   hexlifyRpcResult,
   isEvmExtrinsic,
+  parseBlockTag,
   runWithTiming,
   sleep
 } from '../utils';

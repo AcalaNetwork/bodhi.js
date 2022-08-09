@@ -1,11 +1,11 @@
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { parseTransaction } from '@acala-network/eth-transactions';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect } from 'chai';
+import { it } from 'vitest';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { sendTx } from '../../utils';
 import evmAccounts from '../evmAccounts';

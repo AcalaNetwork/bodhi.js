@@ -1,7 +1,7 @@
-import { expect } from 'chai';
+import { Wallet } from '@ethersproject/wallet';
+import { describe, it, expect } from 'vitest';
 import { createClaimPayload } from '../createClaimPayload';
 import { createClaimSignature } from '../createClaimSignature';
-import { Wallet } from '@ethersproject/wallet';
 
 describe('create Claim Signature', () => {
   it('invalid substrateAddress', async () => {
