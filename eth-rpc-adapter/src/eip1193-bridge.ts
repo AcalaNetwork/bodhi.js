@@ -429,9 +429,9 @@ class Eip1193BridgeImpl {
     return await this.#provider._isTransactionFinalized(params[0]);
   }
 
-  async eth_getOrphanLogsAtBlock(params: any[]): Promise<any> {
+  async ethgetOrphanLogsAtBlock(params: any[]): Promise<any> {
     validate([{ type: 'block' }], params);
-    return await this.#provider._getOrphanLogsAtBlock(params[0]);
+    return await this.#provider.getOrphanLogsAtBlock(params[0]);
   }
 
   // async eth_newFilter(params: any[]): Promise<any> {

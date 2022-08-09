@@ -7,9 +7,13 @@ import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
-import { BIGNUMBER_ONE, BIGNUMBER_ZERO, DUMMY_R, DUMMY_S, DUMMY_V } from '../consts';
+import { Vec } from '@polkadot/types';
+import { hexToU8a, nToU8a } from '@polkadot/util';
+import { keccak256 } from 'ethers/lib/utils';
+import { BIGNUMBER_ONE, BIGNUMBER_ZERO, DUMMY_V_R_S } from '../consts';
 import { logger } from './logger';
-import { nativeToEthDecimal } from './utils';
+import { isOrphanEvmEvent, nativeToEthDecimal } from './utils';
+import { Formatter, TransactionReceipt } from '@ethersproject/providers';
 export interface PartialLog {
   removed: boolean;
   address: string;
@@ -255,13 +259,6 @@ export const parseExtrinsic = (
   r: string;
   s: string;
 } => {
-  // TODO: get correct V_R_S
-  const DUMMY_V_R_S = {
-    v: DUMMY_V,
-    r: DUMMY_R,
-    s: DUMMY_S
-  };
-
   const nonce = extrinsic.nonce.toNumber();
 
   const NONE_EVM_TX_DEFAULT_DATA = {
@@ -270,7 +267,7 @@ export const parseExtrinsic = (
     input: '0x',
     to: null,
     nonce,
-    ...DUMMY_V_R_S
+    ...DUMMY_V_R_S // TODO: get correct VRS
   };
 
   if (extrinsic.method.section.toUpperCase() !== 'EVM') {
@@ -326,4 +323,37 @@ export const getEffectiveGasPrice = async (
   }
 
   return txFee.div(usedGas);
+};
+
+export const getVirtualTxReceiptsFromEvents = (
+  events: Vec<FrameSystemEventRecord>,
+  blockHash: string,
+  blockNumber: number
+): TransactionReceipt[] => {
+  const receipts = events
+    .filter(isOrphanEvmEvent)
+    .map(getPartialTransactionReceipt)
+    .map((partialReceipt, i) => {
+      const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(i)]);
+      const txInfo = {
+        transactionIndex: 0,
+        transactionHash,
+        blockHash,
+        blockNumber
+      };
+
+      const logs = partialReceipt.logs.map((log) => ({
+        ...log,
+        ...txInfo
+      }));
+
+      return {
+        ...partialReceipt,
+        ...txInfo,
+        logs
+      };
+    });
+
+  const formatter = new Formatter();
+  return receipts.map(formatter.receipt.bind(formatter));
 };
