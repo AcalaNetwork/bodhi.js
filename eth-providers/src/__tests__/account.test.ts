@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { computeDefaultEvmAddress, computeDefaultSubstrateAddress, isEvmAddress, isSubstrateAddress } from '../utils';
+import { describe, it } from 'vitest';
 
 console.log('account test start...');
 

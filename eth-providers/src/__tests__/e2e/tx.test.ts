@@ -10,6 +10,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import dotenv from 'dotenv';
 import { Interface, parseUnits } from 'ethers/lib/utils';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { calcEthereumTransactionParams, sendTx } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
@@ -40,7 +41,8 @@ describe('transaction tests', () => {
   let txGasLimit: BigNumber;
   let txGasPrice: BigNumber;
 
-  before('prepare common variables', async () => {
+  // prepare common variables
+  beforeAll(async () => {
     await provider.isReady();
 
     chainId = await provider.chainId();
@@ -54,13 +56,23 @@ describe('transaction tests', () => {
       txFeePerGas,
       storageByteDeposit
     }));
+
+    // make sure wallet 1 has balance
+    await wallet3.sendTransaction({
+      chainId,
+      to: wallet1.address,
+      gasLimit: txGasLimit,
+      gasPrice: txGasPrice,
+      value: 100000000000000000000n
+    });
   });
 
-  after('clean up', async () => {
+  // clean up
+  afterAll(async () => {
     await provider.disconnect();
   });
 
-  describe('test eth gas', () => {
+  describe.concurrent('test eth gas', () => {
     it('getEthResources', async () => {
       const randomWallet = Wallet.createRandom().connect(provider);
 
@@ -108,7 +120,7 @@ describe('transaction tests', () => {
     });
   });
 
-  describe('test the error tx', () => {
+  describe.concurrent('test the error tx', () => {
     it('InvalidDecimals', async () => {
       await expect(
         wallet1.sendTransaction({
@@ -152,7 +164,7 @@ describe('transaction tests', () => {
 
     let partialDeployTx;
 
-    before(() => {
+    beforeAll(() => {
       partialDeployTx = {
         chainId,
         gasLimit: txGasLimit,
@@ -320,7 +332,7 @@ describe('transaction tests', () => {
     const transferAmount = parseUnits('100', ACADigits);
     let partialTransferTX: any;
 
-    before(() => {
+    beforeAll(() => {
       partialTransferTX = {
         chainId,
         to: ADDRESS.ACA,

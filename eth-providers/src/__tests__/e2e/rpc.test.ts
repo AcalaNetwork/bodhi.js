@@ -1,7 +1,8 @@
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { EvmRpcProvider } from '../../rpc-provider';
 import dotenv from 'dotenv';
+import { afterAll, beforeAll, describe, it } from 'vitest';
+import { EvmRpcProvider } from '../../rpc-provider';
 
 dotenv.config();
 
@@ -14,11 +15,11 @@ chai.use(chaiAsPromised);
 const { expect } = chai;
 
 describe('rpc test', () => {
-  before(async () => {
+  beforeAll(async () => {
     await provider.isReady();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await provider.disconnect();
   });
 

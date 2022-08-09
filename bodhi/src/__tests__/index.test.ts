@@ -1,6 +1,6 @@
 import { u8aConcat, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress } from '@polkadot/util-crypto';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { Provider } from '..';
 
 describe('bodhi', () => {
