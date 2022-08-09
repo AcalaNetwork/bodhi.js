@@ -82,7 +82,6 @@ import {
   getEffectiveGasPrice,
   parseBlockTag,
   filterLogByTopics,
-  isOrphanEvmEvent,
   getVirtualTxReceiptsFromEvents
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
