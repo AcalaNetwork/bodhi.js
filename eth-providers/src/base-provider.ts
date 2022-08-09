@@ -1535,6 +1535,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
 
+    // TODO: maybe should query normalReceipt first, since it's much more usual
     const [normalReceipt, virtualReceipt] = await Promise.allSettled([
       this.getNormalTxReceiptAtBlock(hashOrNumber, blockHash),
       this.getVirtualTxReceiptAtBlock(hashOrNumber, blockHash)
@@ -1836,6 +1837,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return filteredLogs.map((log) => this.formatter.filterLog(log));
   };
 
+  // TODO: split this to getVirtualTxReceiptsAtBlock
   getOrphanLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Log[]> => {
     const blockHash = await this._getBlockHash(blockTag);
     const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
