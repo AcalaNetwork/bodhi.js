@@ -664,7 +664,7 @@ describe('eth_getTransactionByHash', () => {
       hash: tx4.transactionHash,
       from: ADDRESS_ALICE,
       // gasPrice: '0x8885941ca0',
-      value: '0x',
+      value: '0x0',
       gas: '0x200b20',
       input: '0x',
       to: '0x532394de2ca885b7e0306a2e258074cca4e42449',
