@@ -1719,7 +1719,7 @@ export abstract class BaseProvider extends AbstractProvider {
     } catch (e) {
       // virtual tx
       extraData = {
-        value: '0x',
+        value: '0x0',
         gas: 2_100_000,
         input: '0x',
         nonce: 0,

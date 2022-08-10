@@ -28,3 +28,8 @@ helpful for quickly testing the setup of a new RPC endpoint
 ### tx confirmation test
 `KEY=<your-mandala-private-key> yarn confirmation`
 test a tx confirmation time and blocks.
+
+### virtual tx and orphan logs test
+first input a sudo private key into the code, then `yarn virtual-tx`
+
+This will send a schedule transaction to acala testnet, which will produce virutal tx and orphan logs. Then the script will call related RPC methods to make sure they can be found.

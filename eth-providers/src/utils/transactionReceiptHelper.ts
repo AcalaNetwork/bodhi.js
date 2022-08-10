@@ -263,7 +263,7 @@ export const parseExtrinsic = (
   const nonce = extrinsic.nonce.toNumber();
 
   const NONE_EVM_TX_DEFAULT_DATA = {
-    value: '0x',
+    value: '0x0',
     gas: 2_100_000,
     input: '0x',
     to: null,
