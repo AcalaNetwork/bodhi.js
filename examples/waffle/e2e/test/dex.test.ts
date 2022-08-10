@@ -98,7 +98,7 @@ describe('dex test', () => {
       to: hexlifyRpcResult(TokenA.address),
       gas: '0x200b20',
       input: '0x',
-      value: '0x'
+      value: '0x0'
     });
 
     expect(hexlifyRpcResult(receipt)).deep.eq({
