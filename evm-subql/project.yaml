@@ -7,7 +7,7 @@ runner:
     version: 1.6.1
   query:
     name: '@subql/query'
-    version: 0.14.1
+    version: 1.4.0
 description: 'subquery for Local Mandala EVM+'
 repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:
