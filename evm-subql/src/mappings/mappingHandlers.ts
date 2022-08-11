@@ -6,11 +6,13 @@ import {
   findEvmEvent
 } from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
 import { EventData } from '@acala-network/eth-providers/lib/base-provider';
-import { SubstrateEvent, SubstrateBlock } from '@subql/types';
+import { SubstrateBlock } from '@subql/types';
 import '@polkadot/api-augment';
 import { Log, TransactionReceipt } from '../types';
 import { BigNumber } from '@ethersproject/bignumber/lib/bignumber';
-import { Extrinsic } from '@polkadot/types/interfaces';
+import { EventRecord, Extrinsic } from '@polkadot/types/interfaces';
+import { hexToU8a, nToU8a } from '@polkadot/util';
+import { keccak256 } from 'ethers/lib/utils';
 
 export async function handleEvmExtrinsic(
   block: SubstrateBlock,
@@ -21,7 +23,6 @@ export async function handleEvmExtrinsic(
   const blockNumber = block.block.header.number.toBigInt();
   const blockEvents = block.events;
   const timestamp = block.timestamp;
-  const txHash = extrinsic.hash.toHex();
 
   const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = evmInfo;
 
@@ -94,9 +95,58 @@ export async function handleEvmExtrinsic(
   }
 }
 
-export async function handleBlock(block: SubstrateBlock): Promise<void> {
+export async function handleOrphanEvmEvent(event: EventRecord, idx: number, block: SubstrateBlock): Promise<void> {
   const blockHash = block.block.hash.toHex();
   const blockNumber = block.block.header.number.toBigInt();
+  const timestamp = block.timestamp;
+
+  let partialReceipt;
+
+  try {
+    partialReceipt = getPartialTransactionReceipt(event);
+  } catch (e) {
+    logger.warn(e, '❗️ event skipped due to error -- ');
+    return;
+  }
+
+  const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(idx)]);
+  const receiptId = `${blockNumber.toString()}-${transactionHash.substring(54)}`;
+
+  const transactionInfo = {
+    transactionIndex: BigInt(0),
+    blockHash,
+    transactionHash,
+    blockNumber
+  };
+
+  const transactionReceipt = TransactionReceipt.create({
+    id: receiptId,
+    ...partialReceipt,
+    gasUsed: partialReceipt.gasUsed.toBigInt(),
+    effectiveGasPrice: BigInt(0),
+    cumulativeGasUsed: partialReceipt.cumulativeGasUsed.toBigInt(),
+    type: BigInt(partialReceipt.type),
+    status: BigInt(partialReceipt.status),
+    timestamp,
+    ...transactionInfo
+  });
+
+  await transactionReceipt.save();
+
+  for (const [idx, rawLog] of partialReceipt.logs.entries()) {
+    const log = Log.create({
+      id: `${receiptId}-${idx}`,
+      receiptId,
+      timestamp,
+      ...rawLog,
+      ...transactionInfo
+    });
+
+    await log.save();
+  }
+}
+
+export async function handleBlock(block: SubstrateBlock): Promise<void> {
   const blockEvents = block.events;
   const { extrinsics } = block.block;
 
@@ -113,5 +163,16 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
     })
     .filter((x) => !!x);
 
-  await Promise.all(evmExtrinsics.map(({ extrinsic, ...evmInfo }) => handleEvmExtrinsic(block, extrinsic, evmInfo)));
+  // TODO: reuse isOrphanEvmEvent
+  const orphanEvmEvents = blockEvents.filter(
+    (e) =>
+      e.event.section.toLowerCase() === 'evm' &&
+      ['Created', 'Executed', 'CreatedFailed', 'ExecutedFailed'].includes(e.event.method) &&
+      !e.phase.isApplyExtrinsic
+  );
+
+  await Promise.all([
+    ...orphanEvmEvents.map((e, i) => handleOrphanEvmEvent(e, i, block)),
+    ...evmExtrinsics.map(({ extrinsic, ...evmInfo }) => handleEvmExtrinsic(block, extrinsic, evmInfo))
+  ]);
 }

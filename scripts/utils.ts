@@ -10,6 +10,8 @@ export const MANDALA_RPC_WS_SUBQL = 'wss://mandala-eth-rpc-adapter.thechaindata.
 
 export const KARURA_TESTNET_RPC = 'https://karura-dev.aca-dev.network/eth/http';
 export const ACALA_TESTNET_RPC = 'https://acala-dev.aca-dev.network/eth/http';
+export const ACALA_TESTNET_RPC_WS_SAFE = 'wss://acala-dev.aca-dev.network/eth-safe/ws';
+export const ACALA_TESTNET_NODE_RPC = 'wss://acala-dev.aca-dev.network/rpc/ws';
 
 export const KARURA_MAINNET_RPC = 'https://eth-rpc-karura.aca-api.network';
 export const ACALA_MAINNET_RPC = 'https://eth-rpc-acala.aca-api.network';

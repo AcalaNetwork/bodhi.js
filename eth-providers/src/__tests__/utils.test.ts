@@ -7,7 +7,7 @@ import {
   EthCallTimingResult,
   getHealthResult,
   hexlifyRpcResult,
-  isEVMExtrinsic,
+  isEvmExtrinsic,
   parseBlockTag,
   runWithTiming,
   sleep
@@ -60,13 +60,13 @@ describe('utils', () => {
   });
 });
 
-describe('isEVMExtrinsic', () => {
+describe('isEvmExtrinsic', () => {
   it('returns correct result', () => {
     const fakeEVMExtrinsic = {
       method: {
         section: {
-          toUpperCase() {
-            return 'EVM';
+          toLowerCase() {
+            return 'evm';
           }
         }
       }
@@ -75,15 +75,15 @@ describe('isEVMExtrinsic', () => {
     const fakeSUDOExtrinsic = {
       method: {
         section: {
-          toUpperCase() {
-            return 'SUDO';
+          toLowerCase() {
+            return 'sudo';
           }
         }
       }
     };
 
-    expect(isEVMExtrinsic(fakeEVMExtrinsic)).to.equal(true);
-    expect(isEVMExtrinsic(fakeSUDOExtrinsic)).to.equal(false);
+    expect(isEvmExtrinsic(fakeEVMExtrinsic)).to.equal(true);
+    expect(isEvmExtrinsic(fakeSUDOExtrinsic)).to.equal(false);
 
     /* ---------- TODO:
        we have a lot of Extrinsics related helpers

@@ -54,7 +54,8 @@ import {
   SAFE_MODE_WARNING_MSG,
   U32MAX,
   U64MAX,
-  ZERO
+  ZERO,
+  DUMMY_V_R_S
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -70,7 +71,7 @@ import {
   getTransactionIndexAndHash,
   HealthResult,
   hexlifyRpcResult,
-  isEVMExtrinsic,
+  isEvmExtrinsic,
   logger,
   parseExtrinsic,
   PROVIDER_ERRORS,
@@ -80,7 +81,8 @@ import {
   throwNotImplemented,
   getEffectiveGasPrice,
   parseBlockTag,
-  filterLogByTopics
+  filterLogByTopics,
+  getVirtualTxReceiptsFromEvents
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -300,11 +302,10 @@ export abstract class BaseProvider extends AbstractProvider {
       }
 
       if (this._listeners[NEW_LOGS]?.length > 0) {
-        const block = await this.getBlockData(header.number.toHex(), false);
+        const block = await this.getBlockData(blockNumber, false);
         const receipts = await Promise.all(
-          block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, header.number.toHex()))
+          block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
         );
-
         const logs = receipts.map((r) => r.logs).flat();
 
         this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
@@ -481,6 +482,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
+    const blockNumber = header.number.toNumber();
 
     const [block, validators, now, blockEvents] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
@@ -491,8 +493,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
 
-    const blockNumber = headerExtended.number.toNumber();
-
     // blockscout need `toLowerCase`
     const author = headerExtended.author
       ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase()
@@ -500,9 +500,16 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
 
-    const transactions = evmExtrinsicIndexes.map((extrinsicIndex) =>
+    const normalTxHashes = evmExtrinsicIndexes.map((extrinsicIndex) =>
       block.block.extrinsics[extrinsicIndex].hash.toHex()
     );
+
+    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
+    const virtualHashes = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber).map(
+      (r) => r.transactionHash
+    );
+
+    const alltxHashes = [...normalTxHashes, ...(virtualHashes as `0x{string}`[])];
 
     return {
       hash: blockHash,
@@ -526,7 +533,7 @@ export abstract class BaseProvider extends AbstractProvider {
       size: block.encodedLength,
       uncles: EMTPY_UNCLES,
 
-      transactions
+      transactions: alltxHashes
     };
   };
 
@@ -605,7 +612,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ]);
 
       pendingNonce = pendingExtrinsics.filter(
-        (e) => isEVMExtrinsic(e) && e.signer.toString() === substrateAddress
+        (e) => isEvmExtrinsic(e) && e.signer.toString() === substrateAddress
       ).length;
     }
 
@@ -1476,8 +1483,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
     const block = await this.api.rpc.chain.getBlock(blockHash);
+    const normalTxHashes = block.block.extrinsics.map((e) => e.hash.toHex());
 
-    return block.block.extrinsics.map((e) => e.hash.toHex());
+    const orphanLogs = await this.getOrphanLogsAtBlock(blockHash);
+    const virtualHashes = [...new Set(orphanLogs.map((log) => log.transactionHash))];
+
+    return [...normalTxHashes, ...virtualHashes];
   };
 
   _parseTxAtBlock = async (
@@ -1519,11 +1530,50 @@ export abstract class BaseProvider extends AbstractProvider {
     _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<TransactionReceipt> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
-
     hashOrNumber = await hashOrNumber;
+
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
-    const blockNumber = header.number.toNumber();
+
+    // TODO: maybe should query normalReceipt first, since it's much more usual
+    const [normalReceipt, virtualReceipt] = await Promise.allSettled([
+      this.getNormalTxReceiptAtBlock(hashOrNumber, blockHash),
+      this.getVirtualTxReceiptAtBlock(hashOrNumber, blockHash)
+    ]);
+
+    if (normalReceipt.status === 'fulfilled') {
+      return normalReceipt.value;
+    } else if (virtualReceipt.status === 'fulfilled' && virtualReceipt.value) {
+      return virtualReceipt.value;
+    } else {
+      return logger.throwError('receipt not found');
+    }
+  };
+
+  getVirtualTxReceiptAtBlock = async (
+    hashOrNumber: number | string | Promise<string>,
+    blockHash: string
+  ): Promise<TransactionReceipt | null> => {
+    if (typeof hashOrNumber !== 'string') return null;
+
+    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
+    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
+
+    const virtualReceipt = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber).find(
+      (r) => r.transactionHash === hashOrNumber
+    );
+
+    if (!virtualReceipt) return null;
+
+    return {
+      ...virtualReceipt,
+      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
+      effectiveGasPrice: BIGNUMBER_ZERO
+    };
+  };
+
+  getNormalTxReceiptAtBlock = async (hashOrNumber: number | string, blockHash: string): Promise<TransactionReceipt> => {
+    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
 
     const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
       await this._parseTxAtBlock(blockHash, hashOrNumber);
@@ -1614,7 +1664,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find((e) => e.hash.toHex() === txHash);
 
-    if (!(targetExtrinsic && isEVMExtrinsic(targetExtrinsic))) return null;
+    if (!(targetExtrinsic && isEvmExtrinsic(targetExtrinsic))) return null;
 
     return {
       from: await this.getEvmAddress(targetExtrinsic.signer.toString()),
@@ -1658,9 +1708,24 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx = this.localMode
       ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
       : await this._getMinedTXReceipt(txHash);
+
     if (!tx) return null;
 
-    const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
+    let extraData;
+
+    try {
+      const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
+      extraData = parseExtrinsic(extrinsic);
+    } catch (e) {
+      // virtual tx
+      extraData = {
+        value: '0x0',
+        gas: 2_100_000,
+        input: '0x',
+        nonce: 0,
+        ...DUMMY_V_R_S
+      };
+    }
 
     return {
       blockHash: tx.blockHash,
@@ -1669,7 +1734,7 @@ export abstract class BaseProvider extends AbstractProvider {
       hash: tx.transactionHash,
       from: tx.from,
       gasPrice: tx.effectiveGasPrice,
-      ...parseExtrinsic(extrinsic),
+      ...extraData,
 
       // overrides to in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
       to: tx.to || null
@@ -1770,6 +1835,18 @@ export abstract class BaseProvider extends AbstractProvider {
     const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
+  };
+
+  // TODO: split this to getVirtualTxReceiptsAtBlock
+  getOrphanLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Log[]> => {
+    const blockHash = await this._getBlockHash(blockTag);
+    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
+    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
+
+    const virtualReceipts = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber);
+    const orphanLogs = virtualReceipts.reduce<Log[]>((logs, receipt) => logs.concat(receipt.logs), []);
+
+    return hexlifyRpcResult(orphanLogs);
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {

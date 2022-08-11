@@ -1,3 +1,4 @@
+import { FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
 import { BigNumber } from 'ethers';
@@ -63,7 +64,11 @@ export const promiseWithTimeout = <T = any>(value: any, interval = 1000): Promis
     });
 };
 
-export const isEVMExtrinsic = (e: Extrinsic): boolean => e.method.section.toUpperCase() === 'EVM';
+export const isEvmExtrinsic = (e: Extrinsic): boolean => e.method.section.toLowerCase() === 'evm';
+export const isEvmEvent = (e: FrameSystemEventRecord): boolean =>
+  e.event.section.toLowerCase() === 'evm' &&
+  ['Created', 'Executed', 'CreatedFailed', 'ExecutedFailed'].includes(e.event.method);
+export const isOrphanEvmEvent = (e: FrameSystemEventRecord): boolean => isEvmEvent(e) && !e.phase.isApplyExtrinsic;
 
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,
