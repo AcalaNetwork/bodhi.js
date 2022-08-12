@@ -34,7 +34,7 @@ services:
       - --unsafe
 
   graphql-engine:
-    image: onfinality/subql-query:v0.14.1
+    image: onfinality/subql-query:v1.4.0
     ports:
       - 3001:3001
     depends_on:

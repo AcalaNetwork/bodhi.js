@@ -45,7 +45,7 @@ services:
       - --log-level=debug
 
   graphql-engine:
-    image: onfinality/subql-query:v0.14.1
+    image: onfinality/subql-query:v1.4.0
     container_name: graphql-engine
     ports:
       - 3001:3001

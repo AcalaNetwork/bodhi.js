@@ -4,10 +4,10 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node'
-    version: 0.33.0
+    version: 1.6.1
   query:
     name: '@subql/query'
-    version: 0.14.1
+    version: 1.4.0
 description: 'subquery for Public Mandala EVM+'
 repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:
