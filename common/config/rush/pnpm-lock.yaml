@@ -62,7 +62,7 @@ importers:
 
   ../../eth-providers:
     specifiers:
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@acala-network/eth-transactions': workspace:*
       '@acala-network/types': ~4.1.1
       '@ethersproject/abstract-provider': ~5.5.0
@@ -106,7 +106,7 @@ importers:
       typescript: ~4.6.3
       vitest: ~0.20.2
     dependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@acala-network/eth-transactions': link:../eth-transactions
       '@acala-network/types': 4.1.1
       '@ethersproject/abstract-provider': 5.5.1
@@ -153,7 +153,7 @@ importers:
 
   ../../eth-rpc-adapter:
     specifiers:
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@acala-network/eth-providers': workspace:*
       '@acala-network/eth-transactions': workspace:*
       '@ethersproject/abstract-provider': ~5.5.0
@@ -218,7 +218,7 @@ importers:
       pino: 7.0.5
       ws: 8.2.3
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@ethersproject/contracts': 5.5.0
       '@ethersproject/providers': 5.5.3
       '@polkadot/types': 8.1.1
@@ -277,7 +277,7 @@ importers:
 
   ../../examples/hardhat-tutorials/DEX:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@acala-network/eth-providers': ^2.4.11
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
@@ -290,7 +290,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@acala-network/eth-providers': 2.4.18
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
@@ -302,7 +302,7 @@ importers:
 
   ../../examples/hardhat-tutorials/EVM:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@acala-network/eth-providers': ^2.4.11
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
@@ -315,7 +315,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@acala-network/eth-providers': 2.4.18
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
@@ -350,7 +350,7 @@ importers:
 
   ../../examples/hardhat-tutorials/advanced-escrow:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@acala-network/eth-providers': ^2.4.11
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
@@ -363,7 +363,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@acala-network/eth-providers': 2.4.18
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
@@ -417,7 +417,7 @@ importers:
 
   ../../examples/hardhat-tutorials/precompiled-token:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@nomiclabs/hardhat-ethers': ^2.0.2
       '@nomiclabs/hardhat-waffle': ^2.0.1
       '@openzeppelin/contracts': ^4.4.2
@@ -429,7 +429,7 @@ importers:
     dependencies:
       hardhat: 2.8.0
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@nomiclabs/hardhat-ethers': 2.0.3_ethers@5.5.4+hardhat@2.8.0
       '@nomiclabs/hardhat-waffle': 2.0.1_6a0d201cbcce3c9d971f3b7bc77e6f97
       '@openzeppelin/contracts': 4.4.2
@@ -490,7 +490,7 @@ importers:
 
   ../../examples/truffle-tutorials/DEX:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@openzeppelin/contracts': ^4.4.2
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.0
@@ -499,7 +499,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
@@ -507,7 +507,7 @@ importers:
 
   ../../examples/truffle-tutorials/EVM:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@openzeppelin/contracts': ^4.4.2
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.0
@@ -516,7 +516,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
@@ -537,7 +537,7 @@ importers:
 
   ../../examples/truffle-tutorials/advanced-escrow:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@openzeppelin/contracts': ^4.4.2
       '@polkadot/api': 8.1.1
       '@truffle/hdwallet-provider': ^1.6.0
@@ -548,7 +548,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@openzeppelin/contracts': 4.4.2
       '@polkadot/api': 8.1.1
       '@truffle/hdwallet-provider': 1.7.0
@@ -576,7 +576,7 @@ importers:
 
   ../../examples/truffle-tutorials/precompiled-token:
     specifiers:
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@openzeppelin/contracts': ^4.4.2
       '@truffle/hdwallet-provider': ^1.6.0
       ethers: ~5.5.0
@@ -585,7 +585,7 @@ importers:
     dependencies:
       truffle: 5.4.26
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@openzeppelin/contracts': 4.4.2
       '@truffle/hdwallet-provider': 1.7.0
       ethers: 5.5.4
@@ -679,7 +679,7 @@ importers:
     specifiers:
       '@acala-network/api': ^4.1.1
       '@acala-network/bodhi': ^2.4.11
-      '@acala-network/contracts': ^4.3.2
+      '@acala-network/contracts': ^4.3.4
       '@openzeppelin/contracts': ^4.4.2
       '@types/chai': ^4.2.22
       '@types/mocha': ^9.0.0
@@ -692,7 +692,7 @@ importers:
       '@acala-network/api': 4.1.1
       '@acala-network/bodhi': 2.4.18
     devDependencies:
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@openzeppelin/contracts': 4.4.2
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -730,7 +730,7 @@ importers:
   ../../examples/waffle/arbitrager:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~2.3.2
+      '@acala-network/contracts': ~2.3.4
       '@openzeppelin/contracts': ~3.4.2
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
@@ -746,7 +746,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 2.3.2
+      '@acala-network/contracts': 2.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
       '@uniswap/v2-core': 1.0.1
@@ -765,7 +765,7 @@ importers:
   ../../examples/waffle/dex:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@polkadot/api': 8.1.1
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -777,7 +777,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
     devDependencies:
       '@types/chai': 4.2.22
@@ -792,7 +792,7 @@ importers:
   ../../examples/waffle/e2e:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@acala-network/eth-providers': workspace:*
       '@openzeppelin/contracts': ^4.4.2
       '@polkadot/api': 8.1.1
@@ -807,7 +807,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@acala-network/eth-providers': link:../../../eth-providers
       '@openzeppelin/contracts': 4.4.2
       '@polkadot/api': 8.1.1
@@ -825,7 +825,7 @@ importers:
   ../../examples/waffle/erc20:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@openzeppelin/contracts': ~4.4.2
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
@@ -839,7 +839,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -856,7 +856,7 @@ importers:
   ../../examples/waffle/evm:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
       '@types/chai': ~4.2.22
@@ -869,7 +869,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -885,7 +885,7 @@ importers:
   ../../examples/waffle/evm-accounts:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
       '@types/chai': ~4.2.22
@@ -898,7 +898,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -935,7 +935,7 @@ importers:
   ../../examples/waffle/homa:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
       '@types/chai': ~4.2.22
@@ -948,7 +948,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -964,7 +964,7 @@ importers:
   ../../examples/waffle/honzon:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
       '@types/chai': ~4.2.22
@@ -977,7 +977,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -993,7 +993,7 @@ importers:
   ../../examples/waffle/incentives:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
       '@types/chai': ~4.2.22
@@ -1006,7 +1006,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -1022,7 +1022,7 @@ importers:
   ../../examples/waffle/oracle:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -1033,7 +1033,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -1047,7 +1047,7 @@ importers:
   ../../examples/waffle/scheduler:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~2.3.2
+      '@acala-network/contracts': ~2.3.4
       '@openzeppelin/contracts': ~3.4.2
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
@@ -1061,7 +1061,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 2.3.2
+      '@acala-network/contracts': 2.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -1078,7 +1078,7 @@ importers:
   ../../examples/waffle/stable-asset:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
       '@types/chai': ~4.2.22
@@ -1091,7 +1091,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -1107,7 +1107,7 @@ importers:
   ../../examples/waffle/uniswap:
     specifiers:
       '@acala-network/bodhi': workspace:*
-      '@acala-network/contracts': ~4.3.2
+      '@acala-network/contracts': ~4.3.4
       '@openzeppelin/contracts': ~4.4.2
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': ^9.0.1
@@ -1121,7 +1121,7 @@ importers:
       typescript: ~4.6.3
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
-      '@acala-network/contracts': 4.3.2
+      '@acala-network/contracts': 4.3.4
       '@polkadot/api': 8.1.1
       '@polkadot/keyring': 9.0.1
     devDependencies:
@@ -1202,15 +1202,15 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@acala-network/contracts/2.3.2:
-    resolution: {integrity: sha512-sIj3XUw/U+y5g+6KneCA4vrg7BIJkAli/1bObhhMvFqn7azSg3KDonvRbKY8fuLnHoxKU5APmx/WjUvhsNuWRA==}
+  /@acala-network/contracts/2.3.4:
+    resolution: {integrity: sha512-r2SSymhuoYZGMkAskQrm512wND6mUsZ3uNSwMrIfSCejgNuZKYIwLoGIGM94BS+pdvKCglHoWX3qy37fMIo8pw==}
     dev: false
 
   /@acala-network/contracts/4.2.0:
     resolution: {integrity: sha512-IT63HPWsHPeHy8zCr71wAztghrFdscLzZlYdcvewEuBGWkRpHFlZ4i32kADYPv6UAT9ew7en6nqOWJa48CaliQ==}
 
-  /@acala-network/contracts/4.3.2:
-    resolution: {integrity: sha512-y/55NNNkbicesWq2lbWsnuIl8PBTXfE7xkIilrWeaj6k7nHnkS1ugXuRdHKTAlEoxewdKbnLtbCXe79wqMhzEA==}
+  /@acala-network/contracts/4.3.4:
+    resolution: {integrity: sha512-oBgXGUjRW+lRo9TWGtCB1+OpEOFfhxW//wReb7V/YdbEElVvYuKw3lmfly/eZ/mdBgqxA3eXxNW0AgXiyOn2NQ==}
 
   /@acala-network/eth-providers/2.4.18:
     resolution: {integrity: sha512-40fdy6ghT3drN9Nito1uKYUlQb4joc8Q4LmE4PJek1yZTRvojHKukNeCG7nOkNFZ+4igpjP1KteY2vYO4hwd2A==}

@@ -120,5 +120,13 @@ describe('stable asset', () => {
     await expect(stableAssetPredeployed.stableAssetSwap(0, 0, 1, 500000, 0, 2))
       .to.emit(stableAssetPredeployed, 'StableAssetSwapped')
       .withArgs(await wallet.getAddress(), 0, 0, 1, 500000, 0, 2);
+
+    await expect(stableAssetPredeployed.stableAssetRedeemSingle(0, 500000, 0, 0, 2))
+      .to.emit(stableAssetPredeployed, 'StableAssetRedeemedSingle')
+      .withArgs(await wallet.getAddress(), 0, 500000, 0, 0, 2);
+
+    await expect(stableAssetPredeployed.stableAssetRedeemMulti(0, [500000, 2], 1000000000))
+      .to.emit(stableAssetPredeployed, 'StableAssetRedeemedMulti')
+      .withArgs(await wallet.getAddress(), 0, [500000, 2], 1000000000);
   });
 });

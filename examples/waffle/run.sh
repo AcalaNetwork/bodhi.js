@@ -45,12 +45,12 @@ test_all() {
     "evm"
     "evm-accounts"
     "hello-world"
-    "homa"
     "honzon"
     "incentives"
     "oracle"
     "scheduler"
     "stable-asset"
+    "homa"
     "uniswap"
   )
 

@@ -50,7 +50,9 @@ describe('honzon', () => {
     const evmAddress = ethers.Wallet.createRandom().address;
     console.log(evmAddress);
 
-    expect((await honzon.getLiquidationRatio(ADDRESS.DOT)).toString()).to.eq('1500000000000000000');
+    expect((await honzon.getLiquidationRatio(ADDRESS.DOT)).toString()).to.eq(
+      '10000000000000000000,0,1500000000000000000,100000000000000000,1500000000000000000'
+    );
 
     // u128 max
     expect((await honzon.getCurrentCollateralRatio(evmAddress, ADDRESS.DOT)).toString()).to.eq(
@@ -86,7 +88,9 @@ describe('honzon', () => {
     );
     await send(updateHomaParams, await wallet.getSubstrateAddress());
 
-    expect((await honzon.getLiquidationRatio(ADDRESS.DOT)).toString()).to.eq('1500000000000000000');
+    expect((await honzon.getLiquidationRatio(ADDRESS.DOT)).toString()).to.eq(
+      '10000000000000000,10000000000000,1500000000000000000,200000000000000000,1800000000000000000'
+    );
 
     // u32 max
     expect((await honzon.getCurrentCollateralRatio(evmAddress, ADDRESS.DOT)).toString()).to.eq(
