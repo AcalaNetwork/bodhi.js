@@ -1220,12 +1220,6 @@ describe('eth_call', () => {
         name: 'Liquid DOT',
         symbol: 'LDOT',
         decimals: 10
-      },
-      {
-        address: '0x0000000000000000000100000000000000000014',
-        name: 'Ren Protocol BTC',
-        symbol: 'RENBTC',
-        decimals: 8
       }
     ];
 

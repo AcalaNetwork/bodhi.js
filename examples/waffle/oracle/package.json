@@ -19,6 +19,6 @@
   },
   "dependencies": {
     "@acala-network/bodhi": "workspace:*",
-    "@acala-network/contracts": "~4.3.2"
+    "@acala-network/contracts": "~4.3.4"
   }
 }

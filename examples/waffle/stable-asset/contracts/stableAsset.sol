@@ -42,4 +42,12 @@ contract StableAsset is ADDRESS {
     function stableAssetRedeem(uint32 poolId, uint256 redeemAmount, uint256[] calldata amounts) public returns (bool) {
         return stableAsset.stableAssetRedeem(poolId, redeemAmount, amounts);
     }
+
+    function stableAssetRedeemSingle(uint32 poolId, uint256 redeemAmount, uint32 i, uint256 minRedeemAmount, uint32 assetLength) public returns (bool) {
+        return stableAsset.stableAssetRedeemSingle(poolId, redeemAmount, i, minRedeemAmount, assetLength);
+    }
+
+    function stableAssetRedeemMulti(uint32 poolId, uint256[] calldata amounts, uint256 maxMintAmount) public returns (bool) {
+        return stableAsset.stableAssetRedeemMulti(poolId, amounts, maxMintAmount);
+    }
 }

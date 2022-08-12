@@ -19,8 +19,8 @@ contract Honzon is ADDRESS {
         return honzon.getPosition(who, currencyId);
     }
 
-    function getLiquidationRatio(address currencyId) public view returns (uint256) {
-        return honzon.getLiquidationRatio(currencyId);
+    function getLiquidationRatio(address currencyId) public view returns (uint256[] memory) {
+        return honzon.getCollateralParameters(currencyId);
     }
 
     function getCurrentCollateralRatio(address who, address currencyId) public view returns (uint256) {
