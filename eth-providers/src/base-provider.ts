@@ -1897,12 +1897,17 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const cacheInfo = this.getCachInfo();
     const curFinalizedHeight = this.latestFinalizedBlockNumber!;
+    const listenersCount = {
+      newHead: this._listeners[NEW_HEADS]?.length || 0,
+      logs: this._listeners[NEW_LOGS]?.length || 0
+    };
 
     return getHealthResult({
       indexerMeta,
       cacheInfo,
       curFinalizedHeight,
-      ethCallTiming
+      ethCallTiming,
+      listenersCount
     });
   };
 

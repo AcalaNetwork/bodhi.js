@@ -155,9 +155,12 @@ describe('getHealthResult', () => {
 
   const maxCachedBlocks = 200;
   const cachedBlocksCount = 196;
-  const cacheInfo: Partial<CacheInspect> = {
+  const cacheInfo: CacheInspect = {
     maxCachedBlocks,
-    cachedBlocksCount
+    cachedBlocksCount,
+    cachedBlocks: [],
+    allBlockToHash: {},
+    allHashToBlock: {}
   };
 
   let curFinalizedHeight = targetHeight;
@@ -202,7 +205,6 @@ describe('getHealthResult', () => {
       ethCallTiming
     });
 
-    // console.log(res)
     expect(res).containSubset(healthResult);
   });
 
@@ -236,6 +238,33 @@ describe('getHealthResult', () => {
       });
 
       expect(res.msg.length).to.equal(2);
+    });
+
+    // this only happens when subql and rpc adapter are connecting to different node urls
+    it('when block production stopped', () => {
+      const idleBlocks = -100;
+      const curFinalizedHeightBad = lastProcessedHeight + idleBlocks;
+
+      const res = getHealthResult({
+        indexerMeta,
+        cacheInfo,
+        curFinalizedHeight: curFinalizedHeightBad,
+        ethCallTiming
+      });
+
+      expect(res).containSubset({
+        ...healthResult,
+        isHealthy: false,
+        moreInfo: {
+          ...healthResult.moreInfo,
+          idleBlocks: idleBlocks,
+          curFinalizedHeight: curFinalizedHeightBad
+        }
+      });
+
+      console.log(res);
+      expect(res.msg.length).to.equal(1);
+      expect(res.msg[0]).to.equal(`node production already idle for: ${-idleBlocks} blocks`);
     });
 
     it('when cache unhealthy', () => {

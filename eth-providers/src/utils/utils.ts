@@ -34,6 +34,11 @@ export interface HealthResult {
     indexerHealthy: boolean;
     // RPC
     ethCallTiming: EthCallTimingResult;
+    // listeners
+    listenersCount: {
+      newHead: number;
+      logs: number;
+    };
   };
 }
 
@@ -42,6 +47,10 @@ export interface HealthData {
   cacheInfo?: CacheInspect;
   curFinalizedHeight: number;
   ethCallTiming: EthCallTimingResult;
+  listenersCount: {
+    newHead: number;
+    logs: number;
+  };
 }
 
 export const sleep = (interval = 1000): Promise<null> =>
@@ -100,7 +109,8 @@ export const getHealthResult = ({
   indexerMeta,
   cacheInfo,
   curFinalizedHeight,
-  ethCallTiming
+  ethCallTiming,
+  listenersCount
 }: HealthData): HealthResult => {
   const MAX_IDLE_TIME = 30 * 60; // half an hour
   const MAX_IDLE_BLOCKS = 50; // ~10 minutes
@@ -159,6 +169,11 @@ export const getHealthResult = ({
       isHealthy = false;
       isSubqlOK = false;
     }
+
+    if (idleBlocks < -MAX_IDLE_BLOCKS) {
+      msg.push(`node production already idle for: ${-idleBlocks} blocks`);
+      isHealthy = false;
+    }
   }
 
   /* --------------- RPC --------------- */
@@ -207,7 +222,10 @@ export const getHealthResult = ({
       idleBlocks,
       indexerHealthy,
       // RPC
-      ethCallTiming
+      ethCallTiming,
+      // listeners
+      // TODO: currently only print out info, no threshold check
+      listenersCount
     }
   };
 };
