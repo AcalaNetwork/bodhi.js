@@ -134,7 +134,7 @@ describe('eth_getTransactionReceipt', () => {
       from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
-      gasUsed: '0x19b03',
+      gasUsed: '0x19b19',
       logsBloom: DUMMY_LOGS_BLOOM,
       blockHash: txR.blockHash,
       transactionHash: txR.transactionHash,
@@ -167,7 +167,7 @@ describe('eth_getTransactionReceipt', () => {
       from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
-      gasUsed: '0x1e761',
+      gasUsed: '0x1e777',
       logsBloom: DUMMY_LOGS_BLOOM,
       blockHash: txR.blockHash,
       transactionHash: txR.transactionHash,
@@ -200,7 +200,7 @@ describe('eth_getTransactionReceipt', () => {
       from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
-      gasUsed: '0x19b5c',
+      gasUsed: '0x19b72',
       logsBloom: DUMMY_LOGS_BLOOM,
       blockHash: txR.blockHash,
       transactionHash: txR.transactionHash,
@@ -1456,7 +1456,7 @@ describe('eth_getBalance', () => {
   const eth_blockNumber = rpcGet('eth_blockNumber');
 
   it('get correct balance', async () => {
-    const block8Balance = 8999994505421550638000000n;     // edit me for different mandala version
+    const block8Balance = 8999994474726364446000000n;     // edit me for different mandala version
     expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance);
     expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x8'])).data.result)).to.equal(block8Balance);
     expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(block8Balance);
