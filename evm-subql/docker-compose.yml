@@ -28,7 +28,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: onfinality/subql-node:v1.6.1
+    image: onfinality/subql-node:v1.7.0
     depends_on:
       - postgres
       - mandala-node
