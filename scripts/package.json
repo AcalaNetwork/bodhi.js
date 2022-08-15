@@ -10,7 +10,8 @@
     "precompile": "TS_NODE_TRANSPILE_ONLY=true ts-node test-precompile.ts",
     "iterate": "TS_NODE_TRANSPILE_ONLY=true ts-node block-iterator.ts",
     "confirmation": "TS_NODE_TRANSPILE_ONLY=true ts-node tx-confirmation-test.ts",
-    "virtual-tx": "TS_NODE_TRANSPILE_ONLY=true ts-node virtual-tx-test.ts"
+    "virtual-tx": "TS_NODE_TRANSPILE_ONLY=true ts-node virtual-tx-test.ts",
+    "ausd": "TS_NODE_TRANSPILE_ONLY=true ts-node ausd-total-supply.ts"
   },
   "devDependencies": {
     "@acala-network/contracts": "^3.2.0",
