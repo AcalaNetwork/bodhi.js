@@ -121,7 +121,7 @@ export const TX_RECEIPT_NODES = `
     effectiveGasPrice,
     type
     status
-    logsByReceiptId {
+    logs {
       ${LOGS_NODES}
     }
   }
