@@ -43,7 +43,12 @@ export class SubqlProvider {
       }
     `);
 
-    return res.transactionReceipts!.nodes[0] || null;
+    const receipt = res.transactionReceipts!.nodes[0];
+    if (!receipt) return null;
+
+    receipt.logs = (receipt as any).logsByReceiptId; // TODO: correct type
+
+    return receipt;
   };
 
   getAllLogs = async (): Promise<Log[]> => {
