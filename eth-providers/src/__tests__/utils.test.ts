@@ -241,7 +241,7 @@ describe('getHealthResult', () => {
     });
 
     // this only happens when subql and rpc adapter are connecting to different node urls
-    it('when block production stopped', () => {
+    it.only('when block production stopped', () => {
       const idleBlocks = -100;
       const curFinalizedHeightBad = lastProcessedHeight + idleBlocks;
 
