@@ -108,7 +108,8 @@ before('env setup', async () => {
       test env setup failed ❌
       ------------------------
     `);
-    throw e;
+    console.log(e)
+    process.exit(1);
   }
 
   console.log(`
