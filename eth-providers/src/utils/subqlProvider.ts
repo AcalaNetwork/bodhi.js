@@ -27,7 +27,13 @@ export class SubqlProvider {
       }
     `);
 
-    return res.transactionReceipts!.nodes as TXReceiptGQL[];
+    const receipts = res.transactionReceipts!.nodes as TXReceiptGQL[];
+    if (!receipts.length) return [];
+
+    return receipts.map((r) => ({
+      ...r,
+      logs: (r as any).logsByReceiptId
+    }));
   };
 
   getTxReceiptByHash = async (hash: string): Promise<TXReceiptGQL | null> => {
