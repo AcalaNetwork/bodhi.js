@@ -147,7 +147,7 @@ Previous examples are **local dev setup**, which uses the [example config](./pro
 
 For production, we need slightly different configs, and usually need to start each of the `{ node, postgres, indexer, query }` seperately with docker or k8s, instead of running them all in one docker container.
 
-One trick is that we don't have to stat indexing from block 0, since Acala and Karura didn't enable evm until some certain block. In particular we can use these two configs for prod (change `endpoint` to your custom one if needed):
+One trick is that we don't have to start indexing from block 0, since Acala and Karura didn't enable evm until some certain block. In particular we can use these two configs for prod (change `endpoint` to your custom one if needed):
 - [Acala prod](./project-acala-840000.yaml)
 - [Karura prod](./project-karura-1780000.yaml)
 
