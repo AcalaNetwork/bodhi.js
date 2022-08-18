@@ -26,8 +26,10 @@ docker-compose down && docker volume prune      # clean docker volume (optional)
 docker-compose up
 ```
 
+note that the indexer won't start until we [feed some tx to node](#feed-evm-transactions-to-node) if node is running with `--instant-sealing`
+
 ### run each service seperately in cli
-optionally if you don't like docker, you can also run each service in cli ([official doc ↗️](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
+optionally if you don't like docker, you can also run each service in cli ([official doc](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
 - first install subql globally
 ```
 npm i -g @subql/node@1.7.0 @subql/query@1.4.0
@@ -45,7 +47,7 @@ docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:
 docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
 ```
 
-- [feed some tx to node](#feed-evm-transactions-to-node) if running with `--instant-sealing` node
+- [feed some tx to node](#feed-evm-transactions-to-node) if node is running with `--instant-sealing`
 
 - run a subquery indexer (in terminal 3)
 ```
@@ -70,7 +72,7 @@ yarn query
 ```
 
 ### feed evm transactions to node
-Since we are running acala node with `--instant-sealing`, it won't start producing blocks until there is some transactions, and subquery indexer won't start either without any new block. Sowe will need to feed some tx to it. 
+If the acala node is running with `--instant-sealing`, it won't start producing blocks until transactions coming in, and subquery indexer won't start either without any new block. Sowe will need to feed some tx to it. 
 
 For example we can run any of the [evm examples](https://github.com/AcalaNetwork/bodhi.js/tree/master/examples).
 ```
