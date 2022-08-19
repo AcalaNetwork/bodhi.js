@@ -60,6 +60,9 @@ docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}')
 
 - run tests
 ```
+### build the bodhi-base image
+docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+
 ### run any test
 docker-compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
 
