@@ -1,5 +1,7 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+import { Contract } from 'ethers';
+import ERC20_ABI from './ERC20_ABI.json';
 
 dotenv.config();
 
@@ -15,6 +17,8 @@ export const ACALA_TESTNET_NODE_RPC = 'wss://acala-dev.aca-dev.network/rpc/ws';
 
 export const KARURA_MAINNET_RPC = 'https://eth-rpc-karura.aca-api.network';
 export const ACALA_MAINNET_RPC = 'https://eth-rpc-acala.aca-api.network';
+
+export const MOONBEAM_RPC = 'https://rpc.ankr.com/moonbeam';
 
 export const RPC_URL = process.env.RPC_URL || MANDALA_RPC;
 
@@ -64,6 +68,7 @@ export const runWithRetries = async <F extends AnyFunction>(
     try {
       res = await fn(...args);
     } catch (e) {
+      console.log(e);
       if (tries === maxRetries) throw e;
     }
 
@@ -107,4 +112,34 @@ export const runWithTiming = async <F extends AnyFunction>(
     res,
     time
   };
+};
+
+const erc20Cache = {};
+export const getErc20Info = async (
+  address: string,
+  provider
+): Promise<{ tokenName: string; tokenSymbol: string; decimals: string }> => {
+  if (erc20Cache[address]) return erc20Cache[address];
+
+  const erc20 = new Contract(address, ERC20_ABI, provider);
+
+  let name = '';
+  let symbol = '';
+  let decimals = '';
+  try {
+    name = await erc20.callStatic.name();
+    symbol = await erc20.callStatic.symbol();
+    decimals = await erc20.callStatic.decimals();
+  } catch (error) {
+    // ignore non-erc20 address
+  }
+
+  const res = {
+    tokenName: name,
+    tokenSymbol: symbol,
+    decimals
+  };
+  erc20Cache[address] = res;
+
+  return res;
 };

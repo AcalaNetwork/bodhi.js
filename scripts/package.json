@@ -11,7 +11,8 @@
     "iterate": "TS_NODE_TRANSPILE_ONLY=true ts-node block-iterator.ts",
     "confirmation": "TS_NODE_TRANSPILE_ONLY=true ts-node tx-confirmation-test.ts",
     "virtual-tx": "TS_NODE_TRANSPILE_ONLY=true ts-node virtual-tx-test.ts",
-    "ausd": "TS_NODE_TRANSPILE_ONLY=true ts-node ausd-total-supply.ts"
+    "ausd": "TS_NODE_TRANSPILE_ONLY=true ts-node ausd-total-supply.ts",
+    "moonbeam": "TS_NODE_TRANSPILE_ONLY=true ts-node moonbeam-tracing/moonbeam-tracing.ts"
   },
   "devDependencies": {
     "@acala-network/contracts": "^3.2.0",
