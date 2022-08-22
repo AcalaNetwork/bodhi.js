@@ -23,7 +23,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
   subquery-node:
-    image: acala/evm-subql:6686a50
+    image: acala/evm-subql:6d8b48c
     container_name: subquery-node
     ports:
       - 3000:3000
@@ -43,6 +43,7 @@ services:
       - --network-endpoint=ws://mandala-node:9944
       - --db-schema=acala_evm
       - --log-level=debug
+      - --unsafe
 
   graphql-engine:
     image: onfinality/subql-query:v1.4.0
@@ -68,7 +69,7 @@ services:
       - --indexer=http://subquery-node:3000
 
   eth-rpc-adapter-server:
-    image: acala/eth-rpc-adapter:6686a50
+    image: acala/eth-rpc-adapter:6d8b48c
     container_name: eth-rpc-adapter-server
     restart: always
     depends_on:
