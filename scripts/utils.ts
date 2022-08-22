@@ -20,6 +20,8 @@ export const RPC_URL = process.env.RPC_URL || MANDALA_RPC;
 
 // console.log('RPC_URL: ', RPC_URL)
 
+export declare type AnyFunction = (...args: any[]) => any;
+
 export const rpcGet =
   (method: string, url?: string = MANDALA_RPC) =>
   (params: any = []): any =>
@@ -30,6 +32,16 @@ export const rpcGet =
         method,
         params
       }
+    });
+
+export const rpcPost =
+  (method: string, url?: string = MANDALA_RPC) =>
+  (params: any = []): any =>
+    axios.post(url, {
+      id: 0,
+      jsonrpc: '2.0',
+      method,
+      params
     });
 
 export const eth_call = rpcGet('eth_call');
