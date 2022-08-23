@@ -3,7 +3,7 @@ import axios from 'axios';
 import { BigNumber, Contract } from 'ethers';
 import { Interface } from 'ethers/lib/utils';
 import ERC20_ABI from '../ERC20_ABI.json';
-import { getErc20Info } from '../utils';
+import { getErc20Info, runWithRetries } from '../utils';
 import { ERC20_TRANSFER_TOPIC_SIG, ONE_ETHER, XTOKEN_ABI } from './consts';
 
 export interface BlockscoutTx {
@@ -66,6 +66,8 @@ const getTransferInfoFromLog = async (log: Log, provider: JsonRpcProvider): Prom
 };
 
 export class Tx {
+  provider: JsonRpcProvider;
+
   blockNumber: string;
   hash: string;
   nonce: string;
@@ -95,7 +97,9 @@ export class Tx {
   xcmToken: string;
   xcmAmount: string;
 
-  constructor(data: BlockscoutTx) {
+  constructor(data: BlockscoutTx, provider: JsonRpcProvider) {
+    this.provider = provider;
+
     this.blockNumber = data.blockNumber;
     this.hash = data.hash;
     this.nonce = data.nonce;
@@ -135,8 +139,8 @@ export class Tx {
   }
 
   // get all info needed for token transfer tx
-  async getTokenInfo(provider: JsonRpcProvider): Promise<void> {
-    const { tokenName, tokenSymbol, decimals } = await getErc20Info(this.to, provider);
+  async getTokenInfo(): Promise<void> {
+    const { tokenName, tokenSymbol, decimals } = await getErc20Info(this.to, this.provider);
     this.tokenName = tokenName;
     this.tokenSymbol = tokenSymbol;
 
@@ -146,23 +150,23 @@ export class Tx {
     this.amount = rawAmount.div(BigNumber.from(10).pow(decimals)).toString();
   }
 
-  async getReceipt(provider: JsonRpcProvider): Promise<void> {
-    this.receipt = await provider.getTransactionReceipt(this.hash);
+  async getReceipt(): Promise<void> {
+    this.receipt = await this.provider.getTransactionReceipt(this.hash);
   }
 
   // get all erc20 transfers in a dex swap tx
-  async getErc20Transfers(provider: JsonRpcProvider): Promise<void> {
-    !this.receipt && (await this.getReceipt(provider));
+  async getErc20Transfers(): Promise<void> {
+    !this.receipt && (await this.getReceipt());
 
     const transferLogs = this.receipt.logs.filter((log) => log.topics[0] === ERC20_TRANSFER_TOPIC_SIG);
 
-    this.erc20Transfers = await Promise.all(transferLogs.map(async (log) => getTransferInfoFromLog(log, provider)));
+    this.erc20Transfers = await Promise.all(transferLogs.map(async (log) => getTransferInfoFromLog(log, this.provider)));
   }
 
-  async getXcmInfo(provider: JsonRpcProvider): Promise<void> {
-    const xtoken = new Contract(XTOKEN_ADDRESS, XTOKEN_ABI, provider);
+  async getXcmInfo(): Promise<void> {
+    const xtoken = new Contract(XTOKEN_ADDRESS, XTOKEN_ABI, this.provider);
     const [tokenAddr, rawAmount] = xtoken.interface.decodeFunctionData('transfer', this.input);
-    const { tokenSymbol, decimals } = await getErc20Info(tokenAddr, provider);
+    const { tokenSymbol, decimals } = await getErc20Info(tokenAddr, this.provider);
     const amount = rawAmount.div(BigNumber.from(10).pow(decimals));
 
     this.xcmToken = tokenSymbol;
@@ -191,6 +195,11 @@ export class Tx {
     }
   }
 
+  get tokenIn() { return this.erc20Transfers[0]?.tokenSymbol; }
+  get tokenInAmount() { return this.erc20Transfers[0]?.amount; }
+  get tokenOut() { return this.erc20Transfers[this.erc20Transfers.length - 1]?.tokenSymbol; }
+  get tokenOutAmount() { return this.erc20Transfers[this.erc20Transfers.length - 1]?.amount; }
+
   toJson() {
     return {
       blockNumber: this.blockNumber,
@@ -206,11 +215,11 @@ export class Tx {
       amount: this.amount,
       destination: this.destination,
       // swap
-      tokenIn: this.erc20Transfers[0]?.tokenSymbol,
-      tokenInAmount: this.erc20Transfers[0]?.amount,
+      tokenIn: this.tokenIn,
+      tokenInAmount: this.tokenInAmount,
       tokenInDecimals: this.erc20Transfers[0]?.decimals,
-      tokenOut: this.erc20Transfers[this.erc20Transfers.length - 1]?.tokenSymbol,
-      tokenOutAmount: this.erc20Transfers[this.erc20Transfers.length - 1]?.amount,
+      tokenOut: this.tokenOut,
+      tokenOutAmount: this.tokenOutAmount,
       tokenOutDecimals: this.erc20Transfers[this.erc20Transfers.length - 1]?.decimals,
       //xcm
       xcmToken: this.xcmToken,
@@ -221,15 +230,117 @@ export class Tx {
   }
 }
 
-export const getAllMoonbeamTx = async (address: string, startBlock: number, endBlock: number): Promise<Tx[]> => {
-  const res = await axios.get(
-    `https://api-moonbeam.moonscan.io/api?module=account&action=txlist&address=${address}&startblock=${startBlock}&endblock=${endBlock}&sort=asc&apikey=1QS5VH2CHXPYV5AI8EAQHMR8BWW3DPDV73`
-  );
+export class Account {
+  address: string;
+  provider: JsonRpcProvider;
+  txs: Tx[];
 
-  if (res.data.status !== '1' && res.data.message !== 'No transactions found') {
-    console.log(res);
-    throw new Error('getAllMoonbeamTx failed ...');
+  constructor(address: string, provider: JsonRpcProvider) {
+    this.address = address;
+    this.provider = provider;
+    this.txs = [];
   }
 
-  return res.data.result.map((data) => new Tx(data));
-};
+  async fetchAllTx(startBlock: number, _endBlock?: number): Promise<void> {
+    await this.provider.ready;
+
+    const endBlock = _endBlock || await this.provider.getBlockNumber();
+    const res = await axios.get(
+      `https://api-moonbeam.moonscan.io/api?module=account&action=txlist&address=${this.address}&startblock=${startBlock}&endblock=${endBlock}&sort=asc&apikey=1QS5VH2CHXPYV5AI8EAQHMR8BWW3DPDV73`
+    );
+
+    if (res.data.status !== '1' && res.data.message !== 'No transactions found') {
+      console.log(res);
+      throw new Error('getAllMoonbeamTx failed ...');
+    }
+
+    const rawTxs = res.data.result.map((data) => new Tx(data, this.provider));
+
+    const allTx = await Promise.all(
+      rawTxs
+        .filter((tx) => tx.succeed())
+        .map(async (tx) =>
+          runWithRetries(async () => {
+            tx.type === TxTypes.sendToken && (await tx.getTokenInfo(this.provider));
+            tx.type === TxTypes.swap && (await tx.getErc20Transfers(this.provider));
+            tx.type === TxTypes.xcm && (await tx.getXcmInfo(this.provider));
+
+            return tx;
+          })
+        )
+    );
+
+    this.txs = allTx;
+  }
+
+  getSwapSummary(filter?: string[]) {
+    return this.txs
+      .filter(tx => tx.type === TxTypes.swap)
+      .reduce<{
+        in: { [tokenName: string]: number },
+        out: { [tokenName: string]: number },
+      }>((res, tx) => {
+        if (filter && !filter.includes(tx.tokenIn)) return res;
+
+        res.in[tx.tokenIn] ||= 0;
+        res.in[tx.tokenIn] += Number(tx.tokenInAmount);
+
+        res.out[tx.tokenOut] ||= 0;
+        res.out[tx.tokenOut] += Number(tx.tokenOutAmount);
+
+        return res;
+      }, {
+        in: {},
+        out: {},
+      });
+  }
+
+  getSendTokenSummary() {
+    return this.txs
+      .reduce<{
+        [target: string]: { [tokenName: string]: number }
+      }>((res, tx) => {
+        if (tx.type === TxTypes.sendToken) {
+          res[tx.destination.toLowerCase()] ||= {};
+          res[tx.destination.toLowerCase()][tx.tokenSymbol] ||= 0;
+          res[tx.destination.toLowerCase()][tx.tokenSymbol] += Number(tx.amount);
+        } else if (tx.type === TxTypes.transfer && tx.amount) {
+          res[tx.to] ||= {};
+          res[tx.to]['GLMR'] ||= 0;
+          res[tx.to]['GLMR'] += Number(tx.amount);
+        }
+
+        return res;
+      }, {});
+  }
+
+  getXcmSummary() {
+    return this.txs
+      .filter(tx => tx.type === TxTypes.xcm)
+      .reduce<{
+        [tokenName: string]: number,
+      }>((res, tx) => {
+        res[tx.xcmToken] ||= 0;
+        res[tx.xcmToken] += Number(tx.xcmAmount);
+
+        return res;
+      }, {});
+  }
+
+  getAusdSwapAmount() {
+    return this.getSwapSummary(['xcaUSD']).in.xcaUSD || 0;
+  }
+
+  getSummary() {
+    return {
+      ausdSwapAmount: this.getAusdSwapAmount(),
+      allSwap: this.getSwapSummary(),
+      sendToken: this.getSendTokenSummary(),
+      xcmOut: this.getXcmSummary(),
+    }
+  }
+
+  toJson() {
+    return this.txs.map(tx => tx.toJson())
+  }
+}

@@ -1,6 +1,7 @@
+import fs from 'fs';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { MOONBEAM_RPC, runWithRetries } from '../utils';
-import { getAllMoonbeamTx, TxTypes, Tx } from './utils';
+import { MOONBEAM_RPC } from '../utils';
+import { Account } from './utils';
 import { csvWriter } from './writer';
 import { maliciousAddresses } from './consts';
 
@@ -11,29 +12,21 @@ const MOONBEAM_END_BLOCK = ACALA_END_BLOCK + 8500;
 
 const provider = new JsonRpcProvider(MOONBEAM_RPC);
 
-const getAllData = async (address: string): Promise<ReturnType<Tx['toJson']>[]> => {
-  const curBlock = await provider.getBlockNumber();
-  const allTx = await getAllMoonbeamTx(address, MOONBEAM_START_BLOCK, curBlock);
-
-  return Promise.all(
-    allTx
-      .filter((tx) => tx.succeed())
-      .map(async (tx) =>
-        runWithRetries(async () => {
-          tx.type === TxTypes.sendToken && (await tx.getTokenInfo(provider));
-          tx.type === TxTypes.swap && (await tx.getErc20Transfers(provider));
-          tx.type === TxTypes.xcm && (await tx.getXcmInfo(provider));
-
-          return tx.toJson();
-        })
-      )
-  );
-};
+const summary = {};
 
 const main = async () => {
   for (const addr of maliciousAddresses) {
     console.log(`checking ${addr} ...`);
-    const data = await getAllData(addr);
+
+    const account = new Account(addr, provider);
+    await account.fetchAllTx(MOONBEAM_START_BLOCK);
+
+    const data = account.toJson();
+    const sum = account.getSummary();
+
+    // console.log(JSON.stringify(sum, null, 2));
+
+    summary[account.address] = sum;
 
     console.log(`writing ${data.length} data ...`);
     await csvWriter.writeRecords(data);
@@ -42,6 +35,8 @@ const main = async () => {
     await csvWriter.writeRecords({});
     console.log('OK ✔️');
     console.log('');
+
+    fs.writeFileSync('summary.json', JSON.stringify(summary, null, 2));
   }
 };
 
