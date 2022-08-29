@@ -47,6 +47,10 @@ export async function start(): Promise<void> {
   HTTPTransport.start();
   WebSocketTransport.start();
 
+  if (provider.subql) {
+    await provider.subql?.checkGraphql();
+  }
+
   // init rpc methods
   if (rpcForward) {
     await rpcForward.initRpcMethods();
