@@ -12,9 +12,10 @@ export class SubqlProvider {
   }
 
   checkGraphql = async (): Promise<void> => {
-    const res = await this.getIndexerMetadata();
-    if (!res) {
-      return logger.throwError('Get metadata failed. please check subql URL');
+    try {
+      await this.getIndexerMetadata();
+    } catch (e) {
+      logger.throwError(`Check Graphql failed: ${e}`);
     }
   };
 
