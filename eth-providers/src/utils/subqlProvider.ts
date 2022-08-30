@@ -1,6 +1,7 @@
 import { Filter, FilterByBlockHash, Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
 import { Query, _Metadata, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
+import { logger } from './logger';
 import { getLogsQueryFilter, adaptLogs, LOGS_NODES, TX_RECEIPT_NODES } from './logs';
 
 export class SubqlProvider {
@@ -9,6 +10,14 @@ export class SubqlProvider {
   constructor(url: string) {
     this.url = url;
   }
+
+  checkGraphql = async (): Promise<void> => {
+    try {
+      await this.getIndexerMetadata();
+    } catch (e) {
+      logger.throwError(`Check Graphql failed: ${e}`);
+    }
+  };
 
   queryGraphql = (query: string): Promise<Query> =>
     request(
