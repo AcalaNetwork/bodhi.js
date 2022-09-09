@@ -1,8 +1,8 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { hexValue, isHexString } from '@ethersproject/bytes';
+import { keccak256 } from '@ethersproject/keccak256';
 import { Logger } from '@ethersproject/logger';
 import { Formatter, TransactionReceipt } from '@ethersproject/providers';
-import { keccak256 } from 'ethers/lib/utils';
 import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
