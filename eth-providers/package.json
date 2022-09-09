@@ -23,6 +23,7 @@
     "@ethersproject/bignumber": "~5.5.0",
     "@ethersproject/bytes": "~5.5.0",
     "@ethersproject/contracts": "~5.5.0",
+    "@ethersproject/keccak256": "~5.5.0",
     "@ethersproject/logger": "~5.5.0",
     "@ethersproject/networks": "~5.5.0",
     "@ethersproject/properties": "~5.5.0",

@@ -1,7 +1,7 @@
 import { FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { BigNumber } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
-import { BigNumber } from 'ethers';
 import { BlockTag, Eip1898BlockTag } from 'src/base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
