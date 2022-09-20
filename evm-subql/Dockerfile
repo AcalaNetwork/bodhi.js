@@ -24,7 +24,7 @@ RUN yarn && yarn build
 
 # =============
 
-FROM onfinality/subql-node:v1.7.0
+FROM onfinality/subql-node:v1.9.1
 LABEL maintainer="hello@acala.network"
 
 WORKDIR /app
