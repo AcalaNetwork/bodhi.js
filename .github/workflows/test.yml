@@ -30,13 +30,13 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
 
   eth-rpc-adaptor:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -54,7 +54,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
       - name: clean up after tests finished
         run: docker volume rm bodhijs_postgres || true && docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true  && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server-with-subql | awk '{print $1}') || true  && docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-test | awk '{print $1}') || true
       - name: check docker info after cleaning
@@ -78,7 +78,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
@@ -98,7 +98,7 @@ jobs:
   #  - name: build bodhi base # if use self-hosted machine can utilize cache
   #    run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile#
   #  - name: test
-  #       run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
+  #       run: docker compose up --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
   #     - name: dump docker logs on failure
   #       if: failure()
   #       uses: jwalton/gh-docker-logs@v1
@@ -118,7 +118,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
@@ -138,7 +138,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
