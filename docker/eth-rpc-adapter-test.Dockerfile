@@ -5,8 +5,6 @@ RUN npm install -g @microsoft/rush@5.55.0
 
 WORKDIR /app
 COPY examples/waffle ./examples/waffle
-COPY rush.json .
-COPY common ./common
 
 WORKDIR /app/examples/waffle/dex
 RUN rush build -o .
@@ -21,8 +19,6 @@ RUN npm install -g @microsoft/rush@5.55.0
 
 WORKDIR /app
 COPY examples/waffle ./examples/waffle
-COPY rush.json .
-COPY common ./common
 
 WORKDIR /app/examples/waffle/e2e
 RUN rush build -o .
