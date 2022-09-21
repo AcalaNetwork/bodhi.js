@@ -60,7 +60,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v1
 
   waffle-examples:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
