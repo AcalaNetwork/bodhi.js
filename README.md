@@ -54,8 +54,8 @@ docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}')
 docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}')
 docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}')
 docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}')
-docker rm -vf $(docker ps -a | grep bodhijs_loop | awk '{print $1}')
 docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}')
+docker rm -vf $(docker ps -a | grep bodhijs_feed-tx-2 | awk '{print $1}')
 ```
 
 - run tests
