@@ -6,8 +6,6 @@ RUN npm install -g @microsoft/rush@5.55.0
 
 WORKDIR /app
 COPY examples/waffle ./examples/waffle
-COPY rush.json .
-COPY common ./common
 
 WORKDIR /app/examples/waffle
 RUN chmod 777 run.sh
