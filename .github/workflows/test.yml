@@ -23,40 +23,36 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
 
   eth-rpc-adaptor:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
-        run: docker volume rm bodhijs_postgres || true && docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true  && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server-with-subql | awk '{print $1}') || true  && docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-test | awk '{print $1}') || true
+        run: docker compose down -v
       - name: check docker info after cleaning
         run: docker ps && docker volume ls
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
       - name: clean up after tests finished
-        run: docker volume rm bodhijs_postgres || true && docker rm -vf $(docker ps -a | grep bodhijs_subquery-node | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_graphql-engine | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_postgres | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_mandala-node | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server | awk '{print $1}') || true  && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-server-with-subql | awk '{print $1}') || true  && docker rm -vf $(docker ps -a | grep bodhijs_feed-tx | awk '{print $1}') || true && docker rm -vf $(docker ps -a | grep bodhijs_eth-rpc-adapter-test | awk '{print $1}') || true
+        run: docker compose down -v
       - name: check docker info after cleaning
         run: docker ps && docker volume ls
       - name: dump docker logs on failure
@@ -64,21 +60,27 @@ jobs:
         uses: jwalton/gh-docker-logs@v1
 
   waffle-examples:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
       - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: docker compose down -v
+      - name: check docker info after cleaning
         run: docker ps && docker volume ls
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
+      - name: clean up after tests finished
+        run: docker compose down -v
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
@@ -98,7 +100,7 @@ jobs:
   #  - name: build bodhi base # if use self-hosted machine can utilize cache
   #    run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile#
   #  - name: test
-  #       run: docker-compose up --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
+  #       run: docker compose up --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
   #     - name: dump docker logs on failure
   #       if: failure()
   #       uses: jwalton/gh-docker-logs@v1
@@ -111,14 +113,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
@@ -131,14 +131,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker-compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1

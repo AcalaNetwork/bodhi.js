@@ -51,7 +51,7 @@ export const logsEq = (a: Log[], b: Log[]): boolean =>
     b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
   );
 
-const expectLogsEqual = (a: Log[], b: Log[]): boolean => {
+const expectLogsEqual = (a: Log[], b: Log[]): void => {
   expect(a.length).to.greaterThan(0);
   expect(a.length).to.equal(b.length);
   expect(
