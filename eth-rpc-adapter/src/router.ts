@@ -4,7 +4,7 @@ import WebSocket from 'ws';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { InternalError, InvalidParams, JSONRPCError, MethodNotFound } from './errors';
 import { RpcForward } from './rpc-forward';
-import { JSONRPCResponse } from './server';
+import { JsonRpcResponse } from './server';
 export class Router {
   readonly #bridge: Eip1193Bridge;
   readonly #rpcForward?: RpcForward;
@@ -14,7 +14,7 @@ export class Router {
     this.#rpcForward = rpcForward;
   }
 
-  public async call(methodName: string, params: unknown[], ws?: WebSocket): Promise<Partial<JSONRPCResponse>> {
+  public async call(methodName: string, params: unknown[], ws?: WebSocket): Promise<Partial<JsonRpcResponse>> {
     if (this.#bridge.isMethodImplemented(methodName)) {
       try {
         return { result: await this.#bridge.send(methodName, params, ws) };
