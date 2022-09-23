@@ -174,7 +174,7 @@ services:
     #   - WS_PORT=3332
     command:
       - --endpoint=wss://mandala-tc7-rpcnode.aca-dev.network/ws
-      - --subql=https://api.subquery.network/sq/AcalaNetwork/evm-mandala
+      - --subql=https://subql-query-mandala.aca-dev.network
       - --http-port=8546
       - --ws-port=3332
 
