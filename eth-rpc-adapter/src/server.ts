@@ -16,24 +16,24 @@ export interface EthRpcServerOptions extends ServerOptions {
   cors?: cors.CorsOptions;
 }
 
-export interface JSONRPCRequest {
+export interface JsonRpcRequest {
   jsonrpc: string;
   id: string;
   method: string;
   params: any[] | Record<string, unknown>;
 }
 
-export interface JSONRPCErrorObject {
+export interface JsonRpcError {
   code: number;
   message: string;
   data?: any;
 }
 
-export interface JSONRPCResponse {
+export interface JsonRpcResponse {
   jsonrpc: string;
   id: string | null;
   result?: any;
-  error?: JSONRPCErrorObject;
+  error?: JsonRpcError;
 }
 
 export default class EthRpcServer {
@@ -52,13 +52,12 @@ export default class EthRpcServer {
     const corsOptions = options.cors ?? EthRpcServer.defaultCorsOptions;
     app.use(cors(corsOptions));
     app.use(jsonParser({ limit: '1mb' }));
-    app.use(this.httpRouterHandler.bind(this));
+    app.use(this.httpHandler.bind(this));
     app.use(errorHandler);
 
     this.server = http.createServer(app);
 
-    /* ------------------------- wss ---------------------------- */
-    this.wss = new WebSocket.Server({ server: this.server, perMessageDeflate: false });
+    this.wss = new WebSocket.Server({ server: this.server });
 
     this.wss.on('connection', (ws: WebSocket) => {
       // @ts-ignore
@@ -69,7 +68,7 @@ export default class EthRpcServer {
         ws.isAlive = true;
       });
 
-      ws.on('message', (message: string) => this.webSocketRouterHandler(message, ws));
+      ws.on('message', (message) => this.wsHandler(message.toString(), ws));
 
       ws.on('close', () => {
         ws.removeAllListeners();
@@ -95,24 +94,24 @@ export default class EthRpcServer {
     });
   }
 
-  public start(): void {
+  start(): void {
     this.server.listen(this.options.port);
   }
 
-  public stop(): void {
+  stop(): void {
     this.server.close();
   }
 
-  public addRouter(router: Router): void {
+  addRouter(router: Router): void {
     this.routers.push(router);
   }
 
-  public removeRouter(router: Router): void {
+  removeRouter(router: Router): void {
     this.routers = this.routers.filter((r) => r !== router);
   }
 
-  protected async routerHandler({ id, method, params }: JSONRPCRequest, ws?: WebSocket): Promise<JSONRPCResponse> {
-    let res: JSONRPCResponse = {
+  protected async baseHandler({ id, method, params }: JsonRpcRequest, ws?: WebSocket): Promise<JsonRpcResponse> {
+    let res: JsonRpcResponse = {
       id: id ?? null,
       jsonrpc: '2.0'
     };
@@ -139,17 +138,17 @@ export default class EthRpcServer {
     const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
 
     if (routerForMethod === undefined) {
-      res = {
-        ...res,
-        // method not found in any of the routers.
-        error: new MethodNotFound('Method not found', `The method ${method} does not exist / is not available.`).json()
-      };
+      res.error = new MethodNotFound(
+        'Method not found',
+        `The method ${method} does not exist / is not available.`
+      ).json();
     } else {
       res = {
         ...res,
         ...(await routerForMethod.call(method, params as any, ws))
       };
     }
+
     // Add span tags to the datadog span
     DataDogUtil.assignTracerSpan(spanTags, {
       id,
@@ -164,21 +163,22 @@ export default class EthRpcServer {
     return res;
   }
 
-  private async httpRouterHandler(req: any, res: http.ServerResponse, next: (err?: any) => void): Promise<void> {
+  private async httpHandler(req: any, res: http.ServerResponse, next: (err?: any) => void): Promise<void> {
     logger.debug(req.body, 'incoming request');
+
     let result = null;
-    if (req.body instanceof Array) {
-      if (req.body.length > this.options.batchSize) {
-        return next(new BatchSizeError(this.options.batchSize, req.body.length));
+    try {
+      if (req.body instanceof Array) {
+        if (req.body.length > this.options.batchSize) {
+          throw new BatchSizeError(this.options.batchSize, req.body.length);
+        } else {
+          result = await Promise.all(req.body.map((r: JsonRpcRequest) => this.baseHandler(r)));
+        }
       } else {
-        result = await Promise.all(req.body.map((r: JSONRPCRequest) => this.routerHandler(r)));
+        result = await this.baseHandler(req.body);
       }
-    } else {
-      try {
-        result = await this.routerHandler(req.body);
-      } catch (e) {
-        return next(e);
-      }
+    } catch (e) {
+      return next(e);
     }
 
     logger.debug(result, 'request completed');
@@ -187,28 +187,25 @@ export default class EthRpcServer {
     res.end(JSON.stringify(result));
   }
 
-  private praseRequest(req: string): any {
+  private async wsHandler(rawReq: string, ws: WebSocket): Promise<void> {
+    let req;
     try {
-      return JSON.parse(req);
-    } catch (e) {
-      return null;
-    }
-  }
+      req = JSON.parse(rawReq);
+    } catch {
+      ws.send(
+        JSON.stringify({
+          id: null,
+          jsonrpc: '2.0',
+          error: new InvalidRequest().json()
+        })
+      );
 
-  private async webSocketRouterHandler(rawReq: any, ws: WebSocket): Promise<void> {
-    const req = this.praseRequest(rawReq);
-    if (req === null) {
-      const result = {
-        id: null,
-        jsonrpc: '2.0',
-        error: new InvalidRequest().json()
-      };
-      ws.send(JSON.stringify(result));
       return;
     }
 
+    logger.debug(req, 'ws incoming request');
+
     let result = null;
-    logger.debug(req, 'WS incoming request');
 
     if (req instanceof Array) {
       if (req.length > this.options.batchSize) {
@@ -217,13 +214,13 @@ export default class EthRpcServer {
           error: new BatchSizeError(this.options.batchSize, req.length).json()
         };
       } else {
-        result = await Promise.all(req.map((r: JSONRPCRequest) => this.routerHandler(r, ws)));
+        result = await Promise.all(req.map((r: JsonRpcRequest) => this.baseHandler(r, ws)));
       }
     } else {
-      result = await this.routerHandler(req, ws);
+      result = await this.baseHandler(req, ws);
     }
 
-    logger.debug(result, 'request completed');
+    logger.debug(result, 'ws request completed');
 
     ws.send(JSON.stringify(result));
   }
