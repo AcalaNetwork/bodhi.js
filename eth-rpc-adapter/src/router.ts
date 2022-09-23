@@ -4,7 +4,7 @@ import WebSocket from 'ws';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { InternalError, InvalidParams, JSONRPCError, MethodNotFound } from './errors';
 import { RpcForward } from './rpc-forward';
-import { JSONRPCResponse } from './transports/types';
+import { JSONRPCResponse } from './server';
 export class Router {
   readonly #bridge: Eip1193Bridge;
   readonly #rpcForward?: RpcForward;

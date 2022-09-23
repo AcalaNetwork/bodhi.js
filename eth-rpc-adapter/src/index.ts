@@ -1,9 +1,6 @@
 import 'dd-trace/init';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
-import HTTPServerTransport from './transports/http';
-import WebSocketServerTransport from './transports/websocket';
 import { Eip1193Bridge } from './eip1193-bridge';
-import { RpcForward } from './rpc-forward';
 import { Router } from './router';
 import { version } from './_version';
 import { parseOptions } from './utils';
@@ -26,39 +23,20 @@ export async function start(): Promise<void> {
 
   const bridge = new Eip1193Bridge(provider);
 
-  // const rpcForward = opts.forwardMode ? new RpcForward(provider) : undefined;
-
   const router = new Router(bridge);
 
   const server = new EthRpcServer({
     port: opts.httpPort,
-    middleware: [],
     batchSize: opts.maxBatchSize
   });
 
-  // const WebSocketTransport = new WebSocketServerTransport({
-  //   port: opts.wsPort,
-  //   middleware: [],
-  //   batchSize: opts.maxBatchSize
-  // });
-
   server.addRouter(router as any);
-  // WebSocketTransport.addRouter(router as any);
+  server.start();
 
   await provider.isReady();
-
-  server.start();
-  // WebSocketTransport.start();
-
   if (provider.subql) {
-    console.log('!!!!!');
     await provider.subql?.checkGraphql();
   }
-
-  // init rpc methods
-  // if (rpcForward) {
-  //   await rpcForward.initRpcMethods();
-  // }
 
   console.log(`
   --------------------------------------------
