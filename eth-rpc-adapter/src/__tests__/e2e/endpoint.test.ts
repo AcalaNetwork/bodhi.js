@@ -1613,6 +1613,7 @@ describe('eth_subscribe', () => {
       }
     });
 
+    await sleep(5000);    // give subql some time to index
     const expectedLog = (await eth_getLogs([{
       blockHash: curBlockInfo.hash,
     }])).data.result;
@@ -1686,6 +1687,7 @@ describe('eth_subscribe', () => {
     expect(notification1).to.equal(undefined);
     expect(notification3).to.equal(undefined);
 
+    await sleep(5000);    // give subql some time to index
     const curBlock = (await eth_blockNumber()).data.result;
     const curBlockInfo = (await eth_getBlockByNumber([curBlock, false])).data.result;
     const expectedLog = (await eth_getLogs([{
