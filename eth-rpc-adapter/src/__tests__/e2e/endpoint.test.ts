@@ -112,10 +112,10 @@ before('env setup', async () => {
   }
 
   console.log(`
-      --------------------------
-      test env setup finished ✅
-      --------------------------
-    `);
+    --------------------------
+    test env setup finished ✅
+    --------------------------
+  `);
 });
 
 describe('eth_getTransactionReceipt', () => {

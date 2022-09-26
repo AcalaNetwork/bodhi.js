@@ -3,15 +3,12 @@ import { Logger as EthLogger } from '@ethersproject/logger';
 import WebSocket from 'ws';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { InternalError, InvalidParams, JSONRPCError, MethodNotFound } from './errors';
-import { RpcForward } from './rpc-forward';
 import { JsonRpcResponse } from './server';
 export class Router {
   readonly #bridge: Eip1193Bridge;
-  readonly #rpcForward?: RpcForward;
 
-  constructor(bridge: Eip1193Bridge, rpcForward?: RpcForward) {
+  constructor(bridge: Eip1193Bridge) {
     this.#bridge = bridge;
-    this.#rpcForward = rpcForward;
   }
 
   public async call(methodName: string, params: unknown[], ws?: WebSocket): Promise<Partial<JsonRpcResponse>> {
@@ -58,20 +55,12 @@ export class Router {
 
         return { error: error?.json() || new JSONRPCError(`Error: ${message}`, 6969) };
       }
-    } else if (this.#rpcForward && this.#rpcForward.isMethodValid(methodName)) {
-      try {
-        return { result: await this.#rpcForward.send(methodName, params, ws) };
-      } catch (err: any) {
-        return { error: new JSONRPCError(err.message, 6969) };
-      }
     } else {
       return { error: new MethodNotFound('Method not found', `The method ${methodName} does not exist`).json() };
     }
   }
 
   public isMethodImplemented(methodName: string): boolean {
-    return this.#rpcForward
-      ? this.#bridge.isMethodImplemented(methodName) || this.#rpcForward.isMethodValid(methodName)
-      : this.#bridge.isMethodImplemented(methodName);
+    return this.#bridge.isMethodImplemented(methodName);
   }
 }
