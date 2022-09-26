@@ -1850,7 +1850,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
-    return await this.subql?.getIndexerMetadata();
+    return this.subql?.getIndexerMetadata();
   };
 
   getCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
