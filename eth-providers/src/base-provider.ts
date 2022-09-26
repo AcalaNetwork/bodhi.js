@@ -1938,7 +1938,7 @@ export abstract class BaseProvider extends AbstractProvider {
     let found = false;
     ALL_EVENTS.forEach((e) => {
       const targetIdx = this._listeners[e]?.findIndex((l: any) => l.id === id);
-      if (targetIdx !== -1) {
+      if (targetIdx && targetIdx !== -1) {
         this._listeners[e].splice(targetIdx, 1);
         found = true;
       }
