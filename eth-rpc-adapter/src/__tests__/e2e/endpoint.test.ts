@@ -755,7 +755,7 @@ describe('eth_sendRawTransaction', () => {
 
   const queryNativeBalance = async (addr: string) => (await queryEthBalance(addr)).div(10 ** (ETHDigits - ACADigits));
 
-  const getCalculatedTxFee = async (txHash: string, toNative = true): bigint => {
+  const getCalculatedTxFee = async (txHash: string, toNative = true): Promise<bigint> => {
     const { gasUsed, effectiveGasPrice } = (await eth_getTransactionReceipt([txHash])).data.result;
 
     const calculatedTxFee = BigInt(gasUsed) * BigInt(effectiveGasPrice);
@@ -1520,28 +1520,62 @@ describe('eth_subscribe', () => {
   const eth_blockNumber = rpcGet('eth_blockNumber');
   const eth_getLogs = rpcGet('eth_getLogs');
 
-  const ws = new WebSocket(WS_URL);
   const provider = new EvmRpcProvider(NODE_RPC_URL);
 
+  const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
+
   const notifications: any[] = [];
+  let subId0;
+  let subId1;
+  let subId2;
+  let subId3;
+  let ws: WebSocket;
 
-  ws.on('open', () => {
-    ws.send(JSON.stringify({
-      id: '0',
-      method: 'eth_subscribe',
-      params: ['newHeads']
-    }));
+  before(() => {
+    // these has to be in <before block>, since everything outside of <before block> will be globally executed before any <before block>
+    // also, instantiating ws (next line) has to be inside <before block>, otherwise there will be mysterious failure...
+    ws = new WebSocket(WS_URL);
+    ws.on('open', () => {
+      ws.on('message', data => {
+        const parsedData = JSON.parse(data.toString());
+        // console.log('!!!!!!!!!!!!!!!!!!!!!!!', parsedData)
+        notifications.push(parsedData);
+      });
 
-    ws.send(JSON.stringify({
-      id: '1',
-      method: 'eth_subscribe',
-      params: ['logs', {}]
-    }));
-  });
+      ws.send(JSON.stringify({
+        id: '0',
+        method: 'eth_subscribe',
+        params: ['newHeads']
+      }));
 
-  ws.on('message', data => {
-    const parsedData = JSON.parse(data.toString());
-    notifications.push(parsedData);
+      ws.send(JSON.stringify({
+        id: '1',
+        method: 'eth_subscribe',
+        params: ['logs', {}]
+      }));
+
+      ws.send(JSON.stringify({
+        id: '2',
+        method: 'eth_subscribe',
+        params: ['logs', {
+          topics: [
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',   // transfer
+            null,
+            ['0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421'],
+          ]
+        }]
+      }));
+
+      ws.send(JSON.stringify({
+        id: '3',
+        method: 'eth_subscribe',
+        params: ['logs', {
+          topics: [
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aaaaaaaaaaa',   // shouldn't match
+          ]
+        }]
+      }));
+    });
   });
 
   after(async () => {
@@ -1551,16 +1585,21 @@ describe('eth_subscribe', () => {
 
   it('get correct subscrption notification', async () => {
     await provider.isReady();
-    const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
     await aca.transfer(evmAccounts[1].evmAddress, 111222333444555);
 
-    await sleep(5000);    // give ws some time to notify
+    await sleep(3000);    // give ws some time to notify
 
-    const subId0 = notifications.find(n => n.id === '0').result;
-    const subId1 = notifications.find(n => n.id === '1').result;
+    console.log(notifications)
 
-    const notification0 = notifications.find(n => n.params?.subscription === subId0);
-    const notification1 = notifications.find(n => n.params?.subscription === subId1);
+    subId0 = notifications.find(n => n.id === '0').result;
+    subId1 = notifications.find(n => n.id === '1').result;
+    subId2 = notifications.find(n => n.id === '2').result;
+    subId3 = notifications.find(n => n.id === '3').result;
+
+    const notification0 = notifications.find(n => n.params?.subscription === subId0);   // new block
+    const notification1 = notifications.find(n => n.params?.subscription === subId1);   // ACA transfer
+    const notification2 = notifications.find(n => n.params?.subscription === subId2);   // ACA transfer
+    const notification3 = notifications.find(n => n.params?.subscription === subId3);   // no match
 
     const curBlock = (await eth_blockNumber()).data.result;
     const curBlockInfo = (await eth_getBlockByNumber([curBlock, false])).data.result;
@@ -1580,6 +1619,7 @@ describe('eth_subscribe', () => {
 
     expect(expectedLog.length).to.equal(1);
     delete expectedLog[0].removed;
+
     expect(notification1).to.deep.contains({
       jsonrpc: '2.0',
       method: 'eth_subscription',
@@ -1589,8 +1629,79 @@ describe('eth_subscribe', () => {
       }
     });
 
-    console.log(notification0, notification1)
+    expect(notification2).to.deep.contains({
+      jsonrpc: '2.0',
+      method: 'eth_subscription',
+      params: {
+        subscription: subId2,
+        result: expectedLog[0],
+      }
+    });
+
+    expect(notification3).to.equal(undefined);
   });
 
-  it('unsubscribe works', () => {})
+  it('unsubscribe works', async () => {
+    /* ---------- unsubscribe ---------- */
+    notifications.length = 0;
+
+    let reqId = 10;
+    const unsubscribe = async (id: string) => {
+      ws.send(JSON.stringify({
+        id: reqId++,
+        method: 'eth_unsubscribe',
+        params: [id]
+      }));
+
+      await sleep(300);  // delay each msg to make sure result order is correct
+    }
+
+    await unsubscribe(subId0);
+    await unsubscribe(subId1);
+    await unsubscribe(subId3);
+    await unsubscribe(Wallet.createRandom().address);
+
+    await sleep(3000);  // give ws some time to notify
+
+    expect(notifications).to.deep.equal([
+      { id: 10, jsonrpc: '2.0', result: true },
+      { id: 11, jsonrpc: '2.0', result: true },
+      { id: 12, jsonrpc: '2.0', result: true },
+      { id: 13, jsonrpc: '2.0', result: false }
+    ]);
+
+    // only sub2 is left
+    notifications.length = 0;
+    await aca.transfer(evmAccounts[1].evmAddress, 1234567654321);
+
+    await sleep(5000);    // give ws some time to notify
+
+    const notification0 = notifications.find(n => n.params?.subscription === subId0);   // no match
+    const notification1 = notifications.find(n => n.params?.subscription === subId1);   // no match
+    const notification2 = notifications.find(n => n.params?.subscription === subId2);   // ACA transfer
+    const notification3 = notifications.find(n => n.params?.subscription === subId3);   // no match
+
+    // after unsubscribe they should not be notified anymore
+    expect(notification0).to.equal(undefined);
+    expect(notification1).to.equal(undefined);
+    expect(notification3).to.equal(undefined);
+
+    const curBlock = (await eth_blockNumber()).data.result;
+    const curBlockInfo = (await eth_getBlockByNumber([curBlock, false])).data.result;
+    const expectedLog = (await eth_getLogs([{
+      blockHash: curBlockInfo.hash,
+    }])).data.result;
+
+    expect(expectedLog.length).to.equal(1);
+    delete expectedLog[0].removed;
+
+    expect(notification2).to.deep.contains({
+      jsonrpc: '2.0',
+      method: 'eth_subscription',
+      params: {
+        subscription: subId2,
+        result: expectedLog[0],
+      }
+    });    
+  })
 });

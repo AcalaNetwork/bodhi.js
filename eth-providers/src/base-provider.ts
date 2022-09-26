@@ -1935,11 +1935,16 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   removeEventListener = (id: string): boolean => {
+    let found = false;
     ALL_EVENTS.forEach((e) => {
-      this._listeners[e] = this._listeners[e]?.filter((l: any) => l.id !== id);
+      const target = this._listeners[e]?.find((l: any) => l.id === id);
+      if (target) {
+        this._listeners[e] = this._listeners[e]?.filter((l: any) => l !== target);
+        found = true;
+      }
     });
 
-    return true;
+    return found;
   };
 
   on = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('on');
