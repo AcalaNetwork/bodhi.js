@@ -16,7 +16,6 @@ import {
   bigIntDiff,
   rpcGet,
   PUBLIC_MANDALA_RPC_URL,
-  RPC_URL,
   SUBQL_URL,
   WS_URL,
   NODE_RPC_URL,
@@ -25,13 +24,6 @@ import {
   ADDRESS_ALICE,
   evmAccounts,
   allLogs,
-  log6,
-  log9,
-  log12,
-  log10,
-  log11,
-  log7,
-  log8,
   mandalaBlock1265919,
   mandalaBlock1265918,
   mandalaBlock1265928,
@@ -1538,7 +1530,6 @@ describe('eth_subscribe', () => {
     ws.on('open', () => {
       ws.on('message', data => {
         const parsedData = JSON.parse(data.toString());
-        // console.log('!!!!!!!!!!!!!!!!!!!!!!!', parsedData)
         notifications.push(parsedData);
       });
 
@@ -1588,8 +1579,6 @@ describe('eth_subscribe', () => {
     await aca.transfer(evmAccounts[1].evmAddress, 111222333444555);
 
     await sleep(3000);    // give ws some time to notify
-
-    console.log(notifications)
 
     subId0 = notifications.find(n => n.id === '0').result;
     subId1 = notifications.find(n => n.id === '1').result;
@@ -1643,7 +1632,6 @@ describe('eth_subscribe', () => {
   });
 
   it('unsubscribe works', async () => {
-    /* ---------- unsubscribe ---------- */
     notifications.length = 0;
 
     let reqId = 10;

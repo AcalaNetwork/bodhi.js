@@ -1937,9 +1937,9 @@ export abstract class BaseProvider extends AbstractProvider {
   removeEventListener = (id: string): boolean => {
     let found = false;
     ALL_EVENTS.forEach((e) => {
-      const target = this._listeners[e]?.find((l: any) => l.id === id);
-      if (target) {
-        this._listeners[e] = this._listeners[e]?.filter((l: any) => l !== target);
+      const targetIdx = this._listeners[e]?.findIndex((l: any) => l.id === id);
+      if (targetIdx !== -1) {
+        this._listeners[e].splice(targetIdx, 1);
         found = true;
       }
     });
