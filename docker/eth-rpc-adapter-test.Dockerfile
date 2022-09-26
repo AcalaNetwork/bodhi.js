@@ -39,4 +39,6 @@ ENV SUBQL_URL=http://graphql-engine:3001
 ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
 ENV WS_URL=ws://eth-rpc-adapter-server-with-subql:8545
 ENV PUBLIC_MANDALA_RPC_URL=http://eth-rpc-adapter-server-public-mandala:8546
+# TODO: remove when mandala recovered
+ENV SKIP_PUBLIC=true  
 CMD ["yarn", "test:CI"]
