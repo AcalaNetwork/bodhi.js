@@ -1,12 +1,7 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
-import { assignTracerSpan, buildTracerSpan } from './datadog-util';
 
 export const sleep = async (time: number = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
-export const DataDogUtil = {
-  buildTracerSpan,
-  assignTracerSpan
-};
 
 const {
   ENDPOINT_URL,
@@ -27,70 +22,69 @@ export const yargsOptions = yargs(hideBin(process.argv))
       alias: 'e',
       demandOption: false,
       default: ENDPOINT_URL ?? 'ws://localhost:9944',
-      describe: 'Node websocket endpoint(s), seperated by comma, such as xxx,yyy,zzz',
+      describe: 'Node websocket endpoint(s): can provide one or more endpoints, seperated by comma',
       type: 'string'
     },
     subqlUrl: {
       alias: 'subql',
       demandOption: false,
       default: SUBQL_URL,
-      describe: '',
+      describe:
+        "Subquery url: *optional* if testing contracts locally that doesn't query logs or historical Tx, otherwise *required*",
       type: 'string'
     },
     port: {
       alias: 'p',
       demandOption: false,
       default: Number(PORT ?? 8545),
-      describe: '',
+      describe: 'port to listen for http and ws requests',
       type: 'number'
     },
     maxBlockCacheSize: {
-      alias: 'mbcs',
       demandOption: false,
       default: Number(MAX_CACHE_SIZE ?? 200),
-      describe: '',
+      describe: 'max number of blocks that lives in the cache. https://evmdocs.acala.network/network/network',
       type: 'number'
     },
     maxBatchSize: {
-      alias: 'mbs',
       demandOption: false,
       default: Number(MAX_BATCH_SIZE ?? 50),
-      describe: '',
+      describe: 'max batch size for RPC request',
       type: 'number'
     },
     storageCacheSize: {
-      alias: 'scs',
       demandOption: false,
       default: Number(STORAGE_CACHE_SIZE ?? 5000),
-      describe: '',
+      describe: 'max storage cache size',
       type: 'number'
     },
     safeMode: {
       alias: 's',
       demandOption: false,
       default: Boolean(SAFE_MODE ?? false),
-      describe: '',
+      describe: 'if enabled, Tx and logs can only be found after they are finalized',
       type: 'boolean'
     },
     localMode: {
       alias: 'l',
       demandOption: false,
       default: Boolean(LOCAL_MODE ?? false),
-      describe: '',
+      describe: 'enable this mode when testing with locally running instant-sealing mandala',
       type: 'boolean'
     },
     richMode: {
       alias: 'r',
       demandOption: false,
       default: Boolean(RICH_MODE ?? false),
-      describe: '',
+      describe:
+        'if enabled, default gas params is big enough for most contract deployment and calls, so contract tests from traditional evm world can run unchanged. Note this mode is helpful for testing contracts, but is different than production envionment, please refer to https://evmdocs.acala.network/network/gas-parameters for more info',
       type: 'boolean'
     },
     verbose: {
       alias: 'v',
       demandOption: false,
       default: Boolean(VERBOSE ?? true),
-      describe: '',
+      describe: 'print some extra info',
       type: 'boolean'
     }
   })
