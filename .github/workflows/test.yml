@@ -24,7 +24,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: prune outdated docker stuff
-        run: yes | docker system prune --filter 'until=120h'
+        run: yes | docker system prune --filter 'until=10d'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
@@ -52,7 +52,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: prune outdated docker stuff
-        run: yes | docker system prune --filter 'until=120h'
+        run: yes | docker system prune --filter 'until=10d'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes
@@ -80,7 +80,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: prune outdated docker stuff
-        run: yes | docker system prune --filter 'until=120h'
+        run: yes | docker system prune --filter 'until=10d'
       - name: check docker info before cleaning
         run: docker ps && docker volume ls
       - name: clean up docker process and volumes

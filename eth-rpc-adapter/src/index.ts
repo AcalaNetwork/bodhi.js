@@ -25,7 +25,8 @@ export async function start(): Promise<void> {
 
   const server = new EthRpcServer({
     port: opts.port,
-    batchSize: opts.maxBatchSize
+    batchSize: opts.maxBatchSize,
+    httpOnly: opts.httpOnly
   });
 
   server.addRouter(router as any);
@@ -50,6 +51,7 @@ export async function start(): Promise<void> {
   safe mode       : ${opts.safeMode}
   local mode      : ${opts.localMode}
   rich mode       : ${opts.richMode}
+  http only       : ${opts.httpOnly}
   verbose         : ${opts.verbose}
   --------------------------------------------
   `);

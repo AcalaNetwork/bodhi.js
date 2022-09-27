@@ -13,6 +13,7 @@ const {
   SAFE_MODE,
   LOCAL_MODE,
   RICH_MODE,
+  HTTP_ONLY,
   VERBOSE
 } = process.env;
 
@@ -78,6 +79,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       default: Boolean(RICH_MODE ?? false),
       describe:
         'if enabled, default gas params is big enough for most contract deployment and calls, so contract tests from traditional evm world can run unchanged. Note this mode is helpful for testing contracts, but is different than production envionment, please refer to https://evmdocs.acala.network/network/gas-parameters for more info',
+      type: 'boolean'
+    },
+    httpOnly: {
+      demandOption: false,
+      default: Boolean(HTTP_ONLY ?? false),
+      describe: 'only allow http requests, disable ws connections',
       type: 'boolean'
     },
     verbose: {
