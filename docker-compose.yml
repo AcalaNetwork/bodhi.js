@@ -73,8 +73,7 @@ services:
     command:
       - --endpoint=ws://mandala-node:9944
       - --subql=http://graphql-engine:3001
-      - --http-port=8545
-      - --ws-port=3331
+      - --port=8545
       - --local
 
   eth-rpc-adapter-test:
@@ -148,15 +147,9 @@ services:
     depends_on:
       - mandala-node
     restart: always
-    # environment:
-    #   - ENDPOINT_URL=ws://mandala-node:9944
-    #   - HTTP_PORT=8545
-    #   - WS_PORT=3331
-    #   - LOCAL_MODE=1
     command:
       - --endpoint=ws://mandala-node:9944
-      - --http-port=8545
-      - --ws-port=3331
+      - --port=8545
       - --local
 
   eth-rpc-adapter-server-public-mandala:
@@ -167,16 +160,10 @@ services:
     ports:
       - 8546:8546
     restart: always
-    # environment:
-    #   - ENDPOINT_URL=wss://mandala-rpc.aca-staging.network/ws
-    #   - SUBQL_URL=https://subql-query-mandala.aca-dev.network
-    #   - HTTP_PORT=8546
-    #   - WS_PORT=3332
     command:
       - --endpoint=wss://mandala-rpc.aca-staging.network/ws
       - --subql=https://subql-query-mandala.aca-dev.network
-      - --http-port=8546
-      - --ws-port=3332
+      - --port=8546
 
   waffle-examples-test:
     build:

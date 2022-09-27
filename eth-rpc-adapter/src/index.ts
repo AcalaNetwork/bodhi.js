@@ -9,7 +9,7 @@ import EthRpcServer from './server';
 export async function start(): Promise<void> {
   console.log('starting server ...');
 
-  const provider = EvmRpcProvider.from(opts.endpoints.split(','), {
+  const provider = EvmRpcProvider.from(opts.endpoint.split(','), {
     safeMode: opts.safeMode,
     localMode: opts.localMode,
     richMode: opts.richMode,
@@ -41,7 +41,7 @@ export async function start(): Promise<void> {
                🚀 SERVER STARTED 🚀
   --------------------------------------------
   version         : ${version}
-  endpoint url    : ${opts.endpoints}
+  endpoint url    : ${opts.endpoint}
   subquery url    : ${opts.subqlUrl}
   listening to    : ${opts.port}
   max blockCache  : ${opts.maxBlockCacheSize}

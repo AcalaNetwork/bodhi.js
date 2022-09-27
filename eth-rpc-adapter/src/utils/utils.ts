@@ -23,11 +23,11 @@ const {
 
 export const yargsOptions = yargs(hideBin(process.argv))
   .options({
-    endpoints: {
+    endpoint: {
       alias: 'e',
       demandOption: false,
       default: ENDPOINT_URL ?? 'ws://localhost:9944',
-      describe: 'Node websocket endpoints, seperated by comma, such as xxx,yyy,zzz',
+      describe: 'Node websocket endpoint(s), seperated by comma, such as xxx,yyy,zzz',
       type: 'string'
     },
     subqlUrl: {
