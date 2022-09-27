@@ -58,7 +58,7 @@ class Eip1193BridgeImpl {
   // Query the synchronization progress and version information of indexer
   async net_indexer(params: any[]): Promise<any> {
     validate([], params);
-    return this.#provider.getIndexerMetadata();
+    return this.#provider.getIndexerMetadata() || 'no indexer is running!';
   }
 
   // query unfinalized cache info for dev debugging use

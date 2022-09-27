@@ -1850,7 +1850,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
-    return await this.subql?.getIndexerMetadata();
+    return this.subql?.getIndexerMetadata();
   };
 
   getCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
@@ -1935,11 +1935,16 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   removeEventListener = (id: string): boolean => {
+    let found = false;
     ALL_EVENTS.forEach((e) => {
-      this._listeners[e] = this._listeners[e]?.filter((l: any) => l.id !== id);
+      const targetIdx = this._listeners[e]?.findIndex((l: any) => l.id === id);
+      if (targetIdx !== undefined && targetIdx !== -1) {
+        this._listeners[e].splice(targetIdx, 1);
+        found = true;
+      }
     });
 
-    return true;
+    return found;
   };
 
   on = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('on');

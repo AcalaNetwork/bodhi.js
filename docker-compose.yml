@@ -169,12 +169,12 @@ services:
     restart: always
     # environment:
     #   - ENDPOINT_URL=wss://mandala-rpc.aca-staging.network/ws
-    #   - SUBQL_URL=https://tc7-graphql.aca-dev.network
+    #   - SUBQL_URL=https://subql-query-mandala.aca-dev.network
     #   - HTTP_PORT=8546
     #   - WS_PORT=3332
     command:
       - --endpoint=wss://mandala-rpc.aca-staging.network/ws
-      - --subql=https://api.subquery.network/sq/AcalaNetwork/evm-mandala
+      - --subql=https://subql-query-mandala.aca-dev.network
       - --http-port=8546
       - --ws-port=3332
 
