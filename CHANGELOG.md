@@ -1,3 +1,6 @@
+## v2.5.0 2022/09/28
+- combined http and ws port
+- added a new option `httpOnly`
 ## v2.4.18 2022/07/8
 - logs filter is now more standard and supports nested filter
 
