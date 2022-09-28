@@ -742,12 +742,13 @@ describe('eth_sendRawTransaction', () => {
   const ACADigits = 12;
   const TX_FEE_OFF_TOLERANCE = 100000; // 0.0000001 ACA
 
-  const queryEthBalance = async (addr): BigNumber =>
+  const queryEthBalance = async (addr): Promise<BigNumber> =>
     BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result);
 
   const queryNativeBalance = async (addr: string) => (await queryEthBalance(addr)).div(10 ** (ETHDigits - ACADigits));
 
   const getCalculatedTxFee = async (txHash: string, toNative = true): Promise<bigint> => {
+    await sleep(789);   // give cache/subquery a little bit time
     const { gasUsed, effectiveGasPrice } = (await eth_getTransactionReceipt([txHash])).data.result;
 
     const calculatedTxFee = BigInt(gasUsed) * BigInt(effectiveGasPrice);

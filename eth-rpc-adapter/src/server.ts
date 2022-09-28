@@ -14,6 +14,7 @@ export interface EthRpcServerOptions extends ServerOptions {
   batchSize: number;
   middleware?: HandleFunction[];
   cors?: cors.CorsOptions;
+  httpOnly?: boolean;
 }
 
 export interface JsonRpcRequest {
@@ -60,6 +61,11 @@ export default class EthRpcServer {
     this.wss = new WebSocket.Server({ server: this.server });
 
     this.wss.on('connection', (ws: WebSocket) => {
+      if (this.options.httpOnly) {
+        ws.send('websocket connection is disabled, bye 👋');
+        return ws.close();
+      }
+
       // @ts-ignore
       ws.isAlive = true;
 

@@ -8,9 +8,11 @@ There are 3 ways to run an RPC adapter:
 - from docker
 
 #### from npm package
-- run the server (should automagically install it)
+- run the server (suppose a Mandala node is running at `ws://localhost:9944`)
 ```
-LOCAL_MODE=1 npx @acala-network/eth-rpc-adapter
+npx @acala-network/eth-rpc-adapter \
+  --endpoint ws://localhost:9944 \
+  --local-mode
 ```
 
 #### from local build
@@ -22,34 +24,36 @@ rush build -t @acala-network/eth-rpc-adapter
 
 - run the dev server:
 ```
-LOCAL_MODE=1 yarn start
+yarn start --local-mode [--other-options]
 ```
 
 #### from docker
 ```
 docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:aa2c8d7 yarn start
 ```
-note that docker image might not be most up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
+note that the above docker image might not be up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 
 ## Options
-| ENV                | flag equivalent | default             | explanation                                                                                             |
-|--------------------|-----------------|---------------------|---------------------------------------------------------------------------------------------------------|
-| ENDPOINT_URL       | -e, --endpoint           | ws://localhost:9944 | acala node url                                                                                          |
-| SUBQL_URL          | --subql                  | undefined           | subquery graphql-engine service url, usually http://localhost:3001                                      |
-| HTTP_PORT          | -h, --http-port          | 8545                | HTTP port for requests                                                                                  |
-| WS_PORT            | -w, --ws-port            | 3331                | WS port for requests                                                                                    |
-| MAX_CACHE_SIZE     | --cache-size             | 200                 | max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network) |
-| MAX_BATCH_SIZE     | --max-batch-size         | 50                  | max batch size for RPC request                                                                          |
-| STORAGE_CACHE_SIZE | --max-storage-size       | 5000                | max storage cache size                                                                                  |
-| SAFE_MODE          | -s, --safe               | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
-| FORWARD_MODE          | -f, --forward         | 0                   | if enabled, the Substrate rpc will be forwarded to the Substrate node                                  |
-| LOCAL_MODE         | -l, --local              | 0                   | enable this mode when testing with locally running mandala                                              |
-| RICH_MODE         | -r, --rich              | 0                   | if enabled, default gas params is big enough for most contract deployment and calls                                              |
-| VERBOSE            | -v, --verbose            | 1                   | print some extra info                                                                                   |
+NOTE: Please don't mix using ENVs and cli options. Cli options are preferred, and will overwrite ENVs.
 
-NOTE: Please don't mix using ENV and flags. `.env.sample` contains an example envs. 
+More details can also be found by `yarn start --help` or `npx @acala-network/eth-rpc-adapter --help`.
+
+| ENV                | cli options equivalent | default             | explanation                                                                                             |
+|--------------------|------------------------|---------------------|---------------------------------------------------------------------------------------------------------|
+| ENDPOINT_URL       | -e, --endpoint         | ws://localhost:9944 | Node websocket endpoint(s): can provide one or more endpoints, seperated by comma url        |
+| SUBQL_URL          | --subql                | undefined           | Subquery url: *optional* if testing contracts locally that doesn\'t query logs or historical Tx, otherwise *required* |
+| PORT               | -p, --port             | 8545                | port to listen for http and ws requests                                    |
+| MAX_CACHE_SIZE     | --max-cache-size       | 200                 | max number of blocks that lives in the cache [more info](https://evmdocs.acala.network/network/network) |
+| MAX_BATCH_SIZE     | --max-batch-size       | 50                  | max batch size for RPC request                                                                          |
+| STORAGE_CACHE_SIZE | --max-storage-size     | 5000                | max storage cache size                                                                                  |
+| SAFE_MODE          | -s, --safe-mode        | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
+| LOCAL_MODE         | -l, --local-mode       | 0                   | enable this mode when testing with locally running instant-sealing mandala                              |
+| RICH_MODE          | -r, --rich-mode        | 0                   | if enabled, default gas params is big enough for most contract deployment and calls, so contract tests from traditional evm world can run unchanged. Note this mode is helpful for testing contracts, but is different than production envionment. [more info](https://evmdocs.acala.network/network/gas-parameters) |
+| HTTP_ONLY          | --http-only            | 0                   | only allow http requests, disable ws connections                  |
+| VERBOSE            | -v, --verbose          | 1                   | print some extra info                                                                                   |
+
 ## Usage
-Now that the adaptor service is running and listening to HTTP_PORT, we can send EVM related requests to this port.
+Now that the adaptor service is running and listening to the `--port`, we can send Eth JsonRpc requests to this port.
 
 For example
 ```
@@ -121,14 +125,17 @@ yarn test:dev # all tests
 ```
 
 ## Metamask Integration
-- start the RPC server: `yarn start`
+- start the RPC server locally: `yarn start --local`
 - add a custom network on Metamask:
   - Network Name: Local Mandala
-  - New RPC URL: http://localhost:8545  (should be the same as the HTTP_PORT value in your `.env`, defaults to 8545)
+  - New RPC URL: http://localhost:8545
   - Chain ID: 595
   - Currency Symbol: ACA
 - import dev address:
   - by nmemonic: `fox sight canyon orphan hotel grow hedgehog build bless august weather swarm`
   - or by private key: `0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f`
 - before sending any transaction:
-  - don't change the default `gasPrice` nad `GasLimit`, otherwise transaction will fail.
+  - don't change the default `gasPrice` or `GasLimit`, otherwise transaction will fail. [more info](https://evmdocs.acala.network/network/gas-parameters)
+
+## For Production
+WIP

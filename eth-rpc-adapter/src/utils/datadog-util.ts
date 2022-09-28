@@ -52,3 +52,8 @@ export interface DataDogTracerSpan {
   elapsedTime: number;
   spanRef: Span | undefined;
 }
+
+export const DataDogUtil = {
+  buildTracerSpan,
+  assignTracerSpan
+};

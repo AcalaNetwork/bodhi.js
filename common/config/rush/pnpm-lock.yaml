@@ -174,19 +174,17 @@ importers:
       '@types/body-parser': ~1.19.1
       '@types/connect': ~3.4.35
       '@types/cors': ~2.8.12
-      '@types/minimist': ~1.2.2
       '@types/mocha': ~9.0.0
       '@types/node': ~16.10.1
       '@types/ws': ~8.2.0
+      '@types/yargs': ^16.0.4
       axios: ~0.24.0
       body-parser: ~1.19.0
       connect: ~3.7.0
       cors: ~2.8.5
       dd-trace: ~2.6.0
-      dotenv: ~10.0.0
       eslint: ~7.32.0
       ethers: ~5.5.0
-      minimist: ~1.2.6
       mocha: ~9.1.3
       nodemon: ~2.0.12
       pino: ~7.0.0-rc.3
@@ -194,6 +192,7 @@ importers:
       ts-node: ~10.7.0
       typescript: ~4.6.3
       ws: ~8.2.2
+      yargs: 16.2.0
     dependencies:
       '@acala-network/eth-providers': link:../eth-providers
       '@acala-network/eth-transactions': link:../eth-transactions
@@ -205,17 +204,15 @@ importers:
       '@ethersproject/logger': 5.5.0
       '@ethersproject/wallet': 5.5.0
       '@polkadot/api': 8.1.1
-      '@types/minimist': 1.2.2
       axios: 0.24.0
       body-parser: 1.19.1
       connect: 3.7.0
       cors: 2.8.5
       dd-trace: 2.6.0
-      dotenv: 10.0.0
       ethers: 5.5.4
-      minimist: 1.2.6
       pino: 7.0.5
       ws: 8.2.3
+      yargs: 16.2.0
     devDependencies:
       '@acala-network/contracts': 4.3.4
       '@ethersproject/contracts': 5.5.0
@@ -229,6 +226,7 @@ importers:
       '@types/mocha': 9.0.0
       '@types/node': 16.10.9
       '@types/ws': 8.2.2
+      '@types/yargs': 16.0.4
       eslint: 7.32.0
       mocha: 9.1.3
       nodemon: 2.0.15
@@ -3002,7 +3000,7 @@ packages:
       '@polkadot/x-ws': 8.7.1
       handlebars: 4.7.7
       websocket: 1.0.34
-      yargs: 17.4.1
+      yargs: 17.5.1
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -4435,10 +4433,6 @@ packages:
     dev: false
     optional: true
 
-  /@types/minimist/1.2.2:
-    resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
-    dev: false
-
   /@types/mkdirp/0.5.2:
     resolution: {integrity: sha512-U5icWpv7YnZYGsN4/cmh3WD2onMY0aJIiTE6+51TwJCttdHvtCYmkBNOobHlXwrJRL0nkH9jH4kD+1FAdMN4Tg==}
     dependencies:
@@ -4580,6 +4574,16 @@ packages:
     resolution: {integrity: sha512-NOn5eIcgWLOo6qW8AcuLZ7G8PycXu0xTxxkS6Q18VWFxgPUSOwV0pBj2a/4viNZVu25i7RIB7GttdkAIUUXOOg==}
     dependencies:
       '@types/node': 16.10.9
+    dev: true
+
+  /@types/yargs-parser/21.0.0:
+    resolution: {integrity: sha512-iO9ZQHkZxHn4mSakYV0vFHAVDyEOIJQrV2uZ06HxEPcx+mt8swXoZHIbaaJ2crJYFfErySgktuTZ3BeLz+XmFA==}
+    dev: true
+
+  /@types/yargs/16.0.4:
+    resolution: {integrity: sha512-T8Yc9wt/5LbJyCaLiHPReJa0kApcIgJ7Bn735GjItUfh08Z1pJvu8QZqb9s+mMvKV6WUQRV7K2R46YbjMXTTJw==}
+    dependencies:
+      '@types/yargs-parser': 21.0.0
     dev: true
 
   /@typescript-eslint/eslint-plugin/5.6.0_fb11a9e2def8840176f06d30624674cc:
@@ -7660,6 +7664,7 @@ packages:
   /dotenv/10.0.0:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
+    dev: true
 
   /dotignore/0.1.2:
     resolution: {integrity: sha512-UGGGWfSauusaVJC+8fgV+NVvBXkCTmVv7sk6nojDZZvuOUNGUy0Zk4UpHQD6EDjS0jpBwcACvH4eofvyzBcRDw==}
@@ -14689,7 +14694,7 @@ packages:
       uuid: 3.4.0
 
   /require-directory/2.1.1:
-    resolution: {integrity: sha1-jGStX9MNqxyXbiNE/+f3kqam30I=}
+    resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
 
   /require-from-string/1.2.1:
@@ -17773,7 +17778,6 @@ packages:
   /yargs-parser/20.2.4:
     resolution: {integrity: sha512-WOkpgNhPTlE73h4VFAFsOnomJVaovO8VqLDzy5saChRBFQFBoMYirowyW+Q9HB4HFF4Z7VZTiG3iSzJJA29yRA==}
     engines: {node: '>=10'}
-    dev: true
 
   /yargs-parser/21.0.1:
     resolution: {integrity: sha512-9BK1jFpLzJROCI5TzwZL/TU4gqjK5xiHV/RfWLOahrjAko/e4DJkRDZQXfvqAsiZzzYhgAzbgz6lg48jcm4GLg==}
@@ -17851,10 +17855,9 @@ packages:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 20.2.4
-    dev: true
 
-  /yargs/17.4.1:
-    resolution: {integrity: sha512-WSZD9jgobAg3ZKuCQZSa3g9QOJeCCqLoLAykiWgmXnDo9EPnn4RPf5qVTtzgOx66o6/oqhcA5tHtJXpG8pMt3g==}
+  /yargs/17.5.1:
+    resolution: {integrity: sha512-t6YAJcxDkNX7NFYiVtKvWUz8l+PaKTLiL63mJYWR2GnHq2gjEWISzsLp9wg3aY36dY1j+gfIEL3pIF+XlJJfbA==}
     engines: {node: '>=12'}
     dependencies:
       cliui: 7.0.4
