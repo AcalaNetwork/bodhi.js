@@ -1,0 +1,203 @@
+name: Tests
+on:
+  push:
+    paths-ignore:
+      - '**/README.md'
+
+jobs:
+  cancel-prev-runs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        # Only cancel non-master branch runs
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+
+  eth-providers:
+    runs-on: [self-hosted, linux]
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: prune outdated docker stuff
+        run: yes | docker system prune --filter 'until=240h'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: docker compose down -v
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: build bodhi base # if use self-hosted machine can utilize cache
+        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+      - name: clean up after tests finished
+        run: docker compose down -v
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+
+  eth-rpc-adaptor:
+    runs-on: [self-hosted, linux]
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: prune outdated docker stuff
+        run: yes | docker system prune --filter 'until=240h'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: docker compose down -v
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: build bodhi base # if use self-hosted machine can utilize cache
+        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
+      - name: clean up after tests finished
+        run: docker compose down -v
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+
+  waffle-examples:
+    runs-on: [self-hosted, linux]
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: prune outdated docker stuff
+        run: yes | docker system prune --filter 'until=240h'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: clean up docker process and volumes
+        run: docker compose down -v
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: build bodhi base # if use self-hosted machine can utilize cache
+        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: test
+        run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
+      - name: clean up after tests finished
+        run: docker compose down -v
+      - name: check docker info after cleaning
+        run: docker ps && docker volume ls
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+
+  # waffle-tutorials:
+  #   runs-on: ubuntu-latest
+  #   needs: cancel-prev-runs
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: Setup tmate session
+  #       uses: mxschmitt/action-tmate@v3
+  #     - name: check docker info before cleaning
+  #       run: docker ps && docker volume ls
+  #  - name: build bodhi base # if use self-hosted machine can utilize cache
+  #    run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile#
+  #  - name: test
+  #       run: docker compose up --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
+  #     - name: dump docker logs on failure
+  #       if: failure()
+  #       uses: jwalton/gh-docker-logs@v1
+
+  hardhat-tutorials:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: build bodhi base # if use self-hosted machine can utilize cache
+        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: test
+        run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+
+  truffle-tutorials:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: check docker info before cleaning
+        run: docker ps && docker volume ls
+      - name: build bodhi base # if use self-hosted machine can utilize cache
+        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: test
+        run: docker compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v1
+
+  bodhi:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.16.0'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build -t @acala-network/bodhi
+
+      - name: test
+        run: cd bodhi && yarn test
+        env:
+          NPM_TOKEN: doesnt-matter
+
+  eth-transactions:
+    runs-on: ubuntu-latest
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: setup node env
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.16.0'
+
+      - name: install dependencies
+        run: node common/scripts/install-run-rush.js update
+
+      - name: build
+        run: node common/scripts/install-run-rush.js build -t @acala-network/eth-transactions
+      - name: test
+        run: cd eth-transactions && yarn test

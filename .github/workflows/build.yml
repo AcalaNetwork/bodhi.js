@@ -2,14 +2,14 @@ name: Build Docker Images
 
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    branches:
+      - master
+    tags:
+      - 'v*'
 
 jobs:
   build-eth-rpc-adapter:
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/master'
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -40,7 +40,6 @@ jobs:
 
   build-evm-subql:
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/master'
     steps:
       - name: checkout
         uses: actions/checkout@v2
