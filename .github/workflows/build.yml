@@ -26,11 +26,8 @@ jobs:
         with:
           images: acala/eth-rpc-adapter
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=ref,event=tag
-            type=sha
-            type=sha,format=long
+            type=schedule,pattern={{date 'YYYYMMDDHHmmss'}}
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -60,11 +57,8 @@ jobs:
         with:
           images: acala/evm-subql
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=ref,event=tag
-            type=sha
-            type=sha,format=long
+            type=schedule,pattern={{date 'YYYYMMDDHHmmss'}}
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and push
         uses: docker/build-push-action@v3
