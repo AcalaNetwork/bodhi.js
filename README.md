@@ -99,12 +99,13 @@ rush publish -p --set-access-level public -n <paste_npm_token_here>
 first bump versions and commit
 ```
 node scripts/bump-version.ts
-git commit -m "bump version v2.x.x"
+git add .
+git commit -m "bump v2.x.x"
 ```
 
 then tag the commit and push
 ```
-git tag v2.x.x
+git tag -a v2.x.x -m "bump"
 git push --follow-tags
 ```
 
