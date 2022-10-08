@@ -44,12 +44,6 @@ const account1 = evmAccounts[0];
 const account2 = evmAccounts[1];
 const wallet1 = new Wallet(account1.privateKey);
 
-export const logsEq = (a: Log[], b: Log[]): boolean =>
-  a.length === b.length &&
-  a.every(({ transactionHash: t0, logIndex: l0 }) =>
-    b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
-  );
-
 const expectLogsEqual = (a: Log[], b: Log[]): void => {
   expect(a.length).to.greaterThan(0);
   expect(a.length).to.equal(b.length);
@@ -380,15 +374,15 @@ describe('eth_getLogs', () => {
       const from = 9;
       const to = 11;
       res = await eth_getLogs([{ fromBlock: from }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
@@ -431,15 +425,15 @@ describe('eth_getLogs', () => {
       const from = 8;
       const to = 10;
       res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
@@ -1413,8 +1407,7 @@ describe('eth_getBlockByNumber', () => {
     const resFull = (await eth_getBlockByNumber_karura([1818188, true])).data.result;
     const res = (await eth_getBlockByNumber_karura([1818188, false])).data.result;
 
-    const block1818188NotFull = { ...karuraBlock1818188};
-    block1818188NotFull.transactions = karuraBlock1818188.transactions.map((t) => t.hash);
+    const block1818188NotFull = karuraBlock1818188;
     block1818188NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
     expect(resFull).to.deep.equal(karuraBlock1818188);
@@ -1426,7 +1419,7 @@ describe('eth_getBlockByNumber', () => {
     const res = (await eth_getBlockByNumber_karura([1818518, false])).data.result;
 
     const block1818518NotFull = { ...karuraBlock1818518 };
-    block1818518NotFull.transactions = karuraBlock1818518.transactions.map((t) => t.hash);
+    block1818518NotFull.transactions = karuraBlock1818518.transactions.map((t) => t.hash) as any;
     block1818518NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
     expect(resFull).to.deep.equal(karuraBlock1818518);
@@ -1438,7 +1431,7 @@ describe('eth_getBlockByNumber', () => {
     const res = (await eth_getBlockByNumber_karura([2449983, false])).data.result;
 
     const block2449983NotFull = { ...karuraBlock2449983 };
-    block2449983NotFull.transactions = karuraBlock2449983.transactions.map((t) => t.hash);
+    block2449983NotFull.transactions = karuraBlock2449983.transactions.map((t) => t.hash) as any;
     block2449983NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
     expect(resFull).to.deep.equal(karuraBlock2449983);
