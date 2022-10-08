@@ -65,7 +65,7 @@ export const validateBlock = (data: any) => {
     throw new Error(`invalid block tag, expected type string, number, or eip-1898 blocktag`);
   }
 
-  if (!['latest', 'earliest', 'pending'].includes(data)) {
+  if (!['latest', 'earliest', 'pending', 'finalized', 'safe'].includes(data)) {
     validateHexNumber(data);
   }
 };

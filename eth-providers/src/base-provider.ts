@@ -231,8 +231,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _network?: Promise<Network>;
   _cache?: BlockCache;
-  latestFinalizedBlockHash: string | undefined;
-  latestFinalizedBlockNumber: number | undefined;
+  latestFinalizedBlockHash: string;
+  latestFinalizedBlockNumber: number;
   runtimeVersion: number | undefined;
 
   constructor({
@@ -252,8 +252,8 @@ export abstract class BaseProvider extends AbstractProvider {
     this.localMode = localMode;
     this.richMode = richMode;
     this.verbose = verbose;
-    this.latestFinalizedBlockHash = undefined;
-    this.latestFinalizedBlockNumber = undefined;
+    this.latestFinalizedBlockHash = '0xdummyHash';
+    this.latestFinalizedBlockNumber = -1;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this._storageCache = new LRUCache({ max: storageCacheSize });
     this._healthCheckBlockDistance = healthCheckBlockDistance;
@@ -320,11 +320,8 @@ export abstract class BaseProvider extends AbstractProvider {
       const blockNumber = header.number.toNumber();
       this.latestFinalizedBlockNumber = blockNumber;
 
-      // safe mode only, if useful in the future, can remove this if condition
-      if (this.safeMode) {
-        const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
-        this.latestFinalizedBlockHash = blockHash;
-      }
+      const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
+      this.latestFinalizedBlockHash = blockHash;
     }) as unknown as void;
 
     this.api.rpc.state.subscribeRuntimeVersion((runtime: RuntimeVersion) => {
@@ -554,8 +551,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getBlockData = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData | FullBlockData> => {
     return full
-      ? ((await this._getFullBlock(blockTag)) as FullBlockData)
-      : ((await this._getBlock(blockTag)) as BlockData);
+      ? this._getFullBlock(blockTag)
+      : this._getBlock(blockTag);
   };
 
   getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
@@ -1323,11 +1320,17 @@ export abstract class BaseProvider extends AbstractProvider {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
-        return this.safeMode ? this.latestFinalizedBlockHash! : (await this.api.rpc.chain.getBlockHash()).toHex();
+        return this.safeMode
+          ? this.latestFinalizedBlockHash
+          : (await this.api.rpc.chain.getBlockHash()).toHex();
       }
       case 'earliest': {
         const hash = this.api.genesisHash;
         return hash.toHex();
+      }
+      case 'finalized':
+      case 'safe': {
+        return this.latestFinalizedBlockHash;
       }
       default: {
         let blockHash: undefined | string = undefined;
@@ -1874,9 +1877,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // ideally pastNblock should have EVM TX
     const pastNblock =
-      this.latestFinalizedBlockNumber! > this._healthCheckBlockDistance
-        ? this.latestFinalizedBlockNumber! - this._healthCheckBlockDistance
-        : this.latestFinalizedBlockNumber!;
+      this.latestFinalizedBlockNumber > this._healthCheckBlockDistance
+        ? this.latestFinalizedBlockNumber - this._healthCheckBlockDistance
+        : this.latestFinalizedBlockNumber;
     const getBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, false));
     const getFullBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, true));
 
@@ -1896,7 +1899,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
 
     const cacheInfo = this.getCachInfo();
-    const curFinalizedHeight = this.latestFinalizedBlockNumber!;
+    const curFinalizedHeight = this.latestFinalizedBlockNumber;
     const listenersCount = {
       newHead: this._listeners[NEW_HEADS]?.length || 0,
       logs: this._listeners[NEW_LOGS]?.length || 0
