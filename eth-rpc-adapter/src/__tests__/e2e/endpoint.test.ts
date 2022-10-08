@@ -15,7 +15,7 @@ import WebSocket from 'ws';
 import {
   bigIntDiff,
   rpcGet,
-  PUBLIC_MANDALA_RPC_URL,
+  KARURA_ETH_RPC_URL,
   SUBQL_URL,
   WS_URL,
   NODE_RPC_URL,
@@ -24,9 +24,9 @@ import {
   ADDRESS_ALICE,
   evmAccounts,
   allLogs,
-  mandalaBlock1265919,
-  mandalaBlock1265918,
-  mandalaBlock1265928,
+  karuraBlock2449983,
+  karuraBlock1818188,
+  karuraBlock1818518,
   mandalaContractCallTxReceipt,
   mandalaContractDeployTxReceipt,
   mandalaTransferTxReceipt,
@@ -96,9 +96,9 @@ before('env setup', async () => {
     }
 
     if (!process.env.SKIP_PUBLIC) {
-      const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
-      if (!(Number(resMandala.data.result) > 1000000)) {
-        throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+      const resKarura = await rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL)();
+      if (!(Number(resKarura.data.result) > 1000000)) {
+        throw new Error(`test env setup failed! There might be some connection issue with ${KARURA_ETH_RPC_URL}`);
       }
     }
   } catch (e) {
@@ -119,7 +119,7 @@ before('env setup', async () => {
 
 describe('eth_getTransactionReceipt', () => {
   const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
-  const eth_getTransactionReceipt_mandala = rpcGet('eth_getTransactionReceipt', PUBLIC_MANDALA_RPC_URL);
+  const eth_getTransactionReceipt_mandala = rpcGet('eth_getTransactionReceipt', KARURA_ETH_RPC_URL);
 
   it('returns correct result when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
@@ -588,7 +588,7 @@ describe('eth_getLogs', () => {
 
 describe('eth_getTransactionByHash', () => {
   const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
-  const eth_getTransactionByHash_mandala = rpcGet('eth_getTransactionByHash', PUBLIC_MANDALA_RPC_URL);
+  const eth_getTransactionByHash_mandala = rpcGet('eth_getTransactionByHash', KARURA_ETH_RPC_URL);
 
   it('finds correct tx when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
@@ -1401,48 +1401,48 @@ describe('net_runtimeVersion', () => {
   });
 });
 
-describe('eth_getBlockByNumber', () => {
+describe.only('eth_getBlockByNumber', () => {
   if (process.env.SKIP_PUBLIC) {
     console.log('public mandala tests are skipped ❗');
     return;
   }
 
-  const eth_getBlockByNumber_mandala = rpcGet('eth_getBlockByNumber', PUBLIC_MANDALA_RPC_URL);
+  const eth_getBlockByNumber_karura = rpcGet('eth_getBlockByNumber', KARURA_ETH_RPC_URL);
 
   it('when there are 0 EVM transactions', async () => {
-    const resFull = (await eth_getBlockByNumber_mandala([1265918, true])).data.result;
-    const res = (await eth_getBlockByNumber_mandala([1265918, false])).data.result;
+    const resFull = (await eth_getBlockByNumber_karura([1818188, true])).data.result;
+    const res = (await eth_getBlockByNumber_karura([1818188, false])).data.result;
 
-    const block1265918NotFull = { ...mandalaBlock1265918 };
-    block1265918NotFull.transactions = mandalaBlock1265918.transactions.map((t) => t.hash);
-    block1265918NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+    const block1818188NotFull = { ...karuraBlock1818188};
+    block1818188NotFull.transactions = karuraBlock1818188.transactions.map((t) => t.hash);
+    block1818188NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
-    expect(resFull).to.deep.equal(mandalaBlock1265918);
-    expect(res).to.deep.equal(block1265918NotFull);
+    expect(resFull).to.deep.equal(karuraBlock1818188);
+    expect(res).to.deep.equal(block1818188NotFull);
   });
 
   it('when there are 1 EVM transactions', async () => {
-    const resFull = (await eth_getBlockByNumber_mandala([1265928, true])).data.result;
-    const res = (await eth_getBlockByNumber_mandala([1265928, false])).data.result;
+    const resFull = (await eth_getBlockByNumber_karura([1818518, true])).data.result;
+    const res = (await eth_getBlockByNumber_karura([1818518, false])).data.result;
 
-    const block1265928NotFull = { ...mandalaBlock1265928 };
-    block1265928NotFull.transactions = mandalaBlock1265928.transactions.map((t) => t.hash);
-    block1265928NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+    const block1818518NotFull = { ...karuraBlock1818518 };
+    block1818518NotFull.transactions = karuraBlock1818518.transactions.map((t) => t.hash);
+    block1818518NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
-    expect(resFull).to.deep.equal(mandalaBlock1265928);
-    expect(res).to.deep.equal(block1265928NotFull);
+    expect(resFull).to.deep.equal(karuraBlock1818518);
+    expect(res).to.deep.equal(block1818518NotFull);
   });
 
   it('when there are >= 2 EVM transactions', async () => {
-    const resFull = (await eth_getBlockByNumber_mandala([1265919, true])).data.result;
-    const res = (await eth_getBlockByNumber_mandala([1265919, false])).data.result;
+    const resFull = (await eth_getBlockByNumber_karura([2449983, true])).data.result;
+    const res = (await eth_getBlockByNumber_karura([2449983, false])).data.result;
 
-    const block1265919NotFull = { ...mandalaBlock1265919 };
-    block1265919NotFull.transactions = mandalaBlock1265919.transactions.map((t) => t.hash);
-    block1265919NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+    const block2449983NotFull = { ...karuraBlock2449983 };
+    block2449983NotFull.transactions = karuraBlock2449983.transactions.map((t) => t.hash);
+    block2449983NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
-    expect(resFull).to.deep.equal(mandalaBlock1265919);
-    expect(res).to.deep.equal(block1265919NotFull);
+    expect(resFull).to.deep.equal(karuraBlock2449983);
+    expect(res).to.deep.equal(block2449983NotFull);
   });
 });
 
@@ -1485,7 +1485,7 @@ describe('eth_getStorageAt', () => {
     return;
   }
 
-  const eth_getStorageAt = rpcGet('eth_getStorageAt', PUBLIC_MANDALA_RPC_URL);
+  const eth_getStorageAt = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
 
   it('get correct storage from public mandala', async () => {
     expect((await eth_getStorageAt([

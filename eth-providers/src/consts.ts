@@ -61,6 +61,7 @@ export const PROD_MODE_MSG = `
 export const SAFE_MODE_WARNING_MSG = `
   ------------------------------- WARNING -----------------------------
   🔒 SafeMode is ON, and RPCs behave very differently than usual world!
+  ❗ This mode is DEPRECATED, please use \`finalized\` block tag 
   ---------------------------------------------------------------------
 `;
 

@@ -86,7 +86,7 @@ services:
         condition: service_completed_successfully
       eth-rpc-adapter-server-with-subql:
         condition: service_started
-      eth-rpc-adapter-server-public-mandala:
+      eth-rpc-adapter-server-karura:
         condition: service_started
 
   # ------------------------------------ #
@@ -152,7 +152,7 @@ services:
       - --port=8545
       - --local
 
-  eth-rpc-adapter-server-public-mandala:
+  eth-rpc-adapter-server-karura:
     build:
       context: .
       dockerfile: docker/eth-rpc-adapter-server.Dockerfile

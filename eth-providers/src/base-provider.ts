@@ -550,9 +550,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getBlockData = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData | FullBlockData> => {
-    return full
-      ? this._getFullBlock(blockTag)
-      : this._getBlock(blockTag);
+    return full ? this._getFullBlock(blockTag) : this._getBlock(blockTag);
   };
 
   getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
@@ -742,7 +740,7 @@ export abstract class BaseProvider extends AbstractProvider {
     //   return null;
     // }
 
-    // return await resolver.getAddress();
+    // return resolver.getAddress();
   };
 
   getGasPrice = async (): Promise<BigNumber> => {
@@ -1320,9 +1318,7 @@ export abstract class BaseProvider extends AbstractProvider {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
-        return this.safeMode
-          ? this.latestFinalizedBlockHash
-          : (await this.api.rpc.chain.getBlockHash()).toHex();
+        return this.safeMode ? this.latestFinalizedBlockHash : (await this.api.rpc.chain.getBlockHash()).toHex();
       }
       case 'earliest': {
         const hash = this.api.genesisHash;
@@ -1401,7 +1397,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const tx = await this._getMinedTXReceipt(txHash);
     if (!tx) return false;
 
-    return await this._isBlockFinalized(tx.blockHash);
+    return this._isBlockFinalized(tx.blockHash);
   };
 
   _ensureSafeModeBlockTagFinalization = async (_blockTag: BlockTagish): Promise<BlockTagish> => {
@@ -1481,7 +1477,7 @@ export abstract class BaseProvider extends AbstractProvider {
       tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v) : null));
     });
 
-    return await resolveProperties(tx);
+    return resolveProperties(tx);
   };
 
   _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
