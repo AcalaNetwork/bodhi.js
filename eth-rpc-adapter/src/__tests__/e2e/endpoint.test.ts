@@ -27,13 +27,13 @@ import {
   karuraBlock2449983,
   karuraBlock1818188,
   karuraBlock1818518,
-  mandalaContractCallTxReceipt,
-  mandalaContractDeployTxReceipt,
-  mandalaTransferTxReceipt,
+  karuraContractCallTxReceipt,
+  karuraContractDeployTxReceipt,
+  karuraSendKarTxReceipt,
   deployHelloWorldData,
-  mandalaContractCallTx,
-  mandalaContractDeployTx,
-  mandalaTransferTx,
+  karuraContractCallTx,
+  karuraContractDeployTx,
+  karuraSendKarTx,
   log22_0,
   log22_1
 } from './consts';
@@ -119,7 +119,7 @@ before('env setup', async () => {
 
 describe('eth_getTransactionReceipt', () => {
   const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
-  const eth_getTransactionReceipt_mandala = rpcGet('eth_getTransactionReceipt', KARURA_ETH_RPC_URL);
+  const eth_getTransactionReceipt_karura = rpcGet('eth_getTransactionReceipt', KARURA_ETH_RPC_URL);
 
   it('returns correct result when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
@@ -275,25 +275,25 @@ describe('eth_getTransactionReceipt', () => {
     });
   });
 
-  it('returns correct result for public mandala transactions', async () => {
+  it('returns correct result for public karura transactions', async () => {
     if (process.env.SKIP_PUBLIC) {
-      console.log('public mandala tests are skipped ❗');
+      console.log('public karura tests are skipped ❗');
       return;
     }
 
-    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
-      eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
-      eth_getTransactionReceipt_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
-      eth_getTransactionReceipt_mandala(['0x01bbd9bf3f1a56253084e5a54ab1dfc96bc62ef72977f60c2ff3a7d56f4fc8d6'])
+    const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
+      eth_getTransactionReceipt_karura(['0x33661888b04c81858c3603994eeb9a294c57b585bd86b4663ccd5e4fd7f2c325']),
+      eth_getTransactionReceipt_karura(['0x56a429edfc1c07d7fd4c048e6e868dbaaa632fc329e7bb7ed744a48bca5bb493']),
+      eth_getTransactionReceipt_karura(['0x69493fd597760d5ad3a81ebbbb48abcc686d33814e097b1db9fc172341c36dae'])
     ]);
 
     expect(contractCallRes.status).to.equal(200);
     expect(contractDeployRes.status).to.equal(200);
-    expect(transferRes.status).to.equal(200);
+    expect(sendKarRes.status).to.equal(200);
 
-    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTxReceipt);
-    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTxReceipt);
-    expect(transferRes.data.result).to.deep.equal(mandalaTransferTxReceipt);
+    expect(contractCallRes.data.result).to.deep.equal(karuraContractCallTxReceipt);
+    expect(contractDeployRes.data.result).to.deep.equal(karuraContractDeployTxReceipt);
+    expect(sendKarRes.data.result).to.deep.equal(karuraSendKarTxReceipt);
   });
 
   it('return correct error or null', async () => {
@@ -588,7 +588,7 @@ describe('eth_getLogs', () => {
 
 describe('eth_getTransactionByHash', () => {
   const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
-  const eth_getTransactionByHash_mandala = rpcGet('eth_getTransactionByHash', KARURA_ETH_RPC_URL);
+  const eth_getTransactionByHash_karura = rpcGet('eth_getTransactionByHash', KARURA_ETH_RPC_URL);
 
   it('finds correct tx when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
@@ -674,25 +674,25 @@ describe('eth_getTransactionByHash', () => {
     });
   });
 
-  it('returns correct result for public mandala transactions', async () => {
+  it('returns correct result for public karura transactions', async () => {
     if (process.env.SKIP_PUBLIC) {
-      console.log('public mandala tests are skipped❗');
+      console.log('public karura tests are skipped❗');
       return;
     }
 
-    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
-      eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
-      eth_getTransactionByHash_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
-      eth_getTransactionByHash_mandala(['0x3c7839f0e249f40115f0ce97681035023ee375921a59f0b826e2e93cbd020da1'])
+    const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
+      eth_getTransactionByHash_karura(['0x33661888b04c81858c3603994eeb9a294c57b585bd86b4663ccd5e4fd7f2c325']),
+      eth_getTransactionByHash_karura(['0x56a429edfc1c07d7fd4c048e6e868dbaaa632fc329e7bb7ed744a48bca5bb493']),
+      eth_getTransactionByHash_karura(['0x69493fd597760d5ad3a81ebbbb48abcc686d33814e097b1db9fc172341c36dae'])
     ]);
 
     expect(contractCallRes.status).to.equal(200);
     expect(contractDeployRes.status).to.equal(200);
-    expect(transferRes.status).to.equal(200);
+    expect(sendKarRes.status).to.equal(200);
 
-    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTx);
-    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTx);
-    expect(transferRes.data.result).to.deep.equal(mandalaTransferTx);
+    expect(contractCallRes.data.result).to.deep.equal(karuraContractCallTx);
+    expect(contractDeployRes.data.result).to.deep.equal(karuraContractDeployTx);
+    expect(sendKarRes.data.result).to.deep.equal(karuraSendKarTx);
   });
 
   it.skip('returns correct result when tx is pending', async () => {
@@ -1401,9 +1401,9 @@ describe('net_runtimeVersion', () => {
   });
 });
 
-describe.only('eth_getBlockByNumber', () => {
+describe('eth_getBlockByNumber', () => {
   if (process.env.SKIP_PUBLIC) {
-    console.log('public mandala tests are skipped ❗');
+    console.log('public karura tests are skipped ❗');
     return;
   }
 
@@ -1481,30 +1481,31 @@ describe('eth_getTransactionCount', () => {
 
 describe('eth_getStorageAt', () => {
   if (process.env.SKIP_PUBLIC) {
-    console.log('public mandala tests are skipped ❗');
+    console.log('public karura tests are skipped ❗');
     return;
   }
 
   const eth_getStorageAt = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
 
-  it('get correct storage from public mandala', async () => {
+  it('get correct storage from public karura', async () => {
+    const contractAddr = '0x1f3a10587a20114ea25ba1b388ee2dd4a337ce27';
     expect((await eth_getStorageAt([
-      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-      1500000,
-    ])).data.result).to.equal('0x000000000000000000000000f4030f873d1f987908fee66dd2ebb9f9c5eda864');
+      contractAddr,
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      2000000,
+    ])).data.result).to.equal('0x55534420436f696e000000000000000000000000000000000000000000000010');
 
     expect((await eth_getStorageAt([
-      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
-      "0x0",
-      1500000,
-    ])).data.result).to.equal('0x000000000000000000000000f4030f873d1f987908fee66dd2ebb9f9c5eda864');
+      contractAddr,
+      '0x0',
+      2000000,
+    ])).data.result).to.equal('0x55534420436f696e000000000000000000000000000000000000000000000010');
 
     expect((await eth_getStorageAt([
-      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
-      "0x3",
-      1500000,
-    ])).data.result).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001');
+      contractAddr,
+      '0x3',
+      2000000,
+    ])).data.result).to.equal('0x000000000000000000000000000000000000000000000000000000070d785f88');
   });
 });
 
