@@ -96,17 +96,7 @@ before('env setup', async () => {
     }
 
     if (!process.env.SKIP_PUBLIC) {
-      tries = 0;
-      let resKarura;
-      while (!resKarura && tries++ < 10) {
-        try {
-          resKarura = await rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL)();
-        } catch (e) {
-          console.log(`let's give karura eth rpc adapter a little bit more time to start, retrying #${tries} in 5s ...`);
-          await sleep(5000);
-        }
-      }
-
+      const resKarura = await rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL)();
       if (!(Number(resKarura.data.result) > 1000000)) {
         throw new Error(`test env setup failed! There might be some connection issue with ${KARURA_ETH_RPC_URL}`);
       }
