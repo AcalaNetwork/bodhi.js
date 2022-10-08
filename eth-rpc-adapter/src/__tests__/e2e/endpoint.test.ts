@@ -106,7 +106,7 @@ before('env setup', async () => {
       ------------------------
       test env setup failed ❌
       ------------------------
-    `);
+    `, e);
     throw e;
   }
 
