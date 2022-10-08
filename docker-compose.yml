@@ -161,8 +161,8 @@ services:
       - 8546:8546
     restart: always
     command:
-      - --endpoint=wss://mandala-rpc.aca-staging.network/ws
-      - --subql=https://subql-query-mandala.aca-dev.network
+      - --endpoint=https://eth-rpc-karura.aca-api.network
+      - --subql=https://subql-query-karura.aca-api.network
       - --port=8546
 
   waffle-examples-test:

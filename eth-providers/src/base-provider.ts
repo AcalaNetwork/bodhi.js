@@ -55,7 +55,8 @@ import {
   U32MAX,
   U64MAX,
   ZERO,
-  DUMMY_V_R_S
+  DUMMY_V_R_S,
+  DUMMY_BLOCK_HASH
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -231,7 +232,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _network?: Promise<Network>;
   _cache?: BlockCache;
-  latestFinalizedBlockHash: string;
+  _latestFinalizedBlockHash: string;
   latestFinalizedBlockNumber: number;
   runtimeVersion: number | undefined;
 
@@ -252,8 +253,8 @@ export abstract class BaseProvider extends AbstractProvider {
     this.localMode = localMode;
     this.richMode = richMode;
     this.verbose = verbose;
-    this.latestFinalizedBlockHash = '0xdummyHash';
-    this.latestFinalizedBlockNumber = -1;
+    this._latestFinalizedBlockHash = DUMMY_BLOCK_HASH;
+    this.latestFinalizedBlockNumber = 0;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this._storageCache = new LRUCache({ max: storageCacheSize });
     this._healthCheckBlockDistance = healthCheckBlockDistance;
@@ -395,6 +396,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return result as any as T;
   };
+
+  get latestFinalizedBlockHash(): string {
+    return this._latestFinalizedBlockHash === DUMMY_BLOCK_HASH
+      ? logger.throwError('no finalized block tracked yet ...', Logger.errors.UNKNOWN_ERROR)
+      : this._latestFinalizedBlockHash;
+  }
 
   get api(): ApiPromise {
     if (!this._api) {
