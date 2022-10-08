@@ -104,7 +104,6 @@ before('env setup', async () => {
         } catch (e) {
           console.log(`let's give karura eth rpc adapter a little bit more time to start, retrying #${tries} in 5s ...`);
           await sleep(5000);
-          resKarura = await rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL)();          
         }
       }
       if (!(Number(resKarura.data.result) > 1000000)) {
