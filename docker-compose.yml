@@ -161,7 +161,7 @@ services:
       - 8546:8546
     restart: always
     command:
-      - --endpoint=https://eth-rpc-karura.aca-api.network
+      - --endpoint=wss://acala-karura-eu-1.bdnodes.net:8443/parachain?auth=4VFR_UEvc8mUAd58z11nSRqp-EBZcqPl14j_MgEm-4E
       - --subql=https://subql-query-karura.aca-api.network
       - --port=8546
 
