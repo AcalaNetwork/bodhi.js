@@ -398,8 +398,11 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   get latestFinalizedBlockHash(): string {
-    return this._latestFinalizedBlockHash === DUMMY_BLOCK_HASH
-      ? logger.throwError('no finalized block tracked yet ...', Logger.errors.UNKNOWN_ERROR)
+    return this._latestFinalizedBlockHash === DUMMY_BLOCK_HASH // this can only happen in theory locally
+      ? logger.throwError(
+          'no finalized block tracked yet... please wait for 20s and retry',
+          Logger.errors.UNKNOWN_ERROR
+        )
       : this._latestFinalizedBlockHash;
   }
 

@@ -106,6 +106,7 @@ before('env setup', async () => {
           await sleep(5000);
         }
       }
+
       if (!(Number(resKarura.data.result) > 1000000)) {
         throw new Error(`test env setup failed! There might be some connection issue with ${KARURA_ETH_RPC_URL}`);
       }
