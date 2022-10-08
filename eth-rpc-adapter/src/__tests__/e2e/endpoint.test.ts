@@ -83,7 +83,7 @@ before('env setup', async () => {
       tries++ < 10
     ) {
       console.log(`let's give subql a little bit more time to index, retrying #${tries} in 5s ...`);
-      await new Promise((r) => setTimeout(r, 5000));
+      await sleep(5000);
       [allTxReceipts, allLogs] = await Promise.all([subql.getAllTxReceipts(), subql.getAllLogs()]);
     }
 
@@ -96,7 +96,17 @@ before('env setup', async () => {
     }
 
     if (!process.env.SKIP_PUBLIC) {
-      const resKarura = await rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL)();
+      tries = 0;
+      let resKarura;
+      while (!resKarura && tries++ < 10) {
+        try {
+          resKarura = await rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL)();
+        } catch (e) {
+          console.log(`let's give karura eth rpc adapter a little bit more time to start, retrying #${tries} in 5s ...`);
+          await sleep(5000);
+          resKarura = await rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL)();          
+        }
+      }
       if (!(Number(resKarura.data.result) > 1000000)) {
         throw new Error(`test env setup failed! There might be some connection issue with ${KARURA_ETH_RPC_URL}`);
       }
