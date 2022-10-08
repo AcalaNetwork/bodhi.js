@@ -322,7 +322,7 @@ export abstract class BaseProvider extends AbstractProvider {
       this.latestFinalizedBlockNumber = blockNumber;
 
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
-      this.latestFinalizedBlockHash = blockHash;
+      this._latestFinalizedBlockHash = blockHash;
     }) as unknown as void;
 
     this.api.rpc.state.subscribeRuntimeVersion((runtime: RuntimeVersion) => {
