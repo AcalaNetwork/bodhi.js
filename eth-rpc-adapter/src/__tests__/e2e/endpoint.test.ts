@@ -36,7 +36,10 @@ import {
   karuraSendKarTx,
   log22_0,
   log22_1,
-  DETERMINISTIC_SETUP_DEX_ADDRESS
+  DETERMINISTIC_SETUP_DEX_ADDRESS,
+  KARURA_CONTRACT_DEPLOY_TX_HASH,
+  KARURA_CONTRACT_CALL_TX_HASH,
+  KARURA_SEND_KAR_TX_HASH
 } from './consts';
 
 const subql = new SubqlProvider(SUBQL_URL);
@@ -83,7 +86,7 @@ const expectLogsEqual = (a: Log[], b: Log[]): void => {
   );
 };
 
-// some tests depend on the deterministic setup or mandala node connection
+// some tests depend on the local deterministic setup or karura mainnet node connection
 before('env setup', async () => {
   if (process.env.SKIP_CHECK) return;
 
@@ -302,9 +305,9 @@ describe('eth_getTransactionReceipt', () => {
     }
 
     const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
-      eth_getTransactionReceipt_karura(['0x33661888b04c81858c3603994eeb9a294c57b585bd86b4663ccd5e4fd7f2c325']),
-      eth_getTransactionReceipt_karura(['0x56a429edfc1c07d7fd4c048e6e868dbaaa632fc329e7bb7ed744a48bca5bb493']),
-      eth_getTransactionReceipt_karura(['0x69493fd597760d5ad3a81ebbbb48abcc686d33814e097b1db9fc172341c36dae'])
+      eth_getTransactionReceipt_karura([KARURA_CONTRACT_CALL_TX_HASH]),
+      eth_getTransactionReceipt_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
+      eth_getTransactionReceipt_karura([KARURA_SEND_KAR_TX_HASH])
     ]);
 
     expect(contractCallRes.status).to.equal(200);
@@ -697,9 +700,9 @@ describe('eth_getTransactionByHash', () => {
     }
 
     const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
-      eth_getTransactionByHash_karura(['0x33661888b04c81858c3603994eeb9a294c57b585bd86b4663ccd5e4fd7f2c325']),
-      eth_getTransactionByHash_karura(['0x56a429edfc1c07d7fd4c048e6e868dbaaa632fc329e7bb7ed744a48bca5bb493']),
-      eth_getTransactionByHash_karura(['0x69493fd597760d5ad3a81ebbbb48abcc686d33814e097b1db9fc172341c36dae'])
+      eth_getTransactionByHash_karura([KARURA_CONTRACT_CALL_TX_HASH]),
+      eth_getTransactionByHash_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
+      eth_getTransactionByHash_karura([KARURA_SEND_KAR_TX_HASH])
     ]);
 
     expect(contractCallRes.status).to.equal(200);
@@ -1463,7 +1466,7 @@ describe('eth_getTransactionCount', () => {
   });
 });
 
-describe('eth_getStorageAt_karura', () => {
+describe('eth_getStorageAt', () => {
   if (process.env.SKIP_PUBLIC) {
     console.log('public karura tests are skipped ❗');
     return;
