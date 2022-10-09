@@ -74,7 +74,7 @@ const eth_blockNumber_karura = rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL);
 const eth_getTransactionReceipt_karura = rpcGet('eth_getTransactionReceipt', KARURA_ETH_RPC_URL);
 const eth_getTransactionByHash_karura = rpcGet('eth_getTransactionByHash', KARURA_ETH_RPC_URL);
 const eth_getBlockByNumber_karura = rpcGet('eth_getBlockByNumber', KARURA_ETH_RPC_URL);
-const eth_getStorageAt_karura = rpcGet('eth_getStorageAt_karura', KARURA_ETH_RPC_URL);
+const eth_getStorageAt_karura = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
 
 const expectLogsEqual = (a: Log[], b: Log[]): void => {
   expect(a.length).to.greaterThan(0);
