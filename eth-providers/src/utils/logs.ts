@@ -4,7 +4,7 @@ import { Log as LogGQL } from './gqlTypes';
 export type TopicsFilter = (string | string[] | null)[] | undefined;
 export type AddressFilter = string | string[] | undefined;
 export interface SubscriptionLogFilter {
-  address?: string | string[];
+  address?: AddressFilter;
   topics?: TopicsFilter;
 }
 

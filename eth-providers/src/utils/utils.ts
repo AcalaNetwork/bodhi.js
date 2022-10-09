@@ -2,7 +2,7 @@ import { FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lo
 import { BigNumber } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
-import { BlockTag, Eip1898BlockTag } from 'src/base-provider';
+import { BlockTagish, Eip1898BlockTag } from 'src/base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
 
@@ -272,9 +272,7 @@ const ETH_DECIMALS = 18;
 export const nativeToEthDecimal = (value: any, nativeDecimals: number = 12): BigNumber =>
   BigNumber.from(value).mul(10 ** (ETH_DECIMALS - nativeDecimals));
 
-export const parseBlockTag = async (
-  _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag | undefined
-): Promise<string | number | undefined> => {
+export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): Promise<string | number | undefined> => {
   const blockTag = await _blockTag;
 
   if (!blockTag || typeof blockTag !== 'object') return blockTag;

@@ -1,4 +1,4 @@
-import { EvmRpcProvider, hexlifyRpcResult, TX } from '@acala-network/eth-providers';
+import { EvmRpcProvider, hexlifyRpcResult, TX, BLOCK_POLL_FILTER, LOG_POLL_FILTER } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -429,29 +429,33 @@ class Eip1193BridgeImpl {
     return this.#provider._isTransactionFinalized(params[0]);
   }
 
-  // async eth_newFilter(params: any[]): Promise<any> {
+  async eth_newFilter(params: any[]): Promise<any> {
+    validate([{ type: 'object' }], params);
+    return this.#provider.addPollFilter(LOG_POLL_FILTER, params[0]);
+  }
 
-  // }
-
-  // async eth_newBlockFilter(params: any[]): Promise<any> {
-
-  // }
+  async eth_newBlockFilter(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.addPollFilter(BLOCK_POLL_FILTER);
+  }
 
   // async eth_newPendingTransactionFilter(params: any[]): Promise<any> {
 
   // }
 
-  // async eth_uninstallFilter(params: any[]): Promise<any> {
-
-  // }
-
-  // async eth_getFilterChanges(params: any[]): Promise<any> {
-
-  // }
+  async eth_getFilterChanges(params: any[]): Promise<any> {
+    validate([{ type: 'address' }], params);
+    return this.#provider.poll(params[0]);
+  }
 
   // async eth_getFilterLogs(params: any[]): Promise<any> {
 
   // }
+
+  async eth_uninstallFilter(params: any[]): Promise<any> {
+    validate([{ type: 'address' }], params);
+    return this.#provider.removePollFilter(params[0]);
+  }
 
   async eth_getLogs(params: any[]): Promise<Log[]> {
     validate([{ type: 'object' }], params);

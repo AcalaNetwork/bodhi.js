@@ -2,6 +2,7 @@ import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   Block,
+  BlockTag,
   BlockWithTransactions,
   EventType,
   FeeData,
@@ -83,7 +84,8 @@ import {
   getEffectiveGasPrice,
   parseBlockTag,
   filterLogByTopics,
-  getVirtualTxReceiptsFromEvents
+  getVirtualTxReceiptsFromEvents,
+  SubscriptionLogFilter
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -94,7 +96,6 @@ export interface Eip1898BlockTag {
   blockHash: string;
 }
 
-export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
 
 export interface BlockData {
@@ -178,17 +179,6 @@ export interface GasConsts {
   storageDepositPerByte: bigint;
   txFeePerGas: bigint;
 }
-
-export interface EventListener {
-  id: string;
-  cb: (data: any) => void;
-  filter?: any;
-}
-
-export interface EventListeners {
-  [name: string]: EventListener[];
-}
-
 export interface EventData {
   [index: string]: {
     weight: number;
@@ -208,18 +198,54 @@ export interface BaseProviderOptions {
   healthCheckBlockDistance?: number;
 }
 
-export type NewBlockListener = (header: Header) => any;
-
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
-const NEW_HEADS = 'newHeads';
-const NEW_LOGS = 'logs';
-const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
+/* ---------- subscriptions ---------- */
+const NEW_HEADS = 'NEW_HEADS';
+const NEW_LOGS = 'NEW_LOGS';
+const ALL_SUBSCRIPTION_EVENTS = [NEW_HEADS, NEW_LOGS] as const;
+
+export interface BlockListener {
+  id: string;
+  cb: (data: any) => void;
+}
+
+export interface LogListener extends BlockListener {
+  filter: SubscriptionLogFilter;
+}
+
+export interface EventListeners {
+  [NEW_HEADS]: BlockListener[];
+  [NEW_LOGS]: LogListener[];
+}
+
+/* ---------- filters ---------- */
+export const BLOCK_POLL_FILTER = 'BLOCK_POLL_FILTER';
+export const LOG_POLL_FILTER = 'LOG_POLL_FILTER';
+export const ALL_POLL_FILTERs = [BLOCK_POLL_FILTER, LOG_POLL_FILTER] as const;
+export interface BlockPollFilter {
+  id: string;
+  lastPollBlockNumber: number;
+  lastPollTimestamp: number;
+}
+
+export interface LogPollFilter extends BlockPollFilter {
+  logFilter: SubscriptionLogFilter & {
+    fromBlock?: BlockTag;
+    toBlock?: BlockTag;
+  };
+}
+
+export interface PollFilters {
+  [BLOCK_POLL_FILTER]: BlockPollFilter[];
+  [LOG_POLL_FILTER]: LogPollFilter[];
+}
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
+  readonly _pollFilters: PollFilters;
   readonly safeMode: boolean;
   readonly localMode: boolean;
   readonly richMode: boolean;
@@ -248,7 +274,8 @@ export abstract class BaseProvider extends AbstractProvider {
   }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
-    this._listeners = {};
+    this._listeners = { [NEW_HEADS]: [], [NEW_LOGS]: [] };
+    this._pollFilters = { [LOG_POLL_FILTER]: [], [BLOCK_POLL_FILTER]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.richMode = richMode;
@@ -296,20 +323,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
       // eth_subscribe
       // TODO: can do some optimizations
-      if (this._listeners[NEW_HEADS]?.length > 0) {
+      if (this._listeners[NEW_HEADS].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const response = hexlifyRpcResult(block);
         this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
       }
 
-      if (this._listeners[NEW_LOGS]?.length > 0) {
+      if (this._listeners[NEW_LOGS].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const receipts = await Promise.all(
           block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
         );
         const logs = receipts.map((r) => r.logs).flat();
 
-        this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
+        this._listeners[NEW_LOGS].forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
           const response = hexlifyRpcResult(filteredLogs);
           response.forEach((log: any) => cb(log));
@@ -1927,7 +1954,7 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<TransactionReceipt> => throwNotImplemented('waitForTransaction');
 
   // Event Emitter (ish)
-  addEventListener = (eventName: string, listener: Listener, filter?: any): string => {
+  addEventListener = (eventName: string, listener: Listener, filter: any = {}): string => {
     const id = Wallet.createRandom().address;
     const eventCallBack = (data: any): void =>
       listener({
@@ -1935,17 +1962,85 @@ export abstract class BaseProvider extends AbstractProvider {
         result: data
       });
 
-    this._listeners[eventName] = this._listeners[eventName] || [];
-    this._listeners[eventName].push({ cb: eventCallBack, filter, id });
+    if (eventName === NEW_HEADS) {
+      this._listeners[eventName].push({ cb: eventCallBack, id });
+    } else if (eventName === NEW_LOGS) {
+      this._listeners[eventName].push({ cb: eventCallBack, filter, id });
+    } else {
+      return logger.throwError(
+        `subscription type [${eventName}] is not supported, expect ${ALL_SUBSCRIPTION_EVENTS}`,
+        Logger.errors.INVALID_ARGUMENT
+      );
+    }
+
     return id;
   };
 
   removeEventListener = (id: string): boolean => {
     let found = false;
-    ALL_EVENTS.forEach((e) => {
-      const targetIdx = this._listeners[e]?.findIndex((l: any) => l.id === id);
+    ALL_SUBSCRIPTION_EVENTS.forEach((e) => {
+      const targetIdx = this._listeners[e].findIndex((l) => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this._listeners[e].splice(targetIdx, 1);
+        found = true;
+      }
+    });
+
+    return found;
+  };
+
+  addPollFilter = async (filterType: string, logFilter: any = {}): Promise<string> => {
+    const id = Wallet.createRandom().address;
+    const baseFilter = {
+      id,
+      lastPollBlockNumber: (await this._getBlockHeader('latest')).number.toNumber(),
+      lastPollTimestamp: Date.now() // TODO: add expire
+    };
+
+    if (filterType === BLOCK_POLL_FILTER) {
+      this._pollFilters[filterType].push(baseFilter);
+    } else if (filterType === LOG_POLL_FILTER) {
+      this._pollFilters[filterType].push({
+        ...baseFilter,
+        logFilter
+      });
+    } else {
+      return logger.throwError(
+        `filter type [${filterType}] is not supported, expect ${ALL_POLL_FILTERs}`,
+        Logger.errors.INVALID_ARGUMENT
+      );
+    }
+
+    return id;
+  };
+
+  poll = async (id: string): Promise<string[] | Log[]> => {
+    const filterInfo =
+      this._pollFilters[BLOCK_POLL_FILTER].find((f) => f.id === id) ||
+      this._pollFilters[LOG_POLL_FILTER].find((f) => f.id === id);
+
+    if (!filterInfo) {
+      return logger.throwError('filter not found', Logger.errors.UNKNOWN_ERROR, { filterId: id });
+    }
+
+    const curBlockNumber = (await this._getBlockHeader('latest')).number.toNumber();
+    const newBlockHashes = [];
+    for (let blockNum = filterInfo?.lastPollBlockNumber + 1; blockNum <= curBlockNumber; blockNum++) {
+      newBlockHashes.push(this._getBlockHash(blockNum));
+    }
+
+    filterInfo.lastPollBlockNumber = curBlockNumber;
+    filterInfo.lastPollTimestamp = Date.now();
+
+    return Promise.all(newBlockHashes);
+  };
+
+  removePollFilter = (id: string): boolean => {
+    let found = false;
+    ALL_POLL_FILTERs.forEach((f) => {
+      const targetIdx = this._pollFilters[f].findIndex((f) => f.id === id);
+      if (targetIdx !== undefined && targetIdx !== -1) {
+        this._pollFilters[f].splice(targetIdx, 1);
         found = true;
       }
     });
