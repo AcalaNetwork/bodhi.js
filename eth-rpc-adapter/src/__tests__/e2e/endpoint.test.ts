@@ -15,7 +15,7 @@ import WebSocket from 'ws';
 import {
   bigIntDiff,
   rpcGet,
-  PUBLIC_MANDALA_RPC_URL,
+  KARURA_ETH_RPC_URL,
   SUBQL_URL,
   WS_URL,
   NODE_RPC_URL,
@@ -24,18 +24,22 @@ import {
   ADDRESS_ALICE,
   evmAccounts,
   allLogs,
-  mandalaBlock1265919,
-  mandalaBlock1265918,
-  mandalaBlock1265928,
-  mandalaContractCallTxReceipt,
-  mandalaContractDeployTxReceipt,
-  mandalaTransferTxReceipt,
+  karuraBlock2449983,
+  karuraBlock1818188,
+  karuraBlock1818518,
+  karuraContractCallTxReceipt,
+  karuraContractDeployTxReceipt,
+  karuraSendKarTxReceipt,
   deployHelloWorldData,
-  mandalaContractCallTx,
-  mandalaContractDeployTx,
-  mandalaTransferTx,
+  karuraContractCallTx,
+  karuraContractDeployTx,
+  karuraSendKarTx,
   log22_0,
-  log22_1
+  log22_1,
+  DETERMINISTIC_SETUP_DEX_ADDRESS,
+  KARURA_CONTRACT_DEPLOY_TX_HASH,
+  KARURA_CONTRACT_CALL_TX_HASH,
+  KARURA_SEND_KAR_TX_HASH
 } from './consts';
 
 const subql = new SubqlProvider(SUBQL_URL);
@@ -44,11 +48,33 @@ const account1 = evmAccounts[0];
 const account2 = evmAccounts[1];
 const wallet1 = new Wallet(account1.privateKey);
 
-export const logsEq = (a: Log[], b: Log[]): boolean =>
-  a.length === b.length &&
-  a.every(({ transactionHash: t0, logIndex: l0 }) =>
-    b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
-  );
+/* ---------- local rpc methods ---------- */
+// TODO: encapsulate to a big helper that contains these methods?
+const eth_call = rpcGet('eth_call');
+const eth_blockNumber = rpcGet('eth_blockNumber');
+const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
+const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
+const eth_getLogs = rpcGet('eth_getLogs');
+const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
+const eth_accounts = rpcGet('eth_accounts');
+const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction');
+const eth_getTransactionCount = rpcGet('eth_getTransactionCount');
+const eth_getBalance = rpcGet('eth_getBalance');
+const eth_chainId = rpcGet('eth_chainId');
+const eth_gasPrice = rpcGet('eth_gasPrice');
+const eth_estimateGas = rpcGet('eth_estimateGas');
+const eth_getEthGas = rpcGet('eth_getEthGas');
+const eth_getCode = rpcGet('eth_getCode');
+const eth_getEthResources = rpcGet('eth_getEthResources');
+const net_runtimeVersion = rpcGet('net_runtimeVersion');
+const eth_isBlockFinalized = rpcGet('eth_isBlockFinalized');
+
+/* ---------- karura mainnet rpc methods ---------- */
+const eth_blockNumber_karura = rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL);
+const eth_getTransactionReceipt_karura = rpcGet('eth_getTransactionReceipt', KARURA_ETH_RPC_URL);
+const eth_getTransactionByHash_karura = rpcGet('eth_getTransactionByHash', KARURA_ETH_RPC_URL);
+const eth_getBlockByNumber_karura = rpcGet('eth_getBlockByNumber', KARURA_ETH_RPC_URL);
+const eth_getStorageAt_karura = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
 
 const expectLogsEqual = (a: Log[], b: Log[]): void => {
   expect(a.length).to.greaterThan(0);
@@ -60,17 +86,17 @@ const expectLogsEqual = (a: Log[], b: Log[]): void => {
   );
 };
 
-// some tests depend on the deterministic setup or mandala node connection
+// some tests depend on the local deterministic setup or karura mainnet node connection
 before('env setup', async () => {
   if (process.env.SKIP_CHECK) return;
 
   try {
-    const res = await rpcGet('eth_blockNumber')();
+    const blockNum = (await eth_blockNumber()).data.result;
 
     const DETERMINISTIC_SETUP_TOTAL_BLOCKS = 22;
-    if (Number(res.data.result) !== DETERMINISTIC_SETUP_TOTAL_BLOCKS) {
+    if (Number(blockNum) !== DETERMINISTIC_SETUP_TOTAL_BLOCKS) {
       throw new Error(
-        `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_BLOCKS} blocks but got ${Number(res.data.result)}`
+        `test env setup failed! expected ${DETERMINISTIC_SETUP_TOTAL_BLOCKS} blocks but got ${Number(blockNum)}`
       );
     }
 
@@ -83,7 +109,7 @@ before('env setup', async () => {
       tries++ < 10
     ) {
       console.log(`let's give subql a little bit more time to index, retrying #${tries} in 5s ...`);
-      await new Promise((r) => setTimeout(r, 5000));
+      await sleep(5000);
       [allTxReceipts, allLogs] = await Promise.all([subql.getAllTxReceipts(), subql.getAllLogs()]);
     }
 
@@ -96,9 +122,9 @@ before('env setup', async () => {
     }
 
     if (!process.env.SKIP_PUBLIC) {
-      const resMandala = await rpcGet('eth_blockNumber', PUBLIC_MANDALA_RPC_URL)();
-      if (!(Number(resMandala.data.result) > 1000000)) {
-        throw new Error(`test env setup failed! There might be some connection issue with ${PUBLIC_MANDALA_RPC_URL}`);
+      const blockNumKarura = (await eth_blockNumber_karura()).data.result;
+      if (!(Number(blockNumKarura) > 1000000)) {
+        throw new Error(`test env setup failed! There might be some connection issue with ${KARURA_ETH_RPC_URL}`);
       }
     }
   } catch (e) {
@@ -106,7 +132,7 @@ before('env setup', async () => {
       ------------------------
       test env setup failed ❌
       ------------------------
-    `);
+    `, e);
     throw e;
   }
 
@@ -118,9 +144,6 @@ before('env setup', async () => {
 });
 
 describe('eth_getTransactionReceipt', () => {
-  const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
-  const eth_getTransactionReceipt_mandala = rpcGet('eth_getTransactionReceipt', PUBLIC_MANDALA_RPC_URL);
-
   it('returns correct result when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
 
@@ -229,7 +252,7 @@ describe('eth_getTransactionReceipt', () => {
     txR = allTxReceipts.find((r) => r.blockNumber === '20');
     res = await eth_getTransactionReceipt([txR.transactionHash]);
     expect(res.data.result).to.deep.contain({
-      to: '0x532394de2ca885b7e0306a2e258074cca4e42449',
+      to: DETERMINISTIC_SETUP_DEX_ADDRESS,
       from: ADDRESS_ALICE,
       contractAddress: null,
       transactionIndex: '0x0',
@@ -242,7 +265,7 @@ describe('eth_getTransactionReceipt', () => {
           transactionIndex: '0x0',
           blockNumber: '0x14',
           transactionHash: txR.transactionHash,
-          address: '0x532394de2ca885b7e0306a2e258074cca4e42449',
+          address: DETERMINISTIC_SETUP_DEX_ADDRESS,
           topics: [
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
@@ -275,25 +298,25 @@ describe('eth_getTransactionReceipt', () => {
     });
   });
 
-  it('returns correct result for public mandala transactions', async () => {
+  it('returns correct result for public karura transactions', async () => {
     if (process.env.SKIP_PUBLIC) {
-      console.log('public mandala tests are skipped ❗');
+      console.log('public karura tests are skipped ❗');
       return;
     }
 
-    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
-      eth_getTransactionReceipt_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
-      eth_getTransactionReceipt_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
-      eth_getTransactionReceipt_mandala(['0x01bbd9bf3f1a56253084e5a54ab1dfc96bc62ef72977f60c2ff3a7d56f4fc8d6'])
+    const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
+      eth_getTransactionReceipt_karura([KARURA_CONTRACT_CALL_TX_HASH]),
+      eth_getTransactionReceipt_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
+      eth_getTransactionReceipt_karura([KARURA_SEND_KAR_TX_HASH])
     ]);
 
     expect(contractCallRes.status).to.equal(200);
     expect(contractDeployRes.status).to.equal(200);
-    expect(transferRes.status).to.equal(200);
+    expect(sendKarRes.status).to.equal(200);
 
-    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTxReceipt);
-    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTxReceipt);
-    expect(transferRes.data.result).to.deep.equal(mandalaTransferTxReceipt);
+    expect(contractCallRes.data.result).to.deep.equal(karuraContractCallTxReceipt);
+    expect(contractDeployRes.data.result).to.deep.equal(karuraContractDeployTxReceipt);
+    expect(sendKarRes.data.result).to.deep.equal(karuraSendKarTxReceipt);
   });
 
   it('return correct error or null', async () => {
@@ -313,7 +336,6 @@ describe('eth_getTransactionReceipt', () => {
 });
 
 describe('eth_getLogs', () => {
-  const eth_getLogs = rpcGet('eth_getLogs');
   const ALL_BLOCK_RANGE_FILTER = { fromBlock: 'earliest' };
 
   describe('when no filter', () => {
@@ -380,15 +402,15 @@ describe('eth_getLogs', () => {
       const from = 9;
       const to = 11;
       res = await eth_getLogs([{ fromBlock: from }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
@@ -431,15 +453,15 @@ describe('eth_getLogs', () => {
       const from = 8;
       const to = 10;
       res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => l.blockNumber >= from && l.blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
@@ -587,9 +609,6 @@ describe('eth_getLogs', () => {
 });
 
 describe('eth_getTransactionByHash', () => {
-  const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
-  const eth_getTransactionByHash_mandala = rpcGet('eth_getTransactionByHash', PUBLIC_MANDALA_RPC_URL);
-
   it('finds correct tx when hash exist for local transactions', async () => {
     const allTxReceipts = await subql.getAllTxReceipts();
     const tx1 = allTxReceipts.find((r) => r.blockNumber === '10');
@@ -666,7 +685,7 @@ describe('eth_getTransactionByHash', () => {
       value: '0x0',
       gas: '0x200b20',
       input: '0x',
-      to: '0x532394de2ca885b7e0306a2e258074cca4e42449',
+      to: DETERMINISTIC_SETUP_DEX_ADDRESS,
       nonce: '0x10',
       v: '0x25',
       r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
@@ -674,25 +693,25 @@ describe('eth_getTransactionByHash', () => {
     });
   });
 
-  it('returns correct result for public mandala transactions', async () => {
+  it('returns correct result for public karura transactions', async () => {
     if (process.env.SKIP_PUBLIC) {
-      console.log('public mandala tests are skipped❗');
+      console.log('public karura tests are skipped❗');
       return;
     }
 
-    const [contractCallRes, contractDeployRes, transferRes] = await Promise.all([
-      eth_getTransactionByHash_mandala(['0x26f88e73cf9168a23cda52442fd6d03048b4fe9861516856fb6c80a8dc9c1607']),
-      eth_getTransactionByHash_mandala(['0x712c9692daf2aa78f20dd43284ab56e8d3694b74644483f33a65a86888addfd3']),
-      eth_getTransactionByHash_mandala(['0x3c7839f0e249f40115f0ce97681035023ee375921a59f0b826e2e93cbd020da1'])
+    const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
+      eth_getTransactionByHash_karura([KARURA_CONTRACT_CALL_TX_HASH]),
+      eth_getTransactionByHash_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
+      eth_getTransactionByHash_karura([KARURA_SEND_KAR_TX_HASH])
     ]);
 
     expect(contractCallRes.status).to.equal(200);
     expect(contractDeployRes.status).to.equal(200);
-    expect(transferRes.status).to.equal(200);
+    expect(sendKarRes.status).to.equal(200);
 
-    expect(contractCallRes.data.result).to.deep.equal(mandalaContractCallTx);
-    expect(contractDeployRes.data.result).to.deep.equal(mandalaContractDeployTx);
-    expect(transferRes.data.result).to.deep.equal(mandalaTransferTx);
+    expect(contractCallRes.data.result).to.deep.equal(karuraContractCallTx);
+    expect(contractDeployRes.data.result).to.deep.equal(karuraContractDeployTx);
+    expect(sendKarRes.data.result).to.deep.equal(karuraSendKarTx);
   });
 
   it.skip('returns correct result when tx is pending', async () => {
@@ -714,8 +733,6 @@ describe('eth_getTransactionByHash', () => {
 });
 
 describe('eth_accounts', () => {
-  const eth_accounts = rpcGet('eth_accounts');
-
   it('returns empty array', async () => {
     const res = await eth_accounts([]);
     expect(res.data.result).to.deep.equal([]);
@@ -723,14 +740,6 @@ describe('eth_accounts', () => {
 });
 
 describe('eth_sendRawTransaction', () => {
-  const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction');
-  const eth_getTransactionCount = rpcGet('eth_getTransactionCount');
-  const eth_getBalance = rpcGet('eth_getBalance');
-  const eth_chainId = rpcGet('eth_chainId');
-  const eth_gasPrice = rpcGet('eth_gasPrice');
-  const eth_estimateGas = rpcGet('eth_estimateGas');
-  const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
-
   let chainId: number;
   let txGasLimit: BigNumber;
   let txGasPrice: BigNumber;
@@ -1171,10 +1180,6 @@ describe('eth_sendRawTransaction', () => {
 });
 
 describe('eth_call', () => {
-  const eth_call = rpcGet('eth_call');
-  const eth_blockNumber = rpcGet('eth_blockNumber');
-  const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
-
   const callRequest = (abi: any) => async (address: string, method: string, params?: any[], blockTag?: any) => {
     const iface = new Interface(abi);
 
@@ -1263,9 +1268,6 @@ describe('eth_call', () => {
 });
 
 describe('eth_getEthGas', () => {
-  const eth_getEthGas = rpcGet('eth_getEthGas');
-  const eth_blockNumber = rpcGet('eth_blockNumber');
-
   it('get correct default contract deployment eth gas params', async () => {
     const gasLimit = 21000000;
     const storageLimit = 64100;
@@ -1335,15 +1337,13 @@ describe('eth_getEthGas', () => {
 });
 
 describe('eth_getCode', () => {
-  const eth_getCode = rpcGet('eth_getCode');
-
   const preCompileAddresses = [
     '0x0000000000000000000100000000000000000001', // AUSD
     '0x0000000000000000000200000000000000000001', // LP_ACA_AUSD
     '0x0000000000000000000000000000000000000803' // DEX
   ];
 
-  const tags = ['latest', 'earliest'];
+  const tags = ['latest', 'earliest', 'finalized', 'safe'];
 
   it('get correct precompile token code', async () => {
     for (const addr of preCompileAddresses) {
@@ -1374,8 +1374,6 @@ describe('eth_getCode', () => {
 });
 
 describe('eth_getEthResources', () => {
-  const eth_getEthResources = rpcGet('eth_getEthResources');
-
   it('get correct gas', async () => {
     const rawRes = (
       await eth_getEthResources([
@@ -1392,8 +1390,6 @@ describe('eth_getEthResources', () => {
 });
 
 describe('net_runtimeVersion', () => {
-  const net_runtimeVersion = rpcGet('net_runtimeVersion');
-
   it('get correct runtime version', async () => {
     const version = (await net_runtimeVersion([])).data.result;
 
@@ -1403,53 +1399,47 @@ describe('net_runtimeVersion', () => {
 
 describe('eth_getBlockByNumber', () => {
   if (process.env.SKIP_PUBLIC) {
-    console.log('public mandala tests are skipped ❗');
+    console.log('public karura tests are skipped ❗');
     return;
   }
 
-  const eth_getBlockByNumber_mandala = rpcGet('eth_getBlockByNumber', PUBLIC_MANDALA_RPC_URL);
-
   it('when there are 0 EVM transactions', async () => {
-    const resFull = (await eth_getBlockByNumber_mandala([1265918, true])).data.result;
-    const res = (await eth_getBlockByNumber_mandala([1265918, false])).data.result;
+    const resFull = (await eth_getBlockByNumber_karura([1818188, true])).data.result;
+    const res = (await eth_getBlockByNumber_karura([1818188, false])).data.result;
 
-    const block1265918NotFull = { ...mandalaBlock1265918 };
-    block1265918NotFull.transactions = mandalaBlock1265918.transactions.map((t) => t.hash);
-    block1265918NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+    const block1818188NotFull = karuraBlock1818188;
+    block1818188NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
-    expect(resFull).to.deep.equal(mandalaBlock1265918);
-    expect(res).to.deep.equal(block1265918NotFull);
+    expect(resFull).to.deep.equal(karuraBlock1818188);
+    expect(res).to.deep.equal(block1818188NotFull);
   });
 
   it('when there are 1 EVM transactions', async () => {
-    const resFull = (await eth_getBlockByNumber_mandala([1265928, true])).data.result;
-    const res = (await eth_getBlockByNumber_mandala([1265928, false])).data.result;
+    const resFull = (await eth_getBlockByNumber_karura([1818518, true])).data.result;
+    const res = (await eth_getBlockByNumber_karura([1818518, false])).data.result;
 
-    const block1265928NotFull = { ...mandalaBlock1265928 };
-    block1265928NotFull.transactions = mandalaBlock1265928.transactions.map((t) => t.hash);
-    block1265928NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+    const block1818518NotFull = { ...karuraBlock1818518 };
+    block1818518NotFull.transactions = karuraBlock1818518.transactions.map((t) => t.hash) as any;
+    block1818518NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
-    expect(resFull).to.deep.equal(mandalaBlock1265928);
-    expect(res).to.deep.equal(block1265928NotFull);
+    expect(resFull).to.deep.equal(karuraBlock1818518);
+    expect(res).to.deep.equal(block1818518NotFull);
   });
 
   it('when there are >= 2 EVM transactions', async () => {
-    const resFull = (await eth_getBlockByNumber_mandala([1265919, true])).data.result;
-    const res = (await eth_getBlockByNumber_mandala([1265919, false])).data.result;
+    const resFull = (await eth_getBlockByNumber_karura([2449983, true])).data.result;
+    const res = (await eth_getBlockByNumber_karura([2449983, false])).data.result;
 
-    const block1265919NotFull = { ...mandalaBlock1265919 };
-    block1265919NotFull.transactions = mandalaBlock1265919.transactions.map((t) => t.hash);
-    block1265919NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
+    const block2449983NotFull = { ...karuraBlock2449983 };
+    block2449983NotFull.transactions = karuraBlock2449983.transactions.map((t) => t.hash) as any;
+    block2449983NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
-    expect(resFull).to.deep.equal(mandalaBlock1265919);
-    expect(res).to.deep.equal(block1265919NotFull);
+    expect(resFull).to.deep.equal(karuraBlock2449983);
+    expect(res).to.deep.equal(block2449983NotFull);
   });
 });
 
 describe('eth_getBalance', () => {
-  const eth_getBalance = rpcGet('eth_getBalance');
-  const eth_blockNumber = rpcGet('eth_blockNumber');
-
   it('get correct balance', async () => {
     const block8Balance = 8999994474726364446000000n;     // edit me for different mandala version
     expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance);
@@ -1464,9 +1454,6 @@ describe('eth_getBalance', () => {
 });
 
 describe('eth_getTransactionCount', () => {
-  const eth_getTransactionCount = rpcGet('eth_getTransactionCount');
-  const eth_blockNumber = rpcGet('eth_blockNumber');
-
   it('get correct transaction', async () => {
     expect(Number((await eth_getTransactionCount([ADDRESS_ALICE, 1])).data.result)).to.equal(0);
     expect(Number((await eth_getTransactionCount([ADDRESS_ALICE, '0x5'])).data.result)).to.equal(1);
@@ -1481,38 +1468,33 @@ describe('eth_getTransactionCount', () => {
 
 describe('eth_getStorageAt', () => {
   if (process.env.SKIP_PUBLIC) {
-    console.log('public mandala tests are skipped ❗');
+    console.log('public karura tests are skipped ❗');
     return;
   }
 
-  const eth_getStorageAt = rpcGet('eth_getStorageAt', PUBLIC_MANDALA_RPC_URL);
+  it('get correct storage from public karura', async () => {
+    const contractAddr = '0x1f3a10587a20114ea25ba1b388ee2dd4a337ce27';
+    expect((await eth_getStorageAt_karura([
+      contractAddr,
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+      2000000,
+    ])).data.result).to.equal('0x55534420436f696e000000000000000000000000000000000000000000000010');
 
-  it('get correct storage from public mandala', async () => {
-    expect((await eth_getStorageAt([
-      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
-      "0x0000000000000000000000000000000000000000000000000000000000000000",
-      1500000,
-    ])).data.result).to.equal('0x000000000000000000000000f4030f873d1f987908fee66dd2ebb9f9c5eda864');
+    expect((await eth_getStorageAt_karura([
+      contractAddr,
+      '0x0',
+      2000000,
+    ])).data.result).to.equal('0x55534420436f696e000000000000000000000000000000000000000000000010');
 
-    expect((await eth_getStorageAt([
-      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
-      "0x0",
-      1500000,
-    ])).data.result).to.equal('0x000000000000000000000000f4030f873d1f987908fee66dd2ebb9f9c5eda864');
-
-    expect((await eth_getStorageAt([
-      "0x3Abca1b7fa36B9fdf6Ca838ea6F587D4EDD2A09f",
-      "0x3",
-      1500000,
-    ])).data.result).to.equal('0x0000000000000000000000000000000000000000000000000000000000000001');
+    expect((await eth_getStorageAt_karura([
+      contractAddr,
+      '0x3',
+      2000000,
+    ])).data.result).to.equal('0x000000000000000000000000000000000000000000000000000000070d785f88');
   });
 });
 
 describe('eth_subscribe', () => {
-  const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
-  const eth_blockNumber = rpcGet('eth_blockNumber');
-  const eth_getLogs = rpcGet('eth_getLogs');
-
   const provider = new EvmRpcProvider(NODE_RPC_URL);
 
   const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
@@ -1695,4 +1677,69 @@ describe('eth_subscribe', () => {
       }
     });    
   })
+});
+
+describe('finalized blocktag', () => {
+  /* ----------
+     latest block <=> finalized block in local setup
+                                          ---------- */
+  it('eth_getTransactionCount', async () => {        
+    const res = (await eth_getTransactionCount([ADDRESS_ALICE, 'latest'])).data.result;
+    const resF = (await eth_getTransactionCount([ADDRESS_ALICE, 'finalized'])).data.result;
+    const resS = (await eth_getTransactionCount([ADDRESS_ALICE, 'safe'])).data.result;
+
+    expect(parseInt(res)).to.greaterThan(0);
+    expect(res).to.equal(resF);
+    expect(res).to.equal(resS);
+  });
+
+  it('eth_getCode', async () => {        
+    const res = (await eth_getCode([DETERMINISTIC_SETUP_DEX_ADDRESS, 'latest'])).data.result;
+    const resF = (await eth_getCode([DETERMINISTIC_SETUP_DEX_ADDRESS, 'finalized'])).data.result;
+    const resS = (await eth_getCode([DETERMINISTIC_SETUP_DEX_ADDRESS, 'safe'])).data.result;
+
+    expect(res).not.to.be.undefined;
+    expect(res).to.equal(resF);
+    expect(res).to.equal(resS);
+  });
+
+  it('eth_getBalance', async () => {        
+    const res = (await eth_getBalance([ADDRESS_ALICE, 'latest'])).data.result;
+    const resF = (await eth_getBalance([ADDRESS_ALICE, 'finalized'])).data.result;
+    const resS = (await eth_getBalance([ADDRESS_ALICE, 'safe'])).data.result;
+
+    expect(parseInt(res)).to.greaterThan(0);
+    expect(res).to.equal(resF);
+    expect(res).to.equal(resS);
+  });
+
+  it('eth_getBlockByNumber', async () => {
+    const res = (await eth_getBlockByNumber(['latest', false])).data.result;
+    const resF = (await eth_getBlockByNumber(['finalized', false])).data.result;
+    const resS = (await eth_getBlockByNumber(['safe', false])).data.result;
+
+    expect(res).not.to.be.undefined;
+    expect(res).to.deep.equal(resF);
+    expect(res).to.deep.equal(resS);
+  });
+
+  it('eth_isBlockFinalized', async () => {
+    const res = (await eth_isBlockFinalized(['latest'])).data.result;
+    const resF = (await eth_isBlockFinalized(['finalized'])).data.result;
+    const resS = (await eth_isBlockFinalized(['safe'])).data.result;
+
+    expect(res).to.equal(true);
+    expect(res).to.deep.equal(resF);
+    expect(res).to.deep.equal(resS);
+  });
+
+  // don't care about these
+  it.skip('eth_getBlockTransactionCountByNumber', async () => {});
+  it.skip('eth_getTransactionByBlockNumberAndIndex', async () => {});
+  it.skip('eth_getUncleCountByBlockNumber', async () => {});
+  it.skip('eth_getUncleByBlockNumberAndIndex', async () => {});
+
+  // too lazy to test these
+  it.skip('eth_call', async () => { });
+  it.skip('eth_getStorageAt', async () => { });
 });

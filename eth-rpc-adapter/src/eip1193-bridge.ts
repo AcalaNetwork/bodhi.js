@@ -421,12 +421,12 @@ class Eip1193BridgeImpl {
 
   async eth_isBlockFinalized(params: any[]): Promise<any> {
     validate([{ type: 'block' }], params);
-    return await this.#provider._isBlockFinalized(params[0]);
+    return this.#provider._isBlockFinalized(params[0]);
   }
 
   async eth_isTransactionFinalized(params: any[]): Promise<any> {
     validate([{ type: 'trasactionHash' }], params);
-    return await this.#provider._isTransactionFinalized(params[0]);
+    return this.#provider._isTransactionFinalized(params[0]);
   }
 
   // async eth_newFilter(params: any[]): Promise<any> {

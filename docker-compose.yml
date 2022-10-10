@@ -86,7 +86,7 @@ services:
         condition: service_completed_successfully
       eth-rpc-adapter-server-with-subql:
         condition: service_started
-      eth-rpc-adapter-server-public-mandala:
+      eth-rpc-adapter-server-karura:
         condition: service_started
 
   # ------------------------------------ #
@@ -152,7 +152,7 @@ services:
       - --port=8545
       - --local
 
-  eth-rpc-adapter-server-public-mandala:
+  eth-rpc-adapter-server-karura:
     build:
       context: .
       dockerfile: docker/eth-rpc-adapter-server.Dockerfile
@@ -161,8 +161,8 @@ services:
       - 8546:8546
     restart: always
     command:
-      - --endpoint=wss://mandala-rpc.aca-staging.network/ws
-      - --subql=https://subql-query-mandala.aca-dev.network
+      - --endpoint=wss://acala-karura-eu-1.bdnodes.net:8443/parachain?auth=4VFR_UEvc8mUAd58z11nSRqp-EBZcqPl14j_MgEm-4E
+      - --subql=https://subql-query-karura.aca-api.network
       - --port=8546
 
   waffle-examples-test:
