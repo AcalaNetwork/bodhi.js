@@ -63,13 +63,12 @@ export const filterLog = (log: Log, filter: BaseLogFilter): boolean =>
 /* --------------------------------------------------- */
 /* --------------- log utils for Subql --------------- */
 /* --------------------------------------------------- */
+const _isEffectiveFilter = (x: any): boolean => x !== undefined && x !== null && !(Array.isArray(x) && x.length === 0);
+const _isAnyFilterEffective = (arr: any[]): boolean => arr.some((a) => _isEffectiveFilter(a));
 
-const isEffectiveFilter = (x: any): boolean => x !== undefined && x !== null && !(Array.isArray(x) && x.length === 0);
-const isAnyFilterEffective = (arr: any[]): boolean => arr.some((a) => isEffectiveFilter(a));
-
-const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTag | undefined): string => {
-  const fromBlockFilter = isEffectiveFilter(fromBlock) ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
-  const toBlockFilter = isEffectiveFilter(toBlock) ? `lessThanOrEqualTo: "${toBlock}"` : '';
+const _buildBlockNumberGqlFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTag | undefined): string => {
+  const fromBlockFilter = _isEffectiveFilter(fromBlock) ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
+  const toBlockFilter = _isEffectiveFilter(toBlock) ? `lessThanOrEqualTo: "${toBlock}"` : '';
 
   return !!fromBlockFilter || !!toBlockFilter
     ? `blockNumber: {
@@ -79,17 +78,17 @@ const _getBlockNumberFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTa
     : '';
 };
 
-const _getAddressFilter = (address: AddressFilter): string =>
+const _buildAddressGqlFilter = (address: AddressFilter): string =>
   address ? `address: { inInsensitive: ${JSON.stringify(Array.isArray(address) ? address : [address])}}` : '';
 
-export const getLogsQueryFilter = (filter: SanitizedLogFilter): string => {
+export const buildLogsGqlFilter = (filter: SanitizedLogFilter): string => {
   const { fromBlock, toBlock, address } = filter;
-  if (!isAnyFilterEffective([fromBlock, toBlock, address])) {
+  if (!_isAnyFilterEffective([fromBlock, toBlock, address])) {
     return '';
   }
 
-  const addressFilter = _getAddressFilter(address);
-  const blockNumberFilter = _getBlockNumberFilter(fromBlock, toBlock);
+  const addressFilter = _buildAddressGqlFilter(address);
+  const blockNumberFilter = _buildBlockNumberGqlFilter(fromBlock, toBlock);
 
   // subql don't filter topics since it's impossible to implement standard bloom filter here
   // can still add some first round loose topics filter to decrease result size if needed
