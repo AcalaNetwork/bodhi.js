@@ -105,6 +105,10 @@ These are ETH compatible RPCs, the interface and functionalities match https://e
 - `eth_getLogs`
 - `eth_subscribe`
 - `eth_unsubscribe`
+- `eth_newFilter`
+- `eth_newBlockFilter`
+- `eth_getFilterChanges`
+- `eth_uninstallFilter`
 
 ### Custom RPCs
 These are EVM+ custom RPCs that only exist on Acala/Karura
