@@ -201,8 +201,8 @@ export interface BaseProviderOptions {
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
 /* ---------- subscriptions ---------- */
-const NEW_HEADS = 'NEW_HEADS';
-const NEW_LOGS = 'NEW_LOGS';
+const NEW_HEADS = 'newHeads';
+const NEW_LOGS = 'logs';
 const ALL_SUBSCRIPTION_EVENTS = [NEW_HEADS, NEW_LOGS] as const;
 
 export interface BlockListener {

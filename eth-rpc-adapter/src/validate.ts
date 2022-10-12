@@ -19,8 +19,8 @@ export type Schema = {
 }[];
 
 export const validateEventName = (value: any) => {
-  if (!['newHeads', 'logs', 'newPendingTransactions'].includes(value)) {
-    throw new Error('expected type eventName');
+  if (!['newHeads', 'logs'].includes(value)) {
+    throw new Error('expected eventName `newHeads` or `logs`');
   }
 };
 
