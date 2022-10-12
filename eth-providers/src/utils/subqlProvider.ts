@@ -2,7 +2,7 @@ import { Filter, FilterByBlockHash, Log } from '@ethersproject/abstract-provider
 import { request, gql } from 'graphql-request';
 import { Query, _Metadata, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
 import { logger } from './logger';
-import { getLogsQueryFilter, adaptLogs, LOGS_NODES, TX_RECEIPT_NODES, SanitizedLogFilter } from './logs';
+import { buildLogsGqlFilter, adaptLogs, LOGS_NODES, TX_RECEIPT_NODES, SanitizedLogFilter } from './logs';
 
 export class SubqlProvider {
   readonly url: string;
@@ -68,7 +68,7 @@ export class SubqlProvider {
   };
 
   getFilteredLogs = async (filter: SanitizedLogFilter): Promise<Log[]> => {
-    const queryFilter = getLogsQueryFilter(filter);
+    const queryFilter = buildLogsGqlFilter(filter);
 
     const res = await this.queryGraphql(`
       query {
