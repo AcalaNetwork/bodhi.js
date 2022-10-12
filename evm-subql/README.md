@@ -49,7 +49,7 @@ npm i -g @subql/node@1.7.0 @subql/query@1.4.0
 If you already have a node running elsewhere, you can skip this step.
 
 ```shell
-docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-e8998a4 --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe --tmp -levm=debug --instant-sealing
+docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-f045637 --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe --tmp -levm=debug --instant-sealing
 ```
 
 3. Run a Postgres service and listen to port number 5432 (in the second terminal)

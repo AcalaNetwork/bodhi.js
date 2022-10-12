@@ -11,10 +11,6 @@ contract Incentives is ADDRESS {
         return incentives.getIncentiveRewardAmount(pool, poolCurrencyId, rewardCurrencyId);
     }
 
-    function getDexRewardRate(address currencyId) public view returns (uint256) {
-        return incentives.getDexRewardRate(currencyId);
-    }
-
     function depositDexShare(address currencyId, uint256 amount) public returns (bool) {
         return incentives.depositDexShare(currencyId, amount);
     }

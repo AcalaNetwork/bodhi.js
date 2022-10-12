@@ -74,25 +74,6 @@ describe('incentives', () => {
     // expect(await incentives.getIncentiveRewardAmount(2, ADDRESS.DOT, ADDRESS.DOT)).to.be.reverted;
   });
 
-  it('incentives getDexRewardRate works', async () => {
-    const Rate = FixedU128.div(BigNumber.from('10')); // 1/10
-    const updateDexSavingRewards = provider.api.tx.sudo.sudo(
-      provider.api.tx.incentives.updateDexSavingRewards([
-        [
-          {
-            Dex: {
-              DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
-            }
-          },
-          Rate
-        ]
-      ])
-    );
-    await send(updateDexSavingRewards, await wallet.getSubstrateAddress());
-
-    expect(await incentives.getDexRewardRate(ADDRESS.LP_ACA_AUSD)).to.equal(Rate);
-  });
-
   it('incentives getClaimRewardDeductionRate works', async () => {
     const Rate = FixedU128.div(BigNumber.from('10')); // 1/10
     const updateClaimRewardDeductionRates = provider.api.tx.sudo.sudo(
