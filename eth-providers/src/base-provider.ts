@@ -2,11 +2,10 @@ import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network
 import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import {
   Block,
+  BlockTag,
   BlockWithTransactions,
   EventType,
   FeeData,
-  Filter,
-  FilterByBlockHash,
   Listener,
   Log,
   Provider as AbstractProvider,
@@ -83,7 +82,10 @@ import {
   getEffectiveGasPrice,
   parseBlockTag,
   filterLogByTopics,
-  getVirtualTxReceiptsFromEvents
+  getVirtualTxReceiptsFromEvents,
+  BaseLogFilter,
+  SanitizedLogFilter,
+  LogFilter
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -94,7 +96,6 @@ export interface Eip1898BlockTag {
   blockHash: string;
 }
 
-export type BlockTag = 'earliest' | 'latest' | 'pending' | string | number;
 export type Signature = 'Ethereum' | 'AcalaEip712' | 'Substrate';
 
 export interface BlockData {
@@ -178,17 +179,6 @@ export interface GasConsts {
   storageDepositPerByte: bigint;
   txFeePerGas: bigint;
 }
-
-export interface EventListener {
-  id: string;
-  cb: (data: any) => void;
-  filter?: any;
-}
-
-export interface EventListeners {
-  [name: string]: EventListener[];
-}
-
 export interface EventData {
   [index: string]: {
     weight: number;
@@ -208,13 +198,26 @@ export interface BaseProviderOptions {
   healthCheckBlockDistance?: number;
 }
 
-export type NewBlockListener = (header: Header) => any;
-
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
+/* ---------- subscriptions ---------- */
 const NEW_HEADS = 'newHeads';
 const NEW_LOGS = 'logs';
-const ALL_EVENTS = [NEW_HEADS, NEW_LOGS];
+const ALL_SUBSCRIPTION_EVENTS = [NEW_HEADS, NEW_LOGS] as const;
+
+export interface BlockListener {
+  id: string;
+  cb: (data: any) => void;
+}
+
+export interface LogListener extends BlockListener {
+  filter: BaseLogFilter;
+}
+
+export interface EventListeners {
+  [NEW_HEADS]: BlockListener[];
+  [NEW_LOGS]: LogListener[];
+}
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
@@ -248,7 +251,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
-    this._listeners = {};
+    this._listeners = { [NEW_HEADS]: [], [NEW_LOGS]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.richMode = richMode;
@@ -296,20 +299,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
       // eth_subscribe
       // TODO: can do some optimizations
-      if (this._listeners[NEW_HEADS]?.length > 0) {
+      if (this._listeners[NEW_HEADS].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const response = hexlifyRpcResult(block);
         this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
       }
 
-      if (this._listeners[NEW_LOGS]?.length > 0) {
+      if (this._listeners[NEW_LOGS].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const receipts = await Promise.all(
           block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
         );
         const logs = receipts.map((r) => r.logs).flat();
 
-        this._listeners[NEW_LOGS]?.forEach(({ cb, filter }) => {
+        this._listeners[NEW_LOGS].forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
           const response = hexlifyRpcResult(filteredLogs);
           response.forEach((log: any) => cb(log));
@@ -1801,16 +1804,12 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  // Bloom-filter Queries
-  getLogs = async (rawFilter: Filter & FilterByBlockHash): Promise<Log[]> => {
-    if (!this.subql) {
-      return logger.throwError(
-        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
-      );
-    }
-
-    const { fromBlock, toBlock, blockHash } = rawFilter;
-    const filter = { ...rawFilter };
+  _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
+    const { fromBlock, toBlock, blockHash, address, topics } = rawFilter;
+    const filter: SanitizedLogFilter = {
+      address,
+      topics
+    };
 
     if (blockHash && (fromBlock || toBlock)) {
       return logger.throwError(
@@ -1825,6 +1824,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     if (blockHash) {
+      // eip-1898
       const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
 
       filter.fromBlock = blockNumber;
@@ -1837,6 +1837,18 @@ export abstract class BaseProvider extends AbstractProvider {
       filter.toBlock = toBlockNumber;
     }
 
+    return filter;
+  };
+
+  // Bloom-filter Queries
+  getLogs = async (rawFilter: LogFilter): Promise<Log[]> => {
+    if (!this.subql) {
+      return logger.throwError(
+        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
+      );
+    }
+
+    const filter = await this._sanitizeRawFilter(rawFilter);
     const subqlLogs = await this.subql.getFilteredLogs(filter); // only filtered by blockNumber and address
     const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
@@ -1927,7 +1939,7 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<TransactionReceipt> => throwNotImplemented('waitForTransaction');
 
   // Event Emitter (ish)
-  addEventListener = (eventName: string, listener: Listener, filter?: any): string => {
+  addEventListener = (eventName: string, listener: Listener, filter: any = {}): string => {
     const id = Wallet.createRandom().address;
     const eventCallBack = (data: any): void =>
       listener({
@@ -1935,15 +1947,24 @@ export abstract class BaseProvider extends AbstractProvider {
         result: data
       });
 
-    this._listeners[eventName] = this._listeners[eventName] || [];
-    this._listeners[eventName].push({ cb: eventCallBack, filter, id });
+    if (eventName === NEW_HEADS) {
+      this._listeners[eventName].push({ cb: eventCallBack, id });
+    } else if (eventName === NEW_LOGS) {
+      this._listeners[eventName].push({ cb: eventCallBack, filter, id });
+    } else {
+      return logger.throwError(
+        `subscription type [${eventName}] is not supported, expect ${ALL_SUBSCRIPTION_EVENTS}`,
+        Logger.errors.INVALID_ARGUMENT
+      );
+    }
+
     return id;
   };
 
   removeEventListener = (id: string): boolean => {
     let found = false;
-    ALL_EVENTS.forEach((e) => {
-      const targetIdx = this._listeners[e]?.findIndex((l: any) => l.id === id);
+    ALL_SUBSCRIPTION_EVENTS.forEach((e) => {
+      const targetIdx = this._listeners[e].findIndex((l) => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this._listeners[e].splice(targetIdx, 1);
         found = true;

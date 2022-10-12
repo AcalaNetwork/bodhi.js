@@ -6,8 +6,7 @@ module.exports = {
   parserOptions: { tsconfigRootDir: __dirname },
   rules: {
     eqeqeq: 1,
-    '@typescript-eslint/no-use-before-define': 1,
-
+    '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/explicit-member-accessibility': 0,
     '@rushstack/typedef-var': 0,
     '@typescript-eslint/naming-convention': 0,
@@ -18,6 +17,6 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 0, // type inference on return type is useful
     '@typescript-eslint/no-parameter-properties': 0,
     '@typescript-eslint/typedef': 0,
-    '@typescript-eslint/no-use-before-define': 0
+    'max-lines': 0
   }
 };
