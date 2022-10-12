@@ -219,30 +219,10 @@ export interface EventListeners {
   [NEW_LOGS]: LogListener[];
 }
 
-/* ---------- filters ---------- */
-export const BLOCK_POLL_FILTER = 'BLOCK_POLL_FILTER';
-export const LOG_POLL_FILTER = 'LOG_POLL_FILTER';
-export const ALL_POLL_FILTERs = [BLOCK_POLL_FILTER, LOG_POLL_FILTER] as const;
-export interface BlockPollFilter {
-  id: string;
-  lastPollBlockNumber: number;
-  lastPollTimestamp: number;
-}
-
-export interface LogPollFilter extends BlockPollFilter {
-  logFilter: LogFilter;
-}
-
-export interface PollFilters {
-  [BLOCK_POLL_FILTER]: BlockPollFilter[];
-  [LOG_POLL_FILTER]: LogPollFilter[];
-}
-
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
-  readonly _pollFilters: PollFilters;
   readonly safeMode: boolean;
   readonly localMode: boolean;
   readonly richMode: boolean;
@@ -272,7 +252,6 @@ export abstract class BaseProvider extends AbstractProvider {
     super();
     this.formatter = new Formatter();
     this._listeners = { [NEW_HEADS]: [], [NEW_LOGS]: [] };
-    this._pollFilters = { [LOG_POLL_FILTER]: [], [BLOCK_POLL_FILTER]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.richMode = richMode;
@@ -1988,119 +1967,6 @@ export abstract class BaseProvider extends AbstractProvider {
       const targetIdx = this._listeners[e].findIndex((l) => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this._listeners[e].splice(targetIdx, 1);
-        found = true;
-      }
-    });
-
-    return found;
-  };
-
-  addPollFilter = async (filterType: string, logFilter: any = {}): Promise<string> => {
-    const id = Wallet.createRandom().address;
-    const baseFilter = {
-      id,
-      lastPollBlockNumber: (await this._getBlockHeader('latest')).number.toNumber(),
-      lastPollTimestamp: Date.now() // TODO: add expire
-    };
-
-    if (filterType === BLOCK_POLL_FILTER) {
-      this._pollFilters[filterType].push(baseFilter);
-    } else if (filterType === LOG_POLL_FILTER) {
-      this._pollFilters[filterType].push({
-        ...baseFilter,
-        logFilter
-      });
-    } else {
-      return logger.throwError(
-        `filter type [${filterType}] is not supported, expect ${ALL_POLL_FILTERs}`,
-        Logger.errors.INVALID_ARGUMENT
-      );
-    }
-
-    return id;
-  };
-
-  _pollLogs = async (filterInfo: LogPollFilter): Promise<Log[]> => {
-    const curBlockNumber = (await this._getBlockHeader('latest')).number.toNumber();
-    const { fromBlock, toBlock } = filterInfo.logFilter;
-
-    const UNSUPPORTED_TAGS = ['pending', 'finalized', 'safe'] as any[];
-    if (UNSUPPORTED_TAGS.includes(fromBlock) || UNSUPPORTED_TAGS.includes(toBlock)) {
-      return logger.throwArgumentError('pending/finalized/safe logs not supported', 'fromBlock / toBlock', {
-        fromBlock,
-        toBlock
-      });
-    }
-
-    const filter = await this._sanitizeRawFilter(filterInfo.logFilter);
-
-    /* ---------------
-       in this context we basically treat 'latest' blocktag as trivial filter
-       i.e. default fromBlock and toBlock are both 'latest', which filters nothing
-                                                                   --------------- */
-    const from = fromBlock !== 'latest' ? (await this._getBlockHeader(fromBlock)).number.toNumber() : 0;
-
-    const to = toBlock !== 'latest' ? (await this._getBlockHeader(toBlock)).number.toNumber() : 9999999999;
-
-    // combine filter range (configuration) and new log range (actual data) as effective range
-    const effectiveFrom = Math.max(from, filterInfo.lastPollBlockNumber + 1);
-    const effectiveTo = Math.min(to, curBlockNumber);
-
-    const effectiveFilter = {
-      ...filter,
-      fromBlock: effectiveFrom,
-      toBlock: effectiveTo
-    };
-
-    console.log('!!!!!!!!!!!!!!!!!', effectiveFilter);
-
-    if (!this.subql) {
-      return logger.throwError(
-        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
-      );
-    }
-
-    filterInfo.lastPollBlockNumber = curBlockNumber;
-    filterInfo.lastPollTimestamp = Date.now();
-
-    return this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
-  };
-
-  _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
-    const curBlockNumber = (await this._getBlockHeader('latest')).number.toNumber();
-
-    const newBlockHashes = [];
-    for (let blockNum = filterInfo.lastPollBlockNumber + 1; blockNum <= curBlockNumber; blockNum++) {
-      newBlockHashes.push(this._getBlockHash(blockNum));
-    }
-
-    filterInfo.lastPollBlockNumber = curBlockNumber;
-    filterInfo.lastPollTimestamp = Date.now();
-
-    return Promise.all(newBlockHashes);
-  };
-
-  poll = async (id: string): Promise<string[] | Log[]> => {
-    const filterInfo =
-      this._pollFilters[BLOCK_POLL_FILTER].find((f) => f.id === id) ??
-      this._pollFilters[LOG_POLL_FILTER].find((f) => f.id === id);
-
-    if (!filterInfo) {
-      return logger.throwError('filter not found', Logger.errors.UNKNOWN_ERROR, { filterId: id });
-    }
-
-    // TODO: TS bug?? why filterInfo type is not BlockPollFilter | LogPollFilter
-    return filterInfo.hasOwnProperty('logFilter')
-      ? this._pollLogs(filterInfo as LogPollFilter)
-      : this._pollBlocks(filterInfo);
-  };
-
-  removePollFilter = (id: string): boolean => {
-    let found = false;
-    ALL_POLL_FILTERs.forEach((f) => {
-      const targetIdx = this._pollFilters[f].findIndex((f) => f.id === id);
-      if (targetIdx !== undefined && targetIdx !== -1) {
-        this._pollFilters[f].splice(targetIdx, 1);
         found = true;
       }
     });
