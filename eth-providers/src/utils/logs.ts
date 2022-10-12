@@ -56,7 +56,7 @@ export const filterLogByAddress = (log: Log, targetAddr: AddressFilter): boolean
   return true;
 };
 
-// it's for eth_subscribe, and a little bit different than general log filter
+// it's for eth_subscribe, where only address and topic filter are available
 export const filterLog = (log: Log, filter: BaseLogFilter): boolean =>
   filterLogByAddress(log, filter.address) && filterLogByTopics(log, filter.topics);
 
