@@ -459,6 +459,7 @@ class Eip1193BridgeImpl {
   }
 
   async eth_getLogs(params: any[]): Promise<Log[]> {
+    // TODO: strict check filter object shape
     validate([{ type: 'object' }], params);
     const result = await this.#provider.getLogs(params[0]);
     return hexlifyRpcResult(result);

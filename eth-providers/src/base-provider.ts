@@ -2024,7 +2024,6 @@ export abstract class BaseProvider extends AbstractProvider {
   _pollLogs = async (filterInfo: LogPollFilter): Promise<Log[]> => {
     const curBlockNumber = await this.getBlockNumber();
     const { fromBlock = 'latest', toBlock = 'latest' } = filterInfo.logFilter;
-    console.log('############', filterInfo.logFilter, fromBlock, toBlock);
 
     const UNSUPPORTED_TAGS = ['pending', 'finalized', 'safe'] as any[];
     if (UNSUPPORTED_TAGS.includes(fromBlock) || UNSUPPORTED_TAGS.includes(toBlock)) {
