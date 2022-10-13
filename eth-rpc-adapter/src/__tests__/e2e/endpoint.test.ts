@@ -69,6 +69,19 @@ const eth_getCode = rpcGet('eth_getCode');
 const eth_getEthResources = rpcGet('eth_getEthResources');
 const net_runtimeVersion = rpcGet('net_runtimeVersion');
 const eth_isBlockFinalized = rpcGet('eth_isBlockFinalized');
+const eth_newFilter = rpcGet('eth_newFilter');
+const eth_newBlockFilter = rpcGet('eth_newBlockFilter');
+const eth_getFilterChanges = rpcGet('eth_getFilterChanges');
+const eth_getFilterLogs = rpcGet('eth_getFilterLogs');
+const eth_uninstallFilter = rpcGet('eth_uninstallFilter');
+
+const getBlockHash = async (blockNum: number): Promise<string> => (
+  (await eth_getBlockByNumber([blockNum, false])).data.result.hash
+);
+
+const getCurBlockHash = async (): Promise<string> => (
+  getBlockHash((await eth_blockNumber()).data.result)
+);
 
 /* ---------- karura mainnet rpc methods ---------- */
 const eth_blockNumber_karura = rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL);
@@ -1497,7 +1510,6 @@ describe('eth_getStorageAt', () => {
 
 describe('eth_subscribe', () => {
   const provider = new EvmRpcProvider(NODE_RPC_URL);
-
   const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
 
   const notifications: any[] = [];
@@ -1678,6 +1690,92 @@ describe('eth_subscribe', () => {
       }
     });    
   })
+});
+
+describe('eth_newBlockFilter', () => {
+  const provider = new EvmRpcProvider(NODE_RPC_URL);
+  const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
+
+  let blockFilterId0: string;
+  let blockFilterId1: string;
+  const expectedBlockHashes: string[] = [];
+  const allBlockHashes: string[] = [];
+
+  const feedTx = async () => {
+    await aca.transfer(evmAccounts[1].evmAddress, 111222333444555);
+    expectedBlockHashes.push(await getCurBlockHash());
+    allBlockHashes.push(await getCurBlockHash());
+  };
+
+  before(async () => {
+    blockFilterId0 = (await eth_newBlockFilter()).data.result;      // only pull once at the end
+    blockFilterId1 = (await eth_newBlockFilter()).data.result;      // normal block poll
+
+    await provider.isReady();
+  });
+
+  after(async () => {
+    await provider.disconnect();
+  });
+
+  it('poll immediately', async () => {
+    const res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    expect(res).to.deep.equal([]);
+  });
+
+  it('get correct result', async () => {
+    /* ---------- fire 1 tx ---------- */
+    await feedTx();
+    await sleep(5000);    // give subql some time to index
+
+    let res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    expect(res.length).to.equal(1);
+    expect(res).to.deep.equal(expectedBlockHashes);
+    expectedBlockHashes.length = 0;
+
+    /* ---------- fire many tx ---------- */
+    const txCount = 6;
+    for (let i = 0; i < txCount; i++) {
+      await feedTx();
+    }
+    await sleep(5000);    // give subql some time to index
+
+    res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    let resAll = (await eth_getFilterChanges([blockFilterId0])).data.result;
+    expect(res.length).to.equal(txCount);
+    expect(resAll.length).to.equal(txCount + 1);
+    expect(res).to.deep.equal(expectedBlockHashes);
+    expect(resAll).to.deep.equal(allBlockHashes);
+
+    // query again should return empty
+    res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    resAll = (await eth_getFilterChanges([blockFilterId0])).data.result;
+    expect(res).to.deep.equal([]);
+    expect(resAll).to.deep.equal([]);
+  });
+
+  it('unsubscribe works', async () => {
+    expectedBlockHashes.length = 0;
+    await eth_uninstallFilter([blockFilterId0]);
+
+    await feedTx();
+    await sleep(5000);    // give subql some time to index
+
+    // other filter should still work
+    let res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    expect(res.length).to.equal(1);
+    expect(res).to.deep.equal(expectedBlockHashes);
+
+    // target filter should be removed
+    res = await eth_getFilterChanges([blockFilterId0]);
+    expect(res.data.error.message).to.contains('filter not found');
+  });
+
+  it('throws correct error', async () => {
+    const dummyId = '0x12345678906f9c864d9db560d72a247c178ae86b';
+    const res = await eth_getFilterChanges([dummyId]);
+    expect(res.data.error.message).to.contains('filter not found');
+  });
 });
 
 describe('finalized blocktag', () => {

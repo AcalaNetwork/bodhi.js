@@ -499,9 +499,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getBlockNumber = async (): Promise<number> => {
     await this.getNetwork();
-
-    const header = await this._getBlockHeader('latest');
-
+    const header = await this.api.rpc.chain.getHeader();
     return header.number.toNumber();
   };
 
@@ -1341,6 +1339,35 @@ export abstract class BaseProvider extends AbstractProvider {
     return result;
   };
 
+  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
+    switch (blockTag) {
+      case 'pending': {
+        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      case 'latest': {
+        return this.getBlockNumber();
+      }
+      case 'earliest': {
+        return 0;
+      }
+      case 'finalized':
+      case 'safe': {
+        return this.latestFinalizedBlockNumber;
+      }
+      default: {
+        if (isHexString(blockTag) || typeof blockTag === 'number') {
+          return BigNumber.from(blockTag).toNumber();
+        }
+
+        return logger.throwArgumentError(
+          "blocktag should be number | hex string | 'latest' | 'earliest' | 'finalized' | 'safe'",
+          'blockTag',
+          blockTag
+        );
+      }
+    }
+  };
+
   _getBlockHash = async (_blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
     const blockTag = (await _blockTag) || 'latest';
 
@@ -1386,7 +1413,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
           if (_blockHash.isEmpty) {
             //@ts-ignore
-            return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND);
+            return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockNumber });
           }
 
           blockHash = _blockHash.toHex();
@@ -1459,7 +1486,7 @@ export abstract class BaseProvider extends AbstractProvider {
         (error as any).message.match(/Unable to retrieve header and parent from supplied hash/gi)
       ) {
         //@ts-ignore
-        return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND);
+        return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockHash });
       }
 
       throw error;
@@ -1597,7 +1624,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return {
       ...virtualReceipt,
-      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
+      confirmations: (await this.getBlockNumber()) - blockNumber,
       effectiveGasPrice: BIGNUMBER_ZERO
     };
   };
@@ -1659,7 +1686,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // to and contractAddress may be undefined
     return this.formatter.receipt({
       effectiveGasPrice,
-      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
+      confirmations: (await this.getBlockNumber()) - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
       logs: partialTransactionReceipt.logs.map((log) => ({
@@ -1795,34 +1822,8 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: tx.effectiveGasPrice,
-      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
+      confirmations: (await this.getBlockNumber()) - tx.blockNumber
     });
-  };
-
-  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
-    switch (blockTag) {
-      case 'pending': {
-        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
-      }
-      case 'latest': {
-        const header = await this.api.rpc.chain.getHeader();
-        return header.number.toNumber();
-      }
-      case 'earliest': {
-        return 0;
-      }
-      default: {
-        if (isHexString(blockTag) || typeof blockTag === 'number') {
-          return BigNumber.from(blockTag).toNumber();
-        }
-
-        return logger.throwArgumentError(
-          "blocktag should be number | hex string | 'latest' | 'earliest'",
-          'blockTag',
-          blockTag
-        );
-      }
-    }
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
@@ -1999,7 +2000,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const id = Wallet.createRandom().address;
     const baseFilter = {
       id,
-      lastPollBlockNumber: (await this._getBlockHeader('latest')).number.toNumber(),
+      lastPollBlockNumber: await this.getBlockNumber(),
       lastPollTimestamp: Date.now() // TODO: add expire
     };
 
@@ -2021,8 +2022,9 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _pollLogs = async (filterInfo: LogPollFilter): Promise<Log[]> => {
-    const curBlockNumber = (await this._getBlockHeader('latest')).number.toNumber();
-    const { fromBlock, toBlock } = filterInfo.logFilter;
+    const curBlockNumber = await this.getBlockNumber();
+    const { fromBlock = 'latest', toBlock = 'latest' } = filterInfo.logFilter;
+    console.log('############', filterInfo.logFilter, fromBlock, toBlock);
 
     const UNSUPPORTED_TAGS = ['pending', 'finalized', 'safe'] as any[];
     if (UNSUPPORTED_TAGS.includes(fromBlock) || UNSUPPORTED_TAGS.includes(toBlock)) {
@@ -2038,9 +2040,8 @@ export abstract class BaseProvider extends AbstractProvider {
        in this context we basically treat 'latest' blocktag as trivial filter
        i.e. default fromBlock and toBlock are both 'latest', which filters nothing
                                                                    --------------- */
-    const from = fromBlock !== 'latest' ? (await this._getBlockHeader(fromBlock)).number.toNumber() : 0;
-
-    const to = toBlock !== 'latest' ? (await this._getBlockHeader(toBlock)).number.toNumber() : 9999999999;
+    const from = fromBlock === 'latest' ? 0 : filter.fromBlock ?? 0;
+    const to = toBlock === 'latest' ? 999999999 : filter.toBlock ?? 999999999;
 
     // combine filter range (configuration) and new log range (actual data) as effective range
     const effectiveFrom = Math.max(from, filterInfo.lastPollBlockNumber + 1);
@@ -2061,11 +2062,15 @@ export abstract class BaseProvider extends AbstractProvider {
     filterInfo.lastPollBlockNumber = curBlockNumber;
     filterInfo.lastPollTimestamp = Date.now();
 
-    return this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
+    console.log('!!!!!!!!!!!!!', effectiveFilter);
+    const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
+    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
+
+    return hexlifyRpcResult(filteredLogs.map((log) => this.formatter.filterLog(log)));
   };
 
   _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
-    const curBlockNumber = (await this._getBlockHeader('latest')).number.toNumber();
+    const curBlockNumber = await this.getBlockNumber();
 
     const newBlockHashes = [];
     for (let blockNum = filterInfo.lastPollBlockNumber + 1; blockNum <= curBlockNumber; blockNum++) {
