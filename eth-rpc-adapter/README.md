@@ -107,6 +107,7 @@ These are ETH compatible RPCs, the interface and functionalities match https://e
 - `eth_unsubscribe`
 - `eth_newFilter`
 - `eth_newBlockFilter`
+- `eth_getFilterLogs`
 - `eth_getFilterChanges`
 - `eth_uninstallFilter`
 

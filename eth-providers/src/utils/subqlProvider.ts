@@ -1,4 +1,4 @@
-import { Filter, FilterByBlockHash, Log } from '@ethersproject/abstract-provider';
+import { Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
 import { Query, _Metadata, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
 import { logger } from './logger';

@@ -2052,8 +2052,6 @@ export abstract class BaseProvider extends AbstractProvider {
       toBlock: effectiveTo
     };
 
-    console.log('!!!!!!!!!!!!!!!!!', effectiveFilter);
-
     if (!this.subql) {
       return logger.throwError(
         'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
@@ -2080,10 +2078,10 @@ export abstract class BaseProvider extends AbstractProvider {
     return Promise.all(newBlockHashes);
   };
 
-  poll = async (id: string): Promise<string[] | Log[]> => {
-    const filterInfo =
-      this._pollFilters[BLOCK_POLL_FILTER].find((f) => f.id === id) ??
-      this._pollFilters[LOG_POLL_FILTER].find((f) => f.id === id);
+  poll = async (id: string, logsOnly = false): Promise<string[] | Log[]> => {
+    const logFilterInfo = this._pollFilters[LOG_POLL_FILTER].find((f) => f.id === id);
+    const blockFilterInfo = !logsOnly && this._pollFilters[BLOCK_POLL_FILTER].find((f) => f.id === id);
+    const filterInfo = logFilterInfo ?? blockFilterInfo;
 
     if (!filterInfo) {
       return logger.throwError('filter not found', Logger.errors.UNKNOWN_ERROR, { filterId: id });

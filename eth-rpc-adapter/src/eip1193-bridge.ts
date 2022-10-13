@@ -448,9 +448,10 @@ class Eip1193BridgeImpl {
     return this.#provider.poll(params[0]);
   }
 
-  // async eth_getFilterLogs(params: any[]): Promise<any> {
-
-  // }
+  async eth_getFilterLogs(params: any[]): Promise<any> {
+    validate([{ type: 'address' }], params);
+    return this.#provider.poll(params[0], true);
+  }
 
   async eth_uninstallFilter(params: any[]): Promise<any> {
     validate([{ type: 'address' }], params);
