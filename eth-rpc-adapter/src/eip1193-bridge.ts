@@ -1,4 +1,4 @@
-import { EvmRpcProvider, hexlifyRpcResult, TX } from '@acala-network/eth-providers';
+import { EvmRpcProvider, hexlifyRpcResult, TX, PollFilterType } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -429,31 +429,37 @@ class Eip1193BridgeImpl {
     return this.#provider._isTransactionFinalized(params[0]);
   }
 
-  // async eth_newFilter(params: any[]): Promise<any> {
+  async eth_newFilter(params: any[]): Promise<any> {
+    validate([{ type: 'object' }], params);
+    return this.#provider.addPollFilter(PollFilterType.Logs, params[0]);
+  }
 
-  // }
-
-  // async eth_newBlockFilter(params: any[]): Promise<any> {
-
-  // }
+  async eth_newBlockFilter(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.addPollFilter(PollFilterType.NewBlocks);
+  }
 
   // async eth_newPendingTransactionFilter(params: any[]): Promise<any> {
 
   // }
 
-  // async eth_uninstallFilter(params: any[]): Promise<any> {
+  async eth_getFilterChanges(params: any[]): Promise<any> {
+    validate([{ type: 'address' }], params);
+    return this.#provider.poll(params[0]);
+  }
 
-  // }
+  async eth_getFilterLogs(params: any[]): Promise<any> {
+    validate([{ type: 'address' }], params);
+    return this.#provider.poll(params[0], true);
+  }
 
-  // async eth_getFilterChanges(params: any[]): Promise<any> {
-
-  // }
-
-  // async eth_getFilterLogs(params: any[]): Promise<any> {
-
-  // }
+  async eth_uninstallFilter(params: any[]): Promise<any> {
+    validate([{ type: 'address' }], params);
+    return this.#provider.removePollFilter(params[0]);
+  }
 
   async eth_getLogs(params: any[]): Promise<Log[]> {
+    // TODO: strict check filter object shape
     validate([{ type: 'object' }], params);
     const result = await this.#provider.getLogs(params[0]);
     return hexlifyRpcResult(result);

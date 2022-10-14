@@ -10,6 +10,7 @@ import { Wallet } from '@ethersproject/wallet';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseUnits, Interface } from 'ethers/lib/utils';
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { describe, it, before } from 'mocha';
 import { expect } from 'chai';
 import WebSocket from 'ws';
 import {
@@ -68,6 +69,19 @@ const eth_getCode = rpcGet('eth_getCode');
 const eth_getEthResources = rpcGet('eth_getEthResources');
 const net_runtimeVersion = rpcGet('net_runtimeVersion');
 const eth_isBlockFinalized = rpcGet('eth_isBlockFinalized');
+const eth_newFilter = rpcGet('eth_newFilter');
+const eth_newBlockFilter = rpcGet('eth_newBlockFilter');
+const eth_getFilterChanges = rpcGet('eth_getFilterChanges');
+const eth_getFilterLogs = rpcGet('eth_getFilterLogs');
+const eth_uninstallFilter = rpcGet('eth_uninstallFilter');
+
+const getBlockHash = async (blockNum: number): Promise<string> => (
+  (await eth_getBlockByNumber([blockNum, false])).data.result.hash
+);
+
+const getCurBlockHash = async (): Promise<string> => (
+  getBlockHash((await eth_blockNumber()).data.result)
+);
 
 /* ---------- karura mainnet rpc methods ---------- */
 const eth_blockNumber_karura = rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL);
@@ -109,7 +123,7 @@ before('env setup', async () => {
       tries++ < 10
     ) {
       console.log(`let's give subql a little bit more time to index, retrying #${tries} in 5s ...`);
-      await sleep(5000);
+      await sleep(10000);
       [allTxReceipts, allLogs] = await Promise.all([subql.getAllTxReceipts(), subql.getAllLogs()]);
     }
 
@@ -1496,7 +1510,6 @@ describe('eth_getStorageAt', () => {
 
 describe('eth_subscribe', () => {
   const provider = new EvmRpcProvider(NODE_RPC_URL);
-
   const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
 
   const notifications: any[] = [];
@@ -1585,7 +1598,7 @@ describe('eth_subscribe', () => {
       }
     });
 
-    await sleep(5000);    // give subql some time to index
+    await sleep(10000);    // give subql some time to index
     const expectedLog = (await eth_getLogs([{
       blockHash: curBlockInfo.hash,
     }])).data.result;
@@ -1646,7 +1659,7 @@ describe('eth_subscribe', () => {
     notifications.length = 0;
     await aca.transfer(evmAccounts[1].evmAddress, 1234567654321);
 
-    await sleep(5000);    // give ws some time to notify
+    await sleep(10000);    // give ws some time to notify
 
     const notification0 = notifications.find(n => n.params?.subscription === subId0);   // no match
     const notification1 = notifications.find(n => n.params?.subscription === subId1);   // no match
@@ -1658,7 +1671,7 @@ describe('eth_subscribe', () => {
     expect(notification1).to.equal(undefined);
     expect(notification3).to.equal(undefined);
 
-    await sleep(5000);    // give subql some time to index
+    await sleep(10000);    // give subql some time to index
     const curBlock = (await eth_blockNumber()).data.result;
     const curBlockInfo = (await eth_getBlockByNumber([curBlock, false])).data.result;
     const expectedLog = (await eth_getLogs([{
@@ -1677,6 +1690,357 @@ describe('eth_subscribe', () => {
       }
     });    
   })
+});
+
+describe('eth_newBlockFilter', () => {
+  const provider = new EvmRpcProvider(NODE_RPC_URL);
+  const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
+
+  const dummyId = '0x12345678906f9c864d9db560d72a247c178ae86b';
+  let blockFilterId0: string;
+  let blockFilterId1: string;
+  const expectedBlockHashes: string[] = [];
+  const allBlockHashes: string[] = [];
+
+  const feedTx = async () => {
+    await aca.transfer(evmAccounts[1].evmAddress, 111222333444555);
+    expectedBlockHashes.push(await getCurBlockHash());
+    allBlockHashes.push(await getCurBlockHash());
+  };
+
+  before(async () => {
+    blockFilterId0 = (await eth_newBlockFilter()).data.result;      // only pull once at the end
+    blockFilterId1 = (await eth_newBlockFilter()).data.result;      // normal block poll
+
+    await provider.isReady();
+  });
+
+  after(async () => {
+    await provider.disconnect();
+  });
+
+  it('poll immediately', async () => {
+    const res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    expect(res).to.deep.equal([]);
+  });
+
+  it('get correct result', async () => {
+    /* ---------- fire 1 tx ---------- */
+    await feedTx();
+    await sleep(10000);    // give subql some time to index
+
+    let res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    expect(res.length).to.equal(1);
+    expect(res).to.deep.equal(expectedBlockHashes);
+    expectedBlockHashes.length = 0;
+
+    /* ---------- fire many tx ---------- */
+    const txCount = 6;
+    for (let i = 0; i < txCount; i++) {
+      await feedTx();
+    }
+    await sleep(10000);    // give subql some time to index
+
+    res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    let resAll = (await eth_getFilterChanges([blockFilterId0])).data.result;
+    expect(res.length).to.equal(txCount);
+    expect(resAll.length).to.equal(txCount + 1);
+    expect(res).to.deep.equal(expectedBlockHashes);
+    expect(resAll).to.deep.equal(allBlockHashes);
+
+    // query again should return empty
+    res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    resAll = (await eth_getFilterChanges([blockFilterId0])).data.result;
+    expect(res).to.deep.equal([]);
+    expect(resAll).to.deep.equal([]);
+  });
+
+  it('unsubscribe works', async () => {
+    expectedBlockHashes.length = 0;
+    const unsub = (await eth_uninstallFilter([blockFilterId0])).data.result;
+    const unsub2 = (await eth_uninstallFilter([blockFilterId0])).data.result;
+    const unsub3 = (await eth_uninstallFilter([dummyId])).data.result;
+    expect(unsub).to.equal(true);
+    expect(unsub2).to.equal(false);
+    expect(unsub3).to.equal(false);
+
+    await feedTx();
+    await sleep(10000);    // give subql some time to index
+
+    // other filter should still work
+    let res = (await eth_getFilterChanges([blockFilterId1])).data.result;
+    expect(res.length).to.equal(1);
+    expect(res).to.deep.equal(expectedBlockHashes);
+
+    // target filter should be removed
+    res = await eth_getFilterChanges([blockFilterId0]);
+    expect(res.data.error.message).to.contains('filter not found');
+  });
+
+  it('throws correct error', async () => {
+    let res = await eth_getFilterChanges([dummyId]);
+    expect(res.data.error.message).to.contains('filter not found');
+
+    // eth_getFilterLogs should not find block filter
+    res = await eth_getFilterLogs([blockFilterId1]);
+    expect(res.data.error.message).to.contains('filter not found');
+  });
+});
+
+describe('eth_newFilter', () => {
+  const provider = new EvmRpcProvider(NODE_RPC_URL);
+  const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
+
+  const dummyId = '0x12345678906f9c864d9db560d72a247c178ae86b';
+  let startBlockNum: number;
+  let logFilterId0: string;
+  let logFilterId1: string;
+  let logFilterId2: string;
+  let logFilterId3: string;
+
+  const feedTx = async () => aca.transfer(evmAccounts[1].evmAddress, 111222333444555);
+
+  before(async () => {
+    startBlockNum = Number((await eth_blockNumber()).data.result);
+
+    logFilterId0 = (await eth_newFilter([{}])).data.result;         // only pull once at the end
+    logFilterId1 = (await eth_newFilter([{                          // normal log poll
+      address: ADDRESS.ACA,
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+        null,
+        ['0x12332', '0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421', '0x78723681eeeee'],
+      ]
+    }])).data.result;
+    logFilterId2 = (await eth_newFilter([{                          // normal log poll         
+      address: ADDRESS.ACA,
+      fromBlock: startBlockNum,
+      toBlock: startBlockNum + 3,
+    }])).data.result;
+    logFilterId3 = (await eth_newFilter([{                          // empty
+      fromBlock: 3,
+      toBlock: 5,
+    }])).data.result;
+
+    await provider.isReady();
+  });
+
+  after(async () => {
+    await provider.disconnect();
+  });
+
+  it('poll immediately', async () => {
+    const res1 = (await eth_getFilterChanges([logFilterId1])).data.result;
+    const res2 = (await eth_getFilterChanges([logFilterId2])).data.result;
+    const res3 = (await eth_getFilterChanges([logFilterId3])).data.result;
+
+    expect([res1, res2, res3]).to.deep.equal([[], [], []]);
+  });
+
+  it('get correct result', async () => {
+    /* ---------- fire 1 tx ---------- */
+    await feedTx();
+    await sleep(10000);    // give subql some time to index
+
+    let res1 = (await eth_getFilterChanges([logFilterId1])).data.result;
+    let res2 = (await eth_getFilterChanges([logFilterId2])).data.result;
+    let res3 = (await eth_getFilterChanges([logFilterId3])).data.result;
+
+    const curBlockHash = await getCurBlockHash();
+    let expectedLogs = (await eth_getLogs([{ blockHash: curBlockHash }])).data.result;
+
+    expect(expectedLogs.length).to.equal(1);
+    expect(res1).to.deep.equal(expectedLogs);
+    expect(res2).to.deep.equal(expectedLogs);
+    expect(res3).to.deep.equal([]);
+
+    /* ---------- fire many tx ---------- */
+    const txCount = 5;
+    for (let i = 0; i < txCount; i++) {
+      await feedTx();
+    }
+    await sleep(10000);    // give subql some time to index
+
+    let res0 = (await eth_getFilterChanges([logFilterId0])).data.result;
+    res1 = (await eth_getFilterChanges([logFilterId1])).data.result;
+    res2 = (await eth_getFilterChanges([logFilterId2])).data.result;
+    res3 = (await eth_getFilterChanges([logFilterId3])).data.result;
+
+    const curBlockNum = Number((await eth_blockNumber()).data.result);
+    expectedLogs = (await eth_getLogs([{
+      fromBlock: curBlockNum - txCount,
+      toBlock: curBlockNum,
+    }])).data.result;
+
+    expect(expectedLogs.length).to.equal(txCount + 1);    // + 1 because it's all logs, which conains the one in prev test
+    expect(res0).to.deep.equal(expectedLogs);
+    expect(res1).to.deep.equal(expectedLogs.slice(1));
+    // it's range is [x, x + 3], x is original block, x + 1 is prev test, now only poll for x + 2 and x + 3, so has 2 logs
+    expect(res2).to.deep.equal(expectedLogs.slice(1, 3));   
+    expect(res3).to.deep.equal([]);
+  });
+
+  it('unsubscribe works', async () => {
+    const unsub = (await eth_uninstallFilter([logFilterId0])).data.result;
+    const unsub2 = (await eth_uninstallFilter([logFilterId0])).data.result;
+    const unsub3 = (await eth_uninstallFilter([dummyId])).data.result;
+    expect(unsub).to.equal(true);
+    expect(unsub2).to.equal(false);
+    expect(unsub3).to.equal(false);
+
+    await feedTx();
+    await sleep(10000);    // give subql some time to index
+
+    const res1 = (await eth_getFilterChanges([logFilterId1])).data.result;
+    const res2 = (await eth_getFilterChanges([logFilterId2])).data.result;
+    const res3 = (await eth_getFilterChanges([logFilterId3])).data.result;
+
+    const curBlockHash = await getCurBlockHash();
+    let expectedLogs = (await eth_getLogs([{ blockHash: curBlockHash }])).data.result;
+
+    // all other filters should still work
+    expect(expectedLogs.length).to.equal(1);
+    expect(res1).to.deep.equal(expectedLogs);
+    expect(res2).to.deep.equal([]);   // now block range doesn't match anymore
+    expect(res3).to.deep.equal([]);
+
+    // target should be removed
+    const res0 = await eth_getFilterChanges([logFilterId0]);
+    expect(res0.data.error.message).to.contains('filter not found');
+  });
+
+  it.skip('throws correct error messege', async () => {
+    // tested in eth_newBlockFilter
+  });
+});
+
+// mostly a copy of eth_newFilter tests, but use eth_getFilterLogs instead of eth_getFilterChanges
+describe('eth_getFilterLogs', () => {
+  const provider = new EvmRpcProvider(NODE_RPC_URL);
+  const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
+
+  const dummyId = '0x12345678906f9c864d9db560d72a247c178ae86b';
+  let startBlockNum: number;
+  let logFilterId0: string;
+  let logFilterId1: string;
+  let logFilterId2: string;
+  let logFilterId3: string;
+
+  const feedTx = async () => aca.transfer(evmAccounts[1].evmAddress, 111222333444555);
+
+  before(async () => {
+    startBlockNum = Number((await eth_blockNumber()).data.result);
+
+    logFilterId0 = (await eth_newFilter([{}])).data.result;         // only pull once at the end
+    logFilterId1 = (await eth_newFilter([{                          // normal log poll
+      address: ADDRESS.ACA,
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+        null,
+        ['0x12332', '0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421', '0x78723681eeeee'],
+      ]
+    }])).data.result;
+    logFilterId2 = (await eth_newFilter([{                          // normal log poll         
+      address: ADDRESS.ACA,
+      fromBlock: startBlockNum,
+      toBlock: startBlockNum + 3,
+    }])).data.result;
+    logFilterId3 = (await eth_newFilter([{                          // empty
+      fromBlock: 3,
+      toBlock: 5,
+    }])).data.result;
+
+    await provider.isReady();
+  });
+
+  after(async () => {
+    await provider.disconnect();
+  });
+
+  it('poll immediately', async () => {
+    const res1 = (await eth_getFilterLogs([logFilterId1])).data.result;
+    const res2 = (await eth_getFilterLogs([logFilterId2])).data.result;
+    const res3 = (await eth_getFilterLogs([logFilterId3])).data.result;
+
+    expect([res1, res2, res3]).to.deep.equal([[], [], []]);
+  });
+
+  it('get correct result', async () => {
+    /* ---------- fire 1 tx ---------- */
+    await feedTx();
+    await sleep(10000);    // give subql some time to index
+
+    let res1 = (await eth_getFilterLogs([logFilterId1])).data.result;
+    let res2 = (await eth_getFilterLogs([logFilterId2])).data.result;
+    let res3 = (await eth_getFilterLogs([logFilterId3])).data.result;
+
+    const curBlockHash = await getCurBlockHash();
+    let expectedLogs = (await eth_getLogs([{ blockHash: curBlockHash }])).data.result;
+
+    expect(expectedLogs.length).to.equal(1);
+    expect(res1).to.deep.equal(expectedLogs);
+    expect(res2).to.deep.equal(expectedLogs);
+    expect(res3).to.deep.equal([]);
+
+    /* ---------- fire many tx ---------- */
+    const txCount = 5;
+    for (let i = 0; i < txCount; i++) {
+      await feedTx();
+    }
+    await sleep(10000);    // give subql some time to index
+
+    let res0 = (await eth_getFilterLogs([logFilterId0])).data.result;
+    res1 = (await eth_getFilterLogs([logFilterId1])).data.result;
+    res2 = (await eth_getFilterLogs([logFilterId2])).data.result;
+    res3 = (await eth_getFilterLogs([logFilterId3])).data.result;
+
+    const curBlockNum = Number((await eth_blockNumber()).data.result);
+    expectedLogs = (await eth_getLogs([{
+      fromBlock: curBlockNum - txCount,
+      toBlock: curBlockNum,
+    }])).data.result;
+
+    expect(expectedLogs.length).to.equal(txCount + 1);    // + 1 because it's all logs, which conains the one in prev test
+    expect(res0).to.deep.equal(expectedLogs);
+    expect(res1).to.deep.equal(expectedLogs.slice(1));
+    // it's range is [x, x + 3], x is original block, x + 1 is prev test, now only poll for x + 2 and x + 3, so has 2 logs
+    expect(res2).to.deep.equal(expectedLogs.slice(1, 3));
+    expect(res3).to.deep.equal([]);
+  });
+
+  it('unsubscribe works', async () => {
+    const unsub = (await eth_uninstallFilter([logFilterId0])).data.result;
+    const unsub2 = (await eth_uninstallFilter([logFilterId0])).data.result;
+    const unsub3 = (await eth_uninstallFilter([dummyId])).data.result;
+    expect(unsub).to.equal(true);
+    expect(unsub2).to.equal(false);
+    expect(unsub3).to.equal(false);
+
+    await feedTx();
+    await sleep(10000);    // give subql some time to index
+
+    const res1 = (await eth_getFilterLogs([logFilterId1])).data.result;
+    const res2 = (await eth_getFilterLogs([logFilterId2])).data.result;
+    const res3 = (await eth_getFilterLogs([logFilterId3])).data.result;
+
+    const curBlockHash = await getCurBlockHash();
+    let expectedLogs = (await eth_getLogs([{ blockHash: curBlockHash }])).data.result;
+
+    // all other filters should still work
+    expect(expectedLogs.length).to.equal(1);
+    expect(res1).to.deep.equal(expectedLogs);
+    expect(res2).to.deep.equal([]);   // now block range doesn't match anymore
+    expect(res3).to.deep.equal([]);
+
+    // target should be removed
+    const res0 = await eth_getFilterLogs([logFilterId0]);
+    expect(res0.data.error.message).to.contains('filter not found');
+  });
+
+  it('throws correct error messege', async () => {
+    let res = await eth_getFilterLogs([dummyId]);
+    expect(res.data.error.message).to.contains('filter not found');
+  });
 });
 
 describe('finalized blocktag', () => {

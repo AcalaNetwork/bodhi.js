@@ -201,10 +201,10 @@ export interface BaseProviderOptions {
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
 /* ---------- subscriptions ---------- */
-const NEW_HEADS = 'newHeads';
-const NEW_LOGS = 'logs';
-const ALL_SUBSCRIPTION_EVENTS = [NEW_HEADS, NEW_LOGS] as const;
-
+export enum SubscriptionType {
+  NewHeads = 'newHeads',
+  Logs = 'logs'
+}
 export interface BlockListener {
   id: string;
   cb: (data: any) => void;
@@ -215,14 +215,35 @@ export interface LogListener extends BlockListener {
 }
 
 export interface EventListeners {
-  [NEW_HEADS]: BlockListener[];
-  [NEW_LOGS]: LogListener[];
+  [SubscriptionType.NewHeads]: BlockListener[];
+  [SubscriptionType.Logs]: LogListener[];
+}
+
+/* ---------- filters ---------- */
+export enum PollFilterType {
+  NewBlocks = 'newBlocks',
+  Logs = 'logs'
+}
+export interface BlockPollFilter {
+  id: string;
+  lastPollBlockNumber: number;
+  lastPollTimestamp: number;
+}
+
+export interface LogPollFilter extends BlockPollFilter {
+  logFilter: LogFilter;
+}
+
+export interface PollFilters {
+  [PollFilterType.NewBlocks]: BlockPollFilter[];
+  [PollFilterType.Logs]: LogPollFilter[];
 }
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
   readonly _listeners: EventListeners;
+  readonly _pollFilters: PollFilters;
   readonly safeMode: boolean;
   readonly localMode: boolean;
   readonly richMode: boolean;
@@ -251,7 +272,8 @@ export abstract class BaseProvider extends AbstractProvider {
   }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
-    this._listeners = { [NEW_HEADS]: [], [NEW_LOGS]: [] };
+    this._listeners = { [SubscriptionType.NewHeads]: [], [SubscriptionType.Logs]: [] };
+    this._pollFilters = { [PollFilterType.NewBlocks]: [], [PollFilterType.Logs]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.richMode = richMode;
@@ -299,20 +321,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
       // eth_subscribe
       // TODO: can do some optimizations
-      if (this._listeners[NEW_HEADS].length > 0) {
+      if (this._listeners[SubscriptionType.NewHeads].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const response = hexlifyRpcResult(block);
-        this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
+        this._listeners[SubscriptionType.NewHeads].forEach((l) => l.cb(response));
       }
 
-      if (this._listeners[NEW_LOGS].length > 0) {
+      if (this._listeners[SubscriptionType.Logs].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const receipts = await Promise.all(
           block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
         );
         const logs = receipts.map((r) => r.logs).flat();
 
-        this._listeners[NEW_LOGS].forEach(({ cb, filter }) => {
+        this._listeners[SubscriptionType.Logs].forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
           const response = hexlifyRpcResult(filteredLogs);
           response.forEach((log: any) => cb(log));
@@ -478,9 +500,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getBlockNumber = async (): Promise<number> => {
     await this.getNetwork();
-
     const header = await this._getBlockHeader('latest');
-
     return header.number.toNumber();
   };
 
@@ -1320,6 +1340,35 @@ export abstract class BaseProvider extends AbstractProvider {
     return result;
   };
 
+  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
+    switch (blockTag) {
+      case 'pending': {
+        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
+      }
+      case 'latest': {
+        return this.getBlockNumber();
+      }
+      case 'earliest': {
+        return 0;
+      }
+      case 'finalized':
+      case 'safe': {
+        return this.latestFinalizedBlockNumber;
+      }
+      default: {
+        if (isHexString(blockTag) || typeof blockTag === 'number') {
+          return BigNumber.from(blockTag).toNumber();
+        }
+
+        return logger.throwArgumentError(
+          "blocktag should be number | hex string | 'latest' | 'earliest' | 'finalized' | 'safe'",
+          'blockTag',
+          blockTag
+        );
+      }
+    }
+  };
+
   _getBlockHash = async (_blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
     const blockTag = (await _blockTag) || 'latest';
 
@@ -1365,7 +1414,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
           if (_blockHash.isEmpty) {
             //@ts-ignore
-            return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND);
+            return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockNumber });
           }
 
           blockHash = _blockHash.toHex();
@@ -1438,7 +1487,7 @@ export abstract class BaseProvider extends AbstractProvider {
         (error as any).message.match(/Unable to retrieve header and parent from supplied hash/gi)
       ) {
         //@ts-ignore
-        return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND);
+        return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockHash });
       }
 
       throw error;
@@ -1576,7 +1625,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return {
       ...virtualReceipt,
-      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
+      confirmations: (await this.getBlockNumber()) - blockNumber,
       effectiveGasPrice: BIGNUMBER_ZERO
     };
   };
@@ -1638,7 +1687,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // to and contractAddress may be undefined
     return this.formatter.receipt({
       effectiveGasPrice,
-      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - blockNumber,
+      confirmations: (await this.getBlockNumber()) - blockNumber,
       ...transactionInfo,
       ...partialTransactionReceipt,
       logs: partialTransactionReceipt.logs.map((log) => ({
@@ -1774,34 +1823,8 @@ export abstract class BaseProvider extends AbstractProvider {
       type: tx.type,
       status: tx.status,
       effectiveGasPrice: tx.effectiveGasPrice,
-      confirmations: (await this._getBlockHeader('latest')).number.toNumber() - tx.blockNumber
+      confirmations: (await this.getBlockNumber()) - tx.blockNumber
     });
-  };
-
-  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
-    switch (blockTag) {
-      case 'pending': {
-        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
-      }
-      case 'latest': {
-        const header = await this.api.rpc.chain.getHeader();
-        return header.number.toNumber();
-      }
-      case 'earliest': {
-        return 0;
-      }
-      default: {
-        if (isHexString(blockTag) || typeof blockTag === 'number') {
-          return BigNumber.from(blockTag).toNumber();
-        }
-
-        return logger.throwArgumentError(
-          "blocktag should be number | hex string | 'latest' | 'earliest'",
-          'blockTag',
-          blockTag
-        );
-      }
-    }
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
@@ -1916,8 +1939,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const cacheInfo = this.getCachInfo();
     const curFinalizedHeight = this.latestFinalizedBlockNumber;
     const listenersCount = {
-      newHead: this._listeners[NEW_HEADS]?.length || 0,
-      logs: this._listeners[NEW_LOGS]?.length || 0
+      newHead: this._listeners[SubscriptionType.NewHeads]?.length || 0,
+      logs: this._listeners[SubscriptionType.Logs]?.length || 0
     };
 
     return getHealthResult({
@@ -1947,13 +1970,13 @@ export abstract class BaseProvider extends AbstractProvider {
         result: data
       });
 
-    if (eventName === NEW_HEADS) {
+    if (eventName === SubscriptionType.NewHeads) {
       this._listeners[eventName].push({ cb: eventCallBack, id });
-    } else if (eventName === NEW_LOGS) {
+    } else if (eventName === SubscriptionType.Logs) {
       this._listeners[eventName].push({ cb: eventCallBack, filter, id });
     } else {
       return logger.throwError(
-        `subscription type [${eventName}] is not supported, expect ${ALL_SUBSCRIPTION_EVENTS}`,
+        `subscription type [${eventName}] is not supported, expect ${Object.values(SubscriptionType)}`,
         Logger.errors.INVALID_ARGUMENT
       );
     }
@@ -1963,10 +1986,131 @@ export abstract class BaseProvider extends AbstractProvider {
 
   removeEventListener = (id: string): boolean => {
     let found = false;
-    ALL_SUBSCRIPTION_EVENTS.forEach((e) => {
+    Object.values(SubscriptionType).forEach((e) => {
       const targetIdx = this._listeners[e].findIndex((l) => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this._listeners[e].splice(targetIdx, 1);
+        found = true;
+      }
+    });
+
+    return found;
+  };
+
+  addPollFilter = async (filterType: string, logFilter: any = {}): Promise<string> => {
+    const id = Wallet.createRandom().address;
+    const baseFilter = {
+      id,
+      lastPollBlockNumber: await this.getBlockNumber(),
+      lastPollTimestamp: Date.now() // TODO: add expire
+    };
+
+    if (filterType === PollFilterType.NewBlocks) {
+      this._pollFilters[filterType].push(baseFilter);
+    } else if (filterType === PollFilterType.Logs) {
+      this._pollFilters[filterType].push({
+        ...baseFilter,
+        logFilter
+      });
+    } else {
+      return logger.throwError(
+        `filter type [${filterType}] is not supported, expect ${Object.values(PollFilterType)}`,
+        Logger.errors.INVALID_ARGUMENT
+      );
+    }
+
+    return id;
+  };
+
+  _pollLogs = async (filterInfo: LogPollFilter): Promise<Log[]> => {
+    const curBlockNumber = await this.getBlockNumber();
+    const { fromBlock = 'latest', toBlock = 'latest' } = filterInfo.logFilter;
+
+    const UNSUPPORTED_TAGS = ['pending', 'finalized', 'safe'] as any[];
+    if (UNSUPPORTED_TAGS.includes(fromBlock) || UNSUPPORTED_TAGS.includes(toBlock)) {
+      return logger.throwArgumentError('pending/finalized/safe logs not supported', 'fromBlock / toBlock', {
+        fromBlock,
+        toBlock
+      });
+    }
+
+    const sanitizedFilter = await this._sanitizeRawFilter(filterInfo.logFilter);
+
+    /* ---------------
+       compute the configuration filter range
+       in this context we treat 'latest' blocktag in *rawFilter* as trivial filter
+       i.e. default fromBlock and toBlock are both 'latest', which filters nothing
+                                                                   --------------- */
+    const from = fromBlock === 'latest' ? 0 : sanitizedFilter.fromBlock ?? 0;
+    const to = toBlock === 'latest' ? 999999999 : sanitizedFilter.toBlock ?? 999999999;
+
+    /* ---------------
+       combine configuration filter range [from, to] and
+       dynamic data range [lastPollBlockNumber + 1, curBlockNumber]
+       as the final effective range to query
+                                                    --------------- */
+    const effectiveFrom = Math.max(from, filterInfo.lastPollBlockNumber + 1);
+    const effectiveTo = Math.min(to, curBlockNumber);
+    if (effectiveFrom > effectiveTo) {
+      return [];
+    }
+
+    const effectiveFilter = {
+      ...sanitizedFilter,
+      fromBlock: effectiveFrom,
+      toBlock: effectiveTo
+    };
+
+    if (!this.subql) {
+      return logger.throwError(
+        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
+      );
+    }
+
+    filterInfo.lastPollBlockNumber = curBlockNumber;
+    filterInfo.lastPollTimestamp = Date.now();
+
+    const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
+    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, sanitizedFilter.topics));
+
+    return hexlifyRpcResult(filteredLogs.map((log) => this.formatter.filterLog(log)));
+  };
+
+  _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
+    const curBlockNumber = await this.getBlockNumber();
+
+    const newBlockHashes = [];
+    for (let blockNum = filterInfo.lastPollBlockNumber + 1; blockNum <= curBlockNumber; blockNum++) {
+      newBlockHashes.push(this._getBlockHash(blockNum));
+    }
+
+    filterInfo.lastPollBlockNumber = curBlockNumber;
+    filterInfo.lastPollTimestamp = Date.now();
+
+    return Promise.all(newBlockHashes);
+  };
+
+  poll = async (id: string, logsOnly = false): Promise<string[] | Log[]> => {
+    const logFilterInfo = this._pollFilters[PollFilterType.Logs].find((f) => f.id === id);
+    const blockFilterInfo = !logsOnly && this._pollFilters[PollFilterType.NewBlocks].find((f) => f.id === id);
+    const filterInfo = logFilterInfo ?? blockFilterInfo;
+
+    if (!filterInfo) {
+      return logger.throwError('filter not found', Logger.errors.UNKNOWN_ERROR, { filterId: id });
+    }
+
+    // TODO: TS bug?? why filterInfo type is not BlockPollFilter | LogPollFilter
+    return filterInfo.hasOwnProperty('logFilter')
+      ? this._pollLogs(filterInfo as LogPollFilter)
+      : this._pollBlocks(filterInfo);
+  };
+
+  removePollFilter = (id: string): boolean => {
+    let found = false;
+    Object.values(PollFilterType).forEach((f) => {
+      const targetIdx = this._pollFilters[f].findIndex((f) => f.id === id);
+      if (targetIdx !== undefined && targetIdx !== -1) {
+        this._pollFilters[f].splice(targetIdx, 1);
         found = true;
       }
     });

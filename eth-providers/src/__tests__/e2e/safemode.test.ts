@@ -43,9 +43,7 @@ describe('safe mode', () => {
     // real test
     await newBlock(false);
     expect(await provider.getBlockNumber()).to.equal(curBlock + 1);
-    expect(await provider.getBlockNumber('latest')).to.equal(curBlock + 1);
     expect(await safeProvider.getBlockNumber()).to.equal(curBlock);
-    expect(await safeProvider.getBlockNumber('latest')).to.equal(curBlock);
   });
 
   it('_getBlock', async () => {
