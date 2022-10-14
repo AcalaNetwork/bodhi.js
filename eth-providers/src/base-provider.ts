@@ -201,10 +201,10 @@ export interface BaseProviderOptions {
 export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 
 /* ---------- subscriptions ---------- */
-const NEW_HEADS = 'newHeads';
-const NEW_LOGS = 'logs';
-const ALL_SUBSCRIPTION_EVENTS = [NEW_HEADS, NEW_LOGS] as const;
-
+export enum SubscriptionType {
+  NewHeads = 'newHeads',
+  Logs = 'logs'
+}
 export interface BlockListener {
   id: string;
   cb: (data: any) => void;
@@ -215,14 +215,15 @@ export interface LogListener extends BlockListener {
 }
 
 export interface EventListeners {
-  [NEW_HEADS]: BlockListener[];
-  [NEW_LOGS]: LogListener[];
+  [SubscriptionType.NewHeads]: BlockListener[];
+  [SubscriptionType.Logs]: LogListener[];
 }
 
 /* ---------- filters ---------- */
-export const BLOCK_POLL_FILTER = 'BLOCK_POLL_FILTER';
-export const LOG_POLL_FILTER = 'LOG_POLL_FILTER';
-export const ALL_POLL_FILTERs = [BLOCK_POLL_FILTER, LOG_POLL_FILTER] as const;
+export enum PollFilterType {
+  NewBlocks = 'newBlocks',
+  Logs = 'logs'
+}
 export interface BlockPollFilter {
   id: string;
   lastPollBlockNumber: number;
@@ -234,8 +235,8 @@ export interface LogPollFilter extends BlockPollFilter {
 }
 
 export interface PollFilters {
-  [BLOCK_POLL_FILTER]: BlockPollFilter[];
-  [LOG_POLL_FILTER]: LogPollFilter[];
+  [PollFilterType.NewBlocks]: BlockPollFilter[];
+  [PollFilterType.Logs]: LogPollFilter[];
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -271,8 +272,8 @@ export abstract class BaseProvider extends AbstractProvider {
   }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
-    this._listeners = { [NEW_HEADS]: [], [NEW_LOGS]: [] };
-    this._pollFilters = { [LOG_POLL_FILTER]: [], [BLOCK_POLL_FILTER]: [] };
+    this._listeners = { [SubscriptionType.NewHeads]: [], [SubscriptionType.Logs]: [] };
+    this._pollFilters = { [PollFilterType.NewBlocks]: [], [PollFilterType.Logs]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.richMode = richMode;
@@ -320,20 +321,20 @@ export abstract class BaseProvider extends AbstractProvider {
 
       // eth_subscribe
       // TODO: can do some optimizations
-      if (this._listeners[NEW_HEADS].length > 0) {
+      if (this._listeners[SubscriptionType.NewHeads].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const response = hexlifyRpcResult(block);
-        this._listeners[NEW_HEADS].forEach((l) => l.cb(response));
+        this._listeners[SubscriptionType.NewHeads].forEach((l) => l.cb(response));
       }
 
-      if (this._listeners[NEW_LOGS].length > 0) {
+      if (this._listeners[SubscriptionType.Logs].length > 0) {
         const block = await this.getBlockData(blockNumber, false);
         const receipts = await Promise.all(
           block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
         );
         const logs = receipts.map((r) => r.logs).flat();
 
-        this._listeners[NEW_LOGS].forEach(({ cb, filter }) => {
+        this._listeners[SubscriptionType.Logs].forEach(({ cb, filter }) => {
           const filteredLogs = logs.filter((l) => filterLog(l, filter));
           const response = hexlifyRpcResult(filteredLogs);
           response.forEach((log: any) => cb(log));
@@ -1938,8 +1939,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const cacheInfo = this.getCachInfo();
     const curFinalizedHeight = this.latestFinalizedBlockNumber;
     const listenersCount = {
-      newHead: this._listeners[NEW_HEADS]?.length || 0,
-      logs: this._listeners[NEW_LOGS]?.length || 0
+      newHead: this._listeners[SubscriptionType.NewHeads]?.length || 0,
+      logs: this._listeners[SubscriptionType.Logs]?.length || 0
     };
 
     return getHealthResult({
@@ -1969,13 +1970,13 @@ export abstract class BaseProvider extends AbstractProvider {
         result: data
       });
 
-    if (eventName === NEW_HEADS) {
+    if (eventName === SubscriptionType.NewHeads) {
       this._listeners[eventName].push({ cb: eventCallBack, id });
-    } else if (eventName === NEW_LOGS) {
+    } else if (eventName === SubscriptionType.Logs) {
       this._listeners[eventName].push({ cb: eventCallBack, filter, id });
     } else {
       return logger.throwError(
-        `subscription type [${eventName}] is not supported, expect ${ALL_SUBSCRIPTION_EVENTS}`,
+        `subscription type [${eventName}] is not supported, expect ${Object.values(SubscriptionType)}`,
         Logger.errors.INVALID_ARGUMENT
       );
     }
@@ -1985,7 +1986,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   removeEventListener = (id: string): boolean => {
     let found = false;
-    ALL_SUBSCRIPTION_EVENTS.forEach((e) => {
+    Object.values(SubscriptionType).forEach((e) => {
       const targetIdx = this._listeners[e].findIndex((l) => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this._listeners[e].splice(targetIdx, 1);
@@ -2004,16 +2005,16 @@ export abstract class BaseProvider extends AbstractProvider {
       lastPollTimestamp: Date.now() // TODO: add expire
     };
 
-    if (filterType === BLOCK_POLL_FILTER) {
+    if (filterType === PollFilterType.NewBlocks) {
       this._pollFilters[filterType].push(baseFilter);
-    } else if (filterType === LOG_POLL_FILTER) {
+    } else if (filterType === PollFilterType.Logs) {
       this._pollFilters[filterType].push({
         ...baseFilter,
         logFilter
       });
     } else {
       return logger.throwError(
-        `filter type [${filterType}] is not supported, expect ${ALL_POLL_FILTERs}`,
+        `filter type [${filterType}] is not supported, expect ${Object.values(PollFilterType)}`,
         Logger.errors.INVALID_ARGUMENT
       );
     }
@@ -2082,8 +2083,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   poll = async (id: string, logsOnly = false): Promise<string[] | Log[]> => {
-    const logFilterInfo = this._pollFilters[LOG_POLL_FILTER].find((f) => f.id === id);
-    const blockFilterInfo = !logsOnly && this._pollFilters[BLOCK_POLL_FILTER].find((f) => f.id === id);
+    const logFilterInfo = this._pollFilters[PollFilterType.Logs].find((f) => f.id === id);
+    const blockFilterInfo = !logsOnly && this._pollFilters[PollFilterType.NewBlocks].find((f) => f.id === id);
     const filterInfo = logFilterInfo ?? blockFilterInfo;
 
     if (!filterInfo) {
@@ -2098,7 +2099,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   removePollFilter = (id: string): boolean => {
     let found = false;
-    ALL_POLL_FILTERs.forEach((f) => {
+    Object.values(PollFilterType).forEach((f) => {
       const targetIdx = this._pollFilters[f].findIndex((f) => f.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this._pollFilters[f].splice(targetIdx, 1);

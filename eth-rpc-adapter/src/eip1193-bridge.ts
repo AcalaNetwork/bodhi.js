@@ -1,4 +1,4 @@
-import { EvmRpcProvider, hexlifyRpcResult, TX, BLOCK_POLL_FILTER, LOG_POLL_FILTER } from '@acala-network/eth-providers';
+import { EvmRpcProvider, hexlifyRpcResult, TX, PollFilterType } from '@acala-network/eth-providers';
 import { PROVIDER_ERRORS } from '@acala-network/eth-providers/lib/utils';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
@@ -431,12 +431,12 @@ class Eip1193BridgeImpl {
 
   async eth_newFilter(params: any[]): Promise<any> {
     validate([{ type: 'object' }], params);
-    return this.#provider.addPollFilter(LOG_POLL_FILTER, params[0]);
+    return this.#provider.addPollFilter(PollFilterType.Logs, params[0]);
   }
 
   async eth_newBlockFilter(params: any[]): Promise<any> {
     validate([], params);
-    return this.#provider.addPollFilter(BLOCK_POLL_FILTER);
+    return this.#provider.addPollFilter(PollFilterType.NewBlocks);
   }
 
   // async eth_newPendingTransactionFilter(params: any[]): Promise<any> {
