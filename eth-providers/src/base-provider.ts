@@ -499,7 +499,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getBlockNumber = async (): Promise<number> => {
     await this.getNetwork();
-    const header = await this.api.rpc.chain.getHeader();
+    const header = await this._getBlockHeader('latest');
     return header.number.toNumber();
   };
 
@@ -2061,7 +2061,6 @@ export abstract class BaseProvider extends AbstractProvider {
     filterInfo.lastPollBlockNumber = curBlockNumber;
     filterInfo.lastPollTimestamp = Date.now();
 
-    console.log('!!!!!!!!!!!!!', effectiveFilter);
     const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
     const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
