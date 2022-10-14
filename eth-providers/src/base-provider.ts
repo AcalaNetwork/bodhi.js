@@ -2034,15 +2034,15 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    const filter = await this._sanitizeRawFilter(filterInfo.logFilter);
+    const sanitizedFilter = await this._sanitizeRawFilter(filterInfo.logFilter);
 
     /* ---------------
        compute the configuration filter range
        in this context we treat 'latest' blocktag in *rawFilter* as trivial filter
        i.e. default fromBlock and toBlock are both 'latest', which filters nothing
                                                                    --------------- */
-    const from = fromBlock === 'latest' ? 0 : filter.fromBlock ?? 0;
-    const to = toBlock === 'latest' ? 999999999 : filter.toBlock ?? 999999999;
+    const from = fromBlock === 'latest' ? 0 : sanitizedFilter.fromBlock ?? 0;
+    const to = toBlock === 'latest' ? 999999999 : sanitizedFilter.toBlock ?? 999999999;
 
     /* ---------------
        combine configuration filter range [from, to] and
@@ -2056,7 +2056,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const effectiveFilter = {
-      ...filter,
+      ...sanitizedFilter,
       fromBlock: effectiveFrom,
       toBlock: effectiveTo
     };
@@ -2071,7 +2071,7 @@ export abstract class BaseProvider extends AbstractProvider {
     filterInfo.lastPollTimestamp = Date.now();
 
     const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
-    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
+    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, sanitizedFilter.topics));
 
     return hexlifyRpcResult(filteredLogs.map((log) => this.formatter.filterLog(log)));
   };
