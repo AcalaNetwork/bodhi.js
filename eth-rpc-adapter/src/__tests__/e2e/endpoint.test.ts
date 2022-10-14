@@ -1778,7 +1778,11 @@ describe('eth_newBlockFilter', () => {
   });
 
   it('throws correct error', async () => {
-    const res = await eth_getFilterChanges([dummyId]);
+    let res = await eth_getFilterChanges([dummyId]);
+    expect(res.data.error.message).to.contains('filter not found');
+
+    // eth_getFilterLogs should not find block filter
+    res = await eth_getFilterLogs([blockFilterId1]);
     expect(res.data.error.message).to.contains('filter not found');
   });
 });
@@ -1911,7 +1915,7 @@ describe('eth_newFilter', () => {
 });
 
 // mostly a copy of eth_newFilter tests, but use eth_getFilterLogs instead of eth_getFilterChanges
-describe.only('eth_getFilterLogs', () => {
+describe('eth_getFilterLogs', () => {
   const provider = new EvmRpcProvider(NODE_RPC_URL);
   const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet1.connect(provider));
 
