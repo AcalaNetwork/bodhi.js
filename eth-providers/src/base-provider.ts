@@ -2037,15 +2037,23 @@ export abstract class BaseProvider extends AbstractProvider {
     const filter = await this._sanitizeRawFilter(filterInfo.logFilter);
 
     /* ---------------
-       in this context we basically treat 'latest' blocktag as trivial filter
+       compute the configuration filter range
+       in this context we treat 'latest' blocktag in *rawFilter* as trivial filter
        i.e. default fromBlock and toBlock are both 'latest', which filters nothing
                                                                    --------------- */
     const from = fromBlock === 'latest' ? 0 : filter.fromBlock ?? 0;
     const to = toBlock === 'latest' ? 999999999 : filter.toBlock ?? 999999999;
 
-    // combine filter range (configuration) and new log range (actual data) as effective range
+    /* ---------------
+       combine configuration filter range [from, to] and
+       dynamic data range [lastPollBlockNumber + 1, curBlockNumber]
+       as the final effective range to query
+                                                    --------------- */
     const effectiveFrom = Math.max(from, filterInfo.lastPollBlockNumber + 1);
     const effectiveTo = Math.min(to, curBlockNumber);
+    if (effectiveFrom > effectiveTo) {
+      return [];
+    }
 
     const effectiveFilter = {
       ...filter,
