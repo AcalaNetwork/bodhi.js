@@ -1,29 +1,20 @@
 import axios from 'axios';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-export const MANDALA_RPC = 'https://tc7-eth.aca-dev.network';
-export const MANDALA_RPC_WS = 'wss://tc7-eth.aca-dev.network/ws';
-export const MANDALA_RPC_SUBQL = 'https://mandala-eth-rpc-adapter.thechaindata.com/public';
-export const MANDALA_RPC_WS_SUBQL = 'wss://mandala-eth-rpc-adapter.thechaindata.com/public-ws';
-
-export const KARURA_TESTNET_RPC = 'https://karura-dev.aca-dev.network/eth/http';
-export const ACALA_TESTNET_RPC = 'https://acala-dev.aca-dev.network/eth/http';
-export const ACALA_TESTNET_RPC_WS_SAFE = 'wss://acala-dev.aca-dev.network/eth-safe/ws';
+export const MANDALA_RPC = 'https://eth-rpc-mandala.aca-staging.network';
+export const KARURA_TESTNET_RPC = 'https://eth-rpc-karura-testnet.aca-staging.network';
+export const ACALA_TESTNET_RPC = 'https://eth-rpc-acala-testnet.aca-staging.network';
 export const ACALA_TESTNET_NODE_RPC = 'wss://acala-dev.aca-dev.network/rpc/ws';
-
 export const KARURA_MAINNET_RPC = 'https://eth-rpc-karura.aca-api.network';
 export const ACALA_MAINNET_RPC = 'https://eth-rpc-acala.aca-api.network';
+export const KARURA_BETA_RPC = 'https://eth-rpc-karura.aca-staging.network';
+export const ACALA_BETA_RPC = 'https://eth-rpc-acala.aca-staging.network';
 
 export const RPC_URL = process.env.RPC_URL || MANDALA_RPC;
-
-// console.log('RPC_URL: ', RPC_URL)
 
 export declare type AnyFunction = (...args: any[]) => any;
 
 export const rpcGet =
-  (method: string, url?: string = MANDALA_RPC) =>
+  (method: string, url: string = MANDALA_RPC) =>
   (params: any = []): any =>
     axios.get(url, {
       data: {
@@ -35,7 +26,7 @@ export const rpcGet =
     });
 
 export const rpcPost =
-  (method: string, url?: string = MANDALA_RPC) =>
+  (method: string, url: string = MANDALA_RPC) =>
   (params: any = []): any =>
     axios.post(url, {
       id: 0,

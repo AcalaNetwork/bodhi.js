@@ -17,7 +17,7 @@ get precompile contracts info (token, oracle, EVM).
 - batch iterate blocks for some logic (such as checking if a contract exist) with retry
 
 ### rpc tests
-`ENDPOINT=xxx CHAIN={mandala, karura, acala} yarn rpc`
+`CHAIN={mandala, karura, acala, karuraBeta, AcalaBeta} yarn rpc`
 goes over some rpc calls:
 - basic calls
 - historical calls that involves subquery
