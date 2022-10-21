@@ -78,7 +78,9 @@ export function supportEmit(Assertion: Chai.AssertionStatic): void {
       try {
         assertArgsArraysEqual(context, expectedArgs, log);
         return;
-      } catch (_a) {}
+      } catch {
+        // ignore
+      }
     }
     context.assert(
       false,

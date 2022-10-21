@@ -2,30 +2,31 @@ import { expect, use } from 'chai';
 import { Contract } from 'ethers';
 import { deployContract, solidity } from 'ethereum-waffle';
 import BasicToken from '../build/BasicToken.json';
-import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
+import { getTestUtils, Signer, evmChai, SignerProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
-import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
 
 const testPairs = createTestPairs();
 
-const provider = getTestProvider();
-
 describe('BasicToken', () => {
   let wallet: Signer;
   let walletTo: Signer;
   let emptyWallet: Signer;
+  let provider: SignerProvider;
   let token: Contract;
 
   before(async () => {
-    [wallet, walletTo, emptyWallet] = await provider.getWallets();
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const testUtils = await getTestUtils(endpoint);
+    [wallet, walletTo, emptyWallet] = testUtils.wallets;
+    provider = testUtils.provider;
     token = await deployContract(wallet, BasicToken, [1000]);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('Assigns initial balance', async () => {

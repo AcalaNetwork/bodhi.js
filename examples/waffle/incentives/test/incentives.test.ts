@@ -1,17 +1,14 @@
-import { Signer, evmChai } from '@acala-network/bodhi';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { Signer, evmChai, SignerProvider, getTestUtils } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
 import Incentives from '../build/Incentives.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
+import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 
 use(solidity);
 use(evmChai);
 
-const provider = getTestProvider();
-const testPairs = createTestPairs();
 const IncentivesABI = require('@acala-network/contracts/build/contracts/Incentives.json').abi;
 
 const formatAmount = (amount: String) => {
@@ -20,30 +17,32 @@ const formatAmount = (amount: String) => {
 
 const FixedU128 = BigNumber.from(formatAmount('1_000_000_000_000_000_000'));
 
-const send = async (extrinsic: any, sender: any) => {
-  return new Promise(async (resolve) => {
+const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressOrPair) =>
+  new Promise((resolve) => {
     extrinsic.signAndSend(sender, (result) => {
       if (result.status.isFinalized || result.status.isInBlock) {
         resolve(undefined);
       }
     });
   });
-};
 
 describe('incentives', () => {
   let wallet: Signer;
-  let walletTo: Signer;
+  let provider: SignerProvider;
   let incentives: Contract;
   let incentivesPredeployed: Contract;
 
   before(async () => {
-    [wallet, walletTo] = await provider.getWallets();
-    incentives = await deployContract(wallet as any, Incentives);
-    incentivesPredeployed = new ethers.Contract(ADDRESS.INCENTIVES, IncentivesABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const testUtils = await getTestUtils(endpoint);
+    wallet = testUtils.wallets[0];
+    provider = testUtils.provider;
+    incentives = await deployContract(wallet, Incentives);
+    incentivesPredeployed = new ethers.Contract(ADDRESS.INCENTIVES, IncentivesABI, wallet);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('incentives getIncentiveRewardAmount works', async () => {
@@ -66,7 +65,7 @@ describe('incentives', () => {
         ]
       ])
     );
-    await send(updateIncentiveRewards, await wallet.getSubstrateAddress());
+    await send(updateIncentiveRewards, wallet.substrateAddress);
 
     expect(await incentives.getIncentiveRewardAmount(0, ADDRESS.DOT, ADDRESS.DOT)).to.equal(100);
     expect(await incentives.getIncentiveRewardAmount(1, ADDRESS.DOT, ADDRESS.DOT)).to.equal(0);
@@ -88,7 +87,7 @@ describe('incentives', () => {
         ]
       ])
     );
-    await send(updateClaimRewardDeductionRates, await wallet.getSubstrateAddress());
+    await send(updateClaimRewardDeductionRates, wallet.substrateAddress);
 
     expect(await incentives.getClaimRewardDeductionRate(1, ADDRESS.LP_ACA_AUSD)).to.equal(Rate);
   });
@@ -107,7 +106,7 @@ describe('incentives', () => {
         ]
       ])
     );
-    await send(updateClaimRewardDeductionRates, await wallet.getSubstrateAddress());
+    await send(updateClaimRewardDeductionRates, wallet.substrateAddress);
 
     expect(
       (
@@ -119,14 +118,14 @@ describe('incentives', () => {
   it('incentives depositDexShare works', async () => {
     const updateBalance = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(
-        { id: await wallet.getSubstrateAddress() },
+        { id: wallet.substrateAddress },
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
         1_000_000_000
       )
     );
-    await send(updateBalance, await wallet.getSubstrateAddress());
+    await send(updateBalance, wallet.substrateAddress);
 
     await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
@@ -136,14 +135,14 @@ describe('incentives', () => {
   it('incentives withdrawDexShare works', async () => {
     const updateBalance = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(
-        { id: await wallet.getSubstrateAddress() },
+        { id: wallet.substrateAddress },
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
         1_000_000_000
       )
     );
-    await send(updateBalance, await wallet.getSubstrateAddress());
+    await send(updateBalance, wallet.substrateAddress);
 
     await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
@@ -157,14 +156,14 @@ describe('incentives', () => {
   it('incentives claimRewards works', async () => {
     const updateBalance = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(
-        { id: await wallet.getSubstrateAddress() },
+        { id: wallet.substrateAddress },
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
         1_000_000_000
       )
     );
-    await send(updateBalance, await wallet.getSubstrateAddress());
+    await send(updateBalance, wallet.substrateAddress);
 
     await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
       .to.emit(incentivesPredeployed, 'DepositedShare')

@@ -1,17 +1,14 @@
-import { Signer, evmChai } from '@acala-network/bodhi';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { Signer, evmChai, SignerProvider, getTestUtils } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
 import Honzon from '../build/Honzon.json';
 import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
-import { getTestProvider } from '../../utils';
+import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 
 use(solidity);
 use(evmChai);
 
-const provider = getTestProvider();
-const testPairs = createTestPairs();
 const HonzonABI = require('@acala-network/contracts/build/contracts/Honzon.json').abi;
 
 const formatAmount = (amount: String) => {
@@ -20,30 +17,32 @@ const formatAmount = (amount: String) => {
 const dollar = BigNumber.from(formatAmount('1_000_000_000_000'));
 const FixedU128 = BigNumber.from(formatAmount('1_000_000_000_000_000_000'));
 
-const send = async (extrinsic: any, sender: any) => {
-  return new Promise(async (resolve) => {
+const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressOrPair) =>
+  new Promise((resolve) => {
     extrinsic.signAndSend(sender, (result) => {
       if (result.status.isFinalized || result.status.isInBlock) {
         resolve(undefined);
       }
     });
   });
-};
 
 describe('honzon', () => {
   let wallet: Signer;
-  let walletTo: Signer;
+  let provider: SignerProvider;
   let honzon: Contract;
   let honzonPredeployed: Contract;
 
   before(async () => {
-    [wallet, walletTo] = await provider.getWallets();
-    honzon = await deployContract(wallet as any, Honzon);
-    honzonPredeployed = new ethers.Contract(ADDRESS.HONZON, HonzonABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const testUtils = await getTestUtils(endpoint);
+    wallet = testUtils.wallets[0];
+    provider = testUtils.provider;
+    honzon = await deployContract(wallet, Honzon);
+    honzonPredeployed = new ethers.Contract(ADDRESS.HONZON, HonzonABI, wallet);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('honzon works', async () => {
@@ -86,7 +85,7 @@ describe('honzon', () => {
         { NewValue: maximumTotalDebitValue }
       )
     );
-    await send(updateHomaParams, await wallet.getSubstrateAddress());
+    await send(updateHomaParams, wallet.substrateAddress);
 
     expect((await honzon.getLiquidationRatio(ADDRESS.DOT)).toString()).to.eq(
       '10000000000000000,10000000000000,1500000000000000000,200000000000000000,1800000000000000000'
@@ -102,7 +101,7 @@ describe('honzon', () => {
     expect((await honzon.getPosition(evmAddress, ADDRESS.DOT)).toString()).to.eq('0,0');
 
     const feedValues = provider.api.tx.acalaOracle.feedValues([[{ Token: 'DOT' }, BigNumber.from('1').mul(FixedU128)]]);
-    await send(feedValues, await wallet.getSubstrateAddress());
+    await send(feedValues, wallet.substrateAddress);
 
     await expect(honzonPredeployed.adjustLoan(ADDRESS.DOT, dollar.mul(100), dollar.mul(10)))
       .to.emit(honzonPredeployed, 'AdjustedLoan')

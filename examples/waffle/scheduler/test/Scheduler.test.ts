@@ -1,16 +1,13 @@
 import { expect, use } from 'chai';
 import { ethers, BigNumber, Contract } from 'ethers';
-import { deployContract, solidity } from 'ethereum-waffle';
-import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
+import { deployContract } from 'ethereum-waffle';
+import { getTestUtils, Signer, evmChai, SignerProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import RecurringPayment from '../build/RecurringPayment.json';
 import Subscription from '../build/Subscription.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
 
 use(evmChai);
-
-const provider = getTestProvider();
 
 const testPairs = createTestPairs();
 const formatAmount = (amount: String) => {
@@ -18,14 +15,8 @@ const formatAmount = (amount: String) => {
 };
 const dollar = BigNumber.from(formatAmount('1_000_000_000_000'));
 
-const next_block = async (block_number: number) => {
-  return new Promise((resolve) => {
-    provider.api.tx.system.remark(block_number.toString(16)).signAndSend(testPairs.alice.address, (result) => {
-      if (result.status.isFinalized || result.status.isInBlock) {
-        resolve(undefined);
-      }
-    });
-  });
+const nextBlock = async (provider: SignerProvider): Promise<void> => {
+  await provider.api.rpc.engine.createBlock(true /* create empty */, true);
 };
 
 const SCHEDULE_CALL_ABI = require('@acala-network/contracts/build/contracts/Schedule.json').abi;
@@ -35,15 +26,19 @@ describe('Schedule', () => {
   let wallet: Signer;
   let walletTo: Signer;
   let subscriber: Signer;
+  let provider: SignerProvider;
   let schedule: Contract;
 
   before(async () => {
-    [wallet, walletTo, subscriber] = await provider.getWallets();
-    schedule = await new ethers.Contract(ADDRESS.SCHEDULE, SCHEDULE_CALL_ABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const testUtils = await getTestUtils(endpoint);
+    [wallet, walletTo, subscriber] = testUtils.wallets;
+    provider = testUtils.provider;
+    schedule = new ethers.Contract(ADDRESS.SCHEDULE, SCHEDULE_CALL_ABI, wallet);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('ScheduleCall works', async () => {
@@ -58,7 +53,7 @@ describe('Schedule', () => {
     let current_block_number = Number(await provider.api.query.system.number());
     let balance = await erc20.balanceOf(await walletTo.getAddress());
     while (current_block_number < target_block_number) {
-      await next_block(current_block_number);
+      await nextBlock(provider);
       current_block_number = Number(await provider.api.query.system.number());
     }
 
@@ -115,7 +110,7 @@ describe('Schedule', () => {
     const transferTo = await ethers.Wallet.createRandom().getAddress();
 
     const recurringPayment = await deployContract(
-      wallet as any,
+      wallet,
       RecurringPayment,
       [3, 4, ethers.utils.parseEther('1000'), transferTo],
       { gasLimit: 2_000_000 }
@@ -131,7 +126,7 @@ describe('Schedule', () => {
     let current_block_number = Number(await provider.api.query.system.number());
 
     while (current_block_number < inital_block_number + 5) {
-      await next_block(current_block_number);
+      await nextBlock(provider);
       current_block_number = Number(await provider.api.query.system.number());
     }
 
@@ -140,7 +135,7 @@ describe('Schedule', () => {
 
     current_block_number = Number(await provider.api.query.system.number());
     while (current_block_number < inital_block_number + 14) {
-      await next_block(current_block_number);
+      await nextBlock(provider);
       current_block_number = Number(await provider.api.query.system.number());
     }
 
@@ -150,7 +145,7 @@ describe('Schedule', () => {
     current_block_number = Number(await provider.api.query.system.number());
     // ISchedule task needs one more block
     while (current_block_number < inital_block_number + 17 + 1) {
-      await next_block(current_block_number);
+      await nextBlock(provider);
       current_block_number = Number(await provider.api.query.system.number());
     }
 
@@ -171,7 +166,7 @@ describe('Schedule', () => {
     const period = 10;
     const subPrice = ethers.utils.parseEther('1000');
 
-    const subscription = await deployContract(wallet as any, Subscription, [subPrice, period], {
+    const subscription = await deployContract(wallet, Subscription, [subPrice, period], {
       value: ethers.utils.parseEther('5000'),
       gasLimit: 2_000_000
     });
@@ -198,7 +193,7 @@ describe('Schedule', () => {
 
     let current_block_number = Number(await provider.api.query.system.number());
     for (let i = 0; i < period + 1; i++) {
-      await next_block(current_block_number);
+      await nextBlock(provider);
       current_block_number = Number(await provider.api.query.system.number());
     }
 
@@ -210,7 +205,7 @@ describe('Schedule', () => {
 
     current_block_number = Number(await provider.api.query.system.number());
     for (let i = 0; i < period + 1; i++) {
-      await next_block(current_block_number);
+      await nextBlock(provider);
       current_block_number = Number(await provider.api.query.system.number());
     }
 
@@ -223,7 +218,7 @@ describe('Schedule', () => {
     await subscriberContract.unsubscribe({ gasLimit: 2_000_000 });
 
     current_block_number = Number(await provider.api.query.system.number());
-    await next_block(current_block_number);
+    await nextBlock(provider);
 
     expect((await subscription.balanceOf(subscriber.getAddress())).toString()).to.equal('0');
     expect((await subscription.subTokensOf(subscriber.getAddress())).toString()).to.equal('6');
