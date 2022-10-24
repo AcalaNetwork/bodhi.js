@@ -64,18 +64,17 @@ export const getTestUtils = async (
 
   const polkaSigner = new PolkaSigner(provider.api.registry, pairs);
 
-  const wallets = await Promise.all(
-    pairs.map(async (pair) => {
-      const wallet = new Signer(provider, pair.address, polkaSigner);
+  const wallets: Signer[] = [];
+  for (const pair of pairs) {
+    const wallet = new Signer(provider, pair.address, polkaSigner);
 
-      const isClaimed = await wallet.isClaimed();
-      if (!isClaimed) {
-        await wallet.claimDefaultAccount();
-      }
+    const isClaimed = await wallet.isClaimed();
+    if (!isClaimed) {
+      await wallet.claimDefaultAccount();
+    }
 
-      return wallet;
-    })
-  );
+    wallets.push(wallet);
+  }
 
   return {
     wallets,
