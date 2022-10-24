@@ -1,14 +1,24 @@
 # @acala-network/eth-rpc-adapter
-A node service that allows existing Ethereum dApp to be able to interact with [Acala EVM](https://github.com/AcalaNetwork/Acala/tree/master/modules/evm).
+A node service that provides [JSON-RPC](https://eth.wiki/json-rpc/API) for [Acala EVM+](https://github.com/AcalaNetwork/Acala/tree/master/modules/evm), in order for existing Ethereum dApp and tools to interact with EVM+ with minumum changes.
 
 ## Run
-There are 3 ways to run an RPC adapter:
+First run a Mandala node locally
+```
+docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-f045637 --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe --tmp -levm=debug --instant-sealing
+```
+
+Then there are 3 ways to run an RPC adapter:
+- from docker
 - from npm package
 - from local build
-- from docker
+
+#### from docker
+```
+docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:v2.5.3 yarn start
+```
+latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 
 #### from npm package
-- run the server (suppose a Mandala node is running at `ws://localhost:9944`)
 ```
 npx @acala-network/eth-rpc-adapter \
   --endpoint ws://localhost:9944 \
@@ -26,12 +36,6 @@ rush build -t @acala-network/eth-rpc-adapter
 ```
 yarn start --local-mode [--other-options]
 ```
-
-#### from docker
-```
-docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:aa2c8d7 yarn start
-```
-note that the above docker image might not be up-to-date. Latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 
 ## Options
 NOTE: Please don't mix using ENVs and cli options. Cli options are preferred, and will overwrite ENVs.
@@ -53,18 +57,19 @@ More details can also be found by `yarn start --help` or `npx @acala-network/eth
 | VERBOSE            | -v, --verbose          | 1                   | print some extra info                                                                                   |
 
 ## Usage
-Now that the adaptor service is running and listening to the `--port`, we can send Eth JsonRpc requests to this port.
+Now that the adaptor service is running and listening to the `--port`, we can send Eth JsonRpc requests to this port (both `GET` and `POST` are supported).
 
 For example
 ```
 ### request
-GET http://localhost:8545
-{
+curl --location --request GET 'http://localhost:8545' \
+--header 'Content-Type: application/json' \
+--data-raw '{
     "jsonrpc": "2.0",
     "method": "eth_chainId",
     "params": [],
     "id": 1
-}
+}'
 
 ### response
 {
@@ -123,24 +128,35 @@ These are EVM+ custom RPCs that only exist on Acala/Karura
 - `eth_isBlockFinalized`: check if a block is finalized, params: [BlockTag](https://docs.ethers.io/v5/api/providers/types/#providers-BlockTag)
 - `eth_isTransactionFinalized`: check if a transaction is finalized, note that it also returns false for non-exist tx, params: string
 
-## Test
-```
-yarn test     # unit tests
-yarn test:dev # all tests
-```
-
-## Metamask Integration
+## Integrate Metamask Locally
+As Eth RPCs are now available locally, we can connect metamask to it
 - start the RPC server locally: `yarn start --local`
 - add a custom network on Metamask:
   - Network Name: Local Mandala
   - New RPC URL: http://localhost:8545
   - Chain ID: 595
   - Currency Symbol: ACA
-- import dev address:
+- import dev address to metamask:
   - by nmemonic: `fox sight canyon orphan hotel grow hedgehog build bless august weather swarm`
   - or by private key: `0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f`
-- before sending any transaction:
-  - don't change the default `gasPrice` or `GasLimit`, otherwise transaction will fail. [more info](https://evmdocs.acala.network/network/gas-parameters)
+
+#### tips
+- before sending any transaction, please don't change the default `gasPrice` or `GasLimit`, otherwise transaction will fail. [more info](https://evmdocs.acala.network/network/gas-parameters)
+- everytime we restart the local network, we need to reset metamask for local network, so the nonce and cache will be cleared: `settings => advanced => reset account`
+
+## Modes
+#### safe mode (deprecated)
+In this mode, Txs and logs can only be found after they are finalized. Now deprecated in favor for the `finalized` and `safe` block tags.
+
+#### local mode
+For local testing, we usually turn this mode on, together with a local `--instant-sealing` mandala node. It has some optimization to run faster with local node, and some minor bug prevention.
+
+#### rich mode
+We usually need to specify [gas params](https://evmdocs.acala.network/network/gas-parameters) for some transactions, this is sometimes time-consuming for contract testing, especially with `hardhat` where we can't override gas params in config. 
+
+In rich mode, default gas params are much bigger than normal, so we don't need to worry about overriding gas params when running tests. As a result, all truffle/hardhat tests can be run **unchanged**. 
+
+We still recommend reading through the [gas params](https://evmdocs.acala.network/network/gas-parameters) and understand how gas works in EVM+, since in prod we might still need to override gas params.
 
 ## For Production
-WIP
+For production deployment we can simply use [acala/eth-rpc-adapter`](https://hub.docker.com/r/acala/eth-rpc-adapter/tags) directly. Remember **NOT** to turn on `local mode` or `rich mode`

@@ -3,6 +3,7 @@ Some tools and SDKs related to Acala EVM.
 
 Packages:
 - [bodhi](./bodhi)
+- [eth-providers](./eth-providers)
 - [eth-rpc-adapter](./eth-rpc-adapter)
 - [evm-subql](./evm-subql)
 - [examples](./examples)
@@ -84,10 +85,10 @@ docker logs -f <container_id>           # logs for specific container
   - build locally: `docker build . -t evm-subql-local -f evm-subql/Dockerfile`
   - [public docker images](https://hub.docker.com/r/acala/evm-subql/tags)
 
-## Documentation
+## More References
 - This project is managed by [Rushstack](https://github.com/microsoft/rushstack).
-- Most of JsonRpc methods provided by [eth-rpc-adapter](./eth-rpc-adapter/) are compatible with [standard ETH JsonRpcs](https://ethereum.org/en/developers/docs/apis/json-rpc/), for more details please checkout [available RPCs](./eth-rpc-adapter/README.md#available-rpcs).
-- Most of the Apis of [eth-providers](./eth-providers/) is compatible with [ethers.js](https://docs.ethers.io/v5/single-page/) providers. (TODO: add more details)
+- Most of JSON-RPC methods provided by [eth-rpc-adapter](./eth-rpc-adapter/) are compatible with standard [ETH JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/), for more details please checkout [available RPCs](./eth-rpc-adapter/README.md#available-rpcs).
+- Most of the APIs of [eth-providers](./eth-providers/) is compatible with [ethers.js](https://docs.ethers.io/v5/single-page/) providers.
 
 ## Release Workflow
 ### manual
