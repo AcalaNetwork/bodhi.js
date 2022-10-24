@@ -1,7 +1,9 @@
 # Acala EVM Waffle Examples
-These are some exmaples to interact with Acala Evm+ with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).
+These are some exmaples that demonstrate how to interact with Acala Evm+ with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).
 
-More examples:
+It's recommended to read through [basic bodhi usage](../../bodhi/README.md) before diving into the examples.
+
+More examples for other tools:
 - [hardhat](https://github.com/AcalaNetwork/hardhat-tutorials)
 - [truffle](https://github.com/AcalaNetwork/truffle-tutorials)
 
