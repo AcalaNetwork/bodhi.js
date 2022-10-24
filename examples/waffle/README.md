@@ -1,9 +1,9 @@
 # Acala EVM Waffle Examples
-These are some exmaples that demonstrate how to interact with Acala Evm+ with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).
+These are some exmaples that demonstrate how to interact with Acala EVM+ with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).
 
 It's recommended to read through [basic bodhi usage](../../bodhi/README.md) before diving into the examples.
 
-More examples for other tools:
+Note that these examples mainly use **Polkadot Signers** to interact with EVM+. For other tools that rely mostly on [JSON-RPC](https://eth.wiki/json-rpc/API), checkout these examples:
 - [hardhat](https://github.com/AcalaNetwork/hardhat-tutorials)
 - [truffle](https://github.com/AcalaNetwork/truffle-tutorials)
 
