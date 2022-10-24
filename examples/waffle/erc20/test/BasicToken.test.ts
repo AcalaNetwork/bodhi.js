@@ -21,7 +21,7 @@ describe('BasicToken', () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
     const testUtils = await getTestUtils(endpoint);
     [wallet, walletTo, emptyWallet] = testUtils.wallets;
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     token = await deployContract(wallet, BasicToken, [1000]);
   });
 

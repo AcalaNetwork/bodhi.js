@@ -27,7 +27,7 @@ describe('EVM', () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
     const testUtils = await getTestUtils(endpoint);
     [wallet, walletTo] = testUtils.wallets;
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     evm = await deployContract(wallet, EVM);
     evmPredeployed = new ethers.Contract(ADDRESS.EVM, EVM_ABI, wallet);
   });

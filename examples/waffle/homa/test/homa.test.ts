@@ -35,7 +35,7 @@ describe('homa', () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
     const testUtils = await getTestUtils(endpoint);
     wallet = testUtils.wallets[0];
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     homa = await deployContract(wallet, Homa);
     homaPredeployed = new ethers.Contract(ADDRESS.HOMA, HomaABI, wallet);
   });

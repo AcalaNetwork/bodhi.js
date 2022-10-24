@@ -36,7 +36,7 @@ describe('incentives', () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
     const testUtils = await getTestUtils(endpoint);
     wallet = testUtils.wallets[0];
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     incentives = await deployContract(wallet, Incentives);
     incentivesPredeployed = new ethers.Contract(ADDRESS.INCENTIVES, IncentivesABI, wallet);
   });

@@ -1,15 +1,9 @@
 # Acala EVM Waffle Examples
 These are some exmaples to interact with Acala Evm+ with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).
 
-Read more about Acala EVM [here](https://wiki.acala.network/learn/basics/acala-evm)
-
-Developer Guide [here](https://evmdocs.acala.network/)
-
-Also checkout [ETHDenver Workshop](https://www.crowdcast.io/e/acala-ethdenver-2021), which demonstrates how to deploy a simple ERC20 contract, a complex project like Uniswap, and use the on-chain scheduler function to build a recurring payment DApp.
-
 More examples:
-[hardhat](https://github.com/AcalaNetwork/hardhat-tutorials)
-[truffle](https://github.com/AcalaNetwork/truffle-tutorials)
+- [hardhat](https://github.com/AcalaNetwork/hardhat-tutorials)
+- [truffle](https://github.com/AcalaNetwork/truffle-tutorials)
 
 ## Run
 install all dependencies
@@ -61,3 +55,10 @@ rush add -p <package>
 ## Tips
 - we only need to do `rush update` once, which will install deps to **all** examples
 - `rushx` is an alternative to `yarn`, so we can also do `rushx test`
+
+## More Resources
+Read more about Acala EVM [here](https://wiki.acala.network/learn/basics/acala-evm)
+
+Developer Guide [here](https://evmdocs.acala.network/)
+
+Also checkout [ETHDenver Workshop](https://www.crowdcast.io/e/acala-ethdenver-2021), which demonstrates how to deploy a simple ERC20 contract, a complex project like Uniswap, and use the on-chain scheduler function to build a recurring payment DApp.

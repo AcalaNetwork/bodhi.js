@@ -33,7 +33,7 @@ describe('Schedule', () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
     const testUtils = await getTestUtils(endpoint);
     [wallet, walletTo, subscriber] = testUtils.wallets;
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     schedule = new ethers.Contract(ADDRESS.SCHEDULE, SCHEDULE_CALL_ABI, wallet);
   });
 

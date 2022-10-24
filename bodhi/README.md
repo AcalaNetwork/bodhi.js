@@ -37,19 +37,18 @@ const wallet = wallets[0];
 ```
 
 ### use the wallet
-now that we have a eth compatible wallet (signer), we can use it with any eth toolings. 
+now that we have an eth compatible wallet (signer), we can use it with any eth toolings. 
 
 For example we can use it with `waffle` to deploy a contract
 ```ts
 import { deployContract } from "ethereum-waffle";
-
 const instance = await deployContract(wallet, contractAbi, params);
 ```
 
 or use with `ethers` to interact with existing contracts
 ```ts
 const instance = new ethers.Contract(address, contractAbi, wallet);
-instance.callSomeFunction();
+await instance.callSomeFunction();
 ```
 
 ## Concepts
@@ -57,12 +56,14 @@ You may notice there are so many "providers" and "signers", basically there are 
 
 Here is a brief hierachy of how they work together:
 
-`Signer` (wallet): eth signer, compatible with `ethers.js` `AbstractSigner`, can be directly used by any evm toolings 
-  - `Provider` (SignerProvider): eth provider for eth related communications, mostly compatible with `ethers.js` `AbstractProvider`
-    - `WsProvider`: provides websocket connection with substrate based chains, used by SignerProvider under the hood
-  - `PolkaSigner`: polkadot signer, usually an extension wallet
+- `Signer`: top level eth signer (wallet), compatible with ethers.js AbstractSigner, can be directly used by any eth toolings, such as ethers, waffle, etc.
+  - `PolkaSigner`: polkadot signer, usually from an extension wallet, such as polkadotjs or talisman
+  - `Provider` (SignerProvider): eth provider for eth related communications, mostly compatible with ethers.js AbstractProvider
+    - `WsProvider`: provides websocket connection with substrate based chains, used by SignerProvider internally
+  
 
 TODO: maybe a graph is better.
+
 ## Evm+ Specific Features
 besides classic signer methods, we have some additional features available only for Evm+. For a comprehensive list please checkout [here](./src/Signer.ts)
 ```ts

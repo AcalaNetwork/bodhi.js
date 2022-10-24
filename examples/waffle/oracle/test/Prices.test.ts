@@ -30,7 +30,7 @@ describe('Prices', () => {
   before(async () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
     const testUtils = await getTestUtils(endpoint);
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     prices = await deployContract(testUtils.wallets[0], Prices);
   });
 

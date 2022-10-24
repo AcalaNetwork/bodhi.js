@@ -35,7 +35,7 @@ describe('stable asset', () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
     const testUtils = await getTestUtils(endpoint);
     wallet = testUtils.wallets[0];
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     stableAsset = await deployContract(wallet, StableAsset);
     stableAssetPredeployed = new ethers.Contract(ADDRESS.STABLE_ASSET, StableAssetABI, wallet);
   });

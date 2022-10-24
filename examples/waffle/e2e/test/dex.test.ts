@@ -28,7 +28,7 @@ describe('dex test', () => {
   before(async () => {
     const testUtils = await getTestUtils(endpoint);
     wallet = testUtils.wallets[0];
-    provider = testUtils.provider;
+    provider = testUtils.provider; // this is the same as wallet.provider
     await evmProvider.isReady();
   });
 
