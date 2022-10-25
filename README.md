@@ -1,8 +1,8 @@
-# @acala-network/bodhi.js
-Some tools and SDKs related to Acala EVM.  
+# Acala EVM+ SDKs
+These are some tools and SDKs related to Acala EVM+. It also contains some examples about how to interact with EVM+ with these tools.
 
 Packages:
-- [bodhi](./bodhi)
+- [bodhi.js](./bodhi)
 - [eth-providers](./eth-providers)
 - [eth-rpc-adapter](./eth-rpc-adapter)
 - [evm-subql](./evm-subql)

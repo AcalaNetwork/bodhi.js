@@ -2,12 +2,21 @@
 This package includes two providers:
 
 **EvmRpcProvider**
-It is an abstract connection to EVM+, it's APIs is mostly compatible with ethers.js [JsonRpcProvider](https://docs.ethers.io/v5/single-page/#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider). Note that it is usually used internally by [eth-rpc-adapter](../eth-rpc-adapter) to provide standard [ETH JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/), so in most cases we don't use it directly.
+It is an abstract connection to EVM+, the APIs is mostly compatible with ethers.js [JsonRpcProvider](https://docs.ethers.io/v5/single-page/#/v5/api/providers/jsonrpc-provider/-%23-JsonRpcProvider). It is used internally by [eth-rpc-adapter](../eth-rpc-adapter) to provide standard [ETH JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/), which is the preferred way to interact with EVM+. 
 
 **SignerProvider**
 It is similar to `EvmRpcProvider`, but mostly used by [bodhi signer](../bodhi/).
 
 ## Getting Started
+As mentioned above, the [ETH JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/) is more common way to interact with EVM+. So in most cases we don't use the provider directly, but if you do need to, below are some examples.
+
+### install
+```
+yarn add @acala-network/eth-providers
+### or 
+npm install @acala-network/eth-providers
+```
+
 ### create a provider instance 
 ```ts
 import { EvmRpcProvider } from "@acala-network/eth-providers";
