@@ -6,13 +6,13 @@ Subquery services that index and query Acala EVM+ transactions and logs.
 
 ### Prepare
 
-- Install the required dependencies
+- install dependencies
 
 ```
 yarn
 ```
 
-- Generate the required types from the GraphQL schema and build code
+- generate the required types from the GraphQL schema, and build code
 
 ```shell
 yarn build
@@ -166,8 +166,15 @@ query {
 
 Previous examples are examples of the **local development setup**, which uses the [example configuration](./project.yaml) that is tailored to local development node. 
 
-For production we need a slightly different configuration and usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s, instead of running them all in one Docker container.
+For production deployment, there are a couple differences: 
 
+#### services
+In local setup we can run all of the services all together with one single [docker compose](./docker-compose.yml). However, in prod we  usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s.
+
+#### image
+Notice that in the local example, we use `onfinality/subql-node:v1.9.1` as indexer, with **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
+
+#### config
 One of the tricks is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
 
 - [Acala production](./project-acala-840000.yaml)
