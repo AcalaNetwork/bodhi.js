@@ -1,11 +1,13 @@
 # Acala EVM Waffle Examples
+These are some exmaples that demonstrate how to interact with Acala EVM+ with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).
 
-ETHDenver Workshop Link: https://www.crowdcast.io/e/acala-ethdenver-2021
+It's recommended to read through [basic bodhi usage](../../bodhi/README.md) before diving into the examples.
 
-This workshop is for learning to use Acala EVM. It demonstrates how to deploy a simple ERC20 contract, a complex project like Uniswap, and use the on-chain scheduler function to build a recurring payment DApp.
+Note that the usecase for these examples is when **we already have a signer instance at hand**, such as from `polkadot.js` extension or `talisman` (in the examples we simulate a such wallet via `getTestUtils`).
 
-Read more about Acala EVM [here](https://wiki.acala.network/learn/basics/acala-evm)
-Developer Guide [here](https://wiki.acala.network/build/development-guide/smart-contracts/get-started-evm)
+For other tools that implement signers themselves, and rely mostly on [JSON-RPC](https://eth.wiki/json-rpc/API), checkout these examples:
+- [hardhat](https://github.com/AcalaNetwork/hardhat-tutorials)
+- [truffle](https://github.com/AcalaNetwork/truffle-tutorials)
 
 ## Run
 install all dependencies
@@ -19,7 +21,7 @@ compile and build all contracts
 ./run.sh rebuild  # force rebuild all
 ```
 
-if testing with local node, start a acala node with docker
+start a local mandala node with docker
 ```
 docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-f045637 --dev --instant-sealing --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe
 ```
@@ -35,9 +37,12 @@ build and run together
 ```
 
 or we can run tests for a single example:
-- cd into one of the example project
-  - You can find your contract ABI in the build directory. You can upload these ABI files to [acala evm playground](https://evm.acala.network/#/upload) for testing.
-  - Run the tests with `[ENDPOINT_URL=xxxxx] yarn test `.
+```
+rush update                       # install all deps (only need once)
+cd some-example
+rush build -t .                   # build only this project
+[ENDPOINT_URL=xxxxx] yarn test    # run tests for this project
+```
 
 ## Development
 update dep package version for all examples
@@ -51,6 +56,13 @@ cd <project>
 rush add -p <package>
 ```
 
-### Tips and Docs
-- `rushx` is an alternative to `yarn`, so `yarn test` and `rushx test` are equivalent.
-- The test cases are written with with [ethers.js](https://docs.ethers.io/v5/) and [waffle](https://ethereum-waffle.readthedocs.io/en/latest/).
+## Tips
+- we only need to do `rush update` once, which will install deps to **all** examples
+- `rushx` is an alternative to `yarn`, so we can also do `rushx test`
+
+## More Resources
+Read more about Acala EVM [here](https://wiki.acala.network/learn/basics/acala-evm)
+
+Developer Guide [here](https://evmdocs.acala.network/)
+
+Also checkout [ETHDenver Workshop](https://www.crowdcast.io/e/acala-ethdenver-2021), which demonstrates how to deploy a simple ERC20 contract, a complex project like Uniswap, and use the on-chain scheduler function to build a recurring payment DApp.

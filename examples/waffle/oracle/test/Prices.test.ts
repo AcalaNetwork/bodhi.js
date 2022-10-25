@@ -1,20 +1,17 @@
-import { Signer, AccountSigningKey, evmChai } from '@acala-network/bodhi';
+import { evmChai, getTestUtils, SignerProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, BigNumber } from 'ethers';
 import Prices from '../build/Prices.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
 
-const provider = getTestProvider();
-
 const testPairs = createTestPairs();
 
-const feedValues = async (token: string, price: number) => {
+const feedValues = async (provider: SignerProvider, token: string, price: string) => {
   return new Promise((resolve) => {
     provider.api.tx.acalaOracle
       .feedValues([[{ Token: token }, price]])
@@ -28,31 +25,32 @@ const feedValues = async (token: string, price: number) => {
 
 describe('Prices', () => {
   let prices: Contract;
+  let provider: SignerProvider;
 
   before(async () => {
-    const [wallet] = await provider.getWallets();
-    prices = await deployContract(wallet as any, Prices);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const testUtils = await getTestUtils(endpoint);
+    provider = testUtils.provider; // this is the same as wallet.provider
+    prices = await deployContract(testUtils.wallets[0], Prices);
   });
 
-  after(async () => {
-    provider.api.disconnect();
-  });
+  after(() => provider.disconnect());
 
   it('getPrice works', async () => {
-    await feedValues('RENBTC', BigNumber.from(34_500).mul(BigNumber.from(10).pow(18)).toString());
+    await feedValues(provider, 'RENBTC', BigNumber.from(34_500).mul(BigNumber.from(10).pow(18)).toString());
     expect(await prices.getPrice(ADDRESS.RENBTC)).to.equal(
       BigNumber.from(34_500).mul(BigNumber.from(10).pow(18)).toString()
     );
 
-    await feedValues('RENBTC', BigNumber.from(33_800).mul(BigNumber.from(10).pow(18)).toString());
+    await feedValues(provider, 'RENBTC', BigNumber.from(33_800).mul(BigNumber.from(10).pow(18)).toString());
     expect(await prices.getPrice(ADDRESS.RENBTC)).to.equal(
       BigNumber.from(33_800).mul(BigNumber.from(10).pow(18)).toString()
     );
 
-    await feedValues('DOT', BigNumber.from(15).mul(BigNumber.from(10).pow(18)).toString());
+    await feedValues(provider, 'DOT', BigNumber.from(15).mul(BigNumber.from(10).pow(18)).toString());
     expect(await prices.getPrice(ADDRESS.DOT)).to.equal(BigNumber.from(15).mul(BigNumber.from(10).pow(18)).toString());
 
-    await feedValues('DOT', BigNumber.from(16).mul(BigNumber.from(10).pow(18)).toString());
+    await feedValues(provider, 'DOT', BigNumber.from(16).mul(BigNumber.from(10).pow(18)).toString());
     expect(await prices.getPrice(ADDRESS.DOT)).to.equal(BigNumber.from(16).mul(BigNumber.from(10).pow(18)).toString());
 
     expect(await prices.getPrice(ADDRESS.AUSD)).to.equal(BigNumber.from(1).mul(BigNumber.from(10).pow(18)).toString());

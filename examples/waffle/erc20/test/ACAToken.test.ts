@@ -1,15 +1,11 @@
 import { expect, use } from 'chai';
-import { ethers, Contract, BigNumber } from 'ethers';
-import { deployContract, solidity } from 'ethereum-waffle';
-import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { ethers, Contract } from 'ethers';
+import { solidity } from 'ethereum-waffle';
+import { getTestUtils, Signer, evmChai } from '@acala-network/bodhi';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
-
-const provider = getTestProvider();
 
 const ERC20_ABI = require('@acala-network/contracts/build/contracts/Token.json').abi;
 
@@ -19,12 +15,14 @@ describe('ACAToken', () => {
   let token: Contract;
 
   before(async () => {
-    [wallet, walletTo] = await provider.getWallets();
-    token = new ethers.Contract(ADDRESS.ACA, ERC20_ABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const { wallets } = await getTestUtils(endpoint);
+    [wallet, walletTo] = wallets;
+    token = new ethers.Contract(ADDRESS.ACA, ERC20_ABI, wallet);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('get token name', async () => {

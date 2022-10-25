@@ -1,36 +1,34 @@
-import { Signer, evmChai } from '@acala-network/bodhi';
+import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, ethers } from 'ethers';
 import EVMAccounts from '../build/EVMAccounts.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
 import { Keyring } from '@polkadot/keyring';
 import { randomAsHex, blake2AsU8a } from '@polkadot/util-crypto';
-import { hexToU8a, u8aConcat, stringToU8a, u8aToHex } from '@polkadot/util';
+import { u8aConcat, stringToU8a, u8aToHex } from '@polkadot/util';
 
 use(solidity);
 use(evmChai);
 
-const provider = getTestProvider();
 const testPairs = createTestPairs();
 const EVMAccountsABI = require('@acala-network/contracts/build/contracts/EVMAccounts.json').abi;
 
 describe('EVM Accounts', () => {
   let wallet: Signer;
-  let walletTo: Signer;
   let evmAccounts: Contract;
   let evmAccountsPredeployed: Contract;
 
   before(async () => {
-    [wallet, walletTo] = await provider.getWallets();
-    evmAccounts = await deployContract(wallet as any, EVMAccounts);
-    evmAccountsPredeployed = new ethers.Contract(ADDRESS.EVM_ACCOUNTS, EVMAccountsABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    wallet = (await getTestUtils(endpoint)).wallets[0];
+    evmAccounts = await deployContract(wallet, EVMAccounts);
+    evmAccountsPredeployed = new ethers.Contract(ADDRESS.EVM_ACCOUNTS, EVMAccountsABI, wallet);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('evm accounts works', async () => {
