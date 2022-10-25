@@ -159,4 +159,4 @@ In rich mode, default gas params are much bigger than normal, so we don't need t
 We still recommend reading through the [gas params](https://evmdocs.acala.network/network/gas-parameters) and understand how gas works in EVM+, since in prod we might still need to override gas params.
 
 ## For Production
-For production deployment we can simply use [acala/eth-rpc-adapter`](https://hub.docker.com/r/acala/eth-rpc-adapter/tags) directly. Remember **NOT** to turn on `local mode` or `rich mode`
+For production deployment we can simply use [acala/eth-rpc-adapter](https://hub.docker.com/r/acala/eth-rpc-adapter/tags) directly. Remember **NOT** to turn on `local mode` or `rich mode`
