@@ -169,18 +169,18 @@ Previous examples are examples of the **local development setup**, which uses th
 For production deployment, there are a couple differences: 
 
 #### services
-In local setup we can run all of the services all together with one single [docker compose](./docker-compose.yml). However, in prod we  usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s.
+In local setup we can run all of the services together with one single [docker compose](./docker-compose.yml). However, in prod we  usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s.
 
 #### image
-Notice that in the local example, we use `onfinality/subql-node:v1.9.1` as indexer, with **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
+In the local example, we use `onfinality/subql-node:v1.9.1` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
 
 #### config
-One of the tricks is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
+One trick is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
 
 - [Acala production](./project-acala-840000.yaml)
 - [Karura production](./project-karura-1780000.yaml)
 
-It usually takes between one to three days to index all of the data, depending on the node latency and performance.
+It usually takes 1 to 3 days to index all of the data, depending on the node latency and performance.
 
 ## More References
 
