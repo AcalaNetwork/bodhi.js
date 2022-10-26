@@ -17,6 +17,16 @@ const {
   VERBOSE
 } = process.env;
 
+export const parseBooleanOption = (option: string, defaultValue: boolean, value?: string): boolean => {
+  if (value === undefined) return defaultValue;
+
+  if (!['0', '1', 'true', 'false'].includes(value)) {
+    throw new Error(`boolean env ${option} should be any of { true, false, 1, 0 }, got ${value}`);
+  }
+
+  return ['1', 'true'].includes(value);
+};
+
 export const yargsOptions = yargs(hideBin(process.argv))
   .options({
     endpoint: {
@@ -62,35 +72,35 @@ export const yargsOptions = yargs(hideBin(process.argv))
     safeMode: {
       alias: 's',
       demandOption: false,
-      default: Boolean(SAFE_MODE ?? false),
+      default: parseBooleanOption('SAFE_MODE', false, SAFE_MODE),
       describe: 'if enabled, Tx and logs can only be found after they are finalized',
       type: 'boolean'
     },
     localMode: {
       alias: 'l',
       demandOption: false,
-      default: Boolean(LOCAL_MODE ?? false),
+      default: parseBooleanOption('LOCAL_MODE', false, LOCAL_MODE),
       describe: 'enable this mode when testing with locally running instant-sealing mandala',
       type: 'boolean'
     },
     richMode: {
       alias: 'r',
       demandOption: false,
-      default: Boolean(RICH_MODE ?? false),
+      default: parseBooleanOption('RICH_MODE', false, RICH_MODE),
       describe:
         'if enabled, default gas params is big enough for most contract deployment and calls, so contract tests from traditional evm world can run unchanged. Note this mode is helpful for testing contracts, but is different than production envionment, please refer to https://evmdocs.acala.network/network/gas-parameters for more info',
       type: 'boolean'
     },
     httpOnly: {
       demandOption: false,
-      default: Boolean(HTTP_ONLY ?? false),
+      default: parseBooleanOption('HTTP_ONLY', false, HTTP_ONLY),
       describe: 'only allow http requests, disable ws connections',
       type: 'boolean'
     },
     verbose: {
       alias: 'v',
       demandOption: false,
-      default: Boolean(VERBOSE ?? true),
+      default: parseBooleanOption('VERBOSE', true, VERBOSE),
       describe: 'print some extra info',
       type: 'boolean'
     }
