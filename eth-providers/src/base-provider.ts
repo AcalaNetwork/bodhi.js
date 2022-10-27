@@ -298,7 +298,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (this.maxBlockCacheSize < 0) {
       return logger.throwError(
-        `expect maxBlockCacheSize > 0, but got ${this.maxBlockCacheSize}`,
+        `expect maxBlockCacheSize >= 0, but got ${this.maxBlockCacheSize}`,
         Logger.errors.INVALID_ARGUMENT
       );
     } else {
