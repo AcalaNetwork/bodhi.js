@@ -30,14 +30,16 @@ helpful for quickly testing the setup of a new RPC endpoint
 test a tx confirmation time and blocks.
 
 ### orphan tx and orphan logs test
-to test local codes, first start a local rpc adapter 
+to test local codes, first start a local rpc adapter connecting to Acala Testnet
 ```
 yarn start -e wss://acala-dev.aca-dev.network/rpc/ws --subql http://localhost:3001
 ```
 
+then start a subquery connecting to Acala testnet 
+
 then input a sudo private key into the code, and 
 ```
-RPC_URL=http://localhost:8545 RPC_URL_WS=ws://localhost:8545 yarn virtual-tx
+RPC_URL=http://localhost:8545 RPC_URL_WS=ws://localhost:8545 yarn virtual-tx [--maxBlockCacheSize=0]
 ```
 
 This will send two scheduled transaction in batch to acala testnet, which will produce virutal tx and orphan logs. Then the script will call related RPC methods to make sure they can be found.
