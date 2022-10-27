@@ -1,34 +1,34 @@
 import { expect, use } from 'chai';
 import { BigNumber } from 'ethers';
-import { deployContract, solidity } from 'ethereum-waffle';
-import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
-import { EvmRpcProvider, hexlifyRpcResult } from '@acala-network/eth-providers';
+import { deployContract } from 'ethereum-waffle';
+import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
+import { EvmRpcProvider, hexlifyRpcResult, SignerProvider } from '@acala-network/eth-providers';
 import TestToken from '../build/TestToken.json';
-import { getTestProvider } from '../../utils';
-import { getAddress } from 'ethers/lib/utils';
+import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 
 use(evmChai);
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
 const evmProvider = EvmRpcProvider.from(endpoint, { localMode: true });
-const provider = getTestProvider();
 
-const send = async (extrinsic: any, sender: any) => {
-  return new Promise(async (resolve) => {
+const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressOrPair) =>
+  new Promise((resolve) => {
     extrinsic.signAndSend(sender, (result) => {
       if (result.status.isFinalized || result.status.isInBlock) {
         resolve(undefined);
       }
     });
   });
-};
 
 describe('dex test', () => {
-  let alice: Signer;
+  let wallet: Signer;
+  let provider: SignerProvider;
 
   before(async () => {
-    [alice] = await provider.getWallets();
+    const testUtils = await getTestUtils(endpoint);
+    wallet = testUtils.wallets[0];
+    provider = testUtils.provider; // this is the same as wallet.provider
     await evmProvider.isReady();
   });
 
@@ -39,29 +39,29 @@ describe('dex test', () => {
 
   it('dex e2e test', async () => {
     // deploy TokenA
-    let TokenA = await deployContract(alice as any, TestToken, [BigNumber.from('1000000000000000000')]);
+    let TokenA = await deployContract(wallet, TestToken, [BigNumber.from('1000000000000000000')]);
     // deploy TokenB
-    let TokenB = await deployContract(alice as any, TestToken, [BigNumber.from('1000000000000000000')]);
+    let TokenB = await deployContract(wallet, TestToken, [BigNumber.from('1000000000000000000')]);
 
     // publish TokenA
     const publishTokenA = provider.api.tx.sudo.sudo(provider.api.tx.evm.publishFree(TokenA.address));
-    await send(publishTokenA, await alice.getSubstrateAddress());
+    await send(publishTokenA, wallet.substrateAddress);
 
     // publish TokenB
     const publishTokenB = provider.api.tx.sudo.sudo(provider.api.tx.evm.publishFree(TokenB.address));
-    await send(publishTokenB, await alice.getSubstrateAddress());
+    await send(publishTokenB, wallet.substrateAddress);
 
     // register TokenA
     const registerTokenA = provider.api.tx.sudo.sudo(
       provider.api.tx.assetRegistry.registerErc20Asset(TokenA.address, 1)
     );
-    await send(registerTokenA, await alice.getSubstrateAddress());
+    await send(registerTokenA, wallet.substrateAddress);
 
     // register TokenB
     const registerTokenB = provider.api.tx.sudo.sudo(
       provider.api.tx.assetRegistry.registerErc20Asset(TokenB.address, 1)
     );
-    await send(registerTokenB, await alice.getSubstrateAddress());
+    await send(registerTokenB, wallet.substrateAddress);
 
     const currencyIdA = { Erc20: TokenA.address };
     const currencyIdB = { Erc20: TokenB.address };
@@ -70,28 +70,26 @@ describe('dex test', () => {
     const listProvisioningExtrinsic = provider.api.tx.sudo.sudo(
       provider.api.tx.dex.listProvisioning(currencyIdA, currencyIdB, 10, 10, 100, 100, 0)
     );
-    await send(listProvisioningExtrinsic, await alice.getSubstrateAddress());
+    await send(listProvisioningExtrinsic, wallet.substrateAddress);
 
     // dex add_provision TokenA/TokenB
     const addProvisionExtrinsic = provider.api.tx.dex.addProvision(currencyIdA, currencyIdB, 1000, 10000);
-    await send(addProvisionExtrinsic, await alice.getSubstrateAddress());
+    await send(addProvisionExtrinsic, wallet.substrateAddress);
 
     // dex end_provisioning TokenA/TokenB
     const endProvisioningExtrinsic = provider.api.tx.dex.endProvisioning(currencyIdA, currencyIdB);
-    await send(endProvisioningExtrinsic, await alice.getSubstrateAddress());
+    await send(endProvisioningExtrinsic, wallet.substrateAddress);
 
     // dex swap_with_exact_supply TokenA/TokenB
     const swapWithExactSupplyExtrinsic = provider.api.tx.dex.swapWithExactSupply([currencyIdA, currencyIdB], 10, 1);
-    await send(swapWithExactSupplyExtrinsic, await alice.getSubstrateAddress());
+    await send(swapWithExactSupplyExtrinsic, wallet.substrateAddress);
 
     const txHash = swapWithExactSupplyExtrinsic.hash.toHex();
     const tx = await evmProvider.getTransactionByHash(txHash);
-    console.log(hexlifyRpcResult(tx));
 
     const receipt = await evmProvider.getTXReceiptByHash(txHash);
-    console.log(receipt);
 
-    const aliceEvmAddress = (await alice.getAddress()).toLowerCase();
+    const aliceEvmAddress = (await wallet.getAddress()).toLowerCase();
     expect(hexlifyRpcResult(tx)).to.contain({
       hash: txHash,
       from: aliceEvmAddress,

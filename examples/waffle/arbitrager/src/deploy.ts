@@ -1,18 +1,20 @@
 import { expect, use } from 'chai';
 import { Contract, ContractFactory, BigNumber } from 'ethers';
-import { evmChai } from '@acala-network/bodhi';
+import { evmChai, getTestUtils } from '@acala-network/bodhi';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 
 import UniswapFactory from '../artifacts/UniswapV2Factory.json';
 import UniswapRouter from '../artifacts/UniswapV2Router02.json';
 import Arbitrager from '../build/Arbitrager.json';
 import IERC20 from '../artifacts/IERC20.json';
-import { setup } from '../utils';
 
 use(evmChai);
 
 const main = async () => {
-  const { wallet, provider, pair } = await setup();
+  const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+  const { wallets, provider, pairs } = await getTestUtils(endpoint);
+  const wallet = wallets[0];
+  const pair = pairs[0];
   const deployerAddress = await wallet.getAddress();
   const tokenACA = new Contract(ADDRESS.ACA, IERC20.abi, wallet);
   const tokenAUSD = new Contract(ADDRESS.AUSD, IERC20.abi, wallet);
@@ -34,6 +36,7 @@ const main = async () => {
   expect((await tokenAUSD.allowance(deployerAddress, router.address)).toString()).to.equal('0');
   await tokenAUSD.approve(router.address, BigNumber.from(10).pow(18));
   expect((await tokenAUSD.allowance(deployerAddress, router.address)).toString()).to.equal('1000000000000000000');
+
   expect((await tokenDOT.allowance(deployerAddress, router.address)).toString()).to.equal('0');
   await tokenDOT.approve(router.address, BigNumber.from(10).pow(18));
   expect((await tokenDOT.allowance(deployerAddress, router.address)).toString()).to.equal('1000000000000000000');
@@ -104,15 +107,7 @@ const main = async () => {
 
   await printBalance();
 
-  const nextBlock = async () => {
-    return new Promise((resolve) => {
-      provider.api.tx.system.remark('').signAndSend(pair, (result) => {
-        if (result.status.isFinalized || result.status.isInBlock) {
-          resolve(undefined);
-        }
-      });
-    });
-  };
+  const nextBlock = () => provider.api.rpc.engine.createBlock(true /* create empty */, true);
 
   await nextBlock();
   await nextBlock();
@@ -134,7 +129,7 @@ const main = async () => {
 
   await printBalance();
 
-  provider.api.disconnect();
+  await provider.disconnect();
 };
 
 main();

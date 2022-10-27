@@ -1,15 +1,11 @@
 import { expect, use } from 'chai';
-import { ethers, Contract, BigNumber } from 'ethers';
-import { deployContract, solidity } from 'ethereum-waffle';
-import { AccountSigningKey, Signer, evmChai } from '@acala-network/bodhi';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { ethers, Contract } from 'ethers';
+import { solidity } from 'ethereum-waffle';
+import { getTestUtils, Signer, evmChai } from '@acala-network/bodhi';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
-
-const provider = getTestProvider();
 
 const ERC20_ABI = require('@acala-network/contracts/build/contracts/Token.json').abi;
 const DEX_ABI = require('@acala-network/contracts/build/contracts/DEX.json').abi;
@@ -21,9 +17,10 @@ describe('LP ACA-AUSD Token', () => {
   let token: Contract;
 
   before(async () => {
-    [wallet, walletTo] = await provider.getWallets();
-    dex = new ethers.Contract(ADDRESS.DEX, DEX_ABI, wallet as any);
-    token = new ethers.Contract(ADDRESS.LP_ACA_AUSD, ERC20_ABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    [wallet, walletTo] = (await getTestUtils(endpoint)).wallets;
+    dex = new ethers.Contract(ADDRESS.DEX, DEX_ABI, wallet);
+    token = new ethers.Contract(ADDRESS.LP_ACA_AUSD, ERC20_ABI, wallet);
 
     let pool_1 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
@@ -36,7 +33,7 @@ describe('LP ACA-AUSD Token', () => {
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('get token name', async () => {

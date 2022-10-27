@@ -1,27 +1,25 @@
-import { Signer, evmChai } from '@acala-network/bodhi';
+import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, ethers } from 'ethers';
 import Dex from '../build/Dex.json';
-import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
 
 use(solidity);
 use(evmChai);
-
-const provider = getTestProvider();
 
 describe('Dex', () => {
   let wallet: Signer;
   let dex: Contract;
 
   before(async () => {
-    [wallet] = await provider.getWallets();
-    dex = await deployContract(wallet as any, Dex);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    wallet = (await getTestUtils(endpoint)).wallets[0];
+    dex = await deployContract(wallet, Dex);
   });
 
   after(async () => {
-    await provider.api.disconnect();
+    await wallet.provider.disconnect();
   });
 
   it('getLiquidityPool works', async () => {

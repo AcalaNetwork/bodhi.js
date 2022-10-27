@@ -1,10 +1,8 @@
 import { Contract, BigNumber, ContractFactory } from 'ethers';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { expect, use } from 'chai';
-import { evmChai } from '@acala-network/bodhi';
+import { use } from 'chai';
+import { evmChai, getTestUtils } from '@acala-network/bodhi';
 
-import { setup } from '../utils';
-import Arbitrager from '../build/Arbitrager.json';
 import UniswapFactory from '../artifacts/UniswapV2Factory.json';
 import UniswapRouter from '../artifacts/UniswapV2Router02.json';
 import IERC20 from '../artifacts/IERC20.json';
@@ -12,8 +10,11 @@ import IERC20 from '../artifacts/IERC20.json';
 const dollar = BigNumber.from('1000000000000');
 use(evmChai);
 
+const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+
 const deploy = async () => {
-  const { wallet, provider } = await setup();
+  const { wallets, provider } = await getTestUtils(endpoint);
+  const wallet = wallets[0];
   const deployerAddress = await wallet.getAddress();
   const tokenACA = new Contract(ADDRESS.ACA, IERC20.abi, wallet);
   const tokenDOT = new Contract(ADDRESS.DOT, IERC20.abi, wallet);
@@ -59,7 +60,8 @@ const deploy = async () => {
 const trade = async (routerAddress: string) => {
   console.log(`##### start trading with router ${routerAddress} ...`);
 
-  const { wallet, provider } = await setup();
+  const { wallets, provider } = await getTestUtils(endpoint);
+  const wallet = wallets[0];
   const deployerAddress = await wallet.getAddress();
   const tokenACA = new Contract(ADDRESS.ACA, IERC20.abi, wallet);
   const tokenDOT = new Contract(ADDRESS.DOT, IERC20.abi, wallet);

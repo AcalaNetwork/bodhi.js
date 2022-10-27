@@ -1,49 +1,47 @@
-import { Signer, evmChai } from '@acala-network/bodhi';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { Signer, evmChai, getTestUtils, SignerProvider } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
 import Homa from '../build/Homa.json';
 import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
-import { getTestProvider } from '../../utils';
+import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 
 use(solidity);
 use(evmChai);
-
-const provider = getTestProvider();
-const testPairs = createTestPairs();
 
 const formatAmount = (amount: String) => {
   return amount.replace(/_/g, '');
 };
 
-const send = async (extrinsic: any, sender: any) => {
-  return new Promise(async (resolve) => {
+const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressOrPair) =>
+  new Promise((resolve) => {
     extrinsic.signAndSend(sender, (result) => {
       if (result.status.isFinalized || result.status.isInBlock) {
         resolve(undefined);
       }
     });
   });
-};
 
 const dollar = BigNumber.from(formatAmount('1_000_000_000_000'));
 const HomaABI = require('@acala-network/contracts/build/contracts/Homa.json').abi;
 
 describe('homa', () => {
   let wallet: Signer;
-  let walletTo: Signer;
+  let provider: SignerProvider;
   let homa: Contract;
   let homaPredeployed: Contract;
 
   before(async () => {
-    [wallet, walletTo] = await provider.getWallets();
-    homa = await deployContract(wallet as any, Homa);
-    homaPredeployed = new ethers.Contract(ADDRESS.HOMA, HomaABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const testUtils = await getTestUtils(endpoint);
+    wallet = testUtils.wallets[0];
+    provider = testUtils.provider; // this is the same as wallet.provider
+    homa = await deployContract(wallet, Homa);
+    homaPredeployed = new ethers.Contract(ADDRESS.HOMA, HomaABI, wallet);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('homa works', async () => {
@@ -64,12 +62,12 @@ describe('homa', () => {
     const updateHomaParams = provider.api.tx.sudo.sudo(
       provider.api.tx.homa.updateHomaParams(dollar.mul(1000), estimatedRewardRate, commissionRate, fastMatchFeeRate)
     );
-    await send(updateHomaParams, await wallet.getSubstrateAddress());
+    await send(updateHomaParams, wallet.substrateAddress);
 
     const updateStakingBalance = provider.api.tx.sudo.sudo(
-      provider.api.tx.currencies.updateBalance(await wallet.getSubstrateAddress(), { Token: 'DOT' }, dollar.mul(1000))
+      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000))
     );
-    await send(updateStakingBalance, await wallet.getSubstrateAddress());
+    await send(updateStakingBalance, wallet.substrateAddress);
 
     // trnasfer from homa contract, not support DOT
     await expect(homa.mint(dollar.mul(2))).to.be.revertedWith('BalanceTooLow');

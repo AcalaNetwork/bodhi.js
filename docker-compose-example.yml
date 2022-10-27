@@ -23,7 +23,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
   subquery-node:
-    image: acala/evm-subql:6d8b48c
+    image: acala/evm-subql:c65f9c3
     container_name: subquery-node
     ports:
       - 3000:3000
@@ -69,7 +69,7 @@ services:
       - --indexer=http://subquery-node:3000
 
   eth-rpc-adapter-server:
-    image: acala/eth-rpc-adapter:6d8b48c
+    image: acala/eth-rpc-adapter:c65f9c3
     container_name: eth-rpc-adapter-server
     restart: always
     depends_on:
@@ -78,12 +78,11 @@ services:
       - graphql-engine
     ports:
       - 8545:8545
-      - 3331:3331
     extra_hosts:
       - host.docker.internal:host-gateway
     environment:
       - SUBQL_URL=http://graphql-engine:3001
       - ENDPOINT_URL=ws://mandala-node:9944
-      - LOCAL_MODE=0
-      - SAFE_MODE=0
+      #- LOCAL_MODE=1
+      #- SAFE_MODE=1
     command: yarn start

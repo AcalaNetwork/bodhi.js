@@ -1,17 +1,14 @@
-import { Signer, evmChai } from '@acala-network/bodhi';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
+import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
 import StableAsset from '../build/StableAsset.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import { getTestProvider } from '../../utils';
+import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 
 use(solidity);
 use(evmChai);
 
-const provider = getTestProvider();
-const testPairs = createTestPairs();
 const StableAssetABI = require('@acala-network/contracts/build/contracts/StableAsset.json').abi;
 
 const formatAmount = (amount: String) => {
@@ -19,30 +16,32 @@ const formatAmount = (amount: String) => {
 };
 const dollar = BigNumber.from(formatAmount('1_000_000_000_000'));
 
-const send = async (extrinsic: any, sender: any) => {
-  return new Promise(async (resolve) => {
+const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressOrPair) =>
+  new Promise((resolve) => {
     extrinsic.signAndSend(sender, (result) => {
       if (result.status.isFinalized || result.status.isInBlock) {
         resolve(undefined);
       }
     });
   });
-};
 
 describe('stable asset', () => {
   let wallet: Signer;
-  let walletTo: Signer;
+  let provider: SignerProvider;
   let stableAsset: Contract;
   let stableAssetPredeployed: Contract;
 
   before(async () => {
-    [wallet, walletTo] = await provider.getWallets();
-    stableAsset = await deployContract(wallet as any, StableAsset);
-    stableAssetPredeployed = new ethers.Contract(ADDRESS.STABLE_ASSET, StableAssetABI, wallet as any);
+    const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
+    const testUtils = await getTestUtils(endpoint);
+    wallet = testUtils.wallets[0];
+    provider = testUtils.provider; // this is the same as wallet.provider
+    stableAsset = await deployContract(wallet, StableAsset);
+    stableAssetPredeployed = new ethers.Contract(ADDRESS.STABLE_ASSET, StableAssetABI, wallet);
   });
 
   after(async () => {
-    provider.api.disconnect();
+    wallet.provider.api.disconnect();
   });
 
   it('stable asset get function works', async () => {
@@ -60,8 +59,8 @@ describe('stable asset', () => {
     const swapFee = 3;
     const redeemFee = 4;
     const initialA = 10000;
-    const feeRecipient = await wallet.getSubstrateAddress();
-    const yieldRecipient = await wallet.getSubstrateAddress();
+    const feeRecipient = wallet.substrateAddress;
+    const yieldRecipient = wallet.substrateAddress;
     const precision = 1;
 
     const createPool = provider.api.tx.sudo.sudo(
@@ -78,7 +77,7 @@ describe('stable asset', () => {
         precision
       )
     );
-    await send(createPool, await wallet.getSubstrateAddress());
+    await send(createPool, wallet.substrateAddress);
 
     expect(await stableAsset.getStableAssetPoolTokens(0)).to.deep.eq([true, [ADDRESS.DOT, ADDRESS.LDOT]]);
     expect((await stableAsset.getStableAssetPoolTotalSupply(0)).toString()).to.deep.eq('true,0');
@@ -90,14 +89,14 @@ describe('stable asset', () => {
 
   it('stable asset stableAssetMint/stableAssetRedeem/stableAssetSwap works', async () => {
     const updateBalanceDOT = provider.api.tx.sudo.sudo(
-      provider.api.tx.currencies.updateBalance(await wallet.getSubstrateAddress(), { Token: 'DOT' }, dollar.mul(1000))
+      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000))
     );
-    await send(updateBalanceDOT, await wallet.getSubstrateAddress());
+    await send(updateBalanceDOT, wallet.substrateAddress);
 
     const updateBalanceLDOT = provider.api.tx.sudo.sudo(
-      provider.api.tx.currencies.updateBalance(await wallet.getSubstrateAddress(), { Token: 'LDOT' }, dollar.mul(1000))
+      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'LDOT' }, dollar.mul(1000))
     );
-    await send(updateBalanceLDOT, await wallet.getSubstrateAddress());
+    await send(updateBalanceLDOT, wallet.substrateAddress);
 
     const assetRegistry = provider.api.tx.sudo.sudo(
       provider.api.tx.assetRegistry.registerStableAsset({
@@ -107,7 +106,7 @@ describe('stable asset', () => {
         minimalBalance: 1
       })
     );
-    await send(assetRegistry, await wallet.getSubstrateAddress());
+    await send(assetRegistry, wallet.substrateAddress);
 
     await expect(stableAssetPredeployed.stableAssetMint(0, [dollar.mul(1), dollar.mul(2)], 1))
       .to.emit(stableAssetPredeployed, 'StableAssetMinted')

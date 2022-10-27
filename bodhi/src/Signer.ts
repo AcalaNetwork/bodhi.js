@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SignerProvider } from '@acala-network/eth-providers';
 import { handleTxResponse } from '@acala-network/eth-providers/lib';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
@@ -13,45 +12,40 @@ import { getAddress } from '@ethersproject/address';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Bytes, concat, joinSignature } from '@ethersproject/bytes';
 import { Logger } from '@ethersproject/logger';
-import { Deferrable, defineReadOnly } from '@ethersproject/properties';
+import { Deferrable } from '@ethersproject/properties';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { SubmittableResult } from '@polkadot/api';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import { SubmittableExtrinsic, Signer as PolkaSigner } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
-import { SigningKey } from './SigningKey';
 import { dataToString, toBN } from './utils';
 import { version } from './_version';
 
 export const logger = new Logger(version);
 
 export class Signer extends Abstractsigner implements TypedDataSigner {
-  // @ts-ignore
   readonly provider: SignerProvider;
-  // @ts-ignore
-  readonly signingKey: SigningKey;
-  // @ts-ignore
-  readonly _substrateAddress: string;
+  readonly signingKey: PolkaSigner;
+  readonly substrateAddress: string;
 
-  constructor(provider: SignerProvider, address: string, signingKey: SigningKey) {
+  constructor(provider: SignerProvider, substrateAddress: string, signingKey: PolkaSigner) {
     super();
 
-    defineReadOnly(this, 'provider', provider);
-    defineReadOnly(this, 'signingKey', signingKey);
-
-    // @ts-ignore
-    this.provider.api.setSigner(signingKey);
-
-    if (typeof address === 'string' && isEthereumAddress(address)) {
-      logger.throwError('expect substrate address');
-    } else {
-      try {
-        decodeAddress(address);
-        defineReadOnly(this, '_substrateAddress', address);
-      } catch {
-        logger.throwArgumentError('invalid address', 'address', address);
-      }
+    if (isEthereumAddress(substrateAddress)) {
+      logger.throwArgumentError('expect substrate address, not evm address!', 'substrateAddress', substrateAddress);
     }
+
+    try {
+      decodeAddress(substrateAddress);
+    } catch {
+      logger.throwArgumentError('invalid substrateAddress', 'substrateAddress', substrateAddress);
+    }
+
+    this.provider = provider;
+    this.signingKey = signingKey;
+    this.substrateAddress = substrateAddress;
+
+    this.provider.api.setSigner(signingKey);
   }
 
   connect(provider: SignerProvider): Signer {
@@ -99,14 +93,9 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
    * address or an empty string if the EVM address isn't claimed
    */
   async queryEvmAddress(): Promise<string> {
-    const address = await this.provider.api.query.evmAccounts.evmAddresses(this._substrateAddress);
+    const address = await this.provider.api.query.evmAccounts.evmAddresses(this.substrateAddress);
 
-    if (!address.isEmpty) {
-      const evmAddress = getAddress(address.toString());
-      return evmAddress;
-    }
-
-    return '';
+    return address.isEmpty ? '' : getAddress(address.toString());
   }
 
   /**
@@ -114,8 +103,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
    * @returns The default EVM address generated for the signer's substrate address
    */
   computeDefaultEvmAddress(): string {
-    const address = this._substrateAddress;
-    const publicKey = decodeAddress(address);
+    const publicKey = decodeAddress(this.substrateAddress);
 
     const isStartWithEvm = u8aEq('evm:', publicKey.slice(0, 4));
 
@@ -126,25 +114,17 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     return getAddress(u8aToHex(blake2AsU8a(u8aConcat('evm:', publicKey), 256).slice(0, 20)));
   }
 
-  /**
-   *
-   * @returns The substrate account stored in this Signer
-   */
-  async getSubstrateAddress(): Promise<string> {
-    return this._substrateAddress;
-  }
-
   async claimEvmAccount(evmAddress: string): Promise<void> {
     const isConnented = await this.isClaimed(evmAddress);
 
     if (isConnented) return;
 
-    const publicKey = decodeAddress(this._substrateAddress);
+    const publicKey = decodeAddress(this.substrateAddress);
     const data = 'acala evm:' + Buffer.from(publicKey).toString('hex');
     const signature = await this._signMessage(evmAddress, data);
     const extrinsic = this.provider.api.tx.evmAccounts.claimAccount(evmAddress, signature);
 
-    await extrinsic.signAsync(this._substrateAddress);
+    await extrinsic.signAsync(this.substrateAddress);
 
     await new Promise<void>((resolve, reject) => {
       extrinsic
@@ -170,7 +150,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   async claimDefaultAccount(): Promise<void> {
     const extrinsic = this.provider.api.tx.evmAccounts.claimDefaultAccount();
 
-    await extrinsic.signAsync(this._substrateAddress);
+    await extrinsic.signAsync(this.substrateAddress);
 
     await new Promise<void>((resolve, reject) => {
       extrinsic
@@ -206,7 +186,6 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
   async sendTransaction(_transaction: Deferrable<TransactionRequest>): Promise<TransactionResponse> {
     this._checkProvider('sendTransaction');
 
-    const signerAddress = await this.getSubstrateAddress();
     const evmAddress = await this.getAddress();
 
     // estimateResources requires the from parameter.
@@ -270,7 +249,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
       );
     }
 
-    await extrinsic.signAsync(signerAddress);
+    await extrinsic.signAsync(this.substrateAddress);
 
     return new Promise((resolve, reject) => {
       extrinsic
@@ -315,15 +294,16 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     if (!evmAddress) {
       return logger.throwError('No binding evm address');
     }
+
+    if (!this.signingKey.signRaw) {
+      return logger.throwError('Need to implement signRaw method');
+    }
+
     const messagePrefix = '\x19Ethereum Signed Message:\n';
     if (typeof message === 'string') {
       message = toUtf8Bytes(message);
     }
     const msg = u8aToHex(concat([toUtf8Bytes(messagePrefix), toUtf8Bytes(String(message.length)), message]));
-
-    if (!this.signingKey.signRaw) {
-      return logger.throwError('Need to implement signRaw method');
-    }
 
     const result = await this.signingKey.signRaw({
       address: evmAddress,
