@@ -8,8 +8,9 @@ export const MANDALA_RPC_WS = 'wss://tc7-eth.aca-dev.network/ws';
 export const MANDALA_RPC_SUBQL = 'https://mandala-eth-rpc-adapter.thechaindata.com/public';
 export const MANDALA_RPC_WS_SUBQL = 'wss://mandala-eth-rpc-adapter.thechaindata.com/public-ws';
 
-export const KARURA_TESTNET_RPC = 'https://karura-dev.aca-dev.network/eth/http';
-export const ACALA_TESTNET_RPC = 'https://acala-dev.aca-dev.network/eth/http';
+export const KARURA_TESTNET_RPC = 'https://eth-rpc-karura-testnet.aca-staging.network';
+export const ACALA_TESTNET_RPC = 'https://eth-rpc-acala-testnet.aca-staging.network';
+export const ACALA_TESTNET_RPC_WS = 'wss://eth-rpc-acala-testnet.aca-staging.network';
 export const ACALA_TESTNET_RPC_WS_SAFE = 'wss://acala-dev.aca-dev.network/eth-safe/ws';
 export const ACALA_TESTNET_NODE_RPC = 'wss://acala-dev.aca-dev.network/rpc/ws';
 
