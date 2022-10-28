@@ -29,10 +29,20 @@ helpful for quickly testing the setup of a new RPC endpoint
 `KEY=<your-mandala-private-key> yarn confirmation`
 test a tx confirmation time and blocks.
 
-### virtual tx and orphan logs test
-first input a sudo private key into the code, then `yarn virtual-tx`
+### orphan tx and orphan logs test
+to test local codes, first start a local rpc adapter connecting to Acala Testnet
+```
+yarn start -e wss://acala-dev.aca-dev.network/rpc/ws --subql http://localhost:3001
+```
 
-This will send a schedule transaction to acala testnet, which will produce virutal tx and orphan logs. Then the script will call related RPC methods to make sure they can be found.
+then start a subquery connecting to Acala testnet 
+
+then input a sudo private key into the code, and 
+```
+RPC_URL=http://localhost:8545 RPC_URL_WS=ws://localhost:8545 yarn virtual-tx [--maxBlockCacheSize=0]
+```
+
+This will send two scheduled transaction in batch to acala testnet, which will produce virutal tx and orphan logs. Then the script will call related RPC methods to make sure they can be found.
 
 ### get ausd supply from block range
 edit the rpc and block number in the code depending if you want to query for moonbeam or astar, then `CHAIN={Acala, Astar, Moonbeam} yarn ausd`

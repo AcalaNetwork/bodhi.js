@@ -296,9 +296,9 @@ export abstract class BaseProvider extends AbstractProvider {
   startSubscription = async (): Promise<any> => {
     this._cache = new BlockCache(this.maxBlockCacheSize);
 
-    if (this.maxBlockCacheSize < 1) {
+    if (this.maxBlockCacheSize < 0) {
       return logger.throwError(
-        `expect maxBlockCacheSize > 0, but got ${this.maxBlockCacheSize}`,
+        `expect maxBlockCacheSize >= 0, but got ${this.maxBlockCacheSize}`,
         Logger.errors.INVALID_ARGUMENT
       );
     } else {
@@ -532,7 +532,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
-    const virtualHashes = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber).map(
+    const virtualHashes = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber, normalTxHashes.length).map(
       (r) => r.transactionHash
     );
 
@@ -1617,7 +1617,10 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
 
-    const virtualReceipt = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber).find(
+    const block = await this.api.rpc.chain.getBlock(blockHash);
+    const evmTxCount = block.block.extrinsics.filter(isEvmExtrinsic).length;
+
+    const virtualReceipt = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount).find(
       (r) => r.transactionHash === hashOrNumber
     );
 
@@ -1884,7 +1887,10 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
 
-    const virtualReceipts = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber);
+    const block = await this.api.rpc.chain.getBlock(blockHash);
+    const evmTxCount = block.block.extrinsics.filter(isEvmExtrinsic).length;
+
+    const virtualReceipts = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount);
     const orphanLogs = virtualReceipts.reduce<Log[]>((logs, receipt) => logs.concat(receipt.logs), []);
 
     return hexlifyRpcResult(orphanLogs);

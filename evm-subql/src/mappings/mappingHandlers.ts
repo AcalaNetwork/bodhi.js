@@ -4,15 +4,15 @@ import {
   getTransactionIndexAndHash,
   getEffectiveGasPrice,
   findEvmEvent
-} from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
+} from '@acala-network/eth-providers/lib/utils';
 import { EventData } from '@acala-network/eth-providers/lib/base-provider';
-import { SubstrateBlock } from '@subql/types';
-import '@polkadot/api-augment';
-import { Log, TransactionReceipt } from '../types';
 import { BigNumber } from '@ethersproject/bignumber/lib/bignumber';
+import { keccak256 } from 'ethers/lib/utils';
+import '@polkadot/api-augment';
 import { EventRecord, Extrinsic } from '@polkadot/types/interfaces';
 import { hexToU8a, nToU8a } from '@polkadot/util';
-import { keccak256 } from 'ethers/lib/utils';
+import { SubstrateBlock } from '@subql/types';
+import { Log, TransactionReceipt } from '../types';
 
 export async function handleEvmExtrinsic(
   block: SubstrateBlock,
@@ -95,7 +95,12 @@ export async function handleEvmExtrinsic(
   }
 }
 
-export async function handleOrphanEvmEvent(event: EventRecord, idx: number, block: SubstrateBlock): Promise<void> {
+export async function handleOrphanEvmEvent(
+  event: EventRecord,
+  idx: number,
+  block: SubstrateBlock,
+  indexOffset: number
+): Promise<void> {
   const blockHash = block.block.hash.toHex();
   const blockNumber = block.block.header.number.toBigInt();
   const timestamp = block.timestamp;
@@ -113,7 +118,7 @@ export async function handleOrphanEvmEvent(event: EventRecord, idx: number, bloc
   const receiptId = `${blockNumber.toString()}-${transactionHash.substring(54)}`;
 
   const transactionInfo = {
-    transactionIndex: BigInt(0),
+    transactionIndex: BigInt(idx + indexOffset),
     blockHash,
     transactionHash,
     blockNumber
@@ -172,7 +177,7 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
   );
 
   await Promise.all([
-    ...orphanEvmEvents.map((e, i) => handleOrphanEvmEvent(e, i, block)),
+    ...orphanEvmEvents.map((e, i) => handleOrphanEvmEvent(e, i, block, evmExtrinsics.length)),
     ...evmExtrinsics.map(({ extrinsic, ...evmInfo }) => handleEvmExtrinsic(block, extrinsic, evmInfo))
   ]);
 }

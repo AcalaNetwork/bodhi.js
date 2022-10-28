@@ -329,7 +329,8 @@ export const getEffectiveGasPrice = async (
 export const getVirtualTxReceiptsFromEvents = (
   events: Vec<FrameSystemEventRecord>,
   blockHash: string,
-  blockNumber: number
+  blockNumber: number,
+  indexOffset: number,
 ): TransactionReceipt[] => {
   const receipts = events
     .filter(isOrphanEvmEvent)
@@ -337,7 +338,7 @@ export const getVirtualTxReceiptsFromEvents = (
     .map((partialReceipt, i) => {
       const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(i)]);
       const txInfo = {
-        transactionIndex: 0,
+        transactionIndex: indexOffset + i,
         transactionHash,
         blockHash,
         blockNumber
