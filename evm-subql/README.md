@@ -174,6 +174,8 @@ In local setup we can run all of the services together with one single [docker c
 #### image
 In the local example, we use `onfinality/subql-node:v1.9.1` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
 
+An example is [here](../docker-compose-example.yml#L27)
+
 #### config
 One trick is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
 
