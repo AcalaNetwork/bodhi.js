@@ -384,15 +384,25 @@ class Eip1193BridgeImpl {
   async eth_getTransactionByBlockHashAndIndex(params: any[]): Promise<any> {
     validate([{ type: 'blockHash' }, { type: 'hexNumber' }], params);
 
-    const res = await this.#provider.getTransactionReceiptAtBlock(params[1], params[0]);
-    return hexlifyRpcResult(res);
+    try {
+      const res = await this.#provider.getTransactionReceiptAtBlock(parseInt(params[1], 16), params[0]);
+      return hexlifyRpcResult(res);
+    } catch (err: any) {
+      if (err.reason?.includes('receipt not found')) return null;
+      throw err;
+    }
   }
 
   async eth_getTransactionByBlockNumberAndIndex(params: any[]): Promise<any> {
     validate([{ type: 'block' }, { type: 'hexNumber' }], params);
 
-    const res = await this.#provider.getTransactionReceiptAtBlock(params[1], params[0]);
-    return hexlifyRpcResult(res);
+    try {
+      const res = await this.#provider.getTransactionReceiptAtBlock(parseInt(params[1], 16), params[0]);
+      return hexlifyRpcResult(res);
+    } catch (err: any) {
+      if (err.reason?.includes('receipt not found')) return null;
+      throw err;
+    }
   }
 
   async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {

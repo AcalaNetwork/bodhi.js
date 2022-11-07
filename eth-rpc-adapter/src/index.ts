@@ -37,7 +37,7 @@ export async function start(): Promise<void> {
     const genesisHash = await provider.subql?.checkGraphql();
     if (genesisHash !== provider.genesisHash) {
       throw new Error(
-        `subql genesis hash doesn\'t match! You might have connected to a wrong subql' ${JSON.stringify({
+        `subql genesis hash doesn\'t match! You might have connected to a wrong subql ${JSON.stringify({
           subqlGenesisHash: genesisHash,
           providerGenesisHash: provider.genesisHash
         })}`

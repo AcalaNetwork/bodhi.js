@@ -326,7 +326,7 @@ export const getEffectiveGasPrice = async (
   return txFee.div(usedGas);
 };
 
-export const getVirtualTxReceiptsFromEvents = (
+export const getOrphanTxReceiptsFromEvents = (
   events: Vec<FrameSystemEventRecord>,
   blockHash: string,
   blockNumber: number,
