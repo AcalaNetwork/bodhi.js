@@ -1604,7 +1604,7 @@ export abstract class BaseProvider extends AbstractProvider {
     } else if (orphanReceipt.status === 'fulfilled' && orphanReceipt.value) {
       return orphanReceipt.value;
     } else {
-      return logger.throwError('receipt not found');
+      return logger.throwError('<getTransactionReceiptAtBlock> receipt not found');
     }
   };
 
