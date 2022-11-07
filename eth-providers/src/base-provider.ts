@@ -82,7 +82,7 @@ import {
   getEffectiveGasPrice,
   parseBlockTag,
   filterLogByTopics,
-  getVirtualTxReceiptsFromEvents,
+  getOrphanTxReceiptsFromEvents,
   BaseLogFilter,
   SanitizedLogFilter,
   LogFilter
@@ -532,7 +532,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
-    const virtualHashes = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber, normalTxHashes.length).map(
+    const virtualHashes = getOrphanTxReceiptsFromEvents(allEvents, blockHash, blockNumber, normalTxHashes.length).map(
       (r) => r.transactionHash
     );
 
@@ -1594,40 +1594,41 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
 
     // TODO: maybe should query normalReceipt first, since it's much more usual
-    const [normalReceipt, virtualReceipt] = await Promise.allSettled([
+    const [normalReceipt, orphanReceipt] = await Promise.allSettled([
       this.getNormalTxReceiptAtBlock(hashOrNumber, blockHash),
-      this.getVirtualTxReceiptAtBlock(hashOrNumber, blockHash)
+      this.getOrphanTxReceiptAtBlock(hashOrNumber, blockHash)
     ]);
 
     if (normalReceipt.status === 'fulfilled') {
       return normalReceipt.value;
-    } else if (virtualReceipt.status === 'fulfilled' && virtualReceipt.value) {
-      return virtualReceipt.value;
+    } else if (orphanReceipt.status === 'fulfilled' && orphanReceipt.value) {
+      return orphanReceipt.value;
     } else {
       return logger.throwError('receipt not found');
     }
   };
 
-  getVirtualTxReceiptAtBlock = async (
-    hashOrNumber: number | string | Promise<string>,
+  getOrphanTxReceiptAtBlock = async (
+    hashOrNumber: number | string,
     blockHash: string
   ): Promise<TransactionReceipt | null> => {
-    if (typeof hashOrNumber !== 'string') return null;
+    const [block, allEvents] = await Promise.all([
+      this.api.rpc.chain.getBlock(blockHash),
+      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash)
+    ]);
 
-    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
-    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
-
-    const block = await this.api.rpc.chain.getBlock(blockHash);
+    const blockNumber = block.block.header.number.toNumber();
     const evmTxCount = block.block.extrinsics.filter(isEvmExtrinsic).length;
 
-    const virtualReceipt = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount).find(
-      (r) => r.transactionHash === hashOrNumber
+    const orphanReceipts = getOrphanTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount);
+    const targetReceipt = orphanReceipts.find(
+      (r, idx) => (typeof hashOrNumber === 'string' && r.transactionHash === hashOrNumber) || idx === hashOrNumber
     );
 
-    if (!virtualReceipt) return null;
+    if (!targetReceipt) return null;
 
     return {
-      ...virtualReceipt,
+      ...targetReceipt,
       confirmations: (await this.getBlockNumber()) - blockNumber,
       effectiveGasPrice: BIGNUMBER_ZERO
     };
@@ -1890,8 +1891,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const block = await this.api.rpc.chain.getBlock(blockHash);
     const evmTxCount = block.block.extrinsics.filter(isEvmExtrinsic).length;
 
-    const virtualReceipts = getVirtualTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount);
-    const orphanLogs = virtualReceipts.reduce<Log[]>((logs, receipt) => logs.concat(receipt.logs), []);
+    const orphanReceipts = getOrphanTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount);
+    const orphanLogs = orphanReceipts.reduce<Log[]>((logs, receipt) => logs.concat(receipt.logs), []);
 
     return hexlifyRpcResult(orphanLogs);
   };
