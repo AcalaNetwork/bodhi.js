@@ -1,20 +1,13 @@
 import dotenv from 'dotenv';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterAll, beforeAll } from 'vitest';
 import { EvmRpcProvider } from '../../rpc-provider';
 
 dotenv.config();
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
-describe('EvmRpcProvider', () => {
-  it('connect chain', async () => {
-    const provider = EvmRpcProvider.from(endpoint);
-    await provider.isReady();
-    expect(provider.isConnected).to.be.true;
-    await provider.disconnect();
-  });
-
-  it('connect random', async () => {
+describe('connect random', () => {
+  it('should throw error', async () => {
     try {
       const provider = EvmRpcProvider.from('ws://192.-');
       await provider.isReady();
@@ -22,12 +15,45 @@ describe('EvmRpcProvider', () => {
       expect((e as any).type).to.equal('error');
     }
   });
+});
 
-  // it('getBlockTag', async () => {
-  //   const provider = EvmRpcProvider.from(endpoint);
-  //   await provider.isReady();
-  //   const blockHash = await provider._getBlockTag('0x123');
+describe('connect chain', () => {
+  it('works', async () => {
+    const provider = EvmRpcProvider.from(endpoint);
+    await provider.isReady();
+    expect(provider.isConnected).to.be.true;
+    await provider.disconnect();
+  });
+});
 
-  //   expect(blockHash.length).to.equal(66);
-  // });
+describe('getTransactionReceiptAtBlock', () => {
+  const ACALA_ETH_RPC = 'wss://acala-rpc-0.aca-api.network';
+  const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
+  const provider = EvmRpcProvider.from(ACALA_ETH_RPC, { subqlUrl: ACALA_SUBQL });
+
+  const blockHash = '0xf9655bfef23bf7dad14a037aa39758daccfd8dc99a7ce69525f81548068a5946';
+  const txHash1 = '0xbb6644b3053d5213f544dc54efb4de0e81b6a88e863aa0cc22d14928b3601725';
+  const txHash2 = '0x240a9ec2efdacae2a89486980874b23987b9801fd1ca7a424506629b71a53fa6';
+
+  beforeAll(async () => {
+    await provider.isReady();
+  });
+
+  afterAll(provider.disconnect);
+
+  it('should find tx using tx hash', async () => {
+    const res1 = await provider.getTransactionReceiptAtBlock(txHash1, blockHash);
+    const res2 = await provider.getTransactionReceiptAtBlock(txHash2, blockHash);
+
+    expect(res1.transactionIndex).to.equal(0);
+    expect(res2.transactionIndex).to.equal(1);
+  });
+
+  it('should find tx using tx index', async () => {
+    const res1 = await provider.getTransactionReceiptAtBlock(0, blockHash);
+    const res2 = await provider.getTransactionReceiptAtBlock(1, blockHash);
+
+    expect(res1.transactionIndex).to.equal(0);
+    expect(res2.transactionIndex).to.equal(1);
+  });
 });
