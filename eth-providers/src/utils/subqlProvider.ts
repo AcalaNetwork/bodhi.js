@@ -11,12 +11,15 @@ export class SubqlProvider {
     this.url = url;
   }
 
-  checkGraphql = async (): Promise<void> => {
+  checkGraphql = async (): Promise<string> => {
+    let metaData;
     try {
-      await this.getIndexerMetadata();
+      metaData = await this.getIndexerMetadata();
     } catch (e) {
-      logger.throwError(`Check Graphql failed: ${e}`);
+      logger.throwError(`Check Graphql failed, you might be using an invalid subquery url! Error: ${e}`);
     }
+
+    return metaData?.genesisHash as string;
   };
 
   queryGraphql = (query: string): Promise<Query> =>

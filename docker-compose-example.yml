@@ -22,6 +22,7 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: postgres
+
   subquery-node:
     image: acala/evm-subql:c65f9c3
     container_name: subquery-node

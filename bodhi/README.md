@@ -72,3 +72,6 @@ await wallet.claimDefaultAccount();         // bind default evm address to the s
 wallet.computeDefaultEvmAddress();          // you know it
 await wallet.queryEvmAddress();             // Get the signers EVM address if it has claimed one.
 ```
+
+## Examples
+Checkout [bodhi-examples](https://github.com/AcalaNetwork/bodhi-examples) for some real apps that integrate bodhi signers, with some extra cool features (such as batch transactions).
