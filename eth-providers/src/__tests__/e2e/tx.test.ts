@@ -14,7 +14,7 @@ import { afterAll, beforeAll, describe, it } from 'vitest';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { calcEthereumTransactionParams, sendTx } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
-import evmAccounts from '../evmAccounts';
+import evmAccounts from '../utils/evmAccounts';
 
 dotenv.config();
 

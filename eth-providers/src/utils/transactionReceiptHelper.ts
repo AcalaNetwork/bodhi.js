@@ -330,7 +330,7 @@ export const getOrphanTxReceiptsFromEvents = (
   events: Vec<FrameSystemEventRecord>,
   blockHash: string,
   blockNumber: number,
-  indexOffset: number,
+  indexOffset: number
 ): TransactionReceipt[] => {
   const receipts = events
     .filter(isOrphanEvmEvent)

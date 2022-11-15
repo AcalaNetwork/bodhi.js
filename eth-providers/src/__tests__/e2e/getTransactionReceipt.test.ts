@@ -8,7 +8,7 @@ import { expect } from 'chai';
 import { it } from 'vitest';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { sendTx } from '../../utils';
-import evmAccounts from '../evmAccounts';
+import evmAccounts from '../utils/evmAccounts';
 
 it('getTransactionReceipt', async () => {
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
