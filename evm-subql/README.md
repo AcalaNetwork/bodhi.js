@@ -176,6 +176,10 @@ In the local example, we use `onfinality/subql-node:v1.9.1` as indexer image, wh
 
 An example is [here](../docker-compose-example.yml#L27)
 
+Latest stable versions:
+- `acala/evm-subql:876e6d2`
+- `subql-query:v1.4.0`
+
 #### config
 One trick is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
 
