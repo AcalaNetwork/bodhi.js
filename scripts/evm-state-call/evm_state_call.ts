@@ -122,7 +122,9 @@ const runtimeTypes = {
   }
 };
 
-const eth_call = async (api: ApiPromise, callRequest: TransactionRequest, at?: string): Promise<string> => {
+const eth_call = async (_api: ApiPromise, callRequest: TransactionRequest, at?: string): Promise<string> => {
+  const api = at ? await _api.at(at) : _api;
+
   const { from, to, data, value, gasLimit: ethGasLimit, gasPrice, accessList } = callRequest;
 
   // TODO: should calculate from eth gas params if present
@@ -182,8 +184,16 @@ async function main() {
       data: sig
     };
 
-    const rawRes = await eth_call(api, callRequest);
-    const res = iface.decodeFunctionResult(method, rawRes)[0];
+    console.log('--- at latest block');
+    let rawRes = await eth_call(api, callRequest);
+    let res = iface.decodeFunctionResult(method, rawRes)[0];
+
+    console.log(method, BigNumber.isBigNumber(res) ? res.toBigInt() : res);
+
+    console.log('--- at mandala block 12345');
+    const block12345 = '0x4a3ad5c6c24e55848c98e5a7d61d02682b506853acd2a10393bc2ac2617e363e';
+    rawRes = await eth_call(api, callRequest, block12345);
+    res = iface.decodeFunctionResult(method, rawRes)[0];
 
     console.log(method, BigNumber.isBigNumber(res) ? res.toBigInt() : res);
   }
