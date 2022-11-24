@@ -792,6 +792,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return {
       maxFeePerGas: null,
       maxPriorityFeePerGas: null,
+      lastBaseFeePerGas: null,
       gasPrice: await this.getGasPrice()
     };
   };
