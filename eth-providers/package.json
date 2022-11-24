@@ -16,6 +16,10 @@
   },
   "dependencies": {
     "@polkadot/api": "^9.9.1",
+    "@polkadot/api-derive": "^9.9.1",
+    "@polkadot/types": "^9.9.1",
+    "@polkadot/util": "^10.1.13",
+    "@polkadot/util-crypto": "^10.1.13",
     "@acala-network/api": "~4.1.8-2.1",
     "@acala-network/types": "~4.1.8-2",
     "@acala-network/contracts": "~4.3.4",

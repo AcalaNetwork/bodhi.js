@@ -71,6 +71,10 @@ importers:
       '@ethersproject/transactions': ~5.5.0
       '@ethersproject/wallet': ~5.5.0
       '@polkadot/api': ^9.9.1
+      '@polkadot/api-derive': 9.9.1
+      '@polkadot/types': 9.9.1
+      '@polkadot/util': ^10.1.13
+      '@polkadot/util-crypto': ^10.1.13
       '@rushstack/eslint-config': ~2.5.4
       '@rushstack/heft': ~0.44.13
       '@sinonjs/fake-timers': ~9.1.1
@@ -94,7 +98,7 @@ importers:
       typescript: ~4.6.3
       vitest: ~0.20.2
     dependencies:
-      '@acala-network/api': 4.1.8-2.1
+      '@acala-network/api': 4.1.8-2.1_@polkadot+types@9.9.1
       '@acala-network/contracts': 4.3.4
       '@acala-network/eth-transactions': link:../eth-transactions
       '@acala-network/types': 4.1.5_@polkadot+api@9.9.1
@@ -111,6 +115,10 @@ importers:
       '@ethersproject/transactions': 5.5.0
       '@ethersproject/wallet': 5.5.0
       '@polkadot/api': 9.9.1
+      '@polkadot/api-derive': 9.9.1
+      '@polkadot/types': 9.9.1
+      '@polkadot/util': 10.1.13
+      '@polkadot/util-crypto': 10.1.13
       ethers: 5.5.4
       graphql: 16.0.1
       graphql-request: 3.6.1_graphql@16.0.1
@@ -1171,7 +1179,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@acala-network/api/4.1.8-2.1:
+  /@acala-network/api/4.1.8-2.1_@polkadot+types@9.9.1:
     resolution: {integrity: sha512-bDzX5trMiaZIAqX0bJxZbALbQ2GW1W5N70Alk3Lpj7WEj+Fl32qIWVRqagj3QGbjdPdq92/De2W1ShVGLv7Rng==}
     peerDependencies:
       '@polkadot/types': '>=9'
@@ -1182,6 +1190,7 @@ packages:
       '@open-web3/orml-api-derive': 1.1.4_@polkadot+api@9.9.1
       '@polkadot/api': 9.9.1
       '@polkadot/rpc-core': 9.9.1
+      '@polkadot/types': 9.9.1
     transitivePeerDependencies:
       - bufferutil
       - supports-color
