@@ -57,6 +57,12 @@
      */
 
     // tutorials use these public versions instead of workspace:*
+    "@polkadot/api": [
+      "8.1.1",
+    ],
+    "@acala-network/api": [
+      "^4.1.1",
+    ],
     "@acala-network/bodhi": [
       "^2.4.11",
       "^2.4.12"

@@ -1,11 +1,14 @@
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { options } from '@acala-network/api';
 import { BaseProvider, BaseProviderOptions } from './base-provider';
-import { createApi } from './chain-api';
 
 export class EvmRpcProvider extends BaseProvider {
   constructor(endpoint: string | string[], opts?: BaseProviderOptions) {
     super(opts);
 
-    const api = createApi(endpoint);
+    const provider = new WsProvider(endpoint);
+    const api = new ApiPromise(options({ provider }));
+
     this.setApi(api);
     this.startSubscription() as unknown as void;
   }
