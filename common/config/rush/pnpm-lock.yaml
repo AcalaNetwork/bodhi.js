@@ -80,6 +80,8 @@ importers:
       '@ethersproject/wallet': ~5.7.0
       '@polkadot/api': ^9.9.1
       '@polkadot/api-derive': 9.9.1
+      '@polkadot/keyring': ^10.1.13
+      '@polkadot/rpc-augment': 9.9.1
       '@polkadot/types': 9.9.1
       '@polkadot/util': ^10.1.13
       '@polkadot/util-crypto': ^10.1.13
@@ -124,6 +126,8 @@ importers:
       '@ethersproject/wallet': 5.7.0
       '@polkadot/api': 9.9.1
       '@polkadot/api-derive': 9.9.1
+      '@polkadot/keyring': 10.1.13
+      '@polkadot/rpc-augment': 9.9.1
       '@polkadot/types': 9.9.1
       '@polkadot/util': 10.1.13
       '@polkadot/util-crypto': 10.1.13
