@@ -29,7 +29,7 @@ export async function start(): Promise<void> {
     httpOnly: opts.httpOnly
   });
 
-  server.addRouter(router as any);
+  server.addRouter(router);
   server.start();
 
   await provider.isReady();

@@ -495,8 +495,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   chainId = async (): Promise<number> => {
     await this.api.isReadyOrError;
-    // TODO: fix type
-    return (this.api.consts.evmAccounts.chainId as any).toNumber();
+    return this.api.consts.evmAccounts.chainId.toNumber();
   };
 
   getBlockNumber = async (): Promise<number> => {
@@ -720,10 +719,9 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: resolved.transaction.accessList
     };
 
-    // TODO: fix type
     const data = resolved.blockHash
-      ? await (this.api.rpc as any).evm.call(callRequest, resolved.blockHash)
-      : await (this.api.rpc as any).evm.call(callRequest);
+      ? await this.api.rpc.evm.call(callRequest, resolved.blockHash)
+      : await this.api.rpc.evm.call(callRequest);
 
     return data.toHex();
   };
@@ -965,7 +963,7 @@ export abstract class BaseProvider extends AbstractProvider {
         );
 
     // TODO: fix type
-    const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
+    const result = await this.api.rpc.evm.estimateResources(from as string, extrinsic.toHex());
 
     return {
       gas: BigNumber.from((result.gas as BN).toString()),
@@ -1163,8 +1161,7 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: ethTx.accessList
     };
 
-    // TODO: fix type
-    await (this.api.rpc as any).evm.call(callRequest);
+    await this.api.rpc.evm.call(callRequest);
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },
