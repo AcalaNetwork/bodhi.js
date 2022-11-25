@@ -20,7 +20,7 @@ jobs:
     needs: cancel-prev-runs
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: prune outdated docker stuff
@@ -34,7 +34,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker compose up --remove-orphans --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
       - name: clean up after tests finished
         run: docker compose down -v
       - name: check docker info after cleaning
@@ -48,7 +48,7 @@ jobs:
     needs: cancel-prev-runs
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: prune outdated docker stuff
@@ -62,7 +62,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker compose up --remove-orphans --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
       - name: clean up after tests finished
         run: docker compose down -v
       - name: check docker info after cleaning
@@ -76,7 +76,7 @@ jobs:
     needs: cancel-prev-runs
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: prune outdated docker stuff
@@ -90,7 +90,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker compose up --remove-orphans --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
       - name: clean up after tests finished
         run: docker compose down -v
       - name: check docker info after cleaning
@@ -104,7 +104,7 @@ jobs:
   #   needs: cancel-prev-runs
   #   steps:
   #     - name: checkout
-  #       uses: actions/checkout@v2
+  #       uses: actions/checkout@v3
   #       with:
   #         submodules: 'recursive'
   #     - name: Setup tmate session
@@ -114,7 +114,7 @@ jobs:
   #  - name: build bodhi base # if use self-hosted machine can utilize cache
   #    run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile#
   #  - name: test
-  #       run: docker compose up --remove-orphans --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
+  #       run: docker compose up --abort-on-container-exit --exit-code-from=waffle-tutorials-test --build -- waffle-tutorials-test
   #     - name: dump docker logs on failure
   #       if: failure()
   #       uses: jwalton/gh-docker-logs@v1
@@ -124,7 +124,7 @@ jobs:
     needs: cancel-prev-runs
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: check docker info before cleaning
@@ -132,7 +132,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker compose up --remove-orphans --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
@@ -142,7 +142,7 @@ jobs:
     needs: cancel-prev-runs
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: check docker info before cleaning
@@ -150,7 +150,7 @@ jobs:
       - name: build bodhi base # if use self-hosted machine can utilize cache
         run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
       - name: test
-        run: docker compose up --remove-orphans --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
+        run: docker compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v1
@@ -160,7 +160,7 @@ jobs:
     needs: cancel-prev-runs
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -185,7 +185,7 @@ jobs:
     needs: cancel-prev-runs
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
