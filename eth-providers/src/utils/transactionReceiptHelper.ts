@@ -327,6 +327,12 @@ export const getEffectiveGasPrice = async (
   return txFee.div(usedGas);
 };
 
+// TODO: remove me
+// a simulation of nToU8a from @polkadot/api@8
+const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof nToU8a> => {
+  return params[0] === 0 ? new Uint8Array() : nToU8a(...params);
+};
+
 export const getOrphanTxReceiptsFromEvents = (
   events: Vec<FrameSystemEventRecord>,
   blockHash: string,
@@ -337,7 +343,7 @@ export const getOrphanTxReceiptsFromEvents = (
     .filter(isOrphanEvmEvent)
     .map(getPartialTransactionReceipt)
     .map((partialReceipt, i) => {
-      const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(i)]);
+      const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8aLegacy(i)]);
       const txInfo = {
         transactionIndex: indexOffset + i,
         transactionHash,
