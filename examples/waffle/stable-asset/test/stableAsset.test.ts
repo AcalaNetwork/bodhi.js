@@ -1,4 +1,4 @@
-import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
+import { Signer, evmChai, getTestUtils, SignerProvider } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
@@ -89,12 +89,12 @@ describe('stable asset', () => {
 
   it('stable asset stableAssetMint/stableAssetRedeem/stableAssetSwap works', async () => {
     const updateBalanceDOT = provider.api.tx.sudo.sudo(
-      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000))
+      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000).toBigInt())
     );
     await send(updateBalanceDOT, wallet.substrateAddress);
 
     const updateBalanceLDOT = provider.api.tx.sudo.sudo(
-      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'LDOT' }, dollar.mul(1000))
+      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'LDOT' }, dollar.mul(1000).toBigInt())
     );
     await send(updateBalanceLDOT, wallet.substrateAddress);
 
