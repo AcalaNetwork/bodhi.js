@@ -766,7 +766,7 @@ importers:
     specifiers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
       chai: ~4.3.4
@@ -778,7 +778,7 @@ importers:
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
     devDependencies:
       '@types/chai': 4.2.22
       '@types/mocha': 9.0.0
@@ -795,7 +795,7 @@ importers:
       '@acala-network/contracts': ~4.3.4
       '@acala-network/eth-providers': workspace:*
       '@openzeppelin/contracts': ^4.4.2
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@polkadot/keyring': ^10.1.13
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -810,7 +810,7 @@ importers:
       '@acala-network/contracts': 4.3.4
       '@acala-network/eth-providers': link:../../../eth-providers
       '@openzeppelin/contracts': 4.4.2
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
       '@polkadot/keyring': 10.1.13
     devDependencies:
       '@types/chai': 4.2.22
@@ -827,7 +827,7 @@ importers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.3.4
       '@openzeppelin/contracts': ~4.4.2
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@polkadot/keyring': ^10.1.13
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -840,7 +840,7 @@ importers:
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
       '@polkadot/keyring': 10.1.13
     devDependencies:
       '@openzeppelin/contracts': 4.4.2
@@ -857,7 +857,7 @@ importers:
     specifiers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@polkadot/keyring': ^10.1.13
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -870,7 +870,7 @@ importers:
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
       '@polkadot/keyring': 10.1.13
     devDependencies:
       '@types/chai': 4.2.22
@@ -886,7 +886,7 @@ importers:
     specifiers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@polkadot/keyring': ^10.1.13
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -899,7 +899,7 @@ importers:
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
       '@polkadot/keyring': 10.1.13
     devDependencies:
       '@types/chai': 4.2.22
@@ -1049,7 +1049,7 @@ importers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~2.3.4
       '@openzeppelin/contracts': ~3.4.2
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@polkadot/keyring': ^10.1.13
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -1062,7 +1062,7 @@ importers:
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 2.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
       '@polkadot/keyring': 10.1.13
     devDependencies:
       '@openzeppelin/contracts': 3.4.2
@@ -1079,7 +1079,7 @@ importers:
     specifiers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@polkadot/keyring': ^10.1.13
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -1092,7 +1092,7 @@ importers:
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
       '@polkadot/keyring': 10.1.13
     devDependencies:
       '@types/chai': 4.2.22
@@ -1109,7 +1109,7 @@ importers:
       '@acala-network/bodhi': workspace:*
       '@acala-network/contracts': ~4.3.4
       '@openzeppelin/contracts': ~4.4.2
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': ^9.9.1
       '@polkadot/keyring': ^10.1.13
       '@types/chai': ~4.2.22
       '@types/mocha': ~9.0.0
@@ -1122,7 +1122,7 @@ importers:
     dependencies:
       '@acala-network/bodhi': link:../../../bodhi
       '@acala-network/contracts': 4.3.4
-      '@polkadot/api': 8.1.1
+      '@polkadot/api': 9.9.1
       '@polkadot/keyring': 10.1.13
     devDependencies:
       '@openzeppelin/contracts': 4.4.2
