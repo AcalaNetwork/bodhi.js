@@ -1,3 +1,4 @@
+import '@acala-network/types';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
@@ -29,7 +30,6 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { GenericExtrinsic, Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
 import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
-import '@polkadot/api-augment';
 import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';

@@ -216,7 +216,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
 
     const tx = await this.populateTransaction(transaction);
 
-    const data = tx.data;
+    const data = tx.data?.toString() ?? '0x';
     const from = tx.from;
 
     if (!data) {
@@ -229,23 +229,22 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
 
     let extrinsic: SubmittableExtrinsic<'promise'>;
 
-    // @TODO create contract
     if (!tx.to) {
       extrinsic = this.provider.api.tx.evm.create(
-        tx.data,
+        data,
         toBN(tx.value),
         toBN(gasLimit),
         toBN(storageLimit.isNegative() ? 0 : storageLimit),
-        tx.accessList || []
+        (tx.accessList as any) || []
       );
     } else {
       extrinsic = this.provider.api.tx.evm.call(
         tx.to,
-        tx.data,
+        data,
         toBN(tx.value),
         toBN(gasLimit),
         toBN(storageLimit.isNegative() ? 0 : storageLimit),
-        tx.accessList || []
+        (tx.accessList as any) || []
       );
     }
 

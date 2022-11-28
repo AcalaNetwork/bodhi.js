@@ -83,7 +83,7 @@ describe('incentives', () => {
               DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
             }
           },
-          Rate
+          Rate.toBigInt()
         ]
       ])
     );
@@ -102,7 +102,7 @@ describe('incentives', () => {
               Token: 'ACA'
             }
           },
-          Rate
+          Rate.toBigInt()
         ]
       ])
     );
@@ -118,7 +118,7 @@ describe('incentives', () => {
   it('incentives depositDexShare works', async () => {
     const updateBalance = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(
-        { id: wallet.substrateAddress },
+        wallet.substrateAddress,
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
@@ -135,7 +135,7 @@ describe('incentives', () => {
   it('incentives withdrawDexShare works', async () => {
     const updateBalance = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(
-        { id: wallet.substrateAddress },
+        wallet.substrateAddress,
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
@@ -156,7 +156,7 @@ describe('incentives', () => {
   it('incentives claimRewards works', async () => {
     const updateBalance = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(
-        { id: wallet.substrateAddress },
+        wallet.substrateAddress,
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
