@@ -319,15 +319,13 @@ export const getEffectiveGasPrice = async (
 
   // if usedStorage > 0, txFee include the storage fee.
   if (usedStorage.gt(0)) {
-    // TODO: fix type
-    const storageFee = usedStorage.mul((api.consts.evm.storageDepositPerByte as any).toBigInt());
+    const storageFee = usedStorage.mul(api.consts.evm.storageDepositPerByte.toBigInt());
     txFee = txFee.add(storageFee);
   }
 
   return txFee.div(usedGas);
 };
 
-// TODO: remove me
 // a simulation of nToU8a from @polkadot/api@8
 const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof nToU8a> => {
   return params[0] === 0 ? new Uint8Array() : nToU8a(...params);
