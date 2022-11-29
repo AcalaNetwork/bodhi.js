@@ -1,5 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { options } from '@acala-network/api';
+import lookupTypes from '@acala-network/types/interfaces/lookup';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { BigNumber } from 'ethers';
 import { Interface } from 'ethers/lib/utils';
@@ -55,7 +56,7 @@ const runtime = {
   ]
 };
 
-// TODO: use types from acala.js instead of hard coding
+// TODO: `CallInfo` can also stream up to acala.js
 const runtimeTypes = {
   CallInfo: {
     exit_reason: 'EvmCoreErrorExitReason',
@@ -64,62 +65,7 @@ const runtimeTypes = {
     used_storage: 'i32',
     logs: 'Vec<EthereumLog>'
   },
-  /**
-   * Lookup180: evm_core::error::ExitReason
-   **/
-  EvmCoreErrorExitReason: {
-    _enum: {
-      Succeed: 'EvmCoreErrorExitSucceed',
-      Error: 'EvmCoreErrorExitError',
-      Revert: 'EvmCoreErrorExitRevert',
-      Fatal: 'EvmCoreErrorExitFatal'
-    }
-  },
-  /**
-   * Lookup181: evm_core::error::ExitSucceed
-   **/
-  EvmCoreErrorExitSucceed: {
-    _enum: ['Stopped', 'Returned', 'Suicided']
-  },
-  /**
-   * Lookup182: evm_core::error::ExitError
-   **/
-  EvmCoreErrorExitError: {
-    _enum: {
-      StackUnderflow: 'Null',
-      StackOverflow: 'Null',
-      InvalidJump: 'Null',
-      InvalidRange: 'Null',
-      DesignatedInvalid: 'Null',
-      CallTooDeep: 'Null',
-      CreateCollision: 'Null',
-      CreateContractLimit: 'Null',
-      OutOfOffset: 'Null',
-      OutOfGas: 'Null',
-      OutOfFund: 'Null',
-      PCUnderflow: 'Null',
-      CreateEmpty: 'Null',
-      Other: 'Text',
-      InvalidCode: 'Null'
-    }
-  },
-  /**
-   * Lookup185: evm_core::error::ExitRevert
-   **/
-  EvmCoreErrorExitRevert: {
-    _enum: ['Reverted']
-  },
-  /**
-   * Lookup186: evm_core::error::ExitFatal
-   **/
-  EvmCoreErrorExitFatal: {
-    _enum: {
-      NotSupported: 'Null',
-      UnhandledInterrupt: 'Null',
-      CallErrorAsFatal: 'EvmCoreErrorExitError',
-      Other: 'Text'
-    }
-  }
+  ...lookupTypes
 };
 
 const eth_call = async (_api: ApiPromise, callRequest: TransactionRequest, at?: string): Promise<string> => {
