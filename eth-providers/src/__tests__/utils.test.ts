@@ -262,7 +262,6 @@ describe('getHealthResult', () => {
         }
       });
 
-      console.log(res);
       expect(res.msg.length).to.equal(1);
       expect(res.msg[0]).to.equal(`node production already idle for: ${-idleBlocks} blocks`);
     });

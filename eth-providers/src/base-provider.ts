@@ -1,5 +1,7 @@
+import '@acala-network/types';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
-import type { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
+import { BigNumber, BigNumberish, Wallet } from 'ethers';
+import { AccessListish } from 'ethers/lib/utils';
 import {
   Block,
   BlockTag,
@@ -22,20 +24,18 @@ import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/pr
 import { Formatter } from '@ethersproject/providers';
 import { accessListify, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
-import '@polkadot/api-augment';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import type { GenericExtrinsic, Option, UInt } from '@polkadot/types';
-import { decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
-import type { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
-import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { GenericExtrinsic, Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
+import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
+import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
-import type BN from 'bn.js';
-import { BigNumber, BigNumberish, Wallet } from 'ethers';
-import { AccessListish } from 'ethers/lib/utils';
+import BN from 'bn.js';
 import LRUCache from 'lru-cache';
+
 import {
   BIGNUMBER_ZERO,
   CACHE_SIZE_WARNING,
@@ -790,6 +790,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return {
       maxFeePerGas: null,
       maxPriorityFeePerGas: null,
+      lastBaseFeePerGas: null,
       gasPrice: await this.getGasPrice()
     };
   };
@@ -961,7 +962,8 @@ export abstract class BaseProvider extends AbstractProvider {
           accessList
         );
 
-    const result = await (this.api.rpc as any).evm.estimateResources(from, extrinsic.toHex());
+    // TODO: fix type
+    const result = await this.api.rpc.evm.estimateResources(from as string, extrinsic.toHex());
 
     return {
       gas: BigNumber.from((result.gas as BN).toString()),

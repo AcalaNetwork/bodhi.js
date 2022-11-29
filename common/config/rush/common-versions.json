@@ -57,6 +57,24 @@
      */
 
     // tutorials use these public versions instead of workspace:*
+    "ethers": [
+      "~5.5.0",
+    ],
+    "@polkadot/api": [
+      "8.1.1",
+    ],
+    "@polkadot/types": [
+      "8.1.1",
+    ],
+    "@polkadot/keyring": [
+      "^9.0.1",
+    ],
+    "@polkadot/util-crypto": [
+      "^9.0.1",
+    ],
+    "@acala-network/api": [
+      "^4.1.1",
+    ],
     "@acala-network/bodhi": [
       "^2.4.11",
       "^2.4.12"

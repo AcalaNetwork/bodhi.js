@@ -48,7 +48,7 @@ describe('homa', () => {
     expect((await homa.getExchangeRate()).toString()).to.equal('100000000000000000');
 
     // non-reset
-    if ((await provider.api.query.homa.softBondedCapPerSubAccount()) === 0) {
+    if ((await provider.api.query.homa.softBondedCapPerSubAccount()).toNumber() === 0) {
       expect(await homa.getEstimatedRewardRate()).to.eq(0);
 
       expect(await homa.getCommissionRate()).to.eq(0);
@@ -60,12 +60,17 @@ describe('homa', () => {
     const fastMatchFeeRate = formatAmount('100_000_000_000_000_000'); // 10%
 
     const updateHomaParams = provider.api.tx.sudo.sudo(
-      provider.api.tx.homa.updateHomaParams(dollar.mul(1000), estimatedRewardRate, commissionRate, fastMatchFeeRate)
+      provider.api.tx.homa.updateHomaParams(
+        dollar.mul(1000).toString(),
+        estimatedRewardRate,
+        commissionRate,
+        fastMatchFeeRate
+      )
     );
     await send(updateHomaParams, wallet.substrateAddress);
 
     const updateStakingBalance = provider.api.tx.sudo.sudo(
-      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000))
+      provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000).toBigInt())
     );
     await send(updateStakingBalance, wallet.substrateAddress);
 

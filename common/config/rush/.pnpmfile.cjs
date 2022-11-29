@@ -19,16 +19,22 @@ module.exports = {
 };
 
 const polkadotDeps = {
-  "@polkadot/api": "8.1.1",
-  "@polkadot/api-derive": "8.1.1",
-  '@polkadot/api-augment': "8.1.1",
-  "@polkadot/types": "8.1.1",
-  "@polkadot/types-known": "8.1.1",
-  "@polkadot/rpc-core": "8.1.1",
-  "@polkadot/rpc-provider": "8.1.1",
-  "@polkadot/keyring": "^9.0.1",
-  "@polkadot/util": "^9.0.1",
-  "@polkadot/util-crypto": "^9.0.1",
+  "@babel/runtime": "^7.20.1",
+  "@polkadot/api-augment": "9.9.1",
+  "@polkadot/api-base": "9.9.1",
+  "@polkadot/api-derive": "9.9.1",
+  "@polkadot/keyring": "^10.1.13",
+  "@polkadot/rpc-augment": "9.9.1",
+  "@polkadot/rpc-core": "9.9.1",
+  "@polkadot/rpc-provider": "9.9.1",
+  "@polkadot/types": "9.9.1",
+  "@polkadot/types-augment": "9.9.1",
+  "@polkadot/types-codec": "9.9.1",
+  "@polkadot/types-create": "9.9.1",
+  "@polkadot/types-known": "9.9.1",
+  "@polkadot/util": "^10.1.13",
+  "@polkadot/util-crypto": "^10.1.13",
+  "eventemitter3": "^4.0.7",
   "@acala-network/types": "~4.1.1",
 }
 
