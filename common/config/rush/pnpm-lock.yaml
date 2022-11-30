@@ -62,7 +62,7 @@ importers:
 
   ../../eth-providers:
     specifiers:
-      '@acala-network/api': ~4.1.8-2.2
+      '@acala-network/api': ~4.1.8-2.3
       '@acala-network/contracts': ~4.3.4
       '@acala-network/eth-transactions': workspace:*
       '@acala-network/types': ~4.1.1
@@ -108,7 +108,7 @@ importers:
       typescript: ~4.6.3
       vitest: ~0.20.2
     dependencies:
-      '@acala-network/api': 4.1.8-2.2_@polkadot+types@9.9.1
+      '@acala-network/api': 4.1.8-2.3_@polkadot+types@9.9.1
       '@acala-network/contracts': 4.3.4
       '@acala-network/eth-transactions': link:../eth-transactions
       '@acala-network/types': 4.1.5_@polkadot+api@9.9.1
@@ -1191,8 +1191,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@acala-network/api/4.1.8-2.2_@polkadot+types@9.9.1:
-    resolution: {integrity: sha512-Pocbx1GkIczPPxwI3C5NNyvA2sz/LImMre8FX2SYN+15uYlag34hEK13Jqa/H/8VMrDVFUA1GDIEAVCHNuV8Rg==}
+  /@acala-network/api/4.1.8-2.3_@polkadot+types@9.9.1:
+    resolution: {integrity: sha512-moQGkL5sfeb1ZOduvdYgAeb99qWbRXW7MrW7PHS45UtExqdu7pv3JFtOJAsPQ6RT2dPYEtt0YxH0TAQixZlFUg==}
     peerDependencies:
       '@polkadot/types': '>=9'
     dependencies:
