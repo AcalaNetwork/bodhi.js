@@ -1,71 +1,19 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { options } from '@acala-network/api';
-import lookupTypes from '@acala-network/types/interfaces/lookup';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { BigNumber } from 'ethers';
 import { Interface } from 'ethers/lib/utils';
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
-import '@polkadot/api-augment';
-import '@polkadot/api-augment/substrate/runtime';
 
-const runtime = {
-  EVMRuntimeRPCApi: [
-    {
-      version: 2,
-      methods: {
-        call: {
-          description: 'call evm',
-          params: [
-            {
-              name: 'from',
-              type: 'H160'
-            },
-            {
-              name: 'to',
-              type: 'H160'
-            },
-            {
-              name: 'data',
-              type: 'Vec<u8>'
-            },
-            {
-              name: 'value',
-              type: 'Balance'
-            },
-            {
-              name: 'gas_limit',
-              type: 'u64'
-            },
-            {
-              name: 'storage_limit',
-              type: 'u32'
-            },
-            {
-              name: 'access_list',
-              type: 'Option<Vec<EthereumTransactionAccessListItem>>'
-            },
-            {
-              name: 'estimate',
-              type: 'bool'
-            }
-          ],
-          type: 'Result<CallInfo, sp_runtime::DispatchError>'
-        }
-      }
-    }
-  ]
-};
-
-// TODO: `CallInfo` can also stream up to acala.js
-const runtimeTypes = {
+// TODO: this can also bubble up to acala.js
+const extraRuntimeTypes = {
   CallInfo: {
     exit_reason: 'EvmCoreErrorExitReason',
     value: 'Vec<u8>',
     used_gas: 'U256',
     used_storage: 'i32',
     logs: 'Vec<EthereumLog>'
-  },
-  ...lookupTypes
+  }
 };
 
 const eth_call = async (_api: ApiPromise, callRequest: TransactionRequest, at?: string): Promise<string> => {
@@ -107,8 +55,7 @@ async function main() {
   const api = await ApiPromise.create(
     options({
       provider,
-      types: runtimeTypes,
-      runtime
+      types: extraRuntimeTypes
     })
   );
 

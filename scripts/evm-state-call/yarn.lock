@@ -12,13 +12,13 @@
     "@open-web3/orml-types" "^1.1.4"
     "@polkadot/api-derive" "^8.5.1"
 
-"@acala-network/api@~4.1.8-2.2":
-  version "4.1.8-2.2"
-  resolved "https://registry.npmjs.org/@acala-network/api/-/api-4.1.8-2.2.tgz#b106b377c7a5a5808165e8ca837380c9ae46d28f"
-  integrity sha512-Pocbx1GkIczPPxwI3C5NNyvA2sz/LImMre8FX2SYN+15uYlag34hEK13Jqa/H/8VMrDVFUA1GDIEAVCHNuV8Rg==
+"@acala-network/api@~4.1.8-2.3":
+  version "4.1.8-2.3"
+  resolved "https://registry.npmjs.org/@acala-network/api/-/api-4.1.8-2.3.tgz#f2b756274cb0d5ccd4bd36045b4739b70a718a80"
+  integrity sha512-moQGkL5sfeb1ZOduvdYgAeb99qWbRXW7MrW7PHS45UtExqdu7pv3JFtOJAsPQ6RT2dPYEtt0YxH0TAQixZlFUg==
   dependencies:
     "@acala-network/api-derive" "4.1.8-1"
-    "@acala-network/types" "4.1.8-2.2"
+    "@acala-network/types" "4.1.8-2.3"
     "@babel/runtime" "^7.10.2"
     "@open-web3/orml-api-derive" "^1.1.4"
     "@polkadot/api" "^9.9.1"
@@ -41,10 +41,10 @@
     "@open-web3/api-mobx" "^1.1.4"
     "@open-web3/orml-types" "^1.1.4"
 
-"@acala-network/types@4.1.8-2.2":
-  version "4.1.8-2.2"
-  resolved "https://registry.npmjs.org/@acala-network/types/-/types-4.1.8-2.2.tgz#cef390a34c5eb09cf9fe84c6d8549f60bffbbe72"
-  integrity sha512-0rhKXSZynzlcgiVlSxXazo422uAw4bEolCeg72q3cd96SRDzVnUHUAZ1AnRZOdfGjOEgvWbeeiiRdDU5d6QcHw==
+"@acala-network/types@4.1.8-2.3":
+  version "4.1.8-2.3"
+  resolved "https://registry.npmjs.org/@acala-network/types/-/types-4.1.8-2.3.tgz#7deec5d7d05437ad04ede61e27a02c9c51233e99"
+  integrity sha512-nQWh7+1p+GIktVlj+ymDfzjtzPoHZXMeCxJtWWN7lxrRpERvby5/K/WUm+B9CHPet+5VhnQlXhFfGvgGifJrWg==
   dependencies:
     "@acala-network/type-definitions" "4.1.8-1"
     "@babel/runtime" "^7.10.2"
