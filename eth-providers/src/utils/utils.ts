@@ -279,3 +279,14 @@ export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): P
 
   return blockTag.blockHash || blockTag.blockNumber;
 };
+
+// TODO: this can also bubble up to acala.js
+export const extraRuntimeTypes = {
+  CallInfo: {
+    exit_reason: 'EvmCoreErrorExitReason',
+    value: 'Vec<u8>',
+    used_gas: 'U256',
+    used_storage: 'i32',
+    logs: 'Vec<EthereumLog>'
+  }
+};
