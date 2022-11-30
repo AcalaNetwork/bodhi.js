@@ -239,6 +239,21 @@ export interface PollFilters {
   [PollFilterType.Logs]: LogPollFilter[];
 }
 
+export interface CallInfo {
+  ok?: {
+    exit_reason: {
+      succeed?: 'Stopped' | 'Returned' | 'Suicided',
+      error?: any,
+      revert?: 'Reverted',
+      fatal?: any,
+    },
+    value: string,
+    used_gas: number,
+    used_storage: number,
+    logs: Log[]
+  }
+}
+
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly formatter: Formatter;
@@ -704,16 +719,16 @@ export abstract class BaseProvider extends AbstractProvider {
     await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    let { transaction, blockHash } = await resolveProperties({
-      transaction: this._getTransactionRequest(_transaction),
+    const { txRequest, blockHash } = await resolveProperties({
+      txRequest: this._getTransactionRequest(_transaction),
       blockHash: this._getBlockHash(blockTag)
     });
 
-    if (!(transaction.gasLimit && transaction.gasPrice)) {
-      const defaultGas = await this._getEthGas();
-      transaction = { ...transaction, ...defaultGas };
-    }
-    const { storageLimit, gasLimit } = this._getSubstrateGasParams({ ...transaction });
+    const transaction = txRequest.gasLimit && txRequest.gasPrice
+      ? txRequest
+      : { ...txRequest, ...(await this._getEthGas()) }
+
+    const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 
     const callRequest: CallRequest = {
       from: transaction.from,
@@ -745,19 +760,16 @@ export abstract class BaseProvider extends AbstractProvider {
       estimate
     );
 
-    const res = response.toJSON() as any; // TODO: fix type
+    const res = response.toJSON() as CallInfo;
     if (!res.ok) return logger.throwError(`eth call failed: ${res}`, Logger.errors.CALL_EXCEPTION, callRequest);
 
-    if (res.ok.exit_reason?.succeed) {
-      return res.ok.value;
-    } else {
-      const err = res.ok.exit_reason.error || res.ok.exit_reason.revert || res.ok.exit_reason.fatal || 'unknow error';
-      return logger.throwError(
-        `internal JSON-RPC error: ${JSON.stringify(err)}`,
+    return res.ok.exit_reason.succeed
+      ? res.ok.value
+      : logger.throwError(
+        `internal JSON-RPC error: ${JSON.stringify(res.ok.exit_reason)}`,
         Logger.errors.CALL_EXCEPTION,
         callRequest
       );
-    }
   };
 
   getStorageAt = async (
