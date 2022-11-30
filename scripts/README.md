@@ -46,3 +46,7 @@ This will send two scheduled transaction in batch to acala testnet, which will p
 
 ### get ausd supply from block range
 edit the rpc and block number in the code depending if you want to query for moonbeam or astar, then `CHAIN={Acala, Astar, Moonbeam} yarn ausd`
+
+### use state_call for eth call
+this is a POC of how to do a `eth_call` with substrate `state_call`
+`cd evm-state-call && yarn state-call`
