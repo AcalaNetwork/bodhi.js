@@ -40,6 +40,8 @@ const polkadotDeps = {
 
 const fixedDeps = {
   ...polkadotDeps,
+  "bn.js": "5.2.0",
+  "@types/bn.js": "5.1.0",
 } 
 
 // const projects = [
