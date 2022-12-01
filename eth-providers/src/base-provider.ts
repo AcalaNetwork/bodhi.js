@@ -85,7 +85,8 @@ import {
   getOrphanTxReceiptsFromEvents,
   BaseLogFilter,
   SanitizedLogFilter,
-  LogFilter
+  LogFilter,
+  decodeRevertMsg
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -242,16 +243,16 @@ export interface PollFilters {
 export interface CallInfo {
   ok?: {
     exit_reason: {
-      succeed?: 'Stopped' | 'Returned' | 'Suicided',
-      error?: any,
-      revert?: 'Reverted',
-      fatal?: any,
-    },
-    value: string,
-    used_gas: number,
-    used_storage: number,
-    logs: Log[]
-  }
+      succeed?: 'Stopped' | 'Returned' | 'Suicided';
+      error?: any;
+      revert?: 'Reverted';
+      fatal?: any;
+    };
+    value: string;
+    used_gas: number;
+    used_storage: number;
+    logs: Log[];
+  };
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -724,9 +725,8 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const transaction = txRequest.gasLimit && txRequest.gasPrice
-      ? txRequest
-      : { ...txRequest, ...(await this._getEthGas()) }
+    const transaction =
+      txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
 
     const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 
@@ -740,7 +740,8 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: transaction.accessList
     };
 
-    return blockHash ? this._ethCall(callRequest, blockHash) : this._ethCall(callRequest);
+    const res = blockHash ? this._ethCall(callRequest, blockHash) : this._ethCall(callRequest);
+    return res;
   };
 
   _ethCall = async (callRequest: CallRequest, at?: string): Promise<string> => {
@@ -761,15 +762,29 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const res = response.toJSON() as CallInfo;
-    if (!res.ok) return logger.throwError(`eth call failed: ${res}`, Logger.errors.CALL_EXCEPTION, callRequest);
+    const info = res.ok;
+    if (!info) return logger.throwError(`eth call failed: ${res}`, Logger.errors.CALL_EXCEPTION, callRequest);
 
-    return res.ok.exit_reason.succeed
-      ? res.ok.value
-      : logger.throwError(
-        `internal JSON-RPC error: ${JSON.stringify(res.ok.exit_reason)}`,
-        Logger.errors.CALL_EXCEPTION,
-        callRequest
-      );
+    if (!info.exit_reason.succeed) {
+      let msg, err;
+      if (info.exit_reason.revert) {
+        msg = decodeRevertMsg(info.value);
+        err = new Error(`VM Exception while processing transaction: execution revert: ${msg} ${info.value}`);
+      } else if (info.exit_reason.fatal) {
+        msg = JSON.stringify(info.exit_reason.fatal);
+        err = new Error(`execution fatal: ${msg}`);
+      } else if (info.exit_reason.error) {
+        msg = JSON.stringify(info.exit_reason.error);
+        err = new Error(`execution error:: ${msg}`);
+      } else {
+        err = new Error(`unknown eth call error`);
+      }
+
+      (err as any).code = -32603;
+      throw err;
+    }
+
+    return info.value;
   };
 
   getStorageAt = async (

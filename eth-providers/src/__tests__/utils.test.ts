@@ -4,6 +4,7 @@ import chai from 'chai';
 import chaiSubset from 'chai-subset';
 import { describe, it } from 'vitest';
 import {
+  decodeRevertMsg,
   EthCallTimingResult,
   getHealthResult,
   hexlifyRpcResult,
@@ -393,5 +394,14 @@ describe('parseBlockTag', () => {
     expect(await parseBlockTag({ blockNumber: blockNumberHex })).to.equal(blockNumberHex);
     expect(await parseBlockTag({ blockNumber })).to.equal(blockNumber);
     expect(await parseBlockTag({ blockHash })).to.equal(blockHash);
+  });
+});
+
+describe('decodeRevertMsg', () => {
+  it('correctly decode', () => {
+    const hexData =
+      '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013696e76616c69642063757272656e6379206964';
+
+    expect(decodeRevertMsg(hexData)).to.equal('invalid currency id');
   });
 });

@@ -2,6 +2,7 @@ import { FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lo
 import { BigNumber } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
+import { hexToU8a } from '@polkadot/util';
 import { BlockTagish, Eip1898BlockTag } from '../base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
@@ -289,4 +290,17 @@ export const extraRuntimeTypes = {
     used_storage: 'i32',
     logs: 'Vec<EthereumLog>'
   }
+};
+
+export const decodeRevertMsg = (hexMsg: string) => {
+  const data = hexToU8a(hexMsg);
+  const msgStart = 68;
+  const msgLength = BigNumber.from(data.slice(36, msgStart));
+  const msgEnd = msgStart + msgLength.toNumber();
+
+  if (data.length <= msgStart || data.length < msgEnd) return '';
+
+  const body = data.slice(msgStart, msgEnd);
+
+  return new TextDecoder('utf-8').decode(body);
 };
