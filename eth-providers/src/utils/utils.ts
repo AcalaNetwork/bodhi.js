@@ -292,13 +292,16 @@ export const extraRuntimeTypes = {
   }
 };
 
+// https://github.com/AcalaNetwork/Acala/blob/067b65bc19ff525bdccae020ad2bd4bdf41f4300/modules/evm/rpc/src/lib.rs#L122
 export const decodeRevertMsg = (hexMsg: string) => {
   const data = hexToU8a(hexMsg);
   const msgStart = 68;
+  if (data.length <= msgStart) return '';
+
   const msgLength = BigNumber.from(data.slice(36, msgStart));
   const msgEnd = msgStart + msgLength.toNumber();
 
-  if (data.length <= msgStart || data.length < msgEnd) return '';
+  if (data.length < msgEnd) return '';
 
   const body = data.slice(msgStart, msgEnd);
 

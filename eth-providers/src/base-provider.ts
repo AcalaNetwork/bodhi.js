@@ -32,7 +32,7 @@ import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
-import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
 import LRUCache from 'lru-cache';
 
@@ -253,6 +253,12 @@ export interface CallInfo {
     used_storage: number;
     logs: Log[];
   };
+  err?: {
+    module: {
+      index: number,
+      error: `0x${string}`,
+    }
+  }
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -740,8 +746,9 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: transaction.accessList
     };
 
-    const res = blockHash ? this._ethCall(callRequest, blockHash) : this._ethCall(callRequest);
-    return res;
+    return blockHash
+      ? this._ethCall(callRequest, blockHash)
+      : this._ethCall(callRequest);
   };
 
   _ethCall = async (callRequest: CallRequest, at?: string): Promise<string> => {
@@ -763,9 +770,21 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const res = response.toJSON() as CallInfo;
     const info = res.ok;
-    if (!info) return logger.throwError(`eth call failed: ${res}`, Logger.errors.CALL_EXCEPTION, callRequest);
+    if (!info) {
+      // substrate level error
+      if (!res.err) return logger.throwError('unknown eth call error', Logger.errors.CALL_EXCEPTION, callRequest);
+
+      const err = this.api.registry.findMetaError({
+        index: new BN(res.err.module.index),
+        error: new BN(hexToU8a(res.err.module.error)[0]),
+      });
+      const msg = `${err.section}.${err.name}: ${err.docs}`;
+
+      return logger.throwError(msg, Logger.errors.CALL_EXCEPTION, callRequest);
+    }
 
     if (!info.exit_reason.succeed) {
+      // evm level error
       let msg, err;
       if (info.exit_reason.revert) {
         msg = decodeRevertMsg(info.value);
@@ -774,8 +793,11 @@ export abstract class BaseProvider extends AbstractProvider {
         msg = JSON.stringify(info.exit_reason.fatal);
         err = new Error(`execution fatal: ${msg}`);
       } else if (info.exit_reason.error) {
-        msg = JSON.stringify(info.exit_reason.error);
-        err = new Error(`execution error:: ${msg}`);
+        const reason = Object.keys(info.exit_reason.error)[0];
+        msg = reason === 'other'
+          ? info.exit_reason.error[reason]
+          : reason
+        err = new Error(`execution error: ${msg}`);
       } else {
         err = new Error(`unknown eth call error`);
       }
