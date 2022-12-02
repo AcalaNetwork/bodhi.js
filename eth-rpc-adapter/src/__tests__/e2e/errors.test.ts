@@ -101,6 +101,6 @@ describe('errors', () => {
     const rawTx = await poorWallet.signTransaction(tx);
     const res = await eth_sendRawTransaction([rawTx]);
 
-    expect(res.data.message).to.contain('Invalid decimals');
+    expect(res.data.error.message).to.contain('Invalid decimals');
   });
 });
