@@ -3,7 +3,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
 import { hexToU8a } from '@polkadot/util';
-import { BlockTagish, Eip1898BlockTag } from '../base-provider';
+import { BlockTagish, CallInfo, Eip1898BlockTag } from '../base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
 
@@ -306,4 +306,30 @@ export const decodeRevertMsg = (hexMsg: string) => {
   const body = data.slice(msgStart, msgEnd);
 
   return new TextDecoder('utf-8').decode(body);
+};
+
+// https://github.com/AcalaNetwork/Acala/blob/067b65bc19ff525bdccae020ad2bd4bdf41f4300/modules/evm/rpc/src/lib.rs#L87
+export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
+  if (!data) return;
+
+  const { exit_reason: exitReason, value: returnData } = data;
+  if (!exitReason.succeed) {
+    let msg, err;
+    if (exitReason.revert) {
+      msg = decodeRevertMsg(returnData);
+      err = new Error(`VM Exception while processing transaction: execution revert: ${msg} ${returnData}`);
+    } else if (exitReason.fatal) {
+      msg = JSON.stringify(exitReason.fatal);
+      err = new Error(`execution fatal: ${msg}`);
+    } else if (exitReason.error) {
+      const reason = Object.keys(exitReason.error)[0];
+      msg = reason === 'other' ? exitReason.error[reason] : reason;
+      err = new Error(`execution error: ${msg}`);
+    } else {
+      err = new Error(`unknown eth call error`);
+    }
+
+    (err as any).code = -32603;
+    throw err;
+  }
 };

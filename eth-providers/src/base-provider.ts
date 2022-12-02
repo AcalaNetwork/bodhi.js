@@ -86,7 +86,7 @@ import {
   BaseLogFilter,
   SanitizedLogFilter,
   LogFilter,
-  decodeRevertMsg
+  checkEvmExecutionError
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -255,10 +255,10 @@ export interface CallInfo {
   };
   err?: {
     module: {
-      index: number,
-      error: `0x${string}`,
-    }
-  }
+      index: number;
+      error: `0x${string}`;
+    };
+  };
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -757,7 +757,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
     const estimate = true;
 
-    const response = await api.call.evmRuntimeRPCApi.call(
+    const res = await api.call.evmRuntimeRPCApi.call(
       from,
       to,
       data,
@@ -768,45 +768,30 @@ export abstract class BaseProvider extends AbstractProvider {
       estimate
     );
 
-    const res = response.toJSON() as CallInfo;
-    const info = res.ok;
-    if (!info) {
-      // substrate level error
-      if (!res.err) return logger.throwError('unknown eth call error', Logger.errors.CALL_EXCEPTION, callRequest);
+    const { ok, err } = res.toJSON() as CallInfo;
+    if (!ok) {    // substrate level error
+      const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
+      if (!errMetaValid) {
+        return logger.throwError(
+          'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
+          Logger.errors.CALL_EXCEPTION,
+          callRequest,
+        );
+      }
 
-      const err = this.api.registry.findMetaError({
-        index: new BN(res.err.module.index),
-        error: new BN(hexToU8a(res.err.module.error)[0]),
+      const errInfo = this.api.registry.findMetaError({
+        index: new BN(err.module.index),
+        error: new BN(hexToU8a(err.module.error)[0])
       });
-      const msg = `${err.section}.${err.name}: ${err.docs}`;
+      const msg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
 
       return logger.throwError(msg, Logger.errors.CALL_EXCEPTION, callRequest);
     }
 
-    if (!info.exit_reason.succeed) {
-      // evm level error
-      let msg, err;
-      if (info.exit_reason.revert) {
-        msg = decodeRevertMsg(info.value);
-        err = new Error(`VM Exception while processing transaction: execution revert: ${msg} ${info.value}`);
-      } else if (info.exit_reason.fatal) {
-        msg = JSON.stringify(info.exit_reason.fatal);
-        err = new Error(`execution fatal: ${msg}`);
-      } else if (info.exit_reason.error) {
-        const reason = Object.keys(info.exit_reason.error)[0];
-        msg = reason === 'other'
-          ? info.exit_reason.error[reason]
-          : reason
-        err = new Error(`execution error: ${msg}`);
-      } else {
-        err = new Error(`unknown eth call error`);
-      }
+    // check evm level error
+    checkEvmExecutionError(ok);
 
-      (err as any).code = -32603;
-      throw err;
-    }
-
-    return info.value;
+    return ok.value;
   };
 
   getStorageAt = async (
