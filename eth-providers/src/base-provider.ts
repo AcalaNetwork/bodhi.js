@@ -731,8 +731,9 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const transaction =
-      txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
+    const transaction = txRequest.gasLimit && txRequest.gasPrice
+       ? txRequest
+       : { ...txRequest, ...(await this._getEthGas()) };
 
     const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 
@@ -1123,18 +1124,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (ethTx.type === 96) {
       // EIP-712 transaction
-      if (!ethTx.gasLimit) {
-        return logger.throwError('expect gasLimit');
-      }
-      if (!ethTx.storageLimit) {
-        return logger.throwError('expect storageLimit');
-      }
-      if (!ethTx.validUntil) {
-        return logger.throwError('expect validUntil');
-      }
-      if (!ethTx.tip) {
-        return logger.throwError('expect priorityFee (tip)');
-      }
+      if (!ethTx.gasLimit) return logger.throwError('expect gasLimit');
+      if (!ethTx.storageLimit) return logger.throwError('expect storageLimit');
+      if (!ethTx.validUntil) return logger.throwError('expect validUntil');
+      if (!ethTx.tip) return logger.throwError('expect priorityFee (tip)');
 
       gasLimit = ethTx.gasLimit.toBigInt();
       storageLimit = BigInt(ethTx.storageLimit.toString());
