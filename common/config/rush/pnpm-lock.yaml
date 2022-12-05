@@ -88,7 +88,7 @@ importers:
       '@rushstack/eslint-config': ~2.5.4
       '@rushstack/heft': ~0.44.13
       '@sinonjs/fake-timers': ~9.1.1
-      '@types/bn.js': 5.1.0
+      '@types/bn.js': ~5.1.0
       '@types/chai': ~4.2.22
       '@types/chai-as-promised': ~7.1.4
       '@types/lru-cache': ~7.6.1
@@ -132,7 +132,6 @@ importers:
       '@polkadot/types': 9.9.1
       '@polkadot/util': 10.1.13
       '@polkadot/util-crypto': 10.1.13
-      '@types/bn.js': 5.1.0
       bn.js: 5.2.0
       ethers: 5.7.2
       graphql: 16.0.1
@@ -142,6 +141,7 @@ importers:
       '@rushstack/eslint-config': 2.5.4_eslint@7.32.0+typescript@4.6.3
       '@rushstack/heft': 0.44.13
       '@sinonjs/fake-timers': 9.1.1
+      '@types/bn.js': 5.1.0
       '@types/chai': 4.2.22
       '@types/chai-as-promised': 7.1.4
       '@types/lru-cache': 7.6.1
