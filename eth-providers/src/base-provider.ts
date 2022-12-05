@@ -32,7 +32,7 @@ import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
-import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
 import LRUCache from 'lru-cache';
 
@@ -85,7 +85,8 @@ import {
   getOrphanTxReceiptsFromEvents,
   BaseLogFilter,
   SanitizedLogFilter,
-  LogFilter
+  LogFilter,
+  checkEvmExecutionError
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -237,6 +238,27 @@ export interface LogPollFilter extends BlockPollFilter {
 export interface PollFilters {
   [PollFilterType.NewBlocks]: BlockPollFilter[];
   [PollFilterType.Logs]: LogPollFilter[];
+}
+
+export interface CallInfo {
+  ok?: {
+    exit_reason: {
+      succeed?: 'Stopped' | 'Returned' | 'Suicided';
+      error?: any;
+      revert?: 'Reverted';
+      fatal?: any;
+    };
+    value: string;
+    used_gas: number;
+    used_storage: number;
+    logs: Log[];
+  };
+  err?: {
+    module: {
+      index: number;
+      error: `0x${string}`;
+    };
+  };
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -698,32 +720,79 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   call = async (
-    transaction: Deferrable<TransactionRequest>,
+    _transaction: Deferrable<TransactionRequest>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    const resolved = await resolveProperties({
-      transaction: this._getTransactionRequest(transaction),
+    const { txRequest, blockHash } = await resolveProperties({
+      txRequest: this._getTransactionRequest(_transaction),
       blockHash: this._getBlockHash(blockTag)
     });
 
+    const transaction = txRequest.gasLimit && txRequest.gasPrice
+       ? txRequest
+       : { ...txRequest, ...(await this._getEthGas()) };
+
+    const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
+
     const callRequest: CallRequest = {
-      from: resolved.transaction.from,
-      to: resolved.transaction.to,
-      gasLimit: resolved.transaction.gasLimit?.toBigInt(),
-      storageLimit: undefined,
-      value: resolved.transaction.value?.toBigInt(),
-      data: resolved.transaction.data,
-      accessList: resolved.transaction.accessList
+      from: transaction.from,
+      to: transaction.to,
+      gasLimit,
+      storageLimit,
+      value: transaction.value?.toBigInt(),
+      data: transaction.data,
+      accessList: transaction.accessList
     };
 
-    const data = resolved.blockHash
-      ? await this.api.rpc.evm.call(callRequest, resolved.blockHash)
-      : await this.api.rpc.evm.call(callRequest);
+    return blockHash
+      ? this._ethCall(callRequest, blockHash)
+      : this._ethCall(callRequest);
+  };
 
-    return data.toHex();
+  _ethCall = async (callRequest: CallRequest, at?: string): Promise<string> => {
+    const api = at ? await this.api.at(at) : this.api;
+
+    const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
+    const estimate = true;
+
+    const res = await api.call.evmRuntimeRPCApi.call(
+      from,
+      to,
+      data,
+      value,
+      gasLimit,
+      storageLimit,
+      accessList,
+      estimate
+    );
+
+    const { ok, err } = res.toJSON() as CallInfo;
+    if (!ok) {    // substrate level error
+      const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
+      if (!errMetaValid) {
+        return logger.throwError(
+          'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
+          Logger.errors.CALL_EXCEPTION,
+          callRequest,
+        );
+      }
+
+      const errInfo = this.api.registry.findMetaError({
+        index: new BN(err.module.index),
+        error: new BN(hexToU8a(err.module.error)[0])
+      });
+      const msg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
+
+      return logger.throwError(msg, Logger.errors.CALL_EXCEPTION, callRequest);
+    }
+
+    // check evm level error
+    checkEvmExecutionError(ok);
+
+    return ok.value;
   };
 
   getStorageAt = async (
@@ -1040,7 +1109,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getSubstrateGasParams = (
-    ethTx: AcalaEvmTX
+    ethTx: Partial<AcalaEvmTX>
   ): {
     gasLimit: bigint;
     storageLimit: bigint;
@@ -1055,30 +1124,21 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (ethTx.type === 96) {
       // EIP-712 transaction
-      const _storageLimit = ethTx.storageLimit?.toString();
-      const _validUntil = ethTx.validUntil?.toString();
-      const _tip = ethTx.tip?.toString();
-
-      if (!_storageLimit) {
-        return logger.throwError('expect storageLimit');
-      }
-      if (!_validUntil) {
-        return logger.throwError('expect validUntil');
-      }
-      if (!_tip) {
-        return logger.throwError('expect priorityFee');
-      }
+      if (!ethTx.gasLimit) return logger.throwError('expect gasLimit');
+      if (!ethTx.storageLimit) return logger.throwError('expect storageLimit');
+      if (!ethTx.validUntil) return logger.throwError('expect validUntil');
+      if (!ethTx.tip) return logger.throwError('expect priorityFee (tip)');
 
       gasLimit = ethTx.gasLimit.toBigInt();
-      storageLimit = BigInt(_storageLimit);
-      validUntil = BigInt(_validUntil);
-      tip = BigInt(_tip);
+      storageLimit = BigInt(ethTx.storageLimit.toString());
+      validUntil = BigInt(ethTx.validUntil.toString());
+      tip = BigInt(ethTx.tip.toString());
     } else if (ethTx.type === null || ethTx.type === undefined || ethTx.type === 0 || ethTx.type === 2) {
       // Legacy, EIP-155, and EIP-1559 transaction
       const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
 
       const _getErrInfo = (): any => ({
-        txGasLimit: ethTx.gasLimit.toBigInt(),
+        txGasLimit: ethTx.gasLimit?.toBigInt(),
         txGasPrice: ethTx.gasPrice?.toBigInt(),
         maxPriorityFeePerGas: ethTx.maxPriorityFeePerGas?.toBigInt(),
         maxFeePerGas: ethTx.maxFeePerGas?.toBigInt(),
@@ -1086,7 +1146,7 @@ export abstract class BaseProvider extends AbstractProvider {
         storageDepositPerByte
       });
 
-      const err_help_msg =
+      const errHelpMsg =
         'invalid ETH gasLimit/gasPrice combination provided. Please DO NOT change gasLimit/gasPrice in metamask when sending token, if you are deploying contract, DO NOT provide random gasLimit/gasPrice, please check out our doc for how to compute gas, easiest way is to call eth_getEthGas directly';
 
       try {
@@ -1102,15 +1162,15 @@ export abstract class BaseProvider extends AbstractProvider {
         storageLimit = params.storageLimit.toBigInt();
         tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
       } catch {
-        logger.throwError(
-          `calculating substrate gas failed: ${err_help_msg}`,
+        return logger.throwError(
+          `calculating substrate gas failed: ${errHelpMsg}`,
           Logger.errors.INVALID_ARGUMENT,
           _getErrInfo()
         );
       }
 
       if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
-        logger.throwError(`bad substrate gas params caused by ${err_help_msg}`, Logger.errors.INVALID_ARGUMENT, {
+        return logger.throwError(`bad substrate gas params caused by ${errHelpMsg}`, Logger.errors.INVALID_ARGUMENT, {
           ..._getErrInfo(),
           gasLimit,
           validUntil,
@@ -1161,7 +1221,7 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: ethTx.accessList
     };
 
-    await this.api.rpc.evm.call(callRequest);
+    await this._ethCall(callRequest);
 
     const extrinsic = this.api.tx.evm.ethCall(
       ethTx.to ? { Call: ethTx.to } : { Create: null },

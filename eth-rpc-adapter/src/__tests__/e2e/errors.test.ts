@@ -101,14 +101,6 @@ describe('errors', () => {
     const rawTx = await poorWallet.signTransaction(tx);
     const res = await eth_sendRawTransaction([rawTx]);
 
-    expect(res.data).to.deep.equal({
-      id: 0,
-      jsonrpc: '2.0',
-      error: {
-        code: -32603,
-        message:
-          'internal JSON-RPC error [evm.InvalidDecimals: Invalid decimals]. More info: https://evmdocs.acala.network/reference/common-errors'
-      }
-    });
+    expect(res.data.error.message).to.contain('Invalid decimals');
   });
 });
