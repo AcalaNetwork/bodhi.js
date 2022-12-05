@@ -25,7 +25,7 @@ importers:
       '@rushstack/heft': ~0.44.13
       '@types/bn.js': 5.1.0
       '@types/chai': ~4.2.22
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       chai: ~4.3.4
       eslint: ~7.32.0
       ethers: ~5.7.0
@@ -48,7 +48,7 @@ importers:
       '@polkadot/util': 10.1.13
       '@polkadot/util-crypto': 10.1.13
       '@types/bn.js': 5.1.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ethers: 5.7.2
     devDependencies:
       '@rushstack/eslint-config': 2.5.4_eslint@7.32.0+typescript@4.6.3
@@ -62,7 +62,7 @@ importers:
 
   ../../eth-providers:
     specifiers:
-      '@acala-network/api': ~4.1.8-2.2
+      '@acala-network/api': ~4.1.8-2.3
       '@acala-network/contracts': ~4.3.4
       '@acala-network/eth-transactions': workspace:*
       '@acala-network/types': ~4.1.1
@@ -93,6 +93,7 @@ importers:
       '@types/chai-as-promised': ~7.1.4
       '@types/lru-cache': ~7.6.1
       '@types/sinonjs__fake-timers': ~8.1.2
+      bn.js: 5.2.0
       chai: ~4.3.4
       chai-as-promised: ~7.1.1
       chai-subset: ~1.6.0
@@ -108,7 +109,7 @@ importers:
       typescript: ~4.6.3
       vitest: ~0.20.2
     dependencies:
-      '@acala-network/api': 4.1.8-2.2_@polkadot+types@9.9.1
+      '@acala-network/api': 4.1.8-2.3_@polkadot+types@9.9.1
       '@acala-network/contracts': 4.3.4
       '@acala-network/eth-transactions': link:../eth-transactions
       '@acala-network/types': 4.1.5_@polkadot+api@9.9.1
@@ -131,6 +132,7 @@ importers:
       '@polkadot/types': 9.9.1
       '@polkadot/util': 10.1.13
       '@polkadot/util-crypto': 10.1.13
+      bn.js: 5.2.0
       ethers: 5.7.2
       graphql: 16.0.1
       graphql-request: 3.6.1_graphql@16.0.1
@@ -1191,8 +1193,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@acala-network/api/4.1.8-2.2_@polkadot+types@9.9.1:
-    resolution: {integrity: sha512-Pocbx1GkIczPPxwI3C5NNyvA2sz/LImMre8FX2SYN+15uYlag34hEK13Jqa/H/8VMrDVFUA1GDIEAVCHNuV8Rg==}
+  /@acala-network/api/4.1.8-2.3_@polkadot+types@9.9.1:
+    resolution: {integrity: sha512-moQGkL5sfeb1ZOduvdYgAeb99qWbRXW7MrW7PHS45UtExqdu7pv3JFtOJAsPQ6RT2dPYEtt0YxH0TAQixZlFUg==}
     peerDependencies:
       '@polkadot/types': '>=9'
     dependencies:
@@ -1227,7 +1229,7 @@ packages:
       '@polkadot/util': 10.1.13
       '@polkadot/util-crypto': 10.1.13
       '@types/bn.js': 5.1.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ethers: 5.5.4
     transitivePeerDependencies:
       - bufferutil
@@ -2131,14 +2133,14 @@ packages:
     dependencies:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
 
   /@ethersproject/bignumber/5.6.0:
     resolution: {integrity: sha512-VziMaXIUHQlHJmkv1dlcd6GY2PmT0khtAqaMctCIDogxkrarMzA9L94KN1NeXqqOfFD6r0sJT3vCTOFSmZ07DA==}
     dependencies:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
     dev: true
 
   /@ethersproject/bignumber/5.7.0:
@@ -2146,7 +2148,7 @@ packages:
     dependencies:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
 
   /@ethersproject/bytes/5.5.0:
     resolution: {integrity: sha512-ABvc7BHWhZU9PNM/tANm/Qx4ostPGadAuQzWTr3doklZOhDlmcBqclrQe/ZXUIj3K8wC28oYeuRa+A37tX9kog==}
@@ -2586,7 +2588,7 @@ packages:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       elliptic: 6.5.4
       hash.js: 1.1.7
 
@@ -2596,7 +2598,7 @@ packages:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       elliptic: 6.5.4
       hash.js: 1.1.7
 
@@ -2606,7 +2608,7 @@ packages:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
       '@ethersproject/properties': 5.7.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       elliptic: 6.5.4
       hash.js: 1.1.7
 
@@ -3242,7 +3244,7 @@ packages:
   /@openzeppelin/upgrades-core/1.14.2:
     resolution: {integrity: sha512-JkrMcsB0v6vwX+fObY+y51L3tD3BcLjNpPnKkgtsEOC1Umwt6WzvI8Gq2brmNOzFLNQqeX2xySiJTGvypqUQow==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       cbor: 8.1.0
       chalk: 4.1.2
       compare-versions: 4.1.3
@@ -3581,7 +3583,7 @@ packages:
       '@polkadot/x-textdecoder': 10.1.13
       '@polkadot/x-textencoder': 10.1.13
       '@types/bn.js': 5.1.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
 
   /@polkadot/wasm-bridge/6.3.1_6e7e7bddc44fe27b4e07a73512098112:
     resolution: {integrity: sha512-1TYkHsb9AEFhU9uZj3biEnN2yKQNzdrwSjiTvfCYnt97pnEkKsZI6cku+YPZQv5w/x9CQa5Yua9e2DVVZSivGA==}
@@ -4420,7 +4422,7 @@ packages:
       '@truffle/abi-utils': 0.2.5
       '@truffle/compile-common': 0.7.23
       big.js: 5.2.2
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       cbor: 5.2.0
       debug: 4.3.3
       lodash.clonedeep: 4.5.0
@@ -4505,7 +4507,7 @@ packages:
       '@truffle/abi-utils': 0.2.5
       '@truffle/codec': 0.11.21
       '@truffle/source-map-utils': 1.3.65
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       debug: 4.3.3
       json-pointer: 0.6.1
       json-stable-stringify: 1.0.1
@@ -4557,7 +4559,7 @@ packages:
   /@truffle/interface-adapter/0.5.8:
     resolution: {integrity: sha512-vvy3xpq36oLgjjy8KE9l2Jabg3WcGPOt18tIyMfTQX9MFnbHoQA2Ne2i8xsd4p6KfxIqSjAB53Q9/nScAqY0UQ==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ethers: 4.0.49
       web3: 1.5.3
     dev: false
@@ -5843,7 +5845,7 @@ packages:
   /asn1.js/5.4.1:
     resolution: {integrity: sha512-+I//4cYPccV8LdmBLiX8CYvf9Sp3vQsrqu2QNXRcrbiWvcx/UdlFiqUJJzxRQxgsZmvhXhn4cSKeSmoFjVdupA==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
       safer-buffer: 2.1.2
@@ -6597,7 +6599,7 @@ packages:
     dependencies:
       bech32: 2.0.0
       bip-schnorr: 0.6.4
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       bs58: 4.0.1
       buffer-compare: 1.1.1
       elliptic: 6.5.4
@@ -6636,8 +6638,8 @@ packages:
   /bluebird/3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
 
-  /bn.js/4.12.0:
-    resolution: {integrity: sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==}
+  /bn.js/5.2.0:
+    resolution: {integrity: sha512-D7iWRBvnZE8ecXiLj/9wbxH7Tk79fAh8IHaTNq1RWRixsS02W+5qS+iE9yq6RYl0asXx5tw0bLhmT5pIfbSquw==}
 
   /body-parser/1.19.1:
     resolution: {integrity: sha512-8ljfQi5eBk8EJfECMrgqNGWPEY5jWP+1IzkzkGdFFEwFQZZyaZ21UqdaHktgiMlH0xLHqIFtE/u2OYE5dOtViA==}
@@ -6768,13 +6770,13 @@ packages:
   /browserify-rsa/4.1.0:
     resolution: {integrity: sha512-AdEER0Hkspgno2aR97SAf6vi0y0k8NuOpGnVH3O99rcA5Q6sh8QxcngtHuJ6uXwnfAXNM4Gn1Gb7/MV1+Ymbog==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       randombytes: 2.1.0
 
   /browserify-sign/4.2.1:
     resolution: {integrity: sha512-/vrA5fguVAKKAVTNJjgSm1tRQDHUU6DbwO9IROu/0WAzC8PKhucDSh18J0RMvVeHAn5puMd+QHC2erPRNf8lmg==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       browserify-rsa: 4.1.0
       create-hash: 1.2.0
       create-hmac: 1.1.7
@@ -7599,7 +7601,7 @@ packages:
   /create-ecdh/4.0.4:
     resolution: {integrity: sha512-mf+TCx8wWc9VpuxfP2ht0iSISLZnt0JgWlrOKZiNqyUZWnjIaCIVNQArMHnCZKfEYRg6IM7A+NeJoN8gf/Ws0A==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       elliptic: 6.5.4
 
   /create-hash/1.2.0:
@@ -8076,7 +8078,7 @@ packages:
   /diffie-hellman/5.0.3:
     resolution: {integrity: sha512-kqag/Nl+f3GwyK25fhUMYj81BUOrZ9IuJsjIcDE5icNM9FJHAVm3VcUDxdLPoQtTuUylWm6ZIknYJwwaPxsUzg==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       miller-rabin: 4.0.1
       randombytes: 2.1.0
 
@@ -8253,7 +8255,7 @@ packages:
   /elliptic/6.5.4:
     resolution: {integrity: sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       brorand: 1.1.0
       hash.js: 1.1.7
       hmac-drbg: 1.0.1
@@ -8929,7 +8931,7 @@ packages:
   /eth-lib/0.1.29:
     resolution: {integrity: sha512-bfttrr3/7gG4E02HoWTDUcDDslN003OlOoBxk9virpAZQ1ja/jDgwkWB8QfJF7ojuEowrqy+lzp9VcJG7/k5bQ==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       elliptic: 6.5.4
       nano-json-stream-parser: 0.1.2
       servify: 0.1.12
@@ -8939,7 +8941,7 @@ packages:
   /eth-lib/0.2.8:
     resolution: {integrity: sha512-ArJ7x1WcWOlSpzdoTBX8vkwlkSQ85CjjifSZtV4co64vWxSV8geWfPI9x4SVYu3DSxnX4yWFVTtGL+j9DUFLNw==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       elliptic: 6.5.4
       xhr-request-promise: 0.1.3
 
@@ -9111,14 +9113,14 @@ packages:
   /ethereumjs-abi/0.6.5:
     resolution: {integrity: sha1-WmN+8Wq0NHP6cqKa2QhxQFs/UkE=}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ethereumjs-util: 4.5.1
     dev: true
 
   /ethereumjs-abi/0.6.8:
     resolution: {integrity: sha512-Tx0r/iXI6r+lRsdvkFDlut0N08jWMnKRZ6Gkq+Nmw75lZe4e6o3EkSnkaBP5NF6+m5PTGAr9JP43N3LyeoglsA==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ethereumjs-util: 6.2.1
 
   /ethereumjs-account/2.0.5:
@@ -9205,7 +9207,7 @@ packages:
   /ethereumjs-util/4.5.1:
     resolution: {integrity: sha512-WrckOZ7uBnei4+AKimpuF1B3Fv25OmoRgmYCpGsP7u8PFxXAmAgiJSYT2kRWnt6fVIlKaQlZvuwXp7PIrmn3/w==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       create-hash: 1.2.0
       elliptic: 6.5.4
       ethereum-cryptography: 0.1.3
@@ -9215,7 +9217,7 @@ packages:
   /ethereumjs-util/5.2.1:
     resolution: {integrity: sha512-v3kT+7zdyCm1HIqWlLNrHGqHGLpGYIhjeHxQjnDXjLT2FyGJDsd3LWMYUo7pAFRrk86CR3nUJfhC81CCoJNNGQ==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       create-hash: 1.2.0
       elliptic: 6.5.4
       ethereum-cryptography: 0.1.3
@@ -9227,7 +9229,7 @@ packages:
     resolution: {integrity: sha512-W2Ktez4L01Vexijrm5EB6w7dg4n/TgpoYU4avuT5T3Vmnw/eCRtiBrJfQYS/DCSvDIOLn2k57GcHdeBcgVxAqw==}
     dependencies:
       '@types/bn.js': 5.1.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       create-hash: 1.2.0
       elliptic: 6.5.4
       ethereum-cryptography: 0.1.3
@@ -9239,7 +9241,7 @@ packages:
     engines: {node: '>=10.0.0'}
     dependencies:
       '@types/bn.js': 5.1.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       create-hash: 1.2.0
       ethereum-cryptography: 0.1.3
       rlp: 2.2.7
@@ -9314,7 +9316,7 @@ packages:
     resolution: {integrity: sha512-kPltTvWiyu+OktYy1IStSO16i2e7cS9D9OxZ81q2UUaiNPVrm/RTcbxamCXF9VUSKzJIdJV68EAIhTEVBalRWg==}
     dependencies:
       aes-js: 3.0.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       elliptic: 6.5.4
       hash.js: 1.1.3
       js-sha3: 0.5.7
@@ -9442,7 +9444,7 @@ packages:
     resolution: {integrity: sha1-xmWSHkduh7ziqdWIpv4EBbLEFpk=}
     engines: {node: '>=6.5.0', npm: '>=3'}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       number-to-bn: 1.7.0
 
   /ethjs-util/0.1.6:
@@ -11974,7 +11976,7 @@ packages:
   /leb128/0.0.5:
     resolution: {integrity: sha512-elbNtfmu3GndZbesVF6+iQAfVjOXW9bM/aax9WwMlABZW+oK9sbAZEXoewaPHmL34sxa8kVwWsru8cNE/yn2gg==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       buffer-pipe: 0.0.3
     dev: false
     optional: true
@@ -12789,7 +12791,7 @@ packages:
     resolution: {integrity: sha512-115fLhvZVqWwHPbClyntxEVfVDfl9DLLTuJvq3g2O/Oxi8AiNouAHvDSzHS0viUJc+V5vm3eq91Xwqn9dp4jRA==}
     hasBin: true
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       brorand: 1.1.0
 
   /mime-db/1.51.0:
@@ -13602,7 +13604,7 @@ packages:
     resolution: {integrity: sha1-uzYjWS9+X54AMLGXe9QaDFP+HqA=}
     engines: {node: '>=6.5.0', npm: '>=3'}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       strip-hex-prefix: 1.0.0
 
   /nwmatcher/1.4.4:
@@ -14791,7 +14793,7 @@ packages:
   /public-encrypt/4.0.3:
     resolution: {integrity: sha512-zVpa8oKZSz5bTMTFClc1fQOnyyEzpl5ozpi1B5YcvBrdohMjH2rfsBtyXcuNuwjsDIXmBYlF2N5FlJYhR29t8Q==}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       browserify-rsa: 4.1.0
       create-hash: 1.2.0
       parse-asn1: 5.1.6
@@ -15432,7 +15434,7 @@ packages:
     resolution: {integrity: sha512-d5gdPmgQ0Z+AklL2NVXr/IoSjNZFfTVvQWzL/AM2AOcSzYP2xjlb0AC8YyCLc41MSNf6P6QVtjgPdmVtzb+4lQ==}
     hasBin: true
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
 
   /rn-host-detect/1.2.0:
     resolution: {integrity: sha512-btNg5kzHcjZZ7t7mvvV/4wNJ9e3MPgrWivkRgWURzXL0JJ0pwWlU4zrbmdlz3HHzHOxhBhHB4D+/dbMFfu4/4A==}
@@ -16542,7 +16544,7 @@ packages:
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       create-hmac: 1.1.7
       elliptic: 6.5.4
       nan: 2.15.0
@@ -17743,7 +17745,7 @@ packages:
     resolution: {integrity: sha512-ozuVlZ5jwFC2hJY4+fH9pIcuH1xP0HEFhtWsR69u9uDIANHLPQQtWYmdj7xQ3p2YT4bQLq/axKhZi7EZVetmxQ==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       web3-utils: 1.2.11
     dev: true
     optional: true
@@ -17752,7 +17754,7 @@ packages:
     resolution: {integrity: sha512-vMzmGqolYZvRHwP9P4Nf6G8uYM5aTLlQu2a34vz78p0KlDC+eV1th3+90Qeaupa28EG7OO0IT1F0BejiIauOPw==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       web3-utils: 1.5.3
     dev: false
 
@@ -17944,7 +17946,7 @@ packages:
     resolution: {integrity: sha512-3Tq09izhD+ThqHEaWYX4VOT7dNPdZiO+c/1QMA0s5X2lDFKK/xHJb7cyTRRVzN2LvlHbR7baS1tmQhSua51TcQ==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       eth-lib: 0.2.8
       ethereum-bloom-filters: 1.0.10
       ethjs-unit: 0.1.6
@@ -17959,7 +17961,7 @@ packages:
     resolution: {integrity: sha512-56nRgA+Ad9SEyCv39g36rTcr5fpsd4L9LgV3FK0aB66nAMazLAA6Qz4lH5XrUKPDyBIPGJIR+kJsyRtwcu2q1Q==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       eth-lib: 0.2.8
       ethereum-bloom-filters: 1.0.10
       ethjs-unit: 0.1.6
@@ -17972,7 +17974,7 @@ packages:
     resolution: {integrity: sha512-RidGKv5kOkcerI6jQqDFDoTllQQqV+rPhTzZHhmbqtFObbYpU93uc+yG1LHivRTQhA6llIx67iudc/vzisgO+w==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ethereum-bloom-filters: 1.0.10
       ethereumjs-util: 7.1.3
       ethjs-unit: 0.1.6
@@ -18548,7 +18550,7 @@ packages:
       bip32: 2.0.6
       bip39: 3.0.4
       blakejs: 1.1.1
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ipld-dag-cbor: 0.17.1
       leb128: 0.0.5
       secp256k1: 4.0.2
@@ -18562,6 +18564,6 @@ packages:
     name: ethereumjs-abi
     version: 0.6.8
     dependencies:
-      bn.js: 4.12.0
+      bn.js: 5.2.0
       ethereumjs-util: 6.2.1
     dev: true

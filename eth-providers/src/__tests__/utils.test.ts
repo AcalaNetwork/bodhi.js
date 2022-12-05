@@ -4,6 +4,8 @@ import chai from 'chai';
 import chaiSubset from 'chai-subset';
 import { describe, it } from 'vitest';
 import {
+  checkEvmExecutionError,
+  decodeRevertMsg,
   EthCallTimingResult,
   getHealthResult,
   hexlifyRpcResult,
@@ -393,5 +395,78 @@ describe('parseBlockTag', () => {
     expect(await parseBlockTag({ blockNumber: blockNumberHex })).to.equal(blockNumberHex);
     expect(await parseBlockTag({ blockNumber })).to.equal(blockNumber);
     expect(await parseBlockTag({ blockHash })).to.equal(blockHash);
+  });
+});
+
+describe('eth call error handling', () => {
+  const invalidCurrencyIdHex =
+    '0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000013696e76616c69642063757272656e6379206964';
+
+  describe('decodeRevertMsg', () => {
+    it('correctly decode', () => {
+      expect(decodeRevertMsg(invalidCurrencyIdHex)).to.equal('invalid currency id');
+    });
+  });
+
+  describe('checkEvmExecutionError', () => {
+    const commonData = {
+      used_gas: 0,
+      used_storage: 0,
+      logs: []
+    };
+
+    it('when should throw - reverted', () => {
+      const data = {
+        exit_reason: { revert: 'Reverted' as const },
+        value: invalidCurrencyIdHex,
+        ...commonData
+      };
+
+      expect(() => checkEvmExecutionError(data)).to.throw('invalid currency id');
+    });
+
+    it('when should throw - outOfFund', () => {
+      const data = {
+        exit_reason: {
+          error: { outOfFund: null }
+        },
+        value: invalidCurrencyIdHex,
+        ...commonData
+      };
+
+      expect(() => checkEvmExecutionError(data)).to.throw('outOfFund');
+    });
+
+    it('when should throw - ExistentialDeposit', () => {
+      const data = {
+        exit_reason: {
+          error: { other: 'ExistentialDeposit' }
+        },
+        value: invalidCurrencyIdHex,
+        ...commonData
+      };
+
+      expect(() => checkEvmExecutionError(data)).to.throw('ExistentialDeposit');
+    });
+
+    it('when should not throw', () => {
+      {
+        const data = {
+          exit_reason: { succeed: 'Returned' as const },
+          value: '0x123456789',
+          ...commonData
+        };
+        expect(() => checkEvmExecutionError(data)).to.not.throw();
+      }
+
+      {
+        const data = {
+          exit_reason: { succeed: 'Stopped' as const },
+          value: '0x',
+          ...commonData
+        };
+        expect(() => checkEvmExecutionError(data)).to.not.throw();
+      }
+    });
   });
 });

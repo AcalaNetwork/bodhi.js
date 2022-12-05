@@ -142,7 +142,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice
         })
-      ).to.be.rejectedWith('OutOfFund');
+      ).to.be.rejectedWith('outOfFund');
     });
 
     it('ExistentialDeposit', async () => {
