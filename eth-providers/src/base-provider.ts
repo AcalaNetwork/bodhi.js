@@ -758,16 +758,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const estimate = true;
 
     if (!to) {
-      // TODO: implement to
-      return {
-        exit_reason: {
-          succeed: 'Stopped',
-        },
-        value: '0x',
-        used_gas: 210000000,
-        used_storage: 64000,
-        logs: [],
-      }
+      // TODO: implement create
     }
 
     const res = await api.call.evmRuntimeRPCApi.call(
@@ -1018,35 +1009,34 @@ export abstract class BaseProvider extends AbstractProvider {
     gas: BigNumber;
     storage: BigNumber;
   }> => {
+    const MAX_GAS_LIMIT = 21000000;
+    const MIN_GAS_LIMIT = 21000;
+    const MAX_STORAGE_LIMIT = 640000;
+
     const _txRequest = await this._getTransactionRequest(transaction);
     const txRequest = {
       ..._txRequest,
-      value: BigNumber.isBigNumber(_txRequest.value)
-        ? _txRequest.value.toBigInt()
-        : _txRequest.value,
-    }
+      value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
+      gasLimit: MAX_GAS_LIMIT,
+      storageLimit: MAX_STORAGE_LIMIT,
+    };
 
     console.log('estimateResources ###############', txRequest);
     // const { storageLimit, gasLimit } = this._getSubstrateGasParams(txRequest);
-    const MAX_GAS_LIMIT = 21000000;
-    const MIN_GAS_LIMIT = 21000;
+
 
     // TODO: implement create
     if (!txRequest.to) {
       return {
         gas: BigNumber.from(MAX_GAS_LIMIT),
-        storage: BigNumber.from(64000),
-      }
+        storage: BigNumber.from(MAX_STORAGE_LIMIT)
+      };
     }
 
-    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall({
-      ...txRequest,
-      gasLimit: MAX_GAS_LIMIT,
-    });
-
+    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest)
     console.log('!!!!!!!!!!!', {
       usedGas,
-      usedStorage,
+      usedStorage
     });
 
     let lowest = MIN_GAS_LIMIT;
@@ -1057,7 +1047,7 @@ export abstract class BaseProvider extends AbstractProvider {
       try {
         await this._ethCall({
           ...txRequest,
-          gasLimit: mid,
+          gasLimit: mid
         });
         highest = mid;
 
