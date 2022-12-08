@@ -130,12 +130,14 @@ export interface FullBlockData extends Omit<BlockData, 'transactions'> {
   transactions: TX[];
 }
 
+export type Numberish = bigint | string | number;
+
 export interface SubstrateEvmCallRequest {
   from?: string;
   to?: string;
-  gasLimit?: BigNumberish;
-  storageLimit?: BigNumberish;
-  value?: BigNumberish;
+  gasLimit?: Numberish;
+  storageLimit?: Numberish;
+  value?: Numberish;
   data?: string;
   accessList?: AccessListish;
 }
@@ -755,6 +757,19 @@ export abstract class BaseProvider extends AbstractProvider {
     const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
     const estimate = true;
 
+    if (!to) {
+      // TODO: implement to
+      return {
+        exit_reason: {
+          succeed: 'Stopped',
+        },
+        value: '0x',
+        used_gas: 210000000,
+        used_storage: 64000,
+        logs: [],
+      }
+    }
+
     const res = await api.call.evmRuntimeRPCApi.call(
       from,
       to,
@@ -1003,12 +1018,36 @@ export abstract class BaseProvider extends AbstractProvider {
     gas: BigNumber;
     storage: BigNumber;
   }> => {
-    const txRequest = await this._getTransactionRequest(transaction);
+    const _txRequest = await this._getTransactionRequest(transaction);
+    const txRequest = {
+      ..._txRequest,
+      value: BigNumber.isBigNumber(_txRequest.value)
+        ? _txRequest.value.toBigInt()
+        : _txRequest.value,
+    }
+
+    console.log('estimateResources ###############', txRequest);
     // const { storageLimit, gasLimit } = this._getSubstrateGasParams(txRequest);
     const MAX_GAS_LIMIT = 21000000;
     const MIN_GAS_LIMIT = 21000;
 
-    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
+    // TODO: implement create
+    if (!txRequest.to) {
+      return {
+        gas: BigNumber.from(MAX_GAS_LIMIT),
+        storage: BigNumber.from(64000),
+      }
+    }
+
+    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall({
+      ...txRequest,
+      gasLimit: MAX_GAS_LIMIT,
+    });
+
+    console.log('!!!!!!!!!!!', {
+      usedGas,
+      usedStorage,
+    });
 
     let lowest = MIN_GAS_LIMIT;
     let highest = MAX_GAS_LIMIT;
@@ -1016,7 +1055,10 @@ export abstract class BaseProvider extends AbstractProvider {
     let prevHighest = highest;
     while (highest - lowest > 1) {
       try {
-        await this._ethCall(txRequest);
+        await this._ethCall({
+          ...txRequest,
+          gasLimit: mid,
+        });
         highest = mid;
 
         if ((prevHighest - highest) / prevHighest < 0.1) break;
