@@ -1051,7 +1051,7 @@ export abstract class BaseProvider extends AbstractProvider {
         if ((e.message as string).includes('revert') || (e.message as string).includes('outOfGas')) {
           lowest = mid;
         } else {
-          throw e
+          throw e;
         }
       }
 
