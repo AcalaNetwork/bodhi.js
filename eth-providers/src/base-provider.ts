@@ -1047,10 +1047,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
         if ((prevHighest - highest) / prevHighest < 0.1) break;
         prevHighest = highest;
-      } catch (e) {
-        // TODO: check e.msg contain outOfGas or revert
-        console.log(e);
-        lowest = mid;
+      } catch (e: any) {
+        if ((e.message as string).includes('revert') || (e.message as string).includes('outOfGas')) {
+          lowest = mid;
+        } else {
+          throw e
+        }
       }
 
       mid = Math.floor((highest + lowest) / 2);
