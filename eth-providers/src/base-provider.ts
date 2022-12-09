@@ -731,8 +731,9 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const transaction =
-      txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
+    const transaction = txRequest.gasLimit && txRequest.gasPrice
+      ? txRequest
+      : { ...txRequest, ...(await this._getEthGas()) };
 
     const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 
@@ -746,7 +747,7 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: transaction.accessList
     };
 
-    const res = blockHash ? await this._ethCall(callRequest, blockHash) : await this._ethCall(callRequest);
+    const res = await this._ethCall(callRequest, blockHash);
 
     return res.value;
   };
@@ -773,14 +774,13 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     const { ok, err } = res.toJSON() as CallInfo;
-    if (!ok) {
-      // substrate level error
+    if (!ok) {    // substrate level error
       const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
       if (!errMetaValid) {
         return logger.throwError(
           'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
           Logger.errors.CALL_EXCEPTION,
-          callRequest
+          callRequest,
         );
       }
 
@@ -1009,6 +1009,7 @@ export abstract class BaseProvider extends AbstractProvider {
     gas: BigNumber;
     storage: BigNumber;
   }> => {
+    // TODO: get these from chain to be more precise
     const MAX_GAS_LIMIT = 21000000;
     const MIN_GAS_LIMIT = 21000;
     const MAX_STORAGE_LIMIT = 640000;
@@ -1021,10 +1022,6 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit: MAX_STORAGE_LIMIT,
     };
 
-    console.log('estimateResources ###############', txRequest);
-    // const { storageLimit, gasLimit } = this._getSubstrateGasParams(txRequest);
-
-
     // TODO: implement create
     if (!txRequest.to) {
       return {
@@ -1033,12 +1030,9 @@ export abstract class BaseProvider extends AbstractProvider {
       };
     }
 
-    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest)
-    console.log('!!!!!!!!!!!', {
-      usedGas,
-      usedStorage
-    });
+    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
 
+    // binary search the best passing gasLimit
     let lowest = MIN_GAS_LIMIT;
     let highest = MAX_GAS_LIMIT;
     let mid = Math.min(usedGas * 3, Math.floor((lowest + highest) / 2));
@@ -1054,7 +1048,8 @@ export abstract class BaseProvider extends AbstractProvider {
         if ((prevHighest - highest) / prevHighest < 0.1) break;
         prevHighest = highest;
       } catch (e) {
-        // TODO: check e.msg contain out of gas
+        // TODO: check e.msg contain outOfGas or revert
+        console.log(e);
         lowest = mid;
       }
 
