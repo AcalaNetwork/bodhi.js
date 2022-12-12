@@ -1455,10 +1455,11 @@ describe('eth_getBlockByNumber', () => {
 
 describe('eth_getBalance', () => {
   it('get correct balance', async () => {
-    const block8Balance = 8999994474726364446000000n;     // edit me for different mandala version
-    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance);
-    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x8'])).data.result)).to.equal(block8Balance);
-    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(block8Balance);
+    const block8Balance__TEMP = 8999994474526364446000000n;     // edit me for different mandala version
+    // const block8Balance__TEMP = 8999994474726364446000000n;     // edit me for different mandala version
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance__TEMP);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x8'])).data.result)).to.equal(block8Balance__TEMP);
+    expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(block8Balance__TEMP);
 
     const curBlock = (await eth_blockNumber([])).data.result;
     expect(Number((await eth_getBalance([ADDRESS_ALICE, { blockNumber: curBlock }])).data.result)).to.equal(
