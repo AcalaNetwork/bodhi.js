@@ -759,6 +759,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const estimate = true;
 
     if (!to) {
+      return {} as any;
       // TODO: implement create
     }
 
@@ -1768,7 +1769,8 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     // TODO: `getEffectiveGasPrice` and `getPartialTransactionReceipt` can potentially be merged and refactored
-    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic, actualWeight);
+    const effectiveGasPrice = BigNumber.from(0);  // api.rpc.payment.queryInfo is not available with chopsticks
+    // const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic, actualWeight);
     const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
