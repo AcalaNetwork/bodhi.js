@@ -1010,15 +1010,7 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: MAX_GAS_LIMIT,
       storageLimit: MAX_STORAGE_LIMIT
     };
-
-    // TODO: implement create
-    if (!txRequest.to) {
-      return {
-        gas: BigNumber.from(MAX_GAS_LIMIT),
-        storage: BigNumber.from(MAX_STORAGE_LIMIT)
-      };
-    }
-
+    
     const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
 
     // binary search the best passing gasLimit
