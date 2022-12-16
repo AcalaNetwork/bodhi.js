@@ -281,24 +281,6 @@ export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): P
   return blockTag.blockHash || blockTag.blockNumber;
 };
 
-// TODO: this can also bubble up to acala.js
-export const extraRuntimeTypes = {
-  CallInfo: {
-    exit_reason: 'EvmCoreErrorExitReason',
-    value: 'Vec<u8>',
-    used_gas: 'U256',
-    used_storage: 'i32',
-    logs: 'Vec<EthereumLog>'
-  },
-  CreateInfo: {
-    exit_reason: 'EvmCoreErrorExitReason',
-    value: 'H160',
-    used_gas: 'U256',
-    used_storage: 'i32',
-    logs: 'Vec<EthereumLog>'
-  }
-};
-
 // https://github.com/AcalaNetwork/Acala/blob/067b65bc19ff525bdccae020ad2bd4bdf41f4300/modules/evm/rpc/src/lib.rs#L122
 export const decodeRevertMsg = (hexMsg: string) => {
   const data = hexToU8a(hexMsg);

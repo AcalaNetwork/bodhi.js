@@ -15,8 +15,8 @@
     "gql:typegen": "graphql-codegen --config codegen.yml"
   },
   "dependencies": {
-    "@acala-network/api": "~4.1.8-2.3",
-    "@acala-network/types": "~4.1.8-2.3",
+    "@acala-network/api": "~4.1.8-8",
+    "@acala-network/types": "~4.1.8-8",
     "@acala-network/contracts": "~4.3.4",
     "@acala-network/eth-transactions": "workspace:*",
     "@ethersproject/abstract-provider": "~5.7.0",
