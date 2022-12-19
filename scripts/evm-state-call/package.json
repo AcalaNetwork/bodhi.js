@@ -7,7 +7,7 @@
     "state-call": "ts-node-dev --transpile-only evm_state_call.ts"
   },
   "dependencies": {
-    "@acala-network/api": "~4.1.8-8",
+    "@acala-network/api": "~4.1.8-2.3",
     "@polkadot/api": "^9.9.1",
     "ethers": "^5.7.2",
     "ts-node-dev": "^2.0.0"
