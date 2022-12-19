@@ -1,4 +1,4 @@
-import { FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';

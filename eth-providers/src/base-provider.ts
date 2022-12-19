@@ -1,4 +1,3 @@
-import '@acala-network/types';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
@@ -30,7 +29,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { GenericExtrinsic, Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
 import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
-import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
@@ -1010,7 +1009,7 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: MAX_GAS_LIMIT,
       storageLimit: MAX_STORAGE_LIMIT
     };
-    
+
     const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
 
     // binary search the best passing gasLimit
