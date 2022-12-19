@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@acala-network/api": "~4.1.8-9",
-    "@acala-network/types": "~4.1.8-8",
+    "@acala-network/types": "~4.1.8-9",
     "@acala-network/contracts": "~4.3.4",
     "@acala-network/eth-transactions": "workspace:*",
     "@ethersproject/abstract-provider": "~5.7.0",
