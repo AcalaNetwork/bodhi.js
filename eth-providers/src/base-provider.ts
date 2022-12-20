@@ -1,4 +1,3 @@
-import '@acala-network/types';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
@@ -30,7 +29,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { GenericExtrinsic, Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
 import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
-import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
@@ -51,8 +50,6 @@ import {
   PROD_MODE_MSG,
   RICH_MODE_WARNING_MSG,
   SAFE_MODE_WARNING_MSG,
-  U32MAX,
-  U64MAX,
   ZERO,
   DUMMY_V_R_S,
   DUMMY_BLOCK_HASH
@@ -132,12 +129,14 @@ export interface FullBlockData extends Omit<BlockData, 'transactions'> {
   transactions: TX[];
 }
 
-export interface CallRequest {
+export type Numberish = bigint | string | number;
+
+export interface SubstrateEvmCallRequest {
   from?: string;
   to?: string;
-  gasLimit?: BigNumberish;
-  storageLimit?: BigNumberish;
-  value?: BigNumberish;
+  gasLimit?: Numberish;
+  storageLimit?: Numberish;
+  value?: Numberish;
   data?: string;
   accessList?: AccessListish;
 }
@@ -731,13 +730,12 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const transaction = txRequest.gasLimit && txRequest.gasPrice
-       ? txRequest
-       : { ...txRequest, ...(await this._getEthGas()) };
+    const transaction =
+      txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
 
     const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 
-    const callRequest: CallRequest = {
+    const callRequest: SubstrateEvmCallRequest = {
       from: transaction.from,
       to: transaction.to,
       gasLimit,
@@ -747,36 +745,30 @@ export abstract class BaseProvider extends AbstractProvider {
       accessList: transaction.accessList
     };
 
-    return blockHash
-      ? this._ethCall(callRequest, blockHash)
-      : this._ethCall(callRequest);
+    const res = await this._ethCall(callRequest, blockHash);
+
+    return res.value;
   };
 
-  _ethCall = async (callRequest: CallRequest, at?: string): Promise<string> => {
+  _ethCall = async (callRequest: SubstrateEvmCallRequest, at?: string) => {
     const api = at ? await this.api.at(at) : this.api;
 
     const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
     const estimate = true;
 
-    const res = await api.call.evmRuntimeRPCApi.call(
-      from,
-      to,
-      data,
-      value,
-      gasLimit,
-      storageLimit,
-      accessList,
-      estimate
-    );
+    const res = to
+      ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
+      : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList, estimate);
 
     const { ok, err } = res.toJSON() as CallInfo;
-    if (!ok) {    // substrate level error
+    if (!ok) {
+      // substrate level error
       const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
       if (!errMetaValid) {
         return logger.throwError(
           'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
           Logger.errors.CALL_EXCEPTION,
-          callRequest,
+          callRequest
         );
       }
 
@@ -792,7 +784,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // check evm level error
     checkEvmExecutionError(ok);
 
-    return ok.value;
+    return ok!;
   };
 
   getStorageAt = async (
@@ -1004,40 +996,51 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<{
     gas: BigNumber;
     storage: BigNumber;
-    weightFee: BigNumber;
   }> => {
-    const ethTx = await this._getTransactionRequest(transaction);
+    // TODO: get these from chain to be more precise
+    const MAX_GAS_LIMIT = 21000000;
+    const MIN_GAS_LIMIT = 21000;
+    const MAX_STORAGE_LIMIT = 640000;
 
-    const { from, to, data, value } = ethTx;
+    const _txRequest = await this._getTransactionRequest(transaction);
+    const txRequest = {
+      ..._txRequest,
+      value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
+      gasLimit: MAX_GAS_LIMIT,
+      storageLimit: MAX_STORAGE_LIMIT
+    };
 
-    const accessList = ethTx.accessList?.map(({ address, storageKeys }) => [address, storageKeys]) || [];
+    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
 
-    const extrinsic = !to
-      ? this.api.tx.evm.create(
-          data!,
-          value?.toBigInt()!,
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt(), // storage_limit u32::max
-          // @ts-ignore @TODO fix type
-          accessList
-        )
-      : this.api.tx.evm.call(
-          to,
-          data!,
-          value?.toBigInt()!,
-          U64MAX.toBigInt(), // gas_limit u64::max
-          U32MAX.toBigInt(), // storage_limit u32::max
-          // @ts-ignore @TODO fix type
-          accessList
-        );
+    // binary search the best passing gasLimit
+    let lowest = MIN_GAS_LIMIT;
+    let highest = MAX_GAS_LIMIT;
+    let mid = Math.min(usedGas * 3, Math.floor((lowest + highest) / 2));
+    let prevHighest = highest;
+    while (highest - lowest > 1) {
+      try {
+        await this._ethCall({
+          ...txRequest,
+          gasLimit: mid
+        });
+        highest = mid;
 
-    // TODO: fix type
-    const result = await this.api.rpc.evm.estimateResources(from as string, extrinsic.toHex());
+        if ((prevHighest - highest) / prevHighest < 0.1) break;
+        prevHighest = highest;
+      } catch (e: any) {
+        if ((e.message as string).includes('revert') || (e.message as string).includes('outOfGas')) {
+          lowest = mid;
+        } else {
+          throw e;
+        }
+      }
+
+      mid = Math.floor((highest + lowest) / 2);
+    }
 
     return {
-      gas: BigNumber.from((result.gas as BN).toString()),
-      storage: BigNumber.from((result.storage as BN).toString()),
-      weightFee: BigNumber.from((result.weightFee as BN).toString())
+      gas: BigNumber.from(highest),
+      storage: BigNumber.from(usedStorage)
     };
   };
 
@@ -1211,7 +1214,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
 
     // check excuted error
-    const callRequest: CallRequest = {
+    const callRequest: SubstrateEvmCallRequest = {
       from: ethTx.from,
       to: ethTx.to,
       gasLimit: gasLimit,

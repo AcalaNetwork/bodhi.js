@@ -44,7 +44,7 @@ describe('Schedule', () => {
   it('ScheduleCall works', async () => {
     const target_block_number = Number(await provider.api.query.system.number()) + 4;
 
-    const erc20 = new ethers.Contract(ADDRESS.DOT, ERC20_ABI, walletTo as any);
+    const erc20 = new ethers.Contract(ADDRESS.DOT, ERC20_ABI, walletTo);
     const tx = await erc20.populateTransaction.transfer(walletTo.getAddress(), 1_000_000);
     // console.log(tx, ethers.utils.hexlify(tx.data as string));
 
@@ -62,7 +62,7 @@ describe('Schedule', () => {
   });
 
   it('CancelCall works', async () => {
-    const erc20 = new ethers.Contract(ADDRESS.DOT, ERC20_ABI, walletTo as any);
+    const erc20 = new ethers.Contract(ADDRESS.DOT, ERC20_ABI, walletTo);
     const tx = await erc20.populateTransaction.transfer(walletTo.getAddress(), 1_000_000);
     // console.log(tx, ethers.utils.hexlify(tx.data as string));
 
@@ -84,7 +84,7 @@ describe('Schedule', () => {
   });
 
   it('RescheduleCall works', async () => {
-    const erc20 = new ethers.Contract(ADDRESS.DOT, ERC20_ABI, walletTo as any);
+    const erc20 = new ethers.Contract(ADDRESS.DOT, ERC20_ABI, walletTo);
     const tx = await erc20.populateTransaction.transfer(walletTo.getAddress(), 1_000_000);
     // console.log(tx, ethers.utils.hexlify(tx.data as string));
 
@@ -106,7 +106,7 @@ describe('Schedule', () => {
   });
 
   it('works with RecurringPayment', async () => {
-    const erc20 = new ethers.Contract(ADDRESS.ACA, ERC20_ABI, walletTo as any);
+    const erc20 = new ethers.Contract(ADDRESS.ACA, ERC20_ABI, walletTo);
     const transferTo = await ethers.Wallet.createRandom().getAddress();
 
     const recurringPayment = await deployContract(

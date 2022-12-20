@@ -1,4 +1,4 @@
-import { FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
@@ -279,17 +279,6 @@ export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): P
   if (!blockTag || typeof blockTag !== 'object') return blockTag;
 
   return blockTag.blockHash || blockTag.blockNumber;
-};
-
-// TODO: this can also bubble up to acala.js
-export const extraRuntimeTypes = {
-  CallInfo: {
-    exit_reason: 'EvmCoreErrorExitReason',
-    value: 'Vec<u8>',
-    used_gas: 'U256',
-    used_storage: 'i32',
-    logs: 'Vec<EthereumLog>'
-  }
 };
 
 // https://github.com/AcalaNetwork/Acala/blob/067b65bc19ff525bdccae020ad2bd4bdf41f4300/modules/evm/rpc/src/lib.rs#L122
