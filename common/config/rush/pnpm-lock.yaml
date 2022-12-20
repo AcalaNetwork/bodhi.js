@@ -62,10 +62,10 @@ importers:
 
   ../../eth-providers:
     specifiers:
-      '@acala-network/api': ~4.1.8-2.3
+      '@acala-network/api': ~4.1.8-9
       '@acala-network/contracts': ~4.3.4
       '@acala-network/eth-transactions': workspace:*
-      '@acala-network/types': ~4.1.1
+      '@acala-network/types': ~4.1.8-9
       '@ethersproject/abstract-provider': ~5.7.0
       '@ethersproject/address': ~5.7.0
       '@ethersproject/bignumber': ~5.7.0
@@ -109,10 +109,10 @@ importers:
       typescript: ~4.6.3
       vitest: ~0.20.2
     dependencies:
-      '@acala-network/api': 4.1.8-2.3_@polkadot+types@9.9.1
+      '@acala-network/api': 4.1.8-9_@polkadot+types@9.9.1
       '@acala-network/contracts': 4.3.4
       '@acala-network/eth-transactions': link:../eth-transactions
-      '@acala-network/types': 4.1.5_@polkadot+api@9.9.1
+      '@acala-network/types': 4.1.8-9_@polkadot+api@9.9.1
       '@ethersproject/abstract-provider': 5.7.0
       '@ethersproject/address': 5.7.0
       '@ethersproject/bignumber': 5.7.0
@@ -1162,10 +1162,10 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@acala-network/api-derive/4.1.8-1_@polkadot+api@9.9.1:
-    resolution: {integrity: sha512-AFTPIiuIoXbB9rMuiwbO9BYelGMM4byJJcOSWiRK2Nz/AqkDJkb4zDfsWOcwnicbffXlTbKkJ/hBxdzqNq0dig==}
+  /@acala-network/api-derive/4.1.8-9_@polkadot+api@9.9.1:
+    resolution: {integrity: sha512-GN/9rXRGy5zJ0eEeBSoO2lC3MgT2D2A4O94DMtONNQsD30RMBhtSj5PTd8Mo+RnaFVzwLrbsCNs1UxkmAg4Rlg==}
     dependencies:
-      '@acala-network/types': 4.1.5_@polkadot+api@9.9.1
+      '@acala-network/types': 4.1.8-9_@polkadot+api@9.9.1
       '@babel/runtime': 7.20.1
       '@open-web3/orml-types': 1.1.4_@polkadot+api@9.9.1
       '@polkadot/api-derive': 9.9.1
@@ -1193,13 +1193,13 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@acala-network/api/4.1.8-2.3_@polkadot+types@9.9.1:
-    resolution: {integrity: sha512-moQGkL5sfeb1ZOduvdYgAeb99qWbRXW7MrW7PHS45UtExqdu7pv3JFtOJAsPQ6RT2dPYEtt0YxH0TAQixZlFUg==}
+  /@acala-network/api/4.1.8-9_@polkadot+types@9.9.1:
+    resolution: {integrity: sha512-9kpYQYe5vBCKWlyABh+Q2sjONDdtNfdv0PL0Tek3bpt00a3VjNIZvQro5ZSwzdpGJs5YcsiWPRMBq3iMgJNtGQ==}
     peerDependencies:
       '@polkadot/types': '>=9'
     dependencies:
-      '@acala-network/api-derive': 4.1.8-1_@polkadot+api@9.9.1
-      '@acala-network/types': 4.1.5_@polkadot+api@9.9.1
+      '@acala-network/api-derive': 4.1.8-9_@polkadot+api@9.9.1
+      '@acala-network/types': 4.1.8-9_@polkadot+api@9.9.1
       '@babel/runtime': 7.20.1
       '@open-web3/orml-api-derive': 1.1.4_@polkadot+api@9.9.1
       '@polkadot/api': 9.9.1
@@ -1252,7 +1252,7 @@ packages:
     dependencies:
       '@acala-network/contracts': 4.2.0
       '@acala-network/eth-transactions': 2.4.18
-      '@acala-network/types': 4.1.5_@polkadot+api@8.1.1
+      '@acala-network/types': 4.1.8-9_@polkadot+api@8.1.1
       '@ethersproject/abstract-provider': 5.5.1
       '@ethersproject/address': 5.5.0
       '@ethersproject/bignumber': 5.5.0
@@ -1300,8 +1300,8 @@ packages:
       '@open-web3/orml-type-definitions': 1.1.4
     dev: false
 
-  /@acala-network/type-definitions/4.1.5:
-    resolution: {integrity: sha512-XwXtKf5ESfzGk32N1sE3MlBtnamz2JZYtjB6KcKe9eOyv+3lowQvRn4Z347rNSEp+tpenZWnLwBXk4XWhdiSoQ==}
+  /@acala-network/type-definitions/4.1.8-9:
+    resolution: {integrity: sha512-z0pDbVwxXutpnt2CRkfamaZel/OHF65hzwyolk+Vn+4wFFGY5QMh+nDiw8oEYdZENHEPUEAVa4XOQWRsE329jQ==}
     dependencies:
       '@open-web3/orml-type-definitions': 1.1.4
 
@@ -1321,23 +1321,23 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@acala-network/types/4.1.5_@polkadot+api@8.1.1:
-    resolution: {integrity: sha512-MTT0d+AFCMrm/ngNDoPJDAS8XSayFgLRUH9wT5Nvks/6n3WCzgNyGGZsgQI0PWGer/fdvAryJmNCX2xbKq4ghA==}
+  /@acala-network/types/4.1.8-9_@polkadot+api@8.1.1:
+    resolution: {integrity: sha512-sILIcHyndYYde7xHbjwbLHfuWo3GmC3ZYTe515GrgC6hoBAzADqyA92FyZscSEQKpd7olnoPiMqq7ClmbGkdpA==}
     peerDependencies:
       '@polkadot/api': '>=8'
     dependencies:
-      '@acala-network/type-definitions': 4.1.5
+      '@acala-network/type-definitions': 4.1.8-9
       '@babel/runtime': 7.20.1
       '@open-web3/api-mobx': 1.1.4_@polkadot+api@8.1.1
       '@open-web3/orml-types': 1.1.4_@polkadot+api@8.1.1
       '@polkadot/api': 8.1.1
 
-  /@acala-network/types/4.1.5_@polkadot+api@9.9.1:
-    resolution: {integrity: sha512-MTT0d+AFCMrm/ngNDoPJDAS8XSayFgLRUH9wT5Nvks/6n3WCzgNyGGZsgQI0PWGer/fdvAryJmNCX2xbKq4ghA==}
+  /@acala-network/types/4.1.8-9_@polkadot+api@9.9.1:
+    resolution: {integrity: sha512-sILIcHyndYYde7xHbjwbLHfuWo3GmC3ZYTe515GrgC6hoBAzADqyA92FyZscSEQKpd7olnoPiMqq7ClmbGkdpA==}
     peerDependencies:
       '@polkadot/api': '>=8'
     dependencies:
-      '@acala-network/type-definitions': 4.1.5
+      '@acala-network/type-definitions': 4.1.8-9
       '@babel/runtime': 7.20.1
       '@open-web3/api-mobx': 1.1.4_@polkadot+api@9.9.1
       '@open-web3/orml-types': 1.1.4_@polkadot+api@9.9.1

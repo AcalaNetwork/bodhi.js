@@ -7,7 +7,7 @@ import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
-import { FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { Vec } from '@polkadot/types';
 import { hexToU8a, nToU8a } from '@polkadot/util';

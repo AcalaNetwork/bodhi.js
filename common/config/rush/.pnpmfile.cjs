@@ -34,8 +34,7 @@ const polkadotDeps = {
   "@polkadot/types-known": "9.9.1",
   "@polkadot/util": "^10.1.13",
   "@polkadot/util-crypto": "^10.1.13",
-  "eventemitter3": "^4.0.7",
-  "@acala-network/types": "~4.1.1",
+  "eventemitter3": "^4.0.7"
 }
 
 const fixedDeps = {

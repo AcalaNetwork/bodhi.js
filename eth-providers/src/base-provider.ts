@@ -1,4 +1,3 @@
-import '@acala-network/types';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { AccessListish } from 'ethers/lib/utils';
@@ -30,7 +29,7 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { GenericExtrinsic, Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
 import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
-import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@acala-network/types/interfaces/types-lookup';
+import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
@@ -731,9 +730,8 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash: this._getBlockHash(blockTag)
     });
 
-    const transaction = txRequest.gasLimit && txRequest.gasPrice
-      ? txRequest
-      : { ...txRequest, ...(await this._getEthGas()) };
+    const transaction =
+      txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
 
     const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 
@@ -758,29 +756,19 @@ export abstract class BaseProvider extends AbstractProvider {
     const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
     const estimate = true;
 
-    if (!to) {
-      // TODO: implement create
-    }
-
-    const res = await api.call.evmRuntimeRPCApi.call(
-      from,
-      to,
-      data,
-      value,
-      gasLimit,
-      storageLimit,
-      accessList,
-      estimate
-    );
+    const res = to
+      ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
+      : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList, estimate);
 
     const { ok, err } = res.toJSON() as CallInfo;
-    if (!ok) {    // substrate level error
+    if (!ok) {
+      // substrate level error
       const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
       if (!errMetaValid) {
         return logger.throwError(
           'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
           Logger.errors.CALL_EXCEPTION,
-          callRequest,
+          callRequest
         );
       }
 
@@ -1019,16 +1007,8 @@ export abstract class BaseProvider extends AbstractProvider {
       ..._txRequest,
       value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
       gasLimit: MAX_GAS_LIMIT,
-      storageLimit: MAX_STORAGE_LIMIT,
+      storageLimit: MAX_STORAGE_LIMIT
     };
-
-    // TODO: implement create
-    if (!txRequest.to) {
-      return {
-        gas: BigNumber.from(MAX_GAS_LIMIT),
-        storage: BigNumber.from(MAX_STORAGE_LIMIT)
-      };
-    }
 
     const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
 
