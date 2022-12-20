@@ -23,7 +23,7 @@
     "@acala-network/eth-providers": "workspace:*",
     "@acala-network/contracts": "~4.3.4",
     "@openzeppelin/contracts": "^4.4.2",
-    "@polkadot/keyring": "^10.1.13",
-    "@polkadot/api": "^9.9.1"
+    "@polkadot/keyring": "^10.2.1",
+    "@polkadot/api": "9.10.3"
   }
 }

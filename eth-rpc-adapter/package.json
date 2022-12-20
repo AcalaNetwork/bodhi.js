@@ -26,7 +26,7 @@
     "@ethersproject/bytes": "~5.7.0",
     "@ethersproject/logger": "~5.7.0",
     "@ethersproject/wallet": "~5.7.0",
-    "@polkadot/api": "^9.9.1",
+    "@polkadot/api": "9.10.3",
     "axios": "~0.24.0",
     "body-parser": "~1.19.0",
     "connect": "~3.7.0",
