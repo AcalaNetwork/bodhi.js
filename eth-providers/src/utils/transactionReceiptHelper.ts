@@ -308,8 +308,10 @@ export const getEffectiveGasPrice = async (
 
   // use parentHash to get tx fee
   const parentHash = block.block.header.parentHash;
-  const { weight: estimatedWeight } = await api.rpc.payment.queryInfo(extrinsic.toHex(), parentHash);
-  const { inclusionFee } = await api.rpc.payment.queryFeeDetails(extrinsic.toHex(), parentHash);
+  const apiAt = await api.at(parentHash);
+  const u8a = extrinsic.toU8a();
+  const { weight: estimatedWeight } = await apiAt.call.transactionPaymentApi.queryInfo(u8a, u8a.length);
+  const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
   const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
 
   const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
