@@ -6,7 +6,13 @@ import { Formatter, TransactionReceipt } from '@ethersproject/providers';
 import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
-import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
+import type {
+  EvmLog,
+  H160,
+  ExitReason,
+  RuntimeDispatchInfoV2,
+  RuntimeDispatchInfoV1
+} from '@polkadot/types/interfaces/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { Vec } from '@polkadot/types';
@@ -310,7 +316,13 @@ export const getEffectiveGasPrice = async (
   const parentHash = block.block.header.parentHash;
   const apiAt = await api.at(parentHash);
   const u8a = extrinsic.toU8a();
-  const { weight: estimatedWeight } = await apiAt.call.transactionPaymentApi.queryInfo(u8a, u8a.length);
+
+  const paymentInfo = await apiAt.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2 | RuntimeDispatchInfoV1>(
+    u8a,
+    u8a.length
+  );
+  const estimatedWeight = (paymentInfo as RuntimeDispatchInfoV2).weight.refTime ?? paymentInfo.weight;
+
   const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
   const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
 
