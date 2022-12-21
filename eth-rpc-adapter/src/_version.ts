@@ -1,1 +1,1 @@
-export const version: string = 'bodhi.js/eth-rpc-adapter/2.5.5';
+export const version: string = 'bodhi.js/eth-rpc-adapter/2.5.6';
