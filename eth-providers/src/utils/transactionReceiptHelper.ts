@@ -6,7 +6,17 @@ import { Formatter, TransactionReceipt } from '@ethersproject/providers';
 import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
+<<<<<<< HEAD
 import type { EvmLog, H160, ExitReason, RuntimeDispatchInfoV2, FeeDetails } from '@polkadot/types/interfaces/types';
+=======
+import type {
+  EvmLog,
+  H160,
+  ExitReason,
+  RuntimeDispatchInfoV2,
+  RuntimeDispatchInfoV1
+} from '@polkadot/types/interfaces/types';
+>>>>>>> origin/master
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { Vec } from '@polkadot/types';
@@ -306,17 +316,16 @@ export const getEffectiveGasPrice = async (
 
   const block = await api.rpc.chain.getBlock(blockHash);
 
-  // TODO: still need to use parent hash?
-  const paymentInfo = await api.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2>(
-    extrinsic.toHex(),
-    extrinsic.toU8a().length
-  );
-  const feeDetails = await api.call.transactionPaymentApi.queryFeeDetails<FeeDetails>(
-    extrinsic.toHex(),
-    extrinsic.toU8a().length
-  );
+  // use parentHash to get tx fee
+  const parentHash = block.block.header.parentHash;
+  const apiAt = await api.at(parentHash);
+  const u8a = extrinsic.toU8a();
+
+  const paymentInfo = await apiAt.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2>(u8a, u8a.length);
   const estimatedWeight = paymentInfo.weight.refTime;
-  const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
+
+  const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
+  const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
 
   const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
   let txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);

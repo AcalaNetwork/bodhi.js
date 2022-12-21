@@ -7,7 +7,8 @@ WORKDIR /app
 RUN apk add git python3 make gcc g++ musl-dev
 
 # required by some legacy deps
-RUN ln -s /usr/bin/python3 /usr/bin/python && \
+RUN unlink /usr/bin/python && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
 # install rush. should match version in rush.json
@@ -24,7 +25,7 @@ RUN yarn && yarn build
 
 # =============
 
-FROM onfinality/subql-node:v1.9.1
+FROM onfinality/subql-node:v1.17.0
 LABEL maintainer="hello@acala.network"
 
 WORKDIR /app

@@ -35,17 +35,18 @@ export async function handleEvmExtrinsic(
     ['ExtrinsicSuccess', 'ExtrinsicFailed'].includes(event.event.method)
   );
 
-  const { weight: actualWeight } = (systemEvent.event.data.toJSON() as EventData)[0];
+  const { weight } = (systemEvent.event.data.toJSON() as any)[0]; // TODO: fix type
+  const actualWeight = typeof weight === 'number' ? weight : weight.refTime;
 
   let ret: PartialTransactionReceipt;
-  let effectiveGasPrice: BigNumber;
   try {
     ret = getPartialTransactionReceipt(evmEvent);
-    effectiveGasPrice = await getEffectiveGasPrice(evmEvent, global.unsafeApi, blockHash, extrinsic, actualWeight);
   } catch (e) {
     logger.warn(e, '❗️ event skipped due to error -- ');
     return;
   }
+
+  const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, global.unsafeApi, blockHash, extrinsic, actualWeight);
 
   const transactionInfo = {
     transactionIndex: BigInt(transactionIndex),
