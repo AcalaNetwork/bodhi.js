@@ -321,7 +321,7 @@ export const getEffectiveGasPrice = async (
     u8a,
     u8a.length
   );
-  const estimatedWeight = (paymentInfo as RuntimeDispatchInfoV2).weight.refTime || paymentInfo.weight;
+  const estimatedWeight = (paymentInfo as RuntimeDispatchInfoV2).weight.refTime ?? paymentInfo.weight;
 
   const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
   const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
