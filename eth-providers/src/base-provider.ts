@@ -181,7 +181,10 @@ export interface GasConsts {
 }
 export interface EventData {
   [index: string]: {
-    weight: number;
+    weight: {
+      refTime: number;
+      proofSize: number;
+    };
     class: string;
     paysFee: string;
   };
@@ -1748,7 +1751,13 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     // TODO: `getEffectiveGasPrice` and `getPartialTransactionReceipt` can potentially be merged and refactored
-    const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, this.api, blockHash, extrinsic, actualWeight);
+    const effectiveGasPrice = await getEffectiveGasPrice(
+      evmEvent,
+      this.api,
+      blockHash,
+      extrinsic,
+      actualWeight.refTime
+    );
     const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
     const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
