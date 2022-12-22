@@ -6,17 +6,7 @@ import { Formatter, TransactionReceipt } from '@ethersproject/providers';
 import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
-<<<<<<< HEAD
-import type { EvmLog, H160, ExitReason, RuntimeDispatchInfoV2, FeeDetails } from '@polkadot/types/interfaces/types';
-=======
-import type {
-  EvmLog,
-  H160,
-  ExitReason,
-  RuntimeDispatchInfoV2,
-  RuntimeDispatchInfoV1
-} from '@polkadot/types/interfaces/types';
->>>>>>> origin/master
+import type { EvmLog, H160, ExitReason, RuntimeDispatchInfoV2 } from '@polkadot/types/interfaces/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { Vec } from '@polkadot/types';
