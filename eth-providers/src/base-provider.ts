@@ -1740,7 +1740,7 @@ export abstract class BaseProvider extends AbstractProvider {
       });
     }
 
-    const { weight: actualWeight } = (systemEvent.event.data.toJSON() as EventData)[0];
+    const { weight: actualWeight } = (systemEvent.event.data.toJSON() as any)[0]; // TODO: fix type
 
     const evmEvent = findEvmEvent(extrinsicEvents);
     if (!evmEvent) {
