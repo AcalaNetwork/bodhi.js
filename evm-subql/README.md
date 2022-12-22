@@ -172,7 +172,7 @@ For production deployment, there are a couple differences:
 In local setup we can run all of the services together with one single [docker compose](./docker-compose.yml). However, in prod we  usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s.
 
 #### image
-In the local example, we use `onfinality/subql-node:v1.9.1` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
+In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
 
 An example is [here](../docker-compose-example.yml#L27)
 
