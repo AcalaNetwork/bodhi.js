@@ -1756,7 +1756,7 @@ export abstract class BaseProvider extends AbstractProvider {
       this.api,
       blockHash,
       extrinsic,
-      actualWeight.refTime
+      actualWeight.refTime ?? actualWeight
     );
     const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
 
