@@ -177,8 +177,8 @@ In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, w
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.5.3`
-- `acala/evm-subql:876e6d2`
+- `acala/eth-rpc-adapter:v2.5.8`
+- `acala/evm-subql:38c7cdd`
 - `onfinality/subql-query:v1.4.0`
 
 #### config
@@ -188,6 +188,18 @@ One trick is that we don't have to start indexing from block 0, since Acala and 
 - [Karura production](./project-karura-1780000.yaml)
 
 It usually takes 1 to 3 days to index all of the data, depending on the node latency and performance.
+
+### Upgrade Production Subquery
+To upgrade the production subql, we usually need to do a full re-index. In order not to interrupt the currnetly running subql, we can run another indexer in parallel to the old one, and hot replace the old one once the full re-index is finished. 
+
+Below are the detailed steps:
+1) start a new indexer service `acala/evm-subql` that uses a difference `--db-schema`, for example, `--db-schema=evm-karura-2`. It can share the same DB with the old indexer
+2) wait until the new indexer finish indexing
+3) update the config of graphql service `onfinality/subql-query` to use the new indexer. In particular, change the `--name` command, such as `--name=evm-karura-2`, and `--indexer=<new indexer url>`
+4) delete the old indexer service, as well as the old db schema
+5) upgrade is finished! No need to modify `eth-rpc-adapter`
+
+Note: for `acala/evm-subql:38c7cdd` please add `--disable-historical` command. ([example](https://github.com/AcalaNetwork/bodhi.js/blob/d763bc588a4a90e4421d65ebfe1d95ba581c6d37/evm-subql/docker-compose.yml#L52))
 
 ## More References
 
