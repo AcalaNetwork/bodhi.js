@@ -178,7 +178,7 @@ An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
 - `acala/eth-rpc-adapter:v2.5.8`
-- `acala/evm-subql:38c7cdd`
+- `acala/evm-subql:v2.5.9`
 - `onfinality/subql-query:v1.4.0`
 
 #### config
