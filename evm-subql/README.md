@@ -199,7 +199,7 @@ Below are the detailed steps:
 4) delete the old indexer service, as well as the old db schema
 5) upgrade is finished! No need to modify `eth-rpc-adapter`
 
-Note: for `acala/evm-subql:38c7cdd` please add `--disable-historical` command. ([example](https://github.com/AcalaNetwork/bodhi.js/blob/d763bc588a4a90e4421d65ebfe1d95ba581c6d37/evm-subql/docker-compose.yml#L52))
+Note: for `acala/evm-subql:v2.5.9` please add `--disable-historical` command. ([example](https://github.com/AcalaNetwork/bodhi.js/blob/d763bc588a4a90e4421d65ebfe1d95ba581c6d37/evm-subql/docker-compose.yml#L52))
 
 ## More References
 
