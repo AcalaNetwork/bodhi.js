@@ -40,7 +40,7 @@ Create a `storage.json` that looks like this:
 ```
 
 ### run chopsticks
-run a chopsticks server. Should run the command in the same folder with `storage.json`
+run the following command in the same folder with `storage.json`
 ```
 yarn dlx @acala-network/chopsticks dev \
   --endpoint wss://mandala-rpc.aca-staging.network/ws \
