@@ -5,9 +5,9 @@ This example demonstrates how to use [chopsticks](https://github.com/AcalaNetwor
 ### prepare storage override
 One advantage of chopsticks is that we can override storage to test more conveniently. 
 
-In this example, suppose we want to impersonate a big whale calling a contract, then we can use storage override to do two things:
+Suppose we want to impersonate a big whale calling a contract, we can achieve this by doing the following storage overrides:
 - set Alice's balance to `1000000000000000`, whose address is `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY`.
-- bind a random ETH address to Alice, so Alice's balance will sync to it, now this ETH address becomes the whale! The random eth address we choose here is `0xEE1b6e72FC5bC8738150B6bE7564DA887723cCA1` whose private key is `0x8d2d614677b99ee1809eec0967d538f43d3f410e20ee5f5b979dd21d5930d3fe`.
+- bind a ETH address to Alice, so Alice's balance will sync to it, now this ETH address becomes the whale! The random eth address we choose here is `0xEE1b6e72FC5bC8738150B6bE7564DA887723cCA1` whose private key is `0x8d2d614677b99ee1809eec0967d538f43d3f410e20ee5f5b979dd21d5930d3fe`.
 
 Create a `storage.json` that looks like this:
 ```json
