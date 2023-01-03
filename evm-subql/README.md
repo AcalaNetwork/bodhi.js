@@ -43,7 +43,7 @@ NOTE: using CLI is usually for **local testing**. For production please use dock
 1. Install SubQl globally
 
 ```shell
-npm i -g @subql/node@1.7.0 @subql/query@1.4.0
+npm i -g @subql/node@1.17.0 @subql/query@1.4.0
 ```
 
 2. Run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port number `9944` (in the first terminal)
