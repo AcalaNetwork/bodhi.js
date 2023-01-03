@@ -9,8 +9,8 @@
     "prepack": "rm -rf dist && npm build",
     "codegen": "./node_modules/.bin/subql codegen",
     "test": "echo",
-    "index": "subql-node -f ./project.yaml --batch-size 30 --db-schema acala_evm --log-level debug --port 3030 --unsafe",
-    "query": "PORT=3001 subql-query --name acala_evm --playground --indexer=http://localhost:3030 --debug"
+    "index": "subql-node -f ./project.yaml --batch-size 30 --db-schema acala_evm --log-level debug --port 3000 --unsafe --disable-historical",
+    "query": "PORT=3001 subql-query --name acala_evm --playground --indexer=http://localhost:3000 --debug"
   },
   "homepage": "https://github.com/subquery/subql-starter",
   "repository": "github:subquery/subql-starter",

@@ -36,7 +36,9 @@ Please note that the indexer won't start until we [feed some transactions to the
 
 ### Run each service in the CLI seperately
 
-Optionally, if you don't want to use the Docker, you can also run each service separately in the CLI ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
+Optionally, if you don't want to use the Docker, you can also run each service separately in the CLI ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)). 
+
+NOTE: using CLI is usually for **local testing**. For production please use docker setup instead.
 
 1. Install SubQl globally
 
@@ -203,6 +205,6 @@ Note: for `acala/evm-subql:v2.5.9` please add `--disable-historical` command. ([
 
 ## More References
 
-- [SubQuery official documentation](https://doc.subquery.network/quickstart/helloworld-localhost.html)
-- [About the unsafe flag](https://academy.subquery.network/run_publish/references.html#unsafe)
+- [SubQuery official documentation](https://doc.subquery.network/)
+- [About the unsafe flag](https://academy.subquery.network/run_publish/references.html#unsafe-node-service)
 - [Acala EVM+ documentation](https://evmdocs.acala.network/network/network-setup/local-development-network)
