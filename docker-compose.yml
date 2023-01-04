@@ -32,6 +32,7 @@ services:
       - --db-schema=acala_evm
       - --log-level=debug
       - --unsafe
+      - --disable-historical
 
   graphql-engine:
     image: onfinality/subql-query:v1.4.0

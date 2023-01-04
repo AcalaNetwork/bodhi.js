@@ -36,12 +36,14 @@ Please note that the indexer won't start until we [feed some transactions to the
 
 ### Run each service in the CLI seperately
 
-Optionally, if you don't want to use the Docker, you can also run each service separately in the CLI ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
+Optionally, if you don't want to use the Docker, you can also run each service separately in the CLI ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)). 
+
+NOTE: using CLI is usually for **local testing**. For production please use docker setup instead.
 
 1. Install SubQl globally
 
 ```shell
-npm i -g @subql/node@1.7.0 @subql/query@1.4.0
+npm i -g @subql/node@1.17.0 @subql/query@1.4.0
 ```
 
 2. Run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port number `9944` (in the first terminal)
@@ -172,13 +174,13 @@ For production deployment, there are a couple differences:
 In local setup we can run all of the services together with one single [docker compose](./docker-compose.yml). However, in prod we  usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s.
 
 #### image
-In the local example, we use `onfinality/subql-node:v1.9.1` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
+In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
 
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.5.3`
-- `acala/evm-subql:876e6d2`
+- `acala/eth-rpc-adapter:v2.5.8`
+- `acala/evm-subql:v2.5.9`
 - `onfinality/subql-query:v1.4.0`
 
 #### config
@@ -189,8 +191,20 @@ One trick is that we don't have to start indexing from block 0, since Acala and 
 
 It usually takes 1 to 3 days to index all of the data, depending on the node latency and performance.
 
+### Upgrade Production Subquery
+To upgrade the production subql, we usually need to do a full re-index. In order not to interrupt the currnetly running subql, we can run another indexer in parallel to the old one, and hot replace the old one once the full re-index is finished. 
+
+Below are the detailed steps:
+1) start a new indexer service `acala/evm-subql` that uses a difference `--db-schema`, for example, `--db-schema=evm-karura-2`. It can share the same DB with the old indexer
+2) wait until the new indexer finish indexing
+3) update the config of graphql service `onfinality/subql-query` to use the new indexer. In particular, change the `--name` command, such as `--name=evm-karura-2`, and `--indexer=<new indexer url>`
+4) delete the old indexer service, as well as the old db schema
+5) upgrade is finished! No need to modify `eth-rpc-adapter`
+
+Note: for `acala/evm-subql:v2.5.9` please add `--disable-historical` command. ([example](https://github.com/AcalaNetwork/bodhi.js/blob/d763bc588a4a90e4421d65ebfe1d95ba581c6d37/evm-subql/docker-compose.yml#L52))
+
 ## More References
 
-- [SubQuery official documentation](https://doc.subquery.network/quickstart/helloworld-localhost.html)
-- [About the unsafe flag](https://academy.subquery.network/run_publish/references.html#unsafe)
+- [SubQuery official documentation](https://doc.subquery.network/)
+- [About the unsafe flag](https://academy.subquery.network/run_publish/references.html#unsafe-node-service)
 - [Acala EVM+ documentation](https://evmdocs.acala.network/network/network-setup/local-development-network)

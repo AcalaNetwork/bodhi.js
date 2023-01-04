@@ -167,7 +167,8 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
         return null;
       }
     })
-    .filter((x) => !!x);
+    .filter((x) => !!x)
+    .filter((x) => x.extrinsic.method.method.toString() !== 'setValidationData'); // temp skip erc20 xcm
 
   // TODO: reuse isOrphanEvmEvent
   const orphanEvmEvents = blockEvents.filter(
