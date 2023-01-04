@@ -18,8 +18,10 @@ module.exports = {
     indent: [2, 2, { SwitchCase: 1 }],
     quotes: [2, 'single'],
     semi: [2, 'always'],
+    'eol-last': [2, 'always'],
+    'comma-dangle': [2, 'always-multiline'],
 
-    /* ---------- turn offf ---------- */
+    /* ---------- turn off ---------- */
     '@typescript-eslint/no-extra-semi': 0,
     '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/explicit-member-accessibility': 0,
