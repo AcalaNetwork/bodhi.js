@@ -1,0 +1,20 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node check-subql-data.ts",
+    "dev": "ts-node-dev --respawn --transpile-only check-subql-data.ts"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.19",
+    "@types/node": "^18.11.18",
+    "csv-parse": "^5.3.3",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.4",
+    "yargs": "^17.6.2"
+  },
+  "dependencies": {}
+}
