@@ -106,6 +106,8 @@ services:
       - --rpc-external
       - --rpc-cors=all
       - --rpc-methods=unsafe
+      - --pruning=archive
+      - --keep-blocks=archive
       - --instant-sealing
       - --tmp
 
