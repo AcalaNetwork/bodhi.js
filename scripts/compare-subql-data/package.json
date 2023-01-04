@@ -1,11 +1,11 @@
 {
   "name": "scripts",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.ts",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node check-subql-data.ts",
-    "dev": "ts-node-dev --respawn --transpile-only check-subql-data.ts"
+    "start": "ts-node --transpile-only src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "devDependencies": {
     "@types/yargs": "^17.0.19",
