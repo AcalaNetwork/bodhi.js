@@ -75,7 +75,7 @@ services:
       - --endpoint=ws://mandala-node:9944
       - --subql=http://graphql-engine:3001
       - --port=8545
-      - --local
+      - --localMode
 
   eth-rpc-adapter-test:
     build:
@@ -153,7 +153,23 @@ services:
     command:
       - --endpoint=ws://mandala-node:9944
       - --port=8545
-      - --local
+      - --localMode
+
+  eth-rpc-adapter-server-rich:
+    build:
+      context: .
+      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
+      target: eth-rpc-adapter
+    ports:
+      - 8545:8545
+    depends_on:
+      - mandala-node
+    restart: always
+    command:
+      - --endpoint=ws://mandala-node:9944
+      - --port=8545
+      - --localMode
+      - --richMode
 
   eth-rpc-adapter-server-karura:
     build:
@@ -189,7 +205,7 @@ services:
       dockerfile: docker/hardhat-tutorials-test.Dockerfile
       target: hardhat-tutorials
     depends_on:
-      - eth-rpc-adapter-server
+      - eth-rpc-adapter-server-rich
   truffle-tutorials-test:
     build:
       context: .
