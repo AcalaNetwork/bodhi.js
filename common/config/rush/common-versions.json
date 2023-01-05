@@ -72,16 +72,11 @@
     "@polkadot/util-crypto": [
       "^9.0.1",
     ],
-    "@acala-network/api": [
-      "^4.1.1",
-    ],
     "@acala-network/bodhi": [
-      "^2.4.11",
-      "^2.4.12"
+      "^2.5.9",
     ],
     "@acala-network/eth-providers": [
-      "^2.4.11",
-      "^2.4.12"
+      "^2.5.9",
     ],
 
     // these are mostly alternative versions used by tutorials
