@@ -50,3 +50,14 @@ edit the rpc and block number in the code depending if you want to query for moo
 ### use state_call for eth call
 this is a POC of how to do a `eth_call` with substrate `state_call`
 `cd evm-state-call && yarn state-call`
+
+### compare subql data
+compare two copies of subquery data and find out extra/missing/diff records.
+```
+yarn start                                   \
+  --f1 src/data/karura-problem.csv           \
+  --f2 src/data/karura-snapshot-3426035.csv  \
+  --start-block 0                            \
+  --end-block 3426035                        \
+  --no-full
+```
