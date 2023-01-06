@@ -59,12 +59,13 @@ export const compareSubqlData = (
   const rangeFilter = filterByBlockRange(start, end);
 
   // maybe sort is not needed, looks like by default it's sorted this way
-  const d1 = data1.filter(rangeFilter).sort(sortById);
-  const d2 = data2.filter(rangeFilter).sort(sortById);
+  const d1 = data1.filter(rangeFilter);
+  const d2 = data2.filter(rangeFilter);
 
   console.log({
-    dataSize1: data1.length,
-    dataSize2: data2.length
+    dataSize1: d1.length,
+    dataSize2: d2.length,
+    sizeDiff: d1.length - d2.length
   });
 
   return {

@@ -18,6 +18,7 @@ module.exports = {
     indent: [2, 2, { SwitchCase: 1 }],
     quotes: [2, 'single'],
     semi: [2, 'always'],
+    'object-curly-spacing': [2, 'always'],
     'eol-last': [2, 'always'],
     'comma-dangle': [2, 'always-multiline'],
 
