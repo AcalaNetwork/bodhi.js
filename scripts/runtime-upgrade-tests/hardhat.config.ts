@@ -12,6 +12,10 @@ const networkCommon = {
 const config: HardhatUserConfig = {
   solidity: '0.8.9',
   networks: {
+    mandala: {
+      ...networkCommon,
+      chainId: 595
+    },
     karura: {
       ...networkCommon,
       chainId: 686
