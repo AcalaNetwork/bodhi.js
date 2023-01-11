@@ -1,8 +1,10 @@
 # Runtime Upgrade ETH RPC Tests
 ## Setup
-- start a karura/acala fork
+- start a karura/acala fork (FIXME: npx version doesn't seem to work now, can use local build instead)
 ```
-npx @acala-network/chopsticks dev --import-storage=storage.json --config=configs/karura.yml
+npx @acala-network/chopsticks@latest dev \
+  --import-storage=configs/storage.json \
+  --config=configs/karura.yml
 ```
 
 - do a runtime upgrade to the desired version by `sudo.setCode(newRuntimeWasm)`
@@ -21,4 +23,5 @@ yarn build
 - run tests
 ```
 yarn test:karura
+yarn test:acala
 ```
