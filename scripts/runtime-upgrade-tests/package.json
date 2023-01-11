@@ -30,6 +30,7 @@
     "chai": "^4.2.0",
     "dlx": "^0.2.1",
     "eslint": "^8.31.0",
+    "ethereum-waffle": "^3.4.4",
     "ethers": "^5.4.7",
     "hardhat": "^2.11.1",
     "hardhat-gas-reporter": "^1.0.8",

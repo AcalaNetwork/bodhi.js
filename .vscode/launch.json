@@ -1,0 +1,26 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "hardhat test",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "env": { "NODE_URL": "ws://localhost:9944" },
+      "runtimeArgs": [
+        "--inspect-brk=8888",
+        "--nolazy",
+        "-r",
+        "ts-node/register/transpile-only",
+        "node_modules/hardhat/internal/cli/cli.js"
+      ],
+      "args": ["test", "--network", "mandala"],
+      "cwd": "${workspaceRoot}/scripts/runtime-upgrade-tests",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

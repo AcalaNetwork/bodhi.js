@@ -14,20 +14,20 @@ const config: HardhatUserConfig = {
   networks: {
     mandala: {
       ...networkCommon,
-      chainId: 595
+      chainId: 595,
     },
     karura: {
       ...networkCommon,
-      chainId: 686
+      chainId: 686,
     },
     acala: {
       ...networkCommon,
-      chainId: 787
-    }
+      chainId: 787,
+    },
   },
   mocha: {
-    timeout: 987654321
-  }
+    timeout: 987654321,
+  },
 };
 
 export default config;
