@@ -186,8 +186,9 @@ Latest stable versions:
 #### config
 One trick is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
 
-- [Acala production](./project-acala-840000.yaml)
-- [Karura production](./project-karura-1780000.yaml)
+- [Acala production](./project-acala-840000.yaml), by setting `-f=/app/project-acala-840000.yaml`
+- [Karura production](./project-karura-1780000.yaml), by setting `-f=/app/project-karura-1780000.yaml`
+
 
 It usually takes 1 to 3 days to index all of the data, depending on the node latency and performance.
 
