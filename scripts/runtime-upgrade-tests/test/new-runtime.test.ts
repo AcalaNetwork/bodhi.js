@@ -83,7 +83,7 @@ describe('New Runtime', function () {
 
   describe('ERC20', function () {
     let token: Token;
-    const initSupply = one.mul(123);
+    const initSupply = one.mul(123456789);
 
     before('deploy token', async () => {
       const Token = await ethers.getContractFactory('Token');

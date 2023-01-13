@@ -1,6 +1,6 @@
 # Runtime Upgrade ETH RPC Tests
 ## Setup
-- start a karura/acala fork (FIXME: npx version doesn't seem to work now, can use local build instead)
+- start a karura/acala fork
 ```
 npx @acala-network/chopsticks@latest dev \
   --import-storage=configs/storage.json \
