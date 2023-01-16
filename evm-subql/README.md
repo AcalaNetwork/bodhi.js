@@ -231,7 +231,7 @@ pg_dump \
 ```
 
 ### restore database
-restore the `evm-karura-dev` schema to `postgres` db
+restore the `evm-karura-dev` schema to `postgres` db (make sure no schema with the same name exists)
 ```
 export PGPASSWORD=<password>
 pg_restore \
