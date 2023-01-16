@@ -83,7 +83,8 @@ import {
   BaseLogFilter,
   SanitizedLogFilter,
   LogFilter,
-  checkEvmExecutionError
+  checkEvmExecutionError,
+  findTxFeeEvent
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -1753,6 +1754,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // TODO: `getEffectiveGasPrice` and `getPartialTransactionReceipt` can potentially be merged and refactored
     const effectiveGasPrice = await getEffectiveGasPrice(
       evmEvent,
+      findTxFeeEvent(extrinsicEvents),
       this.api,
       blockHash,
       extrinsic,

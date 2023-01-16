@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-f045637
+    image: ghcr.io/acalanetwork/mandala-node:sha-4c127a1
     ports:
       - 9944:9944
     command:
@@ -15,6 +15,8 @@ services:
       - --rpc-external
       - --rpc-cors=all
       - --rpc-methods=unsafe
+      - --pruning=archive
+      - --keep-blocks=archive
       - --instant-sealing
       - --tmp
 

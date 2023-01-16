@@ -6,13 +6,7 @@ import { Formatter, TransactionReceipt } from '@ethersproject/providers';
 import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
-import type {
-  EvmLog,
-  H160,
-  ExitReason,
-  RuntimeDispatchInfoV2,
-  RuntimeDispatchInfoV1
-} from '@polkadot/types/interfaces/types';
+import type { EvmLog, H160, ExitReason, RuntimeDispatchInfoV2 } from '@polkadot/types/interfaces/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { Vec } from '@polkadot/types';
@@ -204,6 +198,12 @@ export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => 
     });
 };
 
+export const findTxFeeEvent = (events: EventRecord[]): EventRecord | undefined => {
+  return events.find(({ event }) => {
+    return event.section.toUpperCase() === 'TRANSACTIONPAYMENT' && event.method === 'TransactionFeePaid';
+  });
+};
+
 export const getTransactionIndexAndHash = (
   hashOrNumber: string | number,
   extrinsics: GenericExtrinsic[],
@@ -295,6 +295,7 @@ export const parseExtrinsic = (
 
 export const getEffectiveGasPrice = async (
   evmEvent: EventRecord,
+  txFeeEvent: EventRecord | undefined,
   api: ApiPromise,
   blockHash: string,
   extrinsic: GenericExtrinsic<AnyTuple>,
@@ -310,24 +311,28 @@ export const getEffectiveGasPrice = async (
   const usedGas = BigNumber.from(eventData[eventData.length - 2].toString());
   const usedStorage = BigNumber.from(eventData[eventData.length - 1].toString());
 
-  const block = await api.rpc.chain.getBlock(blockHash);
+  let txFee = BigNumber.from('0');
 
-  // use parentHash to get tx fee
-  const parentHash = block.block.header.parentHash;
-  const apiAt = await api.at(parentHash);
-  const u8a = extrinsic.toU8a();
+  if (!txFeeEvent) {
+    const block = await api.rpc.chain.getBlock(blockHash);
 
-  const paymentInfo = await apiAt.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2 | RuntimeDispatchInfoV1>(
-    u8a,
-    u8a.length
-  );
-  const estimatedWeight = (paymentInfo as RuntimeDispatchInfoV2).weight.refTime ?? paymentInfo.weight;
+    // use parentHash to get tx fee
+    const parentHash = block.block.header.parentHash;
+    const apiAt = await api.at(parentHash);
+    const u8a = extrinsic.toU8a();
 
-  const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
-  const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
+    const paymentInfo = await apiAt.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2>(u8a, u8a.length);
+    const estimatedWeight = paymentInfo.weight.refTime;
 
-  const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
-  let txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
+    const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
+    const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
+
+    const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
+    txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
+  } else {
+    // [who, actualFee, actualTip, actualSurplus]
+    txFee = BigNumber.from(txFeeEvent.event.data[1].toString());
+  }
 
   txFee = nativeToEthDecimal(txFee, 12);
 

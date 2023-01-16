@@ -1,6 +1,6 @@
 services:
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-f045637
+    image: ghcr.io/acalanetwork/mandala-node:sha-4c127a1
     container_name: mandala-node
     ports:
       - 9944:9944
@@ -14,6 +14,8 @@ services:
       - --rpc-external
       - --rpc-cors=all
       - --rpc-methods=unsafe
+      - --pruning=archive
+      - --keep-blocks=archive
       #- --instant-sealing
   postgres:
     image: postgres:12-alpine
@@ -45,6 +47,7 @@ services:
       - --db-schema=acala_evm
       - --log-level=debug
       - --unsafe
+      - --disable-historical
 
   graphql-engine:
     image: onfinality/subql-query:v1.4.0
