@@ -216,7 +216,7 @@ for Mac: `brew install libpq`
 for other OS: `you are on your own`
 
 ### dump database
-dump `evm-karura-dev` schema from `postgres` db
+dump the example `evm-karura-dev` schema from `postgres` db
 ```
 export PGPASSWORD=<password>
 pg_dump \
@@ -231,7 +231,7 @@ pg_dump \
 ```
 
 ### restore database
-dump `evm-karura-dev` schema to `postgres` db
+restore the `evm-karura-dev` schema to `postgres` db
 ```
 export PGPASSWORD=<password>
 pg_restore \
