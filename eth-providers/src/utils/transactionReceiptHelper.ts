@@ -294,17 +294,13 @@ export const parseExtrinsic = (
 };
 
 export const getEffectiveGasPrice = async (
-  events: EventRecord[],
+  evmEvent: EventRecord,
+  txFeeEvent: EventRecord | undefined,
   api: ApiPromise,
   blockHash: string,
   extrinsic: GenericExtrinsic<AnyTuple>,
   actualWeight: number
 ): Promise<BigNumber> => {
-  const txFeeEvent = findTxFeeEvent(events);
-  const evmEvent = findEvmEvent(events);
-
-  if (!evmEvent) return BIGNUMBER_ONE;
-
   const { data: eventData, method: eventMethod } = evmEvent.event;
 
   const gasInfoExists =
