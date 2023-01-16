@@ -1752,7 +1752,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // TODO: `getEffectiveGasPrice` and `getPartialTransactionReceipt` can potentially be merged and refactored
     const effectiveGasPrice = await getEffectiveGasPrice(
-      evmEvent,
+      extrinsicEvents,
       this.api,
       blockHash,
       extrinsic,

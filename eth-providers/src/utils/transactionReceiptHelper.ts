@@ -198,6 +198,12 @@ export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => 
     });
 };
 
+export const findTxFeeEvent = (events: EventRecord[]): EventRecord | undefined => {
+  return events.find(({ event }) => {
+    return event.section.toUpperCase() === 'TRANSACTIONPAYMENT' && event.method === 'TransactionFeePaid';
+  });
+};
+
 export const getTransactionIndexAndHash = (
   hashOrNumber: string | number,
   extrinsics: GenericExtrinsic[],
@@ -288,12 +294,17 @@ export const parseExtrinsic = (
 };
 
 export const getEffectiveGasPrice = async (
-  evmEvent: EventRecord,
+  events: EventRecord[],
   api: ApiPromise,
   blockHash: string,
   extrinsic: GenericExtrinsic<AnyTuple>,
   actualWeight: number
 ): Promise<BigNumber> => {
+  const txFeeEvent = findTxFeeEvent(events);
+  const evmEvent = findEvmEvent(events);
+
+  if (!evmEvent) return BIGNUMBER_ONE;
+
   const { data: eventData, method: eventMethod } = evmEvent.event;
 
   const gasInfoExists =
@@ -304,21 +315,28 @@ export const getEffectiveGasPrice = async (
   const usedGas = BigNumber.from(eventData[eventData.length - 2].toString());
   const usedStorage = BigNumber.from(eventData[eventData.length - 1].toString());
 
-  const block = await api.rpc.chain.getBlock(blockHash);
+  let txFee = BigNumber.from('0');
 
-  // use parentHash to get tx fee
-  const parentHash = block.block.header.parentHash;
-  const apiAt = await api.at(parentHash);
-  const u8a = extrinsic.toU8a();
+  if (!txFeeEvent) {
+    const block = await api.rpc.chain.getBlock(blockHash);
 
-  const paymentInfo = await apiAt.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2>(u8a, u8a.length);
-  const estimatedWeight = paymentInfo.weight.refTime;
+    // use parentHash to get tx fee
+    const parentHash = block.block.header.parentHash;
+    const apiAt = await api.at(parentHash);
+    const u8a = extrinsic.toU8a();
 
-  const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
-  const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
+    const paymentInfo = await apiAt.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2>(u8a, u8a.length);
+    const estimatedWeight = paymentInfo.weight.refTime;
 
-  const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
-  let txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
+    const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
+    const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
+
+    const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
+    txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
+  } else {
+    console.log(txFeeEvent);
+    txFee = BigNumber.from(txFeeEvent.event.data[0].toString());
+  }
 
   txFee = nativeToEthDecimal(txFee, 12);
 

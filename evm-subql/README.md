@@ -179,7 +179,7 @@ In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, w
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.5.8`
+- `acala/eth-rpc-adapter:v2.5.9`
 - `acala/evm-subql:v2.5.9`
 - `onfinality/subql-query:v1.4.0`
 
