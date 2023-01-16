@@ -4,7 +4,11 @@
 ```
 npx @acala-network/chopsticks@latest dev \
   --import-storage=configs/storage.json \
-  --config=configs/karura.yml
+  --endpoint=wss://karura-rpc-3.aca-api.network/ws
+
+npx @acala-network/chopsticks@latest dev \
+  --import-storage=configs/storage.json \
+  --endpoint=wss://acala-rpc-3.aca-api.network/ws
 ```
 
 - do a runtime upgrade to the desired version by `sudo.setCode(newRuntimeWasm)`

@@ -39,7 +39,7 @@ describe('New Runtime', function () {
   describe('Transfer native token', function () {
     it('works', async function () {
       const prevBalance = await user.getBalance();
-      const sendValue = one.mul(1000);
+      const sendValue = one.mul(10);
       await deployer.sendTransaction({
         to: userAddress,
         value: sendValue
