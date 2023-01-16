@@ -334,8 +334,8 @@ export const getEffectiveGasPrice = async (
     const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
     txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
   } else {
-    console.log(txFeeEvent);
-    txFee = BigNumber.from(txFeeEvent.event.data[0].toString());
+    // [who, actualFee, actualTip, actualSurplus]
+    txFee = BigNumber.from(txFeeEvent.event.data[1].toString());
   }
 
   txFee = nativeToEthDecimal(txFee, 12);
