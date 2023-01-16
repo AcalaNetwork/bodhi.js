@@ -204,6 +204,53 @@ Below are the detailed steps:
 
 Note: for `acala/evm-subql:v2.5.9` please add `--disable-historical` command. ([example](https://github.com/AcalaNetwork/bodhi.js/blob/d763bc588a4a90e4421d65ebfe1d95ba581c6d37/evm-subql/docker-compose.yml#L52))
 
+## Dump and Restore Database
+Sometimes it's useful to take a snapshot of the database, so that we can restore it when needed. We can also pass it along to others, so that they can quickly setup a copy of the same evm subql project, without needing to index from the beginning.
+
+Below are CLI commands to do it, you can also use pgAdmin GUI to achieve the same thing.
+
+### install postgres CLI
+make sure you have `pg_dump` and `pg_restore` commands available. 
+
+for Mac: `brew install libpq`
+for other OS: `you are on your own`
+
+### dump database
+dump `evm-karura-dev` schema from `postgres` db
+```
+export PGPASSWORD=<password>
+pg_dump \
+  --host subql-evm.cluster-cspmstlhvanj.ap-southeast-1.rds.amazonaws.com \
+  --port 5432 \
+  --dbname postgres \
+  --username postgres \
+  --format tar \
+  --file ./db.backup.tgz \
+  --schema evm-karura-dev \
+  --verbose
+```
+
+### restore database
+dump `evm-karura-dev` schema to `postgres` db
+```
+export PGPASSWORD=<password>
+pg_restore \
+  --host subql-evm.cluster-cspmstlhvanj.ap-southeast-1.rds.amazonaws.com \
+  --port 5432 \
+  --dbname postgres \
+  --username postgres \
+  --verbose \
+  ./db.backup.tgz
+```
+
+### (optional) rename schema
+Since we dumped `evm-karura-dev` schema, the restore process will create a new schema with the same name. If you want to use a different name, you can simply rename `evm-karura-dev` schema to the desired name after the restore process. 
+
+This can be done with pgAdmin by:
+- right click the schema name
+- select "properties"
+- enter a new name and save
+
 ## More References
 
 - [SubQuery official documentation](https://doc.subquery.network/)
