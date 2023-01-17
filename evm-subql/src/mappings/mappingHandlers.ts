@@ -3,7 +3,8 @@ import {
   PartialTransactionReceipt,
   getTransactionIndexAndHash,
   getEffectiveGasPrice,
-  findEvmEvent
+  findEvmEvent,
+  findTxFeeEvent
 } from '@acala-network/eth-providers/lib/utils';
 import { EventData } from '@acala-network/eth-providers/lib/base-provider';
 import { BigNumber } from '@ethersproject/bignumber/lib/bignumber';
@@ -46,7 +47,15 @@ export async function handleEvmExtrinsic(
     return;
   }
 
-  const effectiveGasPrice = await getEffectiveGasPrice(evmEvent, global.unsafeApi, blockHash, extrinsic, actualWeight);
+  const txFeeEvent = findTxFeeEvent(extrinsicEvents);
+  const effectiveGasPrice = await getEffectiveGasPrice(
+    evmEvent,
+    txFeeEvent,
+    global.unsafeApi,
+    blockHash,
+    extrinsic,
+    actualWeight
+  );
 
   const transactionInfo = {
     transactionIndex: BigInt(transactionIndex),
