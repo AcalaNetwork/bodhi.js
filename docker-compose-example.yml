@@ -26,7 +26,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: acala/evm-subql:71b065f
+    image: acala/evm-subql:5f0bd06
     container_name: subquery-node
     ports:
       - 3000:3000
@@ -73,7 +73,7 @@ services:
       - --indexer=http://subquery-node:3000
 
   eth-rpc-adapter-server:
-    image: acala/eth-rpc-adapter:71b065f
+    image: acala/eth-rpc-adapter:5f0bd06
     container_name: eth-rpc-adapter-server
     restart: always
     depends_on:
