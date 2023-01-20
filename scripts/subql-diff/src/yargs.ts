@@ -34,6 +34,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'show full result',
       type: 'boolean',
     },
+    outFile: {
+      alias: 'o',
+      demandOption: false,
+      describe: 'save result to output file',
+      type: 'string',
+    },
   })
   .help()
   .argv;

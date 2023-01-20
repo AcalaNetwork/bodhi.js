@@ -51,5 +51,5 @@ edit the rpc and block number in the code depending if you want to query for moo
 this is a POC of how to do a `eth_call` with substrate `state_call`
 `cd evm-state-call && yarn state-call`
 
-### subql helpers
+### compare subql data
 refer to [here](./subql/README.md)

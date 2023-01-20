@@ -15,7 +15,8 @@ yarn diff                                \
   --f2 data/karura-receipts-3503328.csv  \
   --start-block 0                        \
   --end-block 3426035                    \
-  --no-full
+  --full                                 \
+  --outFile res.json
 ```
 
 check for logs diff
@@ -25,5 +26,6 @@ yarn diff                            \
   --f2 data/karura-logs-3503328.csv  \
   --start-block 0                    \
   --end-block 3426035                \
-  --no-full
+  --full                             \
+  --outFile res.json
 ```
