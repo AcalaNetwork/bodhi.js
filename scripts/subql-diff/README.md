@@ -3,7 +3,7 @@ Compares two copies of subquery data, and find out extra/missing/diff records.
 use `--full` to show full difference, or `--no-full` to only show different ids
 
 ### run with example data
-first extrat the data, which contains some valid karura receipts/logs, and another copy of data that missed some record.
+first extract the data, which contains some valid karura receipts/logs, and another copy of data that missed some record.
 ```
 tar -xvf data.tgz
 ```
