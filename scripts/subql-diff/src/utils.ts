@@ -1,4 +1,4 @@
-import fs from 'fs';
+import * as fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { CompareResult, Diff, Log, LogOrReceipt, TxReceipt, IdToDataMap } from './types';
 
@@ -44,7 +44,7 @@ const getDiff = <T extends LogOrReceipt>(d1: T, d2: T): Diff<T> | null => {
   const diff = {} as Diff<T>;
   for (const [k, v] of Object.entries(d1) as [keyof T, string][]) {
     if (d2[k] !== v) {
-      diff[k] = `${v}, ${d2[k]}`;
+      diff[k] = `${v}, ${d2[k]}` as any;
     }
   }
 

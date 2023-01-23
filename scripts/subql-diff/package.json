@@ -1,13 +1,17 @@
 {
-  "name": "scripts",
+  "name": "@acala-network/subql-diff",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "author": "Acala Developers <hello@acala.network>",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "files": ["dist/"],
   "license": "MIT",
   "scripts": {
     "diff": "ts-node --transpile-only src/index.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "mocha src/__tests__/*",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",

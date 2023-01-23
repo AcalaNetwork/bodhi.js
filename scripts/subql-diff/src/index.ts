@@ -1,4 +1,4 @@
-import fs from 'fs';
+import * as fs from 'fs';
 import { compareSubqlData, readCSV } from './utils';
 import { yargsOptions } from './yargs';
 

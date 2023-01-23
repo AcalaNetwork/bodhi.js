@@ -38,6 +38,6 @@ export interface CompareResult<T extends LogOrReceipt> {
   '!=': Diff<T>[],
 }
 
-interface IdToDataMap<T extends LogOrReceipt> {
+export interface IdToDataMap<T extends LogOrReceipt> {
   [id: string]: T
 }
