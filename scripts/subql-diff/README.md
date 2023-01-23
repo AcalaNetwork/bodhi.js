@@ -10,7 +10,7 @@ tar -xvf data.tgz
 
 check for receipts diff
 ```
-yarn diff                                \
+npx @acala-network/subql-diff            \
   --f1 data/karura-receipts-missing.csv  \
   --f2 data/karura-receipts-3503328.csv  \
   --start-block 0                        \
@@ -21,7 +21,7 @@ yarn diff                                \
 
 check for logs diff
 ```
-yarn diff                            \
+npx @acala-network/subql-diff        \
   --f1 data/karura-logs-missing.csv  \
   --f2 data/karura-logs-3503328.csv  \
   --start-block 0                    \
