@@ -75,7 +75,7 @@ services:
       - --endpoint=ws://mandala-node:9944
       - --subql=http://graphql-engine:3001
       - --port=8545
-      - --local
+      - --localMode
 
   eth-rpc-adapter-test:
     build:
@@ -94,7 +94,7 @@ services:
   # ---------- No Subql Realm ---------- #
   # ------------------------------------ #
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-f045637
+    image: ghcr.io/acalanetwork/mandala-node:sha-6eefbb4
     ports:
       - 9944:9944
     command:
@@ -107,6 +107,8 @@ services:
       - --rpc-external
       - --rpc-cors=all
       - --rpc-methods=unsafe
+      - --pruning=archive
+      - --keep-blocks=archive
       - --instant-sealing
       - --tmp
 
@@ -151,7 +153,23 @@ services:
     command:
       - --endpoint=ws://mandala-node:9944
       - --port=8545
-      - --local
+      - --localMode
+
+  eth-rpc-adapter-server-rich:
+    build:
+      context: .
+      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
+      target: eth-rpc-adapter
+    ports:
+      - 8545:8545
+    depends_on:
+      - mandala-node
+    restart: always
+    command:
+      - --endpoint=ws://mandala-node:9944
+      - --port=8545
+      - --localMode
+      - --richMode
 
   eth-rpc-adapter-server-karura:
     build:
@@ -187,7 +205,7 @@ services:
       dockerfile: docker/hardhat-tutorials-test.Dockerfile
       target: hardhat-tutorials
     depends_on:
-      - eth-rpc-adapter-server
+      - eth-rpc-adapter-server-rich
   truffle-tutorials-test:
     build:
       context: .

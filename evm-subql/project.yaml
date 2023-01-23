@@ -14,7 +14,7 @@ schema:
   file: ./schema.graphql
 network:
   # local mandala
-  chainId: '0xffd02bca56d05dca0b4552a5b7d3b98b1a45ab83b6a97e1637831fefdb304bfb'
+  chainId: '0xcc21956e925ef44bece477484e03de867fa0e403539803d9a741279e49cccf32'
   endpoint: ws://localhost:9944
   chaintypes:
     # TODO: can generate this dynamically with `yarn build` using `@acala-network/types`
