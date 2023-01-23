@@ -4,7 +4,7 @@
   "author": "Acala Developers <hello@acala.network>",
   "main": "dist/index.js",
   "bin": "bin/subql-diff.js",
-  "files": ["dist/"],
+  "files": ["dist/, bin/"],
   "license": "MIT",
   "scripts": {
     "diff": "ts-node --transpile-only src/index.ts",
