@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/bodhi",
-  "version": "2.5.11",
+  "version": "2.5.12",
   "main": "lib/index.js",
   "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
   "author": "Acala Developers <hello@acala.network>",
