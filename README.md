@@ -107,8 +107,8 @@ git commit -m "bump v2.x.x"
 
 then tag the commit and push
 ```
-git tag -a v2.x.x -m "bump"
-git push --follow-tags
+git tag v2.x.x
+git push --atomic origin master v2.x.x
 ```
 
 
