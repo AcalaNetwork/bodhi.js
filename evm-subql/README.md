@@ -179,8 +179,8 @@ In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, w
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.5.9`
-- `acala/evm-subql:v2.5.9`
+- `acala/eth-rpc-adapter:v2.5.13`
+- `acala/evm-subql:v2.5.13`
 - `onfinality/subql-query:v1.4.0`
 
 #### config
@@ -212,39 +212,39 @@ Below are CLI commands to do it, you can also use pgAdmin GUI to achieve the sam
 ### install postgres CLI
 make sure you have `pg_dump` and `pg_restore` commands available. 
 
-for Mac: `brew install libpq`
-for other OS: `you are on your own`
+- for Mac: `brew install libpq`
+- for other OS: `you are on your own`
 
 ### dump database
-dump the example `evm-karura-dev` schema from `postgres` db
+suppose we have an `evm-karura` schema in `postgres` db, and we want to dump it to a tar file `evm-karura.tgz`.
 ```
 export PGPASSWORD=<password>
-pg_dump \
-  --host subql-evm.cluster-cspmstlhvanj.ap-southeast-1.rds.amazonaws.com \
-  --port 5432 \
-  --dbname postgres \
-  --username postgres \
-  --format tar \
-  --file ./db.backup.tgz \
-  --schema evm-karura-dev \
+pg_dump                   \
+  --host <db-host-url>    \
+  --port 5432             \
+  --dbname postgres       \
+  --username postgres     \
+  --format tar            \
+  --file ./evm-karura.tgz \
+  --schema evm-karura     \
   --verbose
 ```
 
 ### restore database
-restore the `evm-karura-dev` schema to `postgres` db (make sure no schema with the same name exists)
+in previous step we dumped data from `evm-karura` schema in database `postgres`, so when restoring data, we need to first make sure a db called `postgres` exists, and it does **NOT** have `evm-karura` schema. Then we can restore the database with the following command
 ```
 export PGPASSWORD=<password>
-pg_restore \
-  --host subql-evm.cluster-cspmstlhvanj.ap-southeast-1.rds.amazonaws.com \
-  --port 5432 \
-  --dbname postgres \
-  --username postgres \
-  --verbose \
-  ./db.backup.tgz
+pg_restore             \
+  --host <db-host-url> \
+  --port 5432          \
+  --dbname postgres    \
+  --username postgres  \
+  --verbose            \
+  ./evm-karura.tgz
 ```
 
 ### (optional) rename schema
-Since we dumped `evm-karura-dev` schema, the restore process will create a new schema with the same name. If you want to use a different name, you can simply rename `evm-karura-dev` schema to the desired name after the restore process. 
+Since we dumped `evm-karura` schema, the restore process will create a new schema with the same name. If you want to use a different name, you can simply rename `evm-karura` schema to the desired name after the restore process. 
 
 This can be done with pgAdmin by:
 - right click the schema name
@@ -256,3 +256,4 @@ This can be done with pgAdmin by:
 - [SubQuery official documentation](https://doc.subquery.network/)
 - [About the unsafe flag](https://academy.subquery.network/run_publish/references.html#unsafe-node-service)
 - [Acala EVM+ documentation](https://evmdocs.acala.network/network/network-setup/local-development-network)
+- [Subql Quick Migration Guide](https://hackmd.io/Z3ka28y4Tky6sHPsQVt2lw)
