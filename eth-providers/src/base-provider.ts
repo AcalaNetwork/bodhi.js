@@ -310,9 +310,11 @@ export abstract class BaseProvider extends AbstractProvider {
     this.subscriptionStarted = false;
     this.subql = subqlUrl ? new SubqlProvider(subqlUrl): undefined;
 
+    /* ---------- messages ---------- */
     richMode && logger.warn(RICH_MODE_WARNING_MSG);
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     this.verbose && logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
+
     if (this.maxBlockCacheSize < 0) {
       return logger.throwError(
         `expect maxBlockCacheSize >= 0, but got ${this.maxBlockCacheSize}`,
@@ -499,13 +501,11 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getBlockNumber = async (): Promise<number> => {
-    await this.getNetwork();
     const header = await this._getBlockHeader('latest');
     return header.number.toNumber();
   };
 
   _getBlock = async (_blockTag: BlockTag | Promise<BlockTag>): Promise<BlockData> => {
-    await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
@@ -594,7 +594,6 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<BigNumber> => {
-    await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const { address, blockHash } = await resolveProperties({
@@ -625,7 +624,6 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<number> => {
-    await this.getNetwork();
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
 
@@ -649,7 +647,6 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<number> => {
-    await this.getNetwork();
 
     const address = await this._getAddress(addressOrName);
     const resolvedBlockTag = await blockTag;
@@ -672,7 +669,6 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
-    await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     if ((await blockTag) === 'pending') return '0x';
@@ -701,7 +697,6 @@ export abstract class BaseProvider extends AbstractProvider {
     _transaction: Deferrable<TransactionRequest>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
-    await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const { txRequest, blockHash } = await resolveProperties({
@@ -771,7 +766,6 @@ export abstract class BaseProvider extends AbstractProvider {
     position: BigNumberish | Promise<BigNumberish>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
-    await this.getNetwork();
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const { address, blockHash, resolvedPosition } = await resolveProperties({
@@ -1181,7 +1175,6 @@ export abstract class BaseProvider extends AbstractProvider {
     extrinsic: SubmittableExtrinsic<'promise'>;
     transaction: AcalaEvmTX;
   }> => {
-    await this.getNetwork();
 
     const signatureType = checkSignatureType(rawTx);
     const ethTx = parseTransaction(rawTx);
@@ -1246,7 +1239,6 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
-    await this.getNetwork();
     const hexTx = await Promise.resolve(signedTransaction).then((t) => hexlify(t));
     const tx = parseTransaction(await signedTransaction);
 
