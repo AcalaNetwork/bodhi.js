@@ -356,9 +356,8 @@ export abstract class BaseProvider extends AbstractProvider {
           const logs = receipts.map((r) => r.logs).flat();
 
           logSubscribers.forEach(({ cb, filter }) => {
-            const filteredLogs = logs.filter((l) => filterLog(l, filter));
-            const response = hexlifyRpcResult(filteredLogs);
-            response.forEach((log: any) => cb(log));
+            const filteredLogs = logs.filter(log => filterLog(log, filter));
+            hexlifyRpcResult(filteredLogs).forEach(cb);
           });
         }
       }
