@@ -229,7 +229,7 @@ export const getTransactionIndexAndHash = (
   const transactionHash = extrinsicIndex ? extrinsics[extrinsicIndex]?.hash.toHex() : undefined;
 
   if (extrinsicIndex === undefined || transactionHash === undefined || extrinsicIndex < 0) {
-    return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, {
+    return logger.throwError('transaction hash not found', Logger.errors.UNKNOWN_ERROR, {
       hashOrNumber
     });
   }
@@ -237,7 +237,7 @@ export const getTransactionIndexAndHash = (
   const transactionIndex = evmExtrinsicIndexes.findIndex((index) => index === extrinsicIndex);
 
   if (transactionIndex < 0) {
-    return logger.throwError(`expected extrinsic include evm events`, Logger.errors.UNKNOWN_ERROR, {
+    return logger.throwError('expected extrinsic include evm events', Logger.errors.UNKNOWN_ERROR, {
       hashOrNumber
     });
   }

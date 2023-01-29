@@ -315,7 +315,7 @@ export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
       msg = reason === 'other' ? exitReason.error[reason] : reason;
       err = new Error(`execution error: ${msg}`);
     } else {
-      err = new Error(`unknown eth call error`);
+      err = new Error('unknown eth call error');
     }
 
     (err as any).code = -32603;

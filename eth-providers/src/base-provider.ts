@@ -266,22 +266,21 @@ export interface CallInfo {
 
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
+  readonly subql?: SubqlProvider;
   readonly formatter: Formatter;
-  readonly _listeners: EventListeners;
-  readonly _pollFilters: PollFilters;
+  readonly eventListeners: EventListeners;
+  readonly pollFilters: PollFilters;
   readonly safeMode: boolean;
   readonly localMode: boolean;
   readonly richMode: boolean;
   readonly verbose: boolean;
-  readonly subql?: SubqlProvider;
   readonly maxBlockCacheSize: number;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
-  readonly _storageCache: LRUCache<string, Uint8Array | null>;
-  readonly _healthCheckBlockDistance: number; // Distance allowed to fetch old nth block (since most oldest block takes longer to fetch)
+  readonly storageCache: LRUCache<string, Uint8Array | null>;
+  readonly blockCache: BlockCache;
 
-  _network?: Promise<Network>;
-  _cache?: BlockCache;
-  _latestFinalizedBlockHash: string;
+  network?: Promise<Network>;
+  latestFinalizedBlockHash: string;
   latestFinalizedBlockNumber: number;
   runtimeVersion: number | undefined;
 
@@ -290,37 +289,31 @@ export abstract class BaseProvider extends AbstractProvider {
     localMode = false,
     richMode = false,
     verbose = false,
-    subqlUrl,
     maxBlockCacheSize = 200,
     storageCacheSize = 5000,
-    healthCheckBlockDistance = 100
+    subqlUrl,
   }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
-    this._listeners = { [SubscriptionType.NewHeads]: [], [SubscriptionType.Logs]: [] };
-    this._pollFilters = { [PollFilterType.NewBlocks]: [], [PollFilterType.Logs]: [] };
+    this.eventListeners = { [SubscriptionType.NewHeads]: [], [SubscriptionType.Logs]: [] };
+    this.pollFilters = { [PollFilterType.NewBlocks]: [], [PollFilterType.Logs]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
     this.richMode = richMode;
     this.verbose = verbose;
-    this._latestFinalizedBlockHash = DUMMY_BLOCK_HASH;
+    this.latestFinalizedBlockHash = DUMMY_BLOCK_HASH;
     this.latestFinalizedBlockNumber = 0;
     this.maxBlockCacheSize = maxBlockCacheSize;
-    this._storageCache = new LRUCache({ max: storageCacheSize });
-    this._healthCheckBlockDistance = healthCheckBlockDistance;
-
-    richMode && logger.warn(RICH_MODE_WARNING_MSG);
-    safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
-    this.verbose && logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
+    this.storageCache = new LRUCache({ max: storageCacheSize });
+    this.blockCache = new BlockCache(this.maxBlockCacheSize);
 
     if (subqlUrl) {
       this.subql = new SubqlProvider(subqlUrl);
     }
-  }
 
-  startSubscription = async (): Promise<any> => {
-    this._cache = new BlockCache(this.maxBlockCacheSize);
-
+    richMode && logger.warn(RICH_MODE_WARNING_MSG);
+    safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
+    this.verbose && logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
     if (this.maxBlockCacheSize < 0) {
       return logger.throwError(
         `expect maxBlockCacheSize >= 0, but got ${this.maxBlockCacheSize}`,
@@ -329,65 +322,69 @@ export abstract class BaseProvider extends AbstractProvider {
     } else {
       this.maxBlockCacheSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
+  }
 
+  startSubscription = async (): Promise<any> => {
     await this.isReady();
 
     const subscriptionMethod = this.safeMode
       ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
       : this.api.rpc.chain.subscribeNewHeads.bind(this);
 
-    subscriptionMethod(async (header: Header) => {
-      // cache
+    const sub1 = subscriptionMethod(async (header: Header) => {
+      // block cache
       const blockNumber = header.number.toNumber();
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
       const txHashes = await this._getTxHashesAtBlock(blockHash);
 
-      this._cache!.addTxsAtBlock(blockNumber, txHashes);
+      this.blockCache.addTxsAtBlock(blockNumber, txHashes);
 
       // eth_subscribe
-      // TODO: can do some optimizations
-      if (this._listeners[SubscriptionType.NewHeads].length > 0) {
+      const headSubscribers = this.eventListeners[SubscriptionType.NewHeads];
+      const logSubscribers = this.eventListeners[SubscriptionType.Logs];
+
+      if (headSubscribers.length > 0 || logSubscribers.length > 0) {
         const block = await this.getBlockData(blockNumber, false);
+
         const response = hexlifyRpcResult(block);
-        this._listeners[SubscriptionType.NewHeads].forEach((l) => l.cb(response));
+        headSubscribers.forEach((l) => l.cb(response));
+
+        if (logSubscribers.length > 0) {
+          const receipts = await Promise.all(
+            block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
+          );
+          const logs = receipts.map((r) => r.logs).flat();
+
+          logSubscribers.forEach(({ cb, filter }) => {
+            const filteredLogs = logs.filter((l) => filterLog(l, filter));
+            const response = hexlifyRpcResult(filteredLogs);
+            response.forEach((log: any) => cb(log));
+          });
+        }
       }
+    });
 
-      if (this._listeners[SubscriptionType.Logs].length > 0) {
-        const block = await this.getBlockData(blockNumber, false);
-        const receipts = await Promise.all(
-          block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
-        );
-        const logs = receipts.map((r) => r.logs).flat();
-
-        this._listeners[SubscriptionType.Logs].forEach(({ cb, filter }) => {
-          const filteredLogs = logs.filter((l) => filterLog(l, filter));
-          const response = hexlifyRpcResult(filteredLogs);
-          response.forEach((log: any) => cb(log));
-        });
-      }
-    }) as unknown as void;
-
-    this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
+    const sub2 = this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
       const blockNumber = header.number.toNumber();
-      this.latestFinalizedBlockNumber = blockNumber;
-
       const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber)).toHex();
-      this._latestFinalizedBlockHash = blockHash;
-    }) as unknown as void;
 
-    this.api.rpc.state.subscribeRuntimeVersion((runtime: RuntimeVersion) => {
+      this.latestFinalizedBlockNumber = blockNumber;
+      this.latestFinalizedBlockHash = blockHash;
+    });
+
+    const sub3 = this.api.rpc.state.subscribeRuntimeVersion((runtime: RuntimeVersion) => {
       const version = runtime.specVersion.toNumber();
       this.verbose && logger.info(`runtime version: ${version}`);
 
       if (!this.runtimeVersion || this.runtimeVersion === version) {
         this.runtimeVersion = version;
       } else {
-        logger.warn(
-          `runtime version changed: ${this.runtimeVersion} => ${version}, shutting down myself... good bye 👋`
-        );
-        process?.exit(1);
+        logger.warn(`runtime version changed: ${this.runtimeVersion} => ${version}, shutting down myself... good bye 👋`);
+        process.exit(1);
       }
-    }) as unknown as void;
+    });
+
+    await Promise.all([sub1, sub2, sub3]);
   };
 
   setApi = (api: ApiPromise): void => {
@@ -419,7 +416,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const outputType = unwrapStorageType(registry.registry, entry.meta.type, entry.meta.modifier.isOptional);
 
     const cacheKey = `${module}-${blockHash}-${args.join(',')}`;
-    const cached = this._storageCache.get(cacheKey);
+    const cached = this.storageCache.get(cacheKey);
 
     let input: Uint8Array | null = null;
 
@@ -436,7 +433,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ? null
         : u8aToU8a(entry.meta.modifier.isOptional ? value.toU8a() : value.isSome ? value.unwrap().toU8a() : null);
 
-      this._storageCache.set(cacheKey, input);
+      this.storageCache.set(cacheKey, input);
     }
 
     const result = registry.registry.createTypeUnsafe(outputType, [input], {
@@ -446,12 +443,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return result as any as T;
   };
-
-  get latestFinalizedBlockHash(): string {
-    return this._latestFinalizedBlockHash === DUMMY_BLOCK_HASH // this can only happen in theory locally
-      ? logger.throwError('no finalized block tracked yet...', Logger.errors.UNKNOWN_ERROR)
-      : this._latestFinalizedBlockHash;
-  }
 
   get api(): ApiPromise {
     if (!this._api) {
@@ -478,7 +469,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   isReady = (): Promise<Network> => {
-    if (!this._network) {
+    if (!this.network) {
       const _getNetwork = async (): Promise<{
         name: string;
         chainId: number;
@@ -498,10 +489,10 @@ export abstract class BaseProvider extends AbstractProvider {
         }
       };
 
-      this._network = _getNetwork();
+      this.network = _getNetwork();
     }
 
-    return this._network;
+    return this.network;
   };
 
   disconnect = async (): Promise<void> => {
@@ -561,7 +552,7 @@ export abstract class BaseProvider extends AbstractProvider {
       (r) => r.transactionHash
     );
 
-    const alltxHashes = [...normalTxHashes, ...(virtualHashes as `0x{string}`[])];
+    const alltxHashes = [...normalTxHashes, ...(virtualHashes as '0x{string}'[])];
 
     return {
       hash: blockHash,
@@ -1430,7 +1421,7 @@ export abstract class BaseProvider extends AbstractProvider {
         }
 
         return logger.throwArgumentError(
-          "blocktag should be number | hex string | 'latest' | 'earliest' | 'finalized' | 'safe'",
+          'blocktag should be number | hex string | \'latest\' | \'earliest\' | \'finalized\' | \'safe\'',
           'blockTag',
           blockTag
         );
@@ -1473,7 +1464,7 @@ export abstract class BaseProvider extends AbstractProvider {
           const cacheKey = `blockHash-${blockNumber.toString()}`;
 
           if (isFinalized) {
-            const cached = this._storageCache.get(cacheKey);
+            const cached = this.storageCache.get(cacheKey);
             if (cached) {
               return u8aToHex(cached);
             }
@@ -1489,7 +1480,7 @@ export abstract class BaseProvider extends AbstractProvider {
           blockHash = _blockHash.toHex();
 
           if (isFinalized) {
-            this._storageCache.set(cacheKey, _blockHash.toU8a());
+            this.storageCache.set(cacheKey, _blockHash.toU8a());
           }
         }
 
@@ -1539,7 +1530,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return isBlockFinalized
       ? blockTag
       : // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
-        logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
+      logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
@@ -1782,7 +1773,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this._cache?.getBlockNumber(txHash);
+    const targetBlockNumber = this.blockCache?.getBlockNumber(txHash);
     if (!targetBlockNumber) return null;
 
     let targetBlockHash;
@@ -1977,7 +1968,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.subql?.getIndexerMetadata();
   };
 
-  getCachInfo = (): CacheInspect | undefined => this._cache?._inspect();
+  getCachInfo = (): CacheInspect | undefined => this.blockCache?._inspect();
 
   _timeEthCalls = async (): Promise<{
     gasPriceTime: number;
@@ -1985,6 +1976,8 @@ export abstract class BaseProvider extends AbstractProvider {
     getBlockTime: number;
     getFullBlockTime: number;
   }> => {
+    const HEALTH_CHECK_BLOCK_DISTANCE = 100;
+
     const gasPricePromise = runWithTiming(async () => this.getGasPrice());
     const estimateGasPromise = runWithTiming(async () =>
       this.estimateGas({
@@ -1998,8 +1991,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // ideally pastNblock should have EVM TX
     const pastNblock =
-      this.latestFinalizedBlockNumber > this._healthCheckBlockDistance
-        ? this.latestFinalizedBlockNumber - this._healthCheckBlockDistance
+      this.latestFinalizedBlockNumber > HEALTH_CHECK_BLOCK_DISTANCE
+        ? this.latestFinalizedBlockNumber - HEALTH_CHECK_BLOCK_DISTANCE
         : this.latestFinalizedBlockNumber;
     const getBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, false));
     const getFullBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, true));
@@ -2022,8 +2015,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const cacheInfo = this.getCachInfo();
     const curFinalizedHeight = this.latestFinalizedBlockNumber;
     const listenersCount = {
-      newHead: this._listeners[SubscriptionType.NewHeads]?.length || 0,
-      logs: this._listeners[SubscriptionType.Logs]?.length || 0
+      newHead: this.eventListeners[SubscriptionType.NewHeads]?.length || 0,
+      logs: this.eventListeners[SubscriptionType.Logs]?.length || 0
     };
 
     return getHealthResult({
@@ -2054,9 +2047,9 @@ export abstract class BaseProvider extends AbstractProvider {
       });
 
     if (eventName === SubscriptionType.NewHeads) {
-      this._listeners[eventName].push({ cb: eventCallBack, id });
+      this.eventListeners[eventName].push({ cb: eventCallBack, id });
     } else if (eventName === SubscriptionType.Logs) {
-      this._listeners[eventName].push({ cb: eventCallBack, filter, id });
+      this.eventListeners[eventName].push({ cb: eventCallBack, filter, id });
     } else {
       return logger.throwError(
         `subscription type [${eventName}] is not supported, expect ${Object.values(SubscriptionType)}`,
@@ -2070,9 +2063,9 @@ export abstract class BaseProvider extends AbstractProvider {
   removeEventListener = (id: string): boolean => {
     let found = false;
     Object.values(SubscriptionType).forEach((e) => {
-      const targetIdx = this._listeners[e].findIndex((l) => l.id === id);
+      const targetIdx = this.eventListeners[e].findIndex((l) => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
-        this._listeners[e].splice(targetIdx, 1);
+        this.eventListeners[e].splice(targetIdx, 1);
         found = true;
       }
     });
@@ -2089,9 +2082,9 @@ export abstract class BaseProvider extends AbstractProvider {
     };
 
     if (filterType === PollFilterType.NewBlocks) {
-      this._pollFilters[filterType].push(baseFilter);
+      this.pollFilters[filterType].push(baseFilter);
     } else if (filterType === PollFilterType.Logs) {
-      this._pollFilters[filterType].push({
+      this.pollFilters[filterType].push({
         ...baseFilter,
         logFilter
       });
@@ -2174,8 +2167,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   poll = async (id: string, logsOnly = false): Promise<string[] | Log[]> => {
-    const logFilterInfo = this._pollFilters[PollFilterType.Logs].find((f) => f.id === id);
-    const blockFilterInfo = !logsOnly && this._pollFilters[PollFilterType.NewBlocks].find((f) => f.id === id);
+    const logFilterInfo = this.pollFilters[PollFilterType.Logs].find((f) => f.id === id);
+    const blockFilterInfo = !logsOnly && this.pollFilters[PollFilterType.NewBlocks].find((f) => f.id === id);
     const filterInfo = logFilterInfo ?? blockFilterInfo;
 
     if (!filterInfo) {
@@ -2191,9 +2184,9 @@ export abstract class BaseProvider extends AbstractProvider {
   removePollFilter = (id: string): boolean => {
     let found = false;
     Object.values(PollFilterType).forEach((f) => {
-      const targetIdx = this._pollFilters[f].findIndex((f) => f.id === id);
+      const targetIdx = this.pollFilters[f].findIndex((f) => f.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
-        this._pollFilters[f].splice(targetIdx, 1);
+        this.pollFilters[f].splice(targetIdx, 1);
         found = true;
       }
     });
