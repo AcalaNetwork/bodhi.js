@@ -8,7 +8,7 @@
   "scripts": {
     "build": "heft build --clean",
     "build:watch": "heft build",
-    "watch": "rush build:watch --to-except .",
+    "watch": "rush build:watch -t .",
     "lint": "tsc --noEmit && eslint \"**/*.ts\"",
     "test": "mocha **/*.test.ts --ignore **/e2e/**",
     "test:dev": "mocha **/*.test.ts --watch --watch-files **/*.test.ts",
