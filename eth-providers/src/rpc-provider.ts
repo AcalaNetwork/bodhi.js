@@ -10,7 +10,6 @@ export class EvmRpcProvider extends BaseProvider {
     const api = new ApiPromise(options({ provider }));
 
     this.setApi(api);
-    this.startSubscription() as unknown as void;
   }
 
   static from(endpoint: string | string[], opt?: BaseProviderOptions): EvmRpcProvider {

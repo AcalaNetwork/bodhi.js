@@ -279,10 +279,11 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly storageCache: LRUCache<string, Uint8Array | null>;
   readonly blockCache: BlockCache;
 
-  network?: Promise<Network>;
+  network?: Network | Promise<Network>;
   latestFinalizedBlockHash: string;
   latestFinalizedBlockNumber: number;
   runtimeVersion: number | undefined;
+  subscriptionStarted: boolean;
 
   constructor({
     safeMode = false,
@@ -306,10 +307,8 @@ export abstract class BaseProvider extends AbstractProvider {
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.storageCache = new LRUCache({ max: storageCacheSize });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
-
-    if (subqlUrl) {
-      this.subql = new SubqlProvider(subqlUrl);
-    }
+    this.subscriptionStarted = false;
+    this.subql = subqlUrl ? new SubqlProvider(subqlUrl): undefined;
 
     richMode && logger.warn(RICH_MODE_WARNING_MSG);
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
@@ -324,8 +323,8 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   }
 
-  startSubscription = async (): Promise<any> => {
-    await this.isReady();
+  startSubscription = async (): Promise<void> => {
+    this.subscriptionStarted = true;
 
     const subscriptionMethod = this.safeMode
       ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
@@ -444,11 +443,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   get api(): ApiPromise {
-    if (!this._api) {
-      return logger.throwError('the api needs to be set', Logger.errors.UNKNOWN_ERROR);
-    }
-
-    return this._api;
+    return this._api ?? logger.throwError('the api needs to be set', Logger.errors.UNKNOWN_ERROR);
   }
 
   get genesisHash(): string {
@@ -467,31 +462,18 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.safeMode;
   }
 
-  isReady = (): Promise<Network> => {
-    if (!this.network) {
-      const _getNetwork = async (): Promise<{
-        name: string;
-        chainId: number;
-      }> => {
-        try {
-          await this.api.isReadyOrError;
+  isReady = async (): Promise<void> => {
+    try {
+      await this.api.isReadyOrError;
+      await this.getNetwork();
 
-          const network = {
-            name: this.api.runtimeVersion.specName.toString(),
-            chainId: await this.chainId()
-          };
-
-          return network;
-        } catch (e) {
-          await this.api.disconnect();
-          throw e;
-        }
-      };
-
-      this.network = _getNetwork();
+      if (!this.subscriptionStarted) {
+        await this.startSubscription();
+      }
+    } catch (e) {
+      await this.api.disconnect();
+      throw e;
     }
-
-    return this.network;
   };
 
   disconnect = async (): Promise<void> => {
@@ -499,9 +481,14 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getNetwork = async (): Promise<Network> => {
-    const network = await this.isReady();
+    if (!this.network) {
+      this.network = {
+        name: this.api.runtimeVersion.specName.toString(),
+        chainId: await this.chainId()
+      };
+    }
 
-    return network;
+    return this.network;
   };
 
   netVersion = async (): Promise<string> => {
@@ -509,7 +496,6 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   chainId = async (): Promise<number> => {
-    await this.api.isReadyOrError;
     return this.api.consts.evmAccounts.chainId.toNumber();
   };
 
