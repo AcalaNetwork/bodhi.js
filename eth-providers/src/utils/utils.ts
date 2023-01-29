@@ -111,7 +111,7 @@ export const getHealthResult = ({
   cacheInfo,
   curFinalizedHeight,
   ethCallTiming,
-  listenersCount
+  listenersCount,
 }: HealthData): HealthResult => {
   const MAX_IDLE_TIME = 30 * 60; // half an hour
   const MAX_IDLE_BLOCKS = 50; // ~10 minutes
@@ -226,8 +226,8 @@ export const getHealthResult = ({
       ethCallTiming,
       // listeners
       // TODO: currently only print out info, no threshold check
-      listenersCount
-    }
+      listenersCount,
+    },
   };
 };
 
@@ -265,7 +265,7 @@ export const runWithTiming = async <F extends AnyFunction>(
 
   return {
     res,
-    time
+    time,
   };
 };
 

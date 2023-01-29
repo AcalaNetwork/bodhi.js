@@ -104,7 +104,7 @@ export const buildLogsGqlFilter = (filter: SanitizedLogFilter): string => {
 export const adaptLogs = (logs: LogGQL[]): Log[] =>
   logs.map((log) => ({
     ...log,
-    data: log.data || ''
+    data: log.data || '',
   }));
 
 export const LOGS_NODES = `
