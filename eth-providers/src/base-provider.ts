@@ -324,8 +324,6 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startSubscription = async (): Promise<void> => {
-    this.subscriptionStarted = true;
-
     const subscriptionMethod = this.safeMode
       ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
       : this.api.rpc.chain.subscribeNewHeads.bind(this);
@@ -468,6 +466,7 @@ export abstract class BaseProvider extends AbstractProvider {
       await this.getNetwork();
 
       if (!this.subscriptionStarted) {
+        this.subscriptionStarted = true;
         await this.startSubscription();
       }
     } catch (e) {
