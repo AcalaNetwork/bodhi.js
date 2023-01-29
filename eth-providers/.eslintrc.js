@@ -9,7 +9,13 @@ module.exports = {
     quotes: [2, 'single'],
     semi: [2, 'always'],
     'eol-last': [2, 'always'],
-    'comma-dangle': [2, 'only-multiline'],
+    'comma-dangle': [2, {
+      arrays: 'always-multiline',
+      objects: 'always-multiline',
+      imports: 'always-multiline',
+      exports: 'always-multiline',
+      functions: 'only-multiline',
+    }],
 
     /* ---------- turn off ---------- */
     '@rushstack/typedef-var': 0,
@@ -24,6 +30,6 @@ module.exports = {
     '@typescript-eslint/no-parameter-properties': 0,
     '@typescript-eslint/typedef': 0,
     'no-unused-expressions': 0, // short ciucuit if
-    'max-lines': 0
-  }
+    'max-lines': 0,
+  },
 };
