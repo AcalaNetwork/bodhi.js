@@ -9,6 +9,7 @@ module.exports = {
     quotes: [2, 'single'],
     semi: [2, 'always'],
     'eol-last': [2, 'always'],
+    'object-curly-spacing': [2, 'always'],
     'comma-dangle': [2, {
       arrays: 'always-multiline',
       objects: 'always-multiline',

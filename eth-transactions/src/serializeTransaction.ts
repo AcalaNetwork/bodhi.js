@@ -33,7 +33,7 @@ export function serializeEip712(transaction: UnsignedAcalaEvmTX, signature?: Sig
     transaction.data || '0x',
     formatNumber(transaction.validUntil || MAX_UINT256, 'validUntil'),
     formatNumber(transaction.tip || 0, 'tip'),
-    formatAccessList(transaction.accessList || [])
+    formatAccessList(transaction.accessList || []),
   ];
 
   if (signature) {
@@ -65,6 +65,6 @@ export function serializeTransaction(transaction: UnsignedAcalaEvmTX, signature?
 
   return logger.throwError(`unsupported transaction type: ${transaction.type}`, Logger.errors.UNSUPPORTED_OPERATION, {
     operation: 'serializeTransaction',
-    transactionType: transaction.type
+    transactionType: transaction.type,
   });
 }

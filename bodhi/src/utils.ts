@@ -55,7 +55,7 @@ export const getTestUtils = async (
   provider: SignerProvider;
 }> => {
   const provider = new SignerProvider({
-    provider: new WsProvider(url)
+    provider: new WsProvider(url),
   });
   await provider.isReady();
 
@@ -79,6 +79,6 @@ export const getTestUtils = async (
   return {
     wallets,
     pairs,
-    provider
+    provider,
   };
 };

@@ -119,7 +119,7 @@ export default class EthRpcServer {
   protected async baseHandler({ id, method, params }: JsonRpcRequest, ws?: WebSocket): Promise<JsonRpcResponse> {
     let res: JsonRpcResponse = {
       id: id ?? null,
-      jsonrpc: '2.0'
+      jsonrpc: '2.0',
     };
 
     if (id === null || id === undefined || !method) {
@@ -128,8 +128,8 @@ export default class EthRpcServer {
         error: new InvalidRequest({
           id: id || null,
           method: method || null,
-          params: params || null
-        }).json()
+          params: params || null,
+        }).json(),
       };
     }
 
@@ -151,7 +151,7 @@ export default class EthRpcServer {
     } else {
       res = {
         ...res,
-        ...(await routerForMethod.call(method, params as any, ws))
+        ...(await routerForMethod.call(method, params as any, ws)),
       };
     }
 
@@ -161,9 +161,9 @@ export default class EthRpcServer {
       method,
       ...(Array.isArray(params)
         ? params.reduce((c, v, i) => {
-            return { ...c, [`param_${i}`]: v };
-          }, {})
-        : params)
+          return { ...c, [`param_${i}`]: v };
+        }, {})
+        : params),
     });
 
     return res;
@@ -202,7 +202,7 @@ export default class EthRpcServer {
         JSON.stringify({
           id: null,
           jsonrpc: '2.0',
-          error: new InvalidRequest().json()
+          error: new InvalidRequest().json(),
         })
       );
 
@@ -217,7 +217,7 @@ export default class EthRpcServer {
       if (req.length > this.options.batchSize) {
         result = {
           jsonrpc: '2.0',
-          error: new BatchSizeError(this.options.batchSize, req.length).json()
+          error: new BatchSizeError(this.options.batchSize, req.length).json(),
         };
       } else {
         result = await Promise.all(req.map((r: JsonRpcRequest) => this.baseHandler(r, ws)));

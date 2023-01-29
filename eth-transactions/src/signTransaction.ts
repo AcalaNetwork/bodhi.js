@@ -15,7 +15,7 @@ export const signTransaction = (privateKey: string, tx: AcalaEvmTXPayload): stri
         payload.domain,
         {
           AccessList: payload.types.AccessList,
-          Transaction: payload.types.Transaction
+          Transaction: payload.types.Transaction,
         },
         payload.message
       )
