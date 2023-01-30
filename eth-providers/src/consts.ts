@@ -22,7 +22,7 @@ export const DUMMY_S = '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a219
 export const DUMMY_V_R_S = {
   v: DUMMY_V,
   r: DUMMY_R,
-  s: DUMMY_S
+  s: DUMMY_S,
 };
 export const DUMMY_BLOCK_NONCE = '0x0000000000000000';
 export const DUMMY_BLOCK_MIX_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000';
@@ -31,7 +31,7 @@ export const EMTPY_UNCLES = [];
 export const ERROR_PATTERN = [
   // Assume that Error is nested only once
   /execution fatal: Module\(ModuleError { index: (\d+), error: \[(\d+), 0, 0, 0\], message: None }\)/,
-  /execution fatal: Module\(ModuleError { index: (\d+), error: (\d+), message: None }\)/
+  /execution fatal: Module\(ModuleError { index: (\d+), error: (\d+), message: None }\)/,
 ];
 export const ERC20_ABI = [
   // Read-Only Functions
@@ -43,7 +43,7 @@ export const ERC20_ABI = [
   'function transfer(address to, uint amount) returns (bool)',
 
   // Events
-  'event Transfer(address indexed from, address indexed to, uint amount)'
+  'event Transfer(address indexed from, address indexed to, uint amount)',
 ];
 
 export const LOCAL_MODE_MSG = `

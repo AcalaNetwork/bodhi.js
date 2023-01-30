@@ -52,6 +52,6 @@ export class BlockCache {
     cachedBlocksCount: Object.keys(this.blockToHashes).length,
     cachedBlocks: Object.keys(this.blockToHashes),
     allBlockToHash: this.blockToHashes,
-    allHashToBlock: this.hashToBlocks
+    allHashToBlock: this.hashToBlocks,
   });
 }

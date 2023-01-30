@@ -11,12 +11,12 @@ export const buildTracerSpan = (): DataDogTracerSpan | undefined => {
   // Initialize datadog span tags
   const spanTags = span
     ? {
-        body: {},
-        enterTime: performance.now(),
-        exitTime: -1,
-        elapsedTime: -1,
-        spanRef: span
-      }
+      body: {},
+      enterTime: performance.now(),
+      exitTime: -1,
+      elapsedTime: -1,
+      spanRef: span,
+    }
     : undefined;
   return spanTags;
 };
@@ -55,5 +55,5 @@ export interface DataDogTracerSpan {
 
 export const DataDogUtil = {
   buildTracerSpan,
-  assignTracerSpan
+  assignTracerSpan,
 };

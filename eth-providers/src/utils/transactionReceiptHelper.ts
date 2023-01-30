@@ -47,7 +47,7 @@ export const getPartialLog = (evmLog: EvmLog, logIndex: number): PartialLog => {
     address: evmLog.address.toString().toLowerCase(),
     data: evmLog.data.toString().toLowerCase(),
     topics: evmLog.topics.toJSON() as any,
-    logIndex: logIndex
+    logIndex: logIndex,
   };
 };
 
@@ -80,7 +80,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     byzantium: false,
     // @TODO EIP712
     type: 0,
-    cumulativeGasUsed: BIGNUMBER_ZERO
+    cumulativeGasUsed: BIGNUMBER_ZERO,
   };
 
   switch (event.event.method) {
@@ -94,7 +94,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         gasUsed: BigNumber.from(usedGas?.toString() || 0),
         status: 1,
         logs: getPartialLogs(logs),
-        ...defaultValue
+        ...defaultValue,
       };
     }
     case 'Executed': {
@@ -107,7 +107,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         gasUsed: BigNumber.from(usedGas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 1,
-        ...defaultValue
+        ...defaultValue,
       };
     }
     case 'CreatedFailed': {
@@ -128,7 +128,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         logs: getPartialLogs(logs),
         status: 0,
         exitReason: _exitReason.toString(),
-        ...defaultValue
+        ...defaultValue,
       };
     }
     case 'ExecutedFailed': {
@@ -150,7 +150,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         status: 0,
         exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
-        ...defaultValue
+        ...defaultValue,
       };
     }
   }
@@ -229,16 +229,16 @@ export const getTransactionIndexAndHash = (
   const transactionHash = extrinsicIndex ? extrinsics[extrinsicIndex]?.hash.toHex() : undefined;
 
   if (extrinsicIndex === undefined || transactionHash === undefined || extrinsicIndex < 0) {
-    return logger.throwError(`transaction hash not found`, Logger.errors.UNKNOWN_ERROR, {
-      hashOrNumber
+    return logger.throwError('transaction hash not found', Logger.errors.UNKNOWN_ERROR, {
+      hashOrNumber,
     });
   }
 
   const transactionIndex = evmExtrinsicIndexes.findIndex((index) => index === extrinsicIndex);
 
   if (transactionIndex < 0) {
-    return logger.throwError(`expected extrinsic include evm events`, Logger.errors.UNKNOWN_ERROR, {
-      hashOrNumber
+    return logger.throwError('expected extrinsic include evm events', Logger.errors.UNKNOWN_ERROR, {
+      hashOrNumber,
     });
   }
 
@@ -248,7 +248,7 @@ export const getTransactionIndexAndHash = (
     transactionIndex,
     transactionHash,
     extrinsicIndex,
-    isExtrinsicFailed
+    isExtrinsicFailed,
   };
 };
 
@@ -274,7 +274,7 @@ export const parseExtrinsic = (
     input: '0x',
     to: null,
     nonce,
-    ...DUMMY_V_R_S // TODO: get correct VRS
+    ...DUMMY_V_R_S, // TODO: get correct VRS
   };
 
   if (extrinsic.method.section.toUpperCase() !== 'EVM') {
@@ -289,7 +289,7 @@ export const parseExtrinsic = (
     input: args.input || args.init || '0x',
     to: args.action?.call || args.target || null,
     nonce,
-    ...DUMMY_V_R_S
+    ...DUMMY_V_R_S,
   };
 };
 
@@ -365,18 +365,18 @@ export const getOrphanTxReceiptsFromEvents = (
         transactionIndex: indexOffset + i,
         transactionHash,
         blockHash,
-        blockNumber
+        blockNumber,
       };
 
       const logs = partialReceipt.logs.map((log) => ({
         ...log,
-        ...txInfo
+        ...txInfo,
       }));
 
       return {
         ...partialReceipt,
         ...txInfo,
-        logs
+        logs,
       };
     });
 

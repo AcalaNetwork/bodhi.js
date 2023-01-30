@@ -14,7 +14,7 @@ const {
   LOCAL_MODE,
   RICH_MODE,
   HTTP_ONLY,
-  VERBOSE
+  VERBOSE,
 } = process.env;
 
 export const parseBooleanOption = (option: string, defaultValue: boolean, value?: string): boolean => {
@@ -34,54 +34,54 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       default: ENDPOINT_URL ?? 'ws://localhost:9944',
       describe: 'Node websocket endpoint(s): can provide one or more endpoints, seperated by comma',
-      type: 'string'
+      type: 'string',
     },
     subqlUrl: {
       alias: 'subql',
       demandOption: false,
       default: SUBQL_URL,
       describe:
-        "Subquery url: *optional* if testing contracts locally that doesn't query logs or historical Tx, otherwise *required*",
-      type: 'string'
+        'Subquery url: *optional* if testing contracts locally that doesn\'t query logs or historical Tx, otherwise *required*',
+      type: 'string',
     },
     port: {
       alias: 'p',
       demandOption: false,
       default: Number(PORT ?? 8545),
       describe: 'port to listen for http and ws requests',
-      type: 'number'
+      type: 'number',
     },
     maxBlockCacheSize: {
       demandOption: false,
       default: Number(MAX_CACHE_SIZE ?? 200),
       describe: 'max number of blocks that lives in the cache. https://evmdocs.acala.network/network/network',
-      type: 'number'
+      type: 'number',
     },
     maxBatchSize: {
       demandOption: false,
       default: Number(MAX_BATCH_SIZE ?? 50),
       describe: 'max batch size for RPC request',
-      type: 'number'
+      type: 'number',
     },
     storageCacheSize: {
       demandOption: false,
       default: Number(STORAGE_CACHE_SIZE ?? 5000),
       describe: 'max storage cache size',
-      type: 'number'
+      type: 'number',
     },
     safeMode: {
       alias: 's',
       demandOption: false,
       default: parseBooleanOption('SAFE_MODE', false, SAFE_MODE),
       describe: 'if enabled, Tx and logs can only be found after they are finalized',
-      type: 'boolean'
+      type: 'boolean',
     },
     localMode: {
       alias: 'l',
       demandOption: false,
       default: parseBooleanOption('LOCAL_MODE', false, LOCAL_MODE),
       describe: 'enable this mode when testing with locally running instant-sealing mandala',
-      type: 'boolean'
+      type: 'boolean',
     },
     richMode: {
       alias: 'r',
@@ -89,20 +89,20 @@ export const yargsOptions = yargs(hideBin(process.argv))
       default: parseBooleanOption('RICH_MODE', false, RICH_MODE),
       describe:
         'if enabled, default gas params is big enough for most contract deployment and calls, so contract tests from traditional evm world can run unchanged. Note this mode is helpful for testing contracts, but is different than production envionment, please refer to https://evmdocs.acala.network/network/gas-parameters for more info',
-      type: 'boolean'
+      type: 'boolean',
     },
     httpOnly: {
       demandOption: false,
       default: parseBooleanOption('HTTP_ONLY', false, HTTP_ONLY),
       describe: 'only allow http requests, disable ws connections',
-      type: 'boolean'
+      type: 'boolean',
     },
     verbose: {
       alias: 'v',
       demandOption: false,
       default: parseBooleanOption('VERBOSE', true, VERBOSE),
       describe: 'print some extra info',
-      type: 'boolean'
-    }
+      type: 'boolean',
+    },
   })
   .help().argv;

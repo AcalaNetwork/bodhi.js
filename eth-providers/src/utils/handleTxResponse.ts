@@ -41,9 +41,7 @@ export function handleTxResponse(
       result.events
         .filter(({ event: { section } }): boolean => section === 'system')
         .forEach((event): void => {
-          const {
-            event: { data, method }
-          } = event;
+          const { event: { data, method } } = event;
 
           if (method === 'ExtrinsicFailed') {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -70,7 +68,7 @@ export function handleTxResponse(
 
               reject(
                 makeError(decodeMessage(exitReason, output as string), {
-                  result
+                  result,
                 })
               );
             }

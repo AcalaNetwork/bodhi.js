@@ -14,7 +14,7 @@ export const createClaimSignature = (privateKey: string, tx: ClaimPayload): stri
       _TypedDataEncoder.hash(
         payload.domain,
         {
-          Transaction: payload.types.Transaction
+          Transaction: payload.types.Transaction,
         },
         payload.message
       )

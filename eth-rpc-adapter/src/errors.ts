@@ -20,7 +20,7 @@ export class JSONRPCError extends Error {
     return {
       code: this.code,
       data: this.data,
-      message: this.message
+      message: this.message,
     };
   }
 }

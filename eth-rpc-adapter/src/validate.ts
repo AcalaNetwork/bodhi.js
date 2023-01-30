@@ -39,7 +39,7 @@ export const validateHexNumber = (value: string) => {
 
 export const validateAddress = (data: any) => {
   if (typeof data !== 'string') {
-    throw new Error(`invalid evm address, expected type String`);
+    throw new Error('invalid evm address, expected type String');
   }
 
   validateHexString(data, 40);
@@ -53,7 +53,7 @@ export const validateBlock = (data: any) => {
     } else if (data.blockHash) {
       return validateBlockHash(data.blockHash);
     } else {
-      throw new Error(`invalid eip-1898 blocktag, expected to contain blockNumber or blockHash`);
+      throw new Error('invalid eip-1898 blocktag, expected to contain blockNumber or blockHash');
     }
   }
 
@@ -62,7 +62,7 @@ export const validateBlock = (data: any) => {
   }
 
   if (typeof data !== 'string') {
-    throw new Error(`invalid block tag, expected type string, number, or eip-1898 blocktag`);
+    throw new Error('invalid block tag, expected type string, number, or eip-1898 blocktag');
   }
 
   if (!['latest', 'earliest', 'pending', 'finalized', 'safe'].includes(data)) {
@@ -76,7 +76,7 @@ export const validateTransaction = (data: any) => {
 
 export const validateBlockHash = (data: any) => {
   if (typeof data !== 'string') {
-    throw new Error(`invalid block hash, expected type String`);
+    throw new Error('invalid block hash, expected type String');
   }
 
   validateHexString(data, 64);
@@ -84,7 +84,7 @@ export const validateBlockHash = (data: any) => {
 
 export const validateTrasactionHash = (data: any) => {
   if (typeof data !== 'string') {
-    throw new Error(`invalid block hash, expected type String`);
+    throw new Error('invalid block hash, expected type String');
   }
 
   validateHexString(data, 64);
@@ -92,36 +92,36 @@ export const validateTrasactionHash = (data: any) => {
 
 export const validateFlag = (data: any) => {
   if (typeof data !== 'boolean') {
-    throw new Error(`expect a bool value`);
+    throw new Error('expect a bool value');
   }
 };
 
 export const validatePosition = (data: any) => {
   if (typeof data !== 'string') {
-    throw new Error(`invalid position, expected type String`);
+    throw new Error('invalid position, expected type String');
   }
 };
 
 export const validateTransactionData = (data: any) => {
   if (typeof data !== 'string') {
-    throw new Error(`invalid transaction data, expected type String`);
+    throw new Error('invalid transaction data, expected type String');
   }
 };
 
 export const validateObject = (data: any) => {
   if (data.constructor !== Object) {
-    throw new Error(`invalid args, expected Object`);
+    throw new Error('invalid args, expected Object');
   }
 };
 
 export const validateSubstrateGasParams = (data: any) => {
   if (data.constructor !== Object) {
-    throw new Error(`invalid args, expected Object`);
+    throw new Error('invalid args, expected Object');
   }
 
   for (const k of Object.keys(data)) {
     if (!['storageLimit', 'gasLimit', 'validUntil'].includes(k)) {
-      throw new Error(`parameter can only be 'storageLimit' | 'gasLimit' | 'validUntil'`);
+      throw new Error('parameter can only be \'storageLimit\' | \'gasLimit\' | \'validUntil\'');
     }
   }
 };

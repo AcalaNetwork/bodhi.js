@@ -30,32 +30,32 @@ export const createClaimPayload = (tx: ClaimPayload) => {
       EIP712Domain: [
         {
           name: 'name',
-          type: 'string'
+          type: 'string',
         },
         {
           name: 'version',
-          type: 'string'
+          type: 'string',
         },
         {
           name: 'chainId',
-          type: 'uint256'
+          type: 'uint256',
         },
         {
           name: 'salt',
-          type: 'bytes32'
-        }
+          type: 'bytes32',
+        },
       ],
-      Transaction: [{ name: 'substrateAddress', type: 'bytes' }]
+      Transaction: [{ name: 'substrateAddress', type: 'bytes' }],
     },
     primaryType: 'Transaction' as const,
     domain: {
       name: 'Acala EVM claim',
       version: '1',
       chainId: tx.chainId,
-      salt: hexlify(tx.salt)
+      salt: hexlify(tx.salt),
     },
     message: {
-      substrateAddress: hexlify(publicKey)
-    }
+      substrateAddress: hexlify(publicKey),
+    },
   };
 };

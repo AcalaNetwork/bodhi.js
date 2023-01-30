@@ -9,7 +9,7 @@ export const verifyTransaction = (tx: AcalaEvmTXPayload, signature: string): str
     payload.domain,
     {
       AccessList: payload.types.AccessList,
-      Transaction: payload.types.Transaction
+      Transaction: payload.types.Transaction,
     },
     payload.message,
     signature
