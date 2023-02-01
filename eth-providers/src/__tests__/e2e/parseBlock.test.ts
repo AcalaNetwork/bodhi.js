@@ -4,7 +4,7 @@ import { options } from '@acala-network/api';
 import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
 import { hexlifyRpcResult } from '../../utils';
 import { expect } from 'chai';
-import { karura1824665, karura2449983a, karura2449983b, karura2826860, karura3524761, karura3597964 } from './receipt-snapshots';
+import { karura1824665, karura2449983a, karura2449983b, karura2826860, karura2936174, karura3524761, karura3597964 } from './receipt-snapshots';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 
 interface FormatedReceipt {
@@ -96,6 +96,19 @@ describe('getAllReceiptsAtBlock', () => {
 
     expect(receipts.length).to.equal(1);
     expect(formatReceipt(receipts[0])).to.deep.equal(karura1824665);
+  });
+
+  it.concurrent('erc20 xcm - 1 xcm', async () => {
+    const blockNumber = 2936174;
+    const blockHash = await api.rpc.chain.getBlockHash(blockNumber)
+    const receipts = await getAllReceiptsAtBlock(api, blockHash.toHex());
+
+    expect(receipts.length).to.equal(1);
+    expect(formatReceipt(receipts[0])).to.deep.equal(karura2936174);
+  });
+
+  it.concurrent.skip('erc20 xcm - many xcms', async () => {
+    // didn't find any block like that yet...
   });
 });
 
