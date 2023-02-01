@@ -125,11 +125,7 @@ importers:
       '@ethersproject/providers': 5.7.2
       '@ethersproject/transactions': 5.7.0
       '@ethersproject/wallet': 5.7.0
-      '@polkadot/api': 9.10.3
-      '@polkadot/api-augment': 9.10.3
-      '@polkadot/api-derive': 9.10.3
       '@polkadot/keyring': 10.2.1
-      '@polkadot/types': 9.10.3
       '@polkadot/util': 10.2.1
       '@polkadot/util-crypto': 10.2.1
       bn.js: 5.2.0
@@ -138,6 +134,10 @@ importers:
       graphql-request: 3.6.1_graphql@16.0.1
       lru-cache: 7.8.2
     devDependencies:
+      '@polkadot/api': 9.10.3
+      '@polkadot/api-augment': 9.10.3
+      '@polkadot/api-derive': 9.10.3
+      '@polkadot/types': 9.10.3
       '@rushstack/eslint-config': 2.5.4_eslint@7.32.0+typescript@4.6.3
       '@rushstack/heft': 0.44.13
       '@sinonjs/fake-timers': 9.1.1
@@ -208,7 +208,6 @@ importers:
       '@ethersproject/bytes': 5.7.0
       '@ethersproject/logger': 5.7.0
       '@ethersproject/wallet': 5.7.0
-      '@polkadot/api': 9.10.3
       axios: 0.24.0
       body-parser: 1.19.1
       connect: 3.7.0
@@ -222,6 +221,7 @@ importers:
       '@acala-network/contracts': 4.3.4
       '@ethersproject/contracts': 5.7.0
       '@ethersproject/providers': 5.7.2
+      '@polkadot/api': 9.10.3
       '@polkadot/types': 8.1.1
       '@rushstack/eslint-config': 2.5.4_eslint@7.32.0+typescript@4.6.3
       '@rushstack/heft': 0.44.13
@@ -9465,6 +9465,18 @@ packages:
         optional: true
     dev: false
 
+  /follow-redirects/1.14.6_debug@4.3.3:
+    resolution: {integrity: sha512-fhUl5EwSJbbl8AR+uYL2KQDxLkdSjZGR36xy46AO7cOMTrCMON6Sa28FmAnC2tRTDbd/Uuzz3aJBv7EBN7JH8A==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dependencies:
+      debug: 4.3.3
+    dev: false
+
   /for-each/0.3.3:
     resolution: {integrity: sha512-jqYfLp7mo9vIyQf8ykW2v7A+2N4QjeCeI5+Dz9XraiO1ign81wjiH7Fb9vSOWvQfNtmSa4H2RoQTrrXivdUZmw==}
     dependencies:
@@ -15414,7 +15426,7 @@ packages:
     dependencies:
       command-exists: 1.2.9
       commander: 3.0.2
-      follow-redirects: 1.14.6
+      follow-redirects: 1.14.6_debug@4.3.3
       fs-extra: 0.30.0
       js-sha3: 0.8.0
       memorystream: 0.3.1
