@@ -149,18 +149,17 @@ describe('Schedule', () => {
       current_block_number = Number(await provider.api.query.system.number());
     }
 
-    // TODO: after mandala-2.12.0
-    // expect((await provider.getBalance(recurringPayment.address)).toString()).to.equal('0');
-    // expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
-    // if (!process.argv.includes('--with-ethereum-compatibility')) {
-    //   expect((await provider.getBalance(transferTo)).toString()).to.equal(
-    //     formatAmount('4_999_959_678_683_168_000_000')
-    //   );
-    //   expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_959_678_683_168'));
-    // } else {
-    //   expect((await provider.getBalance(transferTo)).toString()).to.equal(dollar.mul(5000000000).toString());
-    //   expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(5000).toString());
-    // }
+    expect((await provider.getBalance(recurringPayment.address)).toString()).to.equal('0');
+    expect((await erc20.balanceOf(recurringPayment.address)).toNumber()).to.equal(0);
+    if (!process.argv.includes('--with-ethereum-compatibility')) {
+      expect((await provider.getBalance(transferTo)).toString()).to.equal(
+        formatAmount('4_999_960_624_507_449_000_000')
+      );
+      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(formatAmount('4_999_960_624_507_449'));
+    } else {
+      expect((await provider.getBalance(transferTo)).toString()).to.equal(dollar.mul(5000000000).toString());
+      expect((await erc20.balanceOf(transferTo)).toString()).to.equal(dollar.mul(5000).toString());
+    }
   });
 
   it('works with Subscription', async () => {

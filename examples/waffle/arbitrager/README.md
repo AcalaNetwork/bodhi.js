@@ -22,7 +22,7 @@ source.
 If you prefer Docker, you need to run it and use the following command:
 
 ```
-docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-6eefbb4 --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --keep-blocks=archive --instant-sealing
+docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-b5fdedd --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --keep-blocks=archive --instant-sealing
 ```
 
 If you whish to build and run the local development network from source, you can clone the
