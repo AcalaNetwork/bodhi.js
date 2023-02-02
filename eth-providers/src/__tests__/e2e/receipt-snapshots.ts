@@ -335,12 +335,12 @@ export const acala2669090 = {
   gasUsed: '0x10479',
   logsBloom: DUMMY_LOGS_BLOOM,
   blockHash: '0x7c6b1ea4aea16929315a5d18acc16c81f888b2693866dc0657fb4124c6e61dc5',
-  transactionHash: '0x6f7c4c8aeaf8a6530b59a211d42d17a72e883f98c0805f3463883e07a7bf6aea',
+  transactionHash: '0x26ac2b5275450557127d3b70ca68efbc7f841f4103ae4884a56299ce8ee96a25',
   logs: [
     {
       transactionIndex: '0x0',
       blockNumber: '0x28ba22',
-      transactionHash: '0x6f7c4c8aeaf8a6530b59a211d42d17a72e883f98c0805f3463883e07a7bf6aea',
+      transactionHash: '0x26ac2b5275450557127d3b70ca68efbc7f841f4103ae4884a56299ce8ee96a25',
       address: '0x54a37a01cd75b616d63e0ab665bffdb0143c52ae',
       topics: [
         '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
@@ -354,7 +354,7 @@ export const acala2669090 = {
     {
       transactionIndex: '0x0',
       blockNumber: '0x28ba22',
-      transactionHash: '0x6f7c4c8aeaf8a6530b59a211d42d17a72e883f98c0805f3463883e07a7bf6aea',
+      transactionHash: '0x26ac2b5275450557127d3b70ca68efbc7f841f4103ae4884a56299ce8ee96a25',
       address: '0x54a37a01cd75b616d63e0ab665bffdb0143c52ae',
       topics: [
         '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
@@ -368,7 +368,7 @@ export const acala2669090 = {
     {
       transactionIndex: '0x0',
       blockNumber: '0x28ba22',
-      transactionHash: '0x6f7c4c8aeaf8a6530b59a211d42d17a72e883f98c0805f3463883e07a7bf6aea',
+      transactionHash: '0x26ac2b5275450557127d3b70ca68efbc7f841f4103ae4884a56299ce8ee96a25',
       address: '0x54a37a01cd75b616d63e0ab665bffdb0143c52ae',
       topics: [
         '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',

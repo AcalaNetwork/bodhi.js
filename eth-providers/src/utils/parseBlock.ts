@@ -46,10 +46,10 @@ const parseReceiptsFromBlockData = async (
     }))
     .filter(({ extrinsicEvents }) => (
       extrinsicEvents.some(isNormalEvmEvent) &&
-      !extrinsicEvents.some(isExtrinsicFailedEvent)
+      !extrinsicEvents.find(isExtrinsicFailedEvent)
     ));
 
-  const normalReceiptsPending: Promise<TransactionReceipt | null>[] = normalTxs.map(
+  const normalReceiptsPending: Promise<TransactionReceipt>[] = normalTxs.map(
     async ({ extrinsicEvents, extrinsic }, transactionIndex) => {
       const evmEvent = findEvmEvent(extrinsicEvents);
       if (!evmEvent) {
@@ -57,10 +57,6 @@ const parseReceiptsFromBlockData = async (
       }
 
       const isErc20Xcm = extrinsic.method.method.toString() === 'setValidationData';
-      const transactionHash = isErc20Xcm
-        ? getErc20XcmTxHash(extrinsic, transactionIndex)
-        : extrinsic.hash.toHex();
-
       const effectiveGasPrice = isErc20Xcm
         ? BIGNUMBER_ZERO
         : await getEffectiveGasPrice(
@@ -71,6 +67,7 @@ const parseReceiptsFromBlockData = async (
           evmEvent
         );
 
+      const transactionHash = extrinsic.hash.toHex();
       const txInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
       const partialReceipt = getPartialTransactionReceipt(evmEvent);
       const logs = partialReceipt.logs.map((log) => ({
@@ -88,8 +85,6 @@ const parseReceiptsFromBlockData = async (
   );
 
   const normalReceipts = (await Promise.all(normalReceiptsPending))
-    .filter((r): r is TransactionReceipt => r !== null);    // filter out failed extrinsic
-
   const orphanReceipts = getOrphanTxReceiptsFromEvents(
     blockEvents,
     blockHash,
@@ -102,14 +97,6 @@ const parseReceiptsFromBlockData = async (
     ...orphanReceipts,
   ];
 };
-
-const getErc20XcmTxHash = (
-  extrinsic: GenericExtrinsic<AnyTuple>,
-  transactionIndex: number
-): string => keccak256([
-  ...extrinsic.hash.toU8a(),
-  ...nToU8a(transactionIndex),
-]);
 
 const extractTargetEvents = (
   allEvents: FrameSystemEventRecord[],
