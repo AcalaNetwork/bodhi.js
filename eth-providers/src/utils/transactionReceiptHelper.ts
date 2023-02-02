@@ -9,7 +9,6 @@ import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason, RuntimeDispatchInfoV2 } from '@polkadot/types/interfaces/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
-import { Vec } from '@polkadot/types';
 import { hexToU8a, nToU8a } from '@polkadot/util';
 import { BIGNUMBER_ONE, BIGNUMBER_ZERO, DUMMY_V_R_S } from '../consts';
 import { logger } from './logger';
@@ -351,7 +350,7 @@ const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof n
 };
 
 export const getOrphanTxReceiptsFromEvents = (
-  events: Vec<FrameSystemEventRecord>,
+  events: FrameSystemEventRecord[],
   blockHash: string,
   blockNumber: number,
   indexOffset: number
