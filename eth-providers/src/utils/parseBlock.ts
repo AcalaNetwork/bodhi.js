@@ -1,5 +1,4 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
-import { keccak256 } from '@ethersproject/keccak256';
 import { Formatter } from '@ethersproject/providers';
 import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';
@@ -7,7 +6,6 @@ import { GenericExtrinsic } from '@polkadot/types';
 import { RuntimeDispatchInfoV1, RuntimeDispatchInfoV2, DispatchInfo, EventRecord, SignedBlock } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord, FrameSupportDispatchDispatchInfo } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
-import { nToU8a } from '@polkadot/util';
 import { BigNumber } from 'ethers';
 import { BIGNUMBER_ZERO } from 'src/consts';
 import { findEvmEvent, getPartialTransactionReceipt, getOrphanTxReceiptsFromEvents } from './transactionReceiptHelper';
