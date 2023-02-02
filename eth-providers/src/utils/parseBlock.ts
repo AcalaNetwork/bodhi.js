@@ -32,10 +32,12 @@ const parseReceiptsFromBlockData = async (
   block: SignedBlock,
   blockEvents: FrameSystemEventRecord[],
 ): Promise<TransactionReceipt[]> => {
-  const blockNumber = block.block.header.number.toNumber();
-  const blockHash = block.block.header.hash.toHex();
-
   const formatter = new Formatter();
+
+  const { header } = block.block;
+  const blockNumber = header.number.toNumber();
+  const blockHash = header.hash.toHex();
+  const _apiAtParentBlock = api.at(header.parentHash);   // don't wait here in case not being used
 
   const normalTxs = block.block.extrinsics
     .map((extrinsic, idx) => ({
@@ -44,18 +46,14 @@ const parseReceiptsFromBlockData = async (
     }))
     .filter(({ extrinsicEvents }) => extrinsicEvents.some(isNormalEvmEvent));
 
-  const parentHash = block.block.header.parentHash;
-  const _apiAtParentBlock = api.at(parentHash);   // don't wait here in case not being used
-
-  const normalReceipts: Promise<TransactionReceipt>[] = normalTxs.map(
+  const normalReceiptsPending: Promise<TransactionReceipt | null>[] = normalTxs.map(
     async ({ extrinsicEvents, extrinsic }, transactionIndex) => {
-      const failedEvent = extrinsicEvents.find(
+      const extrinsicFailed = extrinsicEvents.some(
         event => event.event.method === 'ExtrinsicFailed'
       );
 
-      if (failedEvent) {
-        // TODO: deal with failed event
-        // maybe just ignore this tx?
+      if (extrinsicFailed) {
+        return null;
       }
 
       const evmEvent = findEvmEvent(extrinsicEvents);
@@ -94,6 +92,9 @@ const parseReceiptsFromBlockData = async (
     }
   );
 
+  const normalReceipts = (await Promise.all(normalReceiptsPending))
+    .filter((r): r is TransactionReceipt => r !== null);    // filter out failed extrinsic
+
   const orphanReceipts = getOrphanTxReceiptsFromEvents(
     blockEvents,
     blockHash,
@@ -102,7 +103,7 @@ const parseReceiptsFromBlockData = async (
   );
 
   return [
-    ...(await Promise.all(normalReceipts)),
+    ...normalReceipts,
     ...orphanReceipts,
   ];
 };

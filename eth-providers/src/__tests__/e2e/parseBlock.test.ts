@@ -174,11 +174,16 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      console.log(JSON.stringify(receipts, null, 2));
       expect(receipts[0]).to.deep.equal(acala2669090);
     });
 
     it.skip('multiple xcms', async () => {
+      // didn't find any block like this yet...
+    });
+  });
+
+  describe.concurrent('other types', () => {
+    it.skip('failed EVM extrinsic', async () => {
       // didn't find any block like this yet...
     });
   });
