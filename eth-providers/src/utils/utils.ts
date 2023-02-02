@@ -345,3 +345,7 @@ export const isTxFeeEvent = (event: FrameSystemEventRecord): boolean => (
 export const isExtrinsicFailedEvent = (event: FrameSystemEventRecord): boolean => (
   event.event.method === 'ExtrinsicFailed'
 );
+
+export const isExtrinsicSuccessEvent = (event: FrameSystemEventRecord): boolean => (
+  event.event.method === 'ExtrinsicSuccess'
+);

@@ -9,7 +9,7 @@ import { AnyTuple } from '@polkadot/types/types';
 import { BigNumber } from 'ethers';
 import { BIGNUMBER_ZERO } from 'src/consts';
 import { findEvmEvent, getPartialTransactionReceipt, getOrphanTxReceiptsFromEvents } from './transactionReceiptHelper';
-import { isExtrinsicFailedEvent, isNormalEvmEvent, isTxFeeEvent, nativeToEthDecimal } from './utils';
+import { isExtrinsicFailedEvent, isExtrinsicSuccessEvent, isNormalEvmEvent, isTxFeeEvent, nativeToEthDecimal } from './utils';
 
 export const getAllReceiptsAtBlock = async (
   api: ApiPromise,
@@ -118,21 +118,23 @@ const getEffectiveGasPrice = async (
     // [who, actualFee, actualTip, actualSurplus]
     nativeTxFee = BigNumber.from(txFeeEvent.event.data[1].toString());
   } else {
-    const systemEvent = extrinsicEvents.find(
-      event => event.event.method === 'ExtrinsicSuccess'
-    );
-    if (!systemEvent) {
-      throw new Error('cannot find system event');
-    }
-
     const u8a = extrinsic.toU8a();
     const apiAtParentBlock = await _apiAtParentBlock;
 
-    const dispatchInfo = systemEvent.event.data[0] as FrameSupportDispatchDispatchInfo | DispatchInfo;
+    const successEvent = extrinsicEvents.find(isExtrinsicSuccessEvent);
+    if (!successEvent) {
+      throw new Error(`cannot find extrinsic success event: ${JSON.stringify(extrinsicEvents)}`);
+    }
+
+    const dispatchInfo = successEvent.event.data[0] as
+      FrameSupportDispatchDispatchInfo | DispatchInfo;
+
     const actualWeight =
-      (dispatchInfo as FrameSupportDispatchDispatchInfo).weight.refTime ?? (dispatchInfo as DispatchInfo).weight;
+      (dispatchInfo as FrameSupportDispatchDispatchInfo).weight.refTime
+      ?? (dispatchInfo as DispatchInfo).weight;
 
     const paymentInfo = await apiAtParentBlock.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(u8a, u8a.length);
+
     const estimatedWeight =
       (paymentInfo as RuntimeDispatchInfoV2).weight.refTime ??
       (paymentInfo as RuntimeDispatchInfoV1).weight;
@@ -144,7 +146,7 @@ const getEffectiveGasPrice = async (
     nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
   }
 
-  let txFee = nativeToEthDecimal(nativeTxFee, 12);
+  let txFee = nativeToEthDecimal(nativeTxFee);
 
   const eventData = evmEvent.event.data;
   const usedGas = BigNumber.from(eventData[eventData.length - 2].toString());
