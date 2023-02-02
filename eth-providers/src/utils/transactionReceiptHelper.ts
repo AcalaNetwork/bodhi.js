@@ -9,6 +9,7 @@ import type { EventRecord } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason, RuntimeDispatchInfoV2 } from '@polkadot/types/interfaces/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
+import { Vec } from '@polkadot/types';
 import { hexToU8a, nToU8a } from '@polkadot/util';
 import { BIGNUMBER_ONE, BIGNUMBER_ZERO, DUMMY_V_R_S } from '../consts';
 import { logger } from './logger';
@@ -344,8 +345,13 @@ export const getEffectiveGasPrice = async (
   return txFee.div(usedGas);
 };
 
+// a simulation of nToU8a from @polkadot/api@8
+const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof nToU8a> => {
+  return params[0] === 0 ? new Uint8Array() : nToU8a(...params);
+};
+
 export const getOrphanTxReceiptsFromEvents = (
-  events: FrameSystemEventRecord[],
+  events: Vec<FrameSystemEventRecord>,
   blockHash: string,
   blockNumber: number,
   indexOffset: number
@@ -354,7 +360,7 @@ export const getOrphanTxReceiptsFromEvents = (
     .filter(isOrphanEvmEvent)
     .map(getPartialTransactionReceipt)
     .map((partialReceipt, i) => {
-      const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8a(i)]);
+      const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8aLegacy(i)]);
       const txInfo = {
         transactionIndex: indexOffset + i,
         transactionHash,
