@@ -169,7 +169,7 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       expect(receipts[0]).to.deep.equal(karura2936174);
     });
 
-    it.only('with some other random txs in the block', async () => {
+    it('with some other random txs in the block', async () => {
       const blockNumber = 2669090;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
