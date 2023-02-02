@@ -74,12 +74,6 @@ export const promiseWithTimeout = <T = any>(value: any, interval = 1000): Promis
     });
 };
 
-export const isEvmExtrinsic = (e: Extrinsic): boolean => e.method.section.toLowerCase() === 'evm';
-export const isEvmEvent = (e: FrameSystemEventRecord): boolean =>
-  e.event.section.toLowerCase() === 'evm' &&
-  ['Created', 'Executed', 'CreatedFailed', 'ExecutedFailed'].includes(e.event.method);
-export const isOrphanEvmEvent = (e: FrameSystemEventRecord): boolean => isEvmEvent(e) && !e.phase.isApplyExtrinsic;
-
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,
   args: any[] = [],
@@ -322,3 +316,28 @@ export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
     throw err;
   }
 };
+
+export const isEvmExtrinsic = (e: Extrinsic): boolean => e.method.section.toLowerCase() === 'evm';
+
+export const isEvmEvent = (e: FrameSystemEventRecord): boolean => (
+  e.event.section.toLowerCase() === 'evm' &&
+  [
+    'Created',
+    'Executed',
+    'CreatedFailed',
+    'ExecutedFailed',
+  ].includes(e.event.method)
+);
+
+export const isNormalEvmEvent = (event: FrameSystemEventRecord): boolean => (
+  isEvmEvent(event) && event.phase.isApplyExtrinsic
+);
+
+export const isOrphanEvmEvent = (event: FrameSystemEventRecord): boolean => (
+  isEvmEvent(event) && !event.phase.isApplyExtrinsic
+);
+
+export const isTxFeeEvent = (event: FrameSystemEventRecord): boolean => (
+  event.event.section.toUpperCase() === 'TRANSACTIONPAYMENT' &&
+  event.event.method === 'TransactionFeePaid'
+);
