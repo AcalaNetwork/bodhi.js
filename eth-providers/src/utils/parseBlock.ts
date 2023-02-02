@@ -133,14 +133,18 @@ const getEffectiveGasPrice = async (
       (dispatchInfo as FrameSupportDispatchDispatchInfo).weight.refTime
       ?? (dispatchInfo as DispatchInfo).weight;
 
-    const paymentInfo = await apiAtParentBlock.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(u8a, u8a.length);
+    const [paymentInfo, feeDetails] = await Promise.all([
+      apiAtParentBlock.call.transactionPaymentApi
+        .queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(u8a, u8a.length),
+      apiAtParentBlock.call.transactionPaymentApi
+        .queryFeeDetails(u8a, u8a.length),
+    ]);
 
     const estimatedWeight =
       (paymentInfo as RuntimeDispatchInfoV2).weight.refTime ??
       (paymentInfo as RuntimeDispatchInfoV1).weight;
 
-    const { inclusionFee } = await apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
-    const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
+    const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
 
     const weightFee = (adjustedWeightFee.toBigInt() * actualWeight.toBigInt()) / estimatedWeight.toBigInt();
     nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
