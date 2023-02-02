@@ -84,7 +84,7 @@ const parseReceiptsFromBlockData = async (
     }
   );
 
-  const normalReceipts = (await Promise.all(normalReceiptsPending))
+  const normalReceipts = (await Promise.all(normalReceiptsPending));
   const orphanReceipts = getOrphanTxReceiptsFromEvents(
     blockEvents,
     blockHash,
