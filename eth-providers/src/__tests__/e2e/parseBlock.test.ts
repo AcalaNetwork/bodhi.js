@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, it, test } from 'vitest';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { options } from '@acala-network/api';
 import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
@@ -41,7 +41,7 @@ const getAllReceiptsAtBlockNumber = async (
   api: ApiPromise,
   blockNumber: number,
 ) => {
-  const blockHash = await api.rpc.chain.getBlockHash(blockNumber)
+  const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
   const receipts = await getAllReceiptsAtBlock(api, blockHash.toHex());
 
   return receipts.map(formatReceipt);
@@ -57,11 +57,11 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
     const ACALA_NODE_URL = 'wss://acala-rpc-1.aca-api.network';
 
     apiK = new ApiPromise(options({
-      provider: new WsProvider(KARURA_NODE_URL)
+      provider: new WsProvider(KARURA_NODE_URL),
     }));
 
     apiA = new ApiPromise(options({
-      provider: new WsProvider(ACALA_NODE_URL)
+      provider: new WsProvider(ACALA_NODE_URL),
     }));
 
     await apiK.isReady;
@@ -75,7 +75,7 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   afterAll(() => {
     apiK.disconnect();
     apiA.disconnect();
-  })
+  });
 
   describe.concurrent('transfer kar', async () => {
     it('basic one', async () => {
@@ -85,7 +85,7 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       expect(receipts.length).to.equal(1);
       expect(receipts[0]).to.deep.equal(karura3607973);
     });
-  })
+  });
 
   describe.concurrent('contract creation', () => {
     it('basic one', async () => {
