@@ -11,7 +11,7 @@ import { nToU8a } from '@polkadot/util';
 import { BigNumber } from 'ethers';
 import { BIGNUMBER_ZERO } from 'src/consts';
 import { findEvmEvent, getPartialTransactionReceipt, getOrphanTxReceiptsFromEvents } from './transactionReceiptHelper';
-import { isNormalEvmEvent, isTxFeeEvent, nativeToEthDecimal } from './utils';
+import { isExtrinsicFailedEvent, isNormalEvmEvent, isTxFeeEvent, nativeToEthDecimal } from './utils';
 
 export const getAllReceiptsAtBlock = async (
   api: ApiPromise,
@@ -44,21 +44,16 @@ const parseReceiptsFromBlockData = async (
       extrinsic,
       extrinsicEvents: extractTargetEvents(blockEvents, idx),
     }))
-    .filter(({ extrinsicEvents }) => extrinsicEvents.some(isNormalEvmEvent));
+    .filter(({ extrinsicEvents }) => (
+      extrinsicEvents.some(isNormalEvmEvent) &&
+      !extrinsicEvents.some(isExtrinsicFailedEvent)
+    ));
 
   const normalReceiptsPending: Promise<TransactionReceipt | null>[] = normalTxs.map(
     async ({ extrinsicEvents, extrinsic }, transactionIndex) => {
-      const extrinsicFailed = extrinsicEvents.some(
-        event => event.event.method === 'ExtrinsicFailed'
-      );
-
-      if (extrinsicFailed) {
-        return null;
-      }
-
       const evmEvent = findEvmEvent(extrinsicEvents);
       if (!evmEvent) {
-        throw new Error('cannot find evmEvent');
+        throw new Error(`cannot find evmEvent: ${JSON.stringify(extrinsicEvents)}`);
       }
 
       const isErc20Xcm = extrinsic.method.method.toString() === 'setValidationData';

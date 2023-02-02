@@ -341,3 +341,7 @@ export const isTxFeeEvent = (event: FrameSystemEventRecord): boolean => (
   event.event.section.toUpperCase() === 'TRANSACTIONPAYMENT' &&
   event.event.method === 'TransactionFeePaid'
 );
+
+export const isExtrinsicFailedEvent = (event: FrameSystemEventRecord): boolean => (
+  event.event.method === 'ExtrinsicFailed'
+);
