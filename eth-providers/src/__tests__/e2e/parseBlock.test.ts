@@ -4,7 +4,7 @@ import { options } from '@acala-network/api';
 import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
 import { hexlifyRpcResult } from '../../utils';
 import { expect } from 'chai';
-import { acala1102030a, acala1102030b, acala1555311a, acala1555311b, acala1563383, karura1824665, karura2449983a, karura2449983b, acala2669090, karura2826860, karura2936174, karura3524761, karura3597964, karura3607973 } from './receipt-snapshots';
+import { acala1102030a, acala1102030b, acala1555311a, acala1555311b, acala1563383, karura1824665, karura2449983a, karura2449983b, acala2669090, karura2826860, karura2936174, karura3524761, karura3597964, karura3607973, acala2859806 } from './receipt-snapshots';
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 interface FormatedReceipt {
@@ -177,8 +177,13 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       expect(receipts[0]).to.deep.equal(acala2669090);
     });
 
-    it.skip('multiple xcms', async () => {
-      // didn't find any block like this yet...
+    it('multiple xcms', async () => {
+      const blockNumber = 2859806;
+      const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
+
+      console.log(JSON.stringify(receipts, null, 2));
+      expect(receipts.length).to.equal(1);
+      expect(receipts[0]).to.deep.equal(acala2859806);
     });
   });
 
