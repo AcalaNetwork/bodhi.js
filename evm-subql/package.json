@@ -22,7 +22,7 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@acala-network/eth-providers": "~2.5.15"
+    "@acala-network/eth-providers": "~2.5.17"
   },
   "devDependencies": {
     "@subql/cli": "~1.10.0",
