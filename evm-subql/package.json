@@ -12,8 +12,8 @@
     "index": "subql-node -f ./project.yaml --batch-size 30 --db-schema acala_evm --log-level debug --port 3000 --unsafe --disable-historical",
     "query": "PORT=3001 subql-query --name acala_evm --playground --indexer=http://localhost:3000 --debug"
   },
-  "homepage": "https://github.com/subquery/subql-starter",
-  "repository": "github:subquery/subql-starter",
+  "homepage": "https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql",
+  "repository": "https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql",
   "files": [
     "dist",
     "schema.graphql",
@@ -22,11 +22,14 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@acala-network/eth-providers": "~2.5.12"
+    "@acala-network/eth-providers": "~2.5.15"
   },
   "devDependencies": {
     "@subql/cli": "~1.10.0",
     "@subql/types": "~1.7.0",
+    "@typescript-eslint/eslint-plugin": "^5.48.0",
+    "@typescript-eslint/parser": "^5.48.0",
+    "eslint": "^8.31.0",
     "pino": "~7.0.0-rc.3",
     "tslib": "~2.3.1",
     "typescript": "~4.6.3"
