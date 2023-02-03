@@ -35,6 +35,7 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
         transactionIndex,
         blockNumber,
         logIndex: BigInt(log.logIndex),
+        removed: false,   // this field was removed by formatter.receipt...
       }).save();
     }
   }
