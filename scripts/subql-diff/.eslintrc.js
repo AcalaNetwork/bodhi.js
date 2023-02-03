@@ -18,9 +18,16 @@ module.exports = {
     indent: [2, 2, { SwitchCase: 1 }],
     quotes: [2, 'single'],
     semi: [2, 'always'],
-    'object-curly-spacing': [2, 'always'],
+    'quote-props': [2, 'as-needed'],
     'eol-last': [2, 'always'],
-    'comma-dangle': [2, 'always-multiline'],
+    'object-curly-spacing': [2, 'always'],
+    'comma-dangle': [2, {
+      arrays: 'always-multiline',
+      objects: 'always-multiline',
+      imports: 'always-multiline',
+      exports: 'always-multiline',
+      functions: 'only-multiline',
+    }],
 
     /* ---------- turn off ---------- */
     '@typescript-eslint/no-extra-semi': 0,
@@ -33,5 +40,6 @@ module.exports = {
     '@typescript-eslint/no-parameter-properties': 0,
     '@typescript-eslint/typedef': 0,
     'no-unused-expressions': 0, // short ciucuit if
+    'max-lines': 0,
   },
 };

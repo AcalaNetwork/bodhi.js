@@ -7,6 +7,7 @@ module.exports = {
   rules: {
     indent: [2, 2, { SwitchCase: 1 }],
     quotes: [2, 'single'],
+    'quote-props': [2, 'as-needed'],
     semi: [2, 'always'],
     'eol-last': [2, 'always'],
     'object-curly-spacing': [2, 'always'],
