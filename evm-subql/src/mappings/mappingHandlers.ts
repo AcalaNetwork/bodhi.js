@@ -27,16 +27,14 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
       blockNumber,
     }).save();
 
-    for (const log of receipt.logs) {
-      await Log.create({
-        ...log,
-        id: `${receiptId}-${log.logIndex}`,
-        receiptId,
-        transactionIndex,
-        blockNumber,
-        logIndex: BigInt(log.logIndex),
-        removed: false,   // this field was removed by formatter.receipt...
-      }).save();
-    }
+    await store.bulkCreate('Log', receipt.logs.map(log => ({
+      ...log,
+      id: `${receiptId}-${log.logIndex}`,
+      receiptId,
+      transactionIndex,
+      blockNumber,
+      logIndex: BigInt(log.logIndex),
+      removed: false,   // this field was removed by formatter.receipt...
+    })));
   }
 };
