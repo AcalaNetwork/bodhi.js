@@ -1,3 +1,4 @@
+import '@polkadot/api-augment';
 import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/lib/utils';
 import { SubstrateBlock } from '@subql/types';
 import { Log, TransactionReceipt } from '../types';
