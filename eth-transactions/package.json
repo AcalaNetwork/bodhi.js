@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-transactions",
-  "version": "2.5.15",
+  "version": "2.5.16",
   "main": "lib/index.js",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
