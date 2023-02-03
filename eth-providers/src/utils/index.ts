@@ -7,3 +7,4 @@ export * from './transactionHelper';
 export * from './logs';
 export * from './hexlifyRpcResult';
 export * from './utils';
+export * from './parseBlock';

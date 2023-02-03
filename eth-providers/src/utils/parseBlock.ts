@@ -25,7 +25,7 @@ export const getAllReceiptsAtBlock = async (
   return parseReceiptsFromBlockData(api, block, blockEvents);
 };
 
-const parseReceiptsFromBlockData = async (
+export const parseReceiptsFromBlockData = async (
   api: ApiPromise,
   block: SignedBlock,
   blockEvents: FrameSystemEventRecord[],
