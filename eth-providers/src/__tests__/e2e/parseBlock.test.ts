@@ -181,7 +181,6 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       const blockNumber = 2859806;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
-      console.log(JSON.stringify(receipts, null, 2));
       expect(receipts.length).to.equal(1);
       expect(receipts[0]).to.deep.equal(acala2859806);
     });
