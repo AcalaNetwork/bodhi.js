@@ -40,6 +40,6 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
     }));
   });
 
-  await store.bulkCreate('Receipt', receiptEntities);
+  await store.bulkCreate('TransactionReceipt', receiptEntities);
   await store.bulkCreate('Log', logEntities);
 };
