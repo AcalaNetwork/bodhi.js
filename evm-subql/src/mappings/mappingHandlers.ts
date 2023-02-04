@@ -28,7 +28,7 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
       transactionIndex,
       blockNumber,
     });
-  
+
     receipt.logs.forEach(log => logEntities.push({
       ...log,
       id: `${receiptId}-${log.logIndex}`,

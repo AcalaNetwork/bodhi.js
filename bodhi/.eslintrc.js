@@ -8,6 +8,7 @@ module.exports = {
     indent: [2, 2, { SwitchCase: 1 }],
     quotes: [2, 'single'],
     semi: [2, 'always'],
+    'no-trailing-spaces': [2],
     'quote-props': [2, 'as-needed'],
     'eol-last': [2, 'always'],
     'object-curly-spacing': [2, 'always'],
@@ -20,8 +21,6 @@ module.exports = {
     }],
 
     /* ---------- turn off ---------- */
-    '@rushstack/typedef-var': 0,
-    '@rushstack/no-new-null': 0, // can use null as return type
     '@typescript-eslint/no-extra-semi': 0,
     '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/explicit-member-accessibility': 0,
