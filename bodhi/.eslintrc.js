@@ -21,6 +21,8 @@ module.exports = {
     }],
 
     /* ---------- turn off ---------- */
+    '@rushstack/typedef-var': 0,
+    '@rushstack/no-new-null': 0, // can use null as return type
     '@typescript-eslint/no-extra-semi': 0,
     '@typescript-eslint/no-use-before-define': 0,
     '@typescript-eslint/explicit-member-accessibility': 0,
