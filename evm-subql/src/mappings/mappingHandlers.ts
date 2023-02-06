@@ -1,7 +1,6 @@
 import '@polkadot/api-augment';
 import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/lib/utils';
 import { SubstrateBlock } from '@subql/types';
-import { Log, TransactionReceipt } from '../types';
 
 export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void> => {
   const receipts = await parseReceiptsFromBlockData(
@@ -10,12 +9,15 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
     substrateBlock.events,
   );
 
-  for (const [idx, receipt] of receipts.entries()) {
+  const blockNumber = substrateBlock.block.header.number.toBigInt();
+  const receiptEntities = [];
+  const logEntities = [];
+
+  receipts.forEach((receipt, idx) => {
     const receiptId = `${receipt.blockNumber.toString()}-${idx}`;
     const transactionIndex = BigInt(receipt.transactionIndex);
-    const blockNumber = BigInt(receipt.blockNumber);
-  
-    await TransactionReceipt.create({
+
+    receiptEntities.push({
       ...receipt,
       id: receiptId,
       gasUsed: receipt.gasUsed.toBigInt(),
@@ -25,9 +27,9 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
       status: BigInt(receipt.status),
       transactionIndex,
       blockNumber,
-    }).save();
+    });
 
-    await store.bulkCreate('Log', receipt.logs.map(log => ({
+    receipt.logs.forEach(log => logEntities.push({
       ...log,
       id: `${receiptId}-${log.logIndex}`,
       receiptId,
@@ -35,6 +37,11 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
       blockNumber,
       logIndex: BigInt(log.logIndex),
       removed: false,   // this field was removed by formatter.receipt...
-    })));
-  }
+    }));
+  });
+
+  await Promise.all([
+    store.bulkCreate('TransactionReceipt', receiptEntities),
+    store.bulkCreate('Log', logEntities),
+  ]);
 };
