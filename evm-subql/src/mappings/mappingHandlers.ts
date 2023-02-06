@@ -10,6 +10,7 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
   );
 
   const blockNumber = substrateBlock.block.header.number.toBigInt();
+  const timestamp = substrateBlock.timestamp;
   const receiptEntities = [];
   const logEntities = [];
 
@@ -27,6 +28,7 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
       status: BigInt(receipt.status),
       transactionIndex,
       blockNumber,
+      timestamp,
     });
 
     receipt.logs.forEach(log => logEntities.push({
@@ -35,6 +37,7 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
       receiptId,
       transactionIndex,
       blockNumber,
+      timestamp,
       logIndex: BigInt(log.logIndex),
       removed: false,   // this field was removed by formatter.receipt...
     }));
