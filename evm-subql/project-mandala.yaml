@@ -17,7 +17,7 @@ network:
   chainId: '0x23fc729c2cdb7bd6770a4e8c58748387cc715fcf338f1f74a16833d90383f4b0'
   endpoint: wss://mandala-rpc.aca-staging.network/ws
   chaintypes:
-    file: ./types.json
+    file: ./dist/chain-types.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1

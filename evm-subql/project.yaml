@@ -18,7 +18,7 @@ network:
   endpoint: ws://localhost:9944
   chaintypes:
     # TODO: can generate this dynamically with `yarn build` using `@acala-network/types`
-    file: ./types.json
+    file: ./dist/chain-types.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1
