@@ -17,7 +17,7 @@ network:
   chainId: '0xd5f7c90bd50e61d833e3f0836b0f3e1503054200ef5aa32856f8da5ce1213b01'
   endpoint: wss://karura-dev.aca-dev.network/rpc/ws
   chaintypes:
-    file: ./types.json
+    file: ./dist/chain-types.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1
