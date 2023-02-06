@@ -14,7 +14,7 @@ import { FrameSystemEventRecord, FrameSupportDispatchDispatchInfo } from '@polka
 import { AnyTuple } from '@polkadot/types/types';
 import { BigNumber } from 'ethers';
 import { BIGNUMBER_ZERO } from '../consts';
-import { findEvmEvent, getPartialTransactionReceipt, getOrphanTxReceiptsFromEvents } from './transactionReceiptHelper';
+import { findEvmEvent, getPartialTransactionReceipt, getOrphanTxReceiptsFromEvents, fullReceiptFormatter, FullReceipt } from './transactionReceiptHelper';
 import {
   isExtrinsicFailedEvent,
   isExtrinsicSuccessEvent,
@@ -23,7 +23,7 @@ import {
   nativeToEthDecimal,
 } from './utils';
 
-export const getAllReceiptsAtBlock = async (api: ApiPromise, blockHash: string): Promise<TransactionReceipt[]> => {
+export const getAllReceiptsAtBlock = async (api: ApiPromise, blockHash: string): Promise<FullReceipt[]> => {
   const apiAtTargetBlock = await api.at(blockHash);
 
   const [block, blockEvents] = await Promise.all([
@@ -38,9 +38,7 @@ export const parseReceiptsFromBlockData = async (
   api: ApiPromise,
   block: SignedBlock,
   blockEvents: FrameSystemEventRecord[]
-): Promise<TransactionReceipt[]> => {
-  const formatter = new Formatter();
-
+): Promise<FullReceipt[]> => {
   const { header } = block.block;
   const blockNumber = header.number.toNumber();
   const blockHash = header.hash.toHex();
@@ -55,7 +53,7 @@ export const parseReceiptsFromBlockData = async (
       ({ extrinsicEvents }) => extrinsicEvents.some(isNormalEvmEvent) && !extrinsicEvents.find(isExtrinsicFailedEvent)
     );
 
-  const normalReceiptsPending: Promise<TransactionReceipt>[] = normalTxs.map(
+  const normalReceiptsPending: Promise<FullReceipt>[] = normalTxs.map(
     async ({ extrinsicEvents, extrinsic }, transactionIndex) => {
       const evmEvent = findEvmEvent(extrinsicEvents);
       if (!evmEvent) {
@@ -75,7 +73,7 @@ export const parseReceiptsFromBlockData = async (
         ...log,
       }));
 
-      return formatter.receipt({
+      return Formatter.check(fullReceiptFormatter, {
         effectiveGasPrice,
         ...txInfo,
         ...partialReceipt,
@@ -87,7 +85,10 @@ export const parseReceiptsFromBlockData = async (
   const normalReceipts = await Promise.all(normalReceiptsPending);
   const orphanReceipts = getOrphanTxReceiptsFromEvents(blockEvents, blockHash, blockNumber, normalReceipts.length);
 
-  return [...normalReceipts, ...orphanReceipts];
+  return [
+    ...normalReceipts,
+    ...orphanReceipts,
+  ];
 };
 
 const extractTargetEvents = (allEvents: FrameSystemEventRecord[], targetIdx: number): FrameSystemEventRecord[] =>
