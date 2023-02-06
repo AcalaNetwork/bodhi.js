@@ -40,6 +40,10 @@ export interface ExtrinsicMethodJSON {
   };
 }
 
+export interface FullReceipt extends TransactionReceipt {
+  exitReason?: string,
+};
+
 export const getPartialLog = (evmLog: EvmLog, logIndex: number): PartialLog => {
   return {
     removed: false,
@@ -349,12 +353,18 @@ const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof n
   return params[0] === 0 ? new Uint8Array() : nToU8a(...params);
 };
 
+const formatter = new Formatter();
+export const fullReceiptFormatter = {
+  ...formatter.formats.receipt,
+  exitReason: (x: any) => x,
+};
+
 export const getOrphanTxReceiptsFromEvents = (
   events: FrameSystemEventRecord[],
   blockHash: string,
   blockNumber: number,
   indexOffset: number
-): TransactionReceipt[] => {
+): FullReceipt[] => {
   const receipts = events
     .filter(isOrphanEvmEvent)
     .map(getPartialTransactionReceipt)
@@ -380,6 +390,5 @@ export const getOrphanTxReceiptsFromEvents = (
       };
     });
 
-  const formatter = new Formatter();
-  return receipts.map(formatter.receipt.bind(formatter));
+  return receipts.map(receipt => Formatter.check(fullReceiptFormatter, receipt));
 };
