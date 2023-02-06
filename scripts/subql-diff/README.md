@@ -3,14 +3,16 @@ Compares two copies of subquery data, and find out extra/missing/diff records.
 
 ### options
 ```
-    --version      Show version number                               [boolean]
-    --file1, --f1  first csv file to compare               [string] [required]
-    --file2, --f2  second csv file to compare              [string] [required]
--s, --startBlock   start block of interest                            [number]
--e, --endBlock     end block of interest                              [number]
--f, --full         show full result                 [boolean] [default: false]
--o, --outFile      save result to output file                         [string]
-    --help         Show help                                         [boolean]
+    --version        Show version number                             [boolean]
+    --file1, --f1    first csv file to compare             [string] [required]
+    --file2, --f2    second csv file to compare            [string] [required]
+-s, --startBlock     start block of interest                          [number]
+-e, --endBlock       end block of interest                            [number]
+-f, --full           show full result               [boolean] [default: false]
+-c, --caseSensitive  caseSensitive for addresses compare
+                                                    [boolean] [default: false]
+-o, --outFile        save result to output file                       [string]
+    --help           Show help                                       [boolean]
 ```
 
 ### run with example data
