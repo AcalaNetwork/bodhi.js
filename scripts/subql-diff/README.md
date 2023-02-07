@@ -12,6 +12,7 @@ Compares two copies of subquery data, and find out extra/missing/diff records.
 -c, --caseSensitive  caseSensitive for addresses compare
                                                     [boolean] [default: false]
 -o, --outFile        save result to output file                       [string]
+-i, --ignoredKeys    ignored keys when comparing, separated with comma[string]
     --help           Show help                                       [boolean]
 ```
 
