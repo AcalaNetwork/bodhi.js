@@ -13,7 +13,7 @@ const main = async () => {
     data2 = data2.map(toLowerCase);
   }
 
-  const res = compareSubqlData(data1, data2, opts.startBlock, opts.endBlock);
+  const res = compareSubqlData(data1, data2, opts.startBlock, opts.endBlock, opts.ignoredKeys);
 
   if (!opts.full) {
     res['+'] = res['+'].map((tx) => tx.id) as any;

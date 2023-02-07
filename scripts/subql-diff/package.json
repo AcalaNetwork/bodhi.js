@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/subql-diff",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "author": "Acala Developers <hello@acala.network>",
   "main": "dist/index.js",
   "bin": "bin/subql-diff.js",
@@ -14,7 +14,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "mocha src/__tests__/*",
     "lint": "eslint src",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "yarn build"
   },
   "dependencies": {
     "csv-parse": "^5.3.3",

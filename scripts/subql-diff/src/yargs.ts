@@ -47,6 +47,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'save result to output file',
       type: 'string',
     },
+    ignoredKeys: {
+      alias: 'i',
+      demandOption: false,
+      describe: 'ignored keys when comparing, separated with comma',
+      type: 'string',
+    },
   })
   .help()
   .argv;

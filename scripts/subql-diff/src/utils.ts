@@ -27,12 +27,16 @@ const getExtra = <T extends LogOrReceipt>(data1: T[], map2: IdToDataMap<T>): T[]
   return res;
 };
 
-const getAllDiff = <T extends LogOrReceipt>(data1: T[], map2: IdToDataMap<T>): Diff<T>[] => {
+const getAllDiff = <T extends LogOrReceipt>(
+  data1: T[],
+  map2: IdToDataMap<T>,
+  ignoredKeys?: string[],
+): Diff<T>[] => {
   const res = [];
   for (const logOrTx of data1) {
     const logOrTx2 = map2[logOrTx.id];
     if (logOrTx2) {
-      const diff = getDiff(logOrTx, logOrTx2);
+      const diff = getDiff(logOrTx, logOrTx2, ignoredKeys);
       diff && res.push(diff);
     }
   }
@@ -40,9 +44,10 @@ const getAllDiff = <T extends LogOrReceipt>(data1: T[], map2: IdToDataMap<T>): D
   return res;
 };
 
-const getDiff = <T extends LogOrReceipt>(d1: T, d2: T): Diff<T> | null => {
+const getDiff = <T extends LogOrReceipt>(d1: T, d2: T, ignoredKeys?: string[]): Diff<T> | null => {
   const diff = {} as Diff<T>;
   for (const [k, v] of Object.entries(d1) as [keyof T, string][]) {
+    if (ignoredKeys?.includes(k as string)) continue;
     if (d2[k] !== v) {
       diff[k] = `${v}, ${d2[k]}` as any;
     }
@@ -58,6 +63,7 @@ export const compareSubqlData = <T extends LogOrReceipt>(
   data2: T[],
   startBlock?: number,
   endBlock?: number,
+  ignoredKeys?: string,
 ): CompareResult<T> => {
   const start = startBlock ?? 0;
   const end = endBlock ?? Infinity;
@@ -80,7 +86,7 @@ export const compareSubqlData = <T extends LogOrReceipt>(
   return {
     '+': getExtra(d1, dataMap2),
     '-': getExtra(d2, dataMap1),
-    '!=': getAllDiff(d1, dataMap2),
+    '!=': getAllDiff(d1, dataMap2, ignoredKeys?.split(',')),
   };
 };
 
