@@ -24,7 +24,7 @@ tar -xvf data.tgz
 
 check for receipts diff
 ```
-npx @acala-network/subql-diff            \
+npx @acala-network/subql-diff@latest     \
   --f1 data/karura-receipts-missing.csv  \
   --f2 data/karura-receipts-3503328.csv  \
   --start-block 0                        \
@@ -35,7 +35,7 @@ npx @acala-network/subql-diff            \
 
 check for logs diff
 ```
-npx @acala-network/subql-diff        \
+npx @acala-network/subql-diff@latest \
   --f1 data/karura-logs-missing.csv  \
   --f2 data/karura-logs-3503328.csv  \
   --start-block 0                    \

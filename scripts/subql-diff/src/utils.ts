@@ -47,7 +47,7 @@ const getAllDiff = <T extends LogOrReceipt>(
 const getDiff = <T extends LogOrReceipt>(d1: T, d2: T, ignoredKeys?: string[]): Diff<T> | null => {
   const diff = {} as Diff<T>;
   for (const [k, v] of Object.entries(d1) as [keyof T, string][]) {
-    if (ignoredKeys?.includes(k)) continue;
+    if (ignoredKeys?.includes(k as string)) continue;
     if (d2[k] !== v) {
       diff[k] = `${v}, ${d2[k]}` as any;
     }
