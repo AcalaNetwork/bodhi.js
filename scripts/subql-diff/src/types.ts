@@ -8,9 +8,9 @@ export interface BaseInfo {
 }
 
 export interface TxReceipt extends BaseInfo {
-  to: string,
+  to?: string,
   from: string,
-  contract_address: string,
+  contract_address?: string,
   gas_used: string,
   logs_bloom: string,
   effective_gas_price: string,
@@ -21,12 +21,12 @@ export interface TxReceipt extends BaseInfo {
 };
 
 export interface Log extends BaseInfo {
-  removed: string, 
-  address: string, 
-  data: string, 
-  topics: string, 
-  log_index: string, 
-  receipt_id: string, 
+  removed: string,
+  address: string,
+  data: string,
+  topics: string,
+  log_index: string,
+  receipt_id: string,
 };
 
 export type LogOrReceipt = Log | TxReceipt;

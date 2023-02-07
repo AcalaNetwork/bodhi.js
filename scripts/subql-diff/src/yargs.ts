@@ -34,6 +34,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'show full result',
       type: 'boolean',
     },
+    caseSensitive: {
+      alias: 'c',
+      demandOption: false,
+      default: false,
+      describe: 'caseSensitive for addresses compare',
+      type: 'boolean',
+    },
     outFile: {
       alias: 'o',
       demandOption: false,

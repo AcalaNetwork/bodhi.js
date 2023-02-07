@@ -11,7 +11,7 @@ const buildIdToDataMap = <T extends LogOrReceipt>(data: T[]): IdToDataMap<T> => 
   return res;
 };
 
-const filterByBlockRange = (start: number, end: number) => 
+const filterByBlockRange = (start: number, end: number) =>
   (logOrTx: LogOrReceipt): boolean => {
     const blockNumber = parseInt(logOrTx.block_number);
     return blockNumber >= start && blockNumber <= end;
@@ -93,3 +93,21 @@ export const readCSV = (path: string): Array<TxReceipt | Log> => {
 };
 
 export const deepClone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
+
+export const toLowerCase = (data: LogOrReceipt): LogOrReceipt => {
+  return (data as Log).topics
+    ? _logToLowerCase(data as Log)
+    : _receiptToLowerCase(data as TxReceipt);
+};
+
+const _logToLowerCase = (log: Log): Log => ({
+  ...log,
+  address: log.address.toLowerCase(),
+});
+
+const _receiptToLowerCase = (receipt: TxReceipt): TxReceipt => ({
+  ...receipt,
+  from: receipt.from.toLowerCase(),
+  to: receipt.to?.toLowerCase(),
+  contract_address: receipt.contract_address?.toLowerCase(),
+});

@@ -1,10 +1,13 @@
 {
   "name": "@acala-network/subql-diff",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "author": "Acala Developers <hello@acala.network>",
   "main": "dist/index.js",
   "bin": "bin/subql-diff.js",
-  "files": ["bin/", "dist/"],
+  "files": [
+    "bin/",
+    "dist/"
+  ],
   "license": "MIT",
   "scripts": {
     "diff": "ts-node --transpile-only src/index.ts",
@@ -20,7 +23,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^18.11.18",
+    "@types/node": "^18.11.19",
     "@types/yargs": "^17.0.19",
     "@typescript-eslint/eslint-plugin": "^5.48.0",
     "@typescript-eslint/parser": "^5.48.0",
