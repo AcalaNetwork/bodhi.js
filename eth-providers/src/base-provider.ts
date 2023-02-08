@@ -84,6 +84,7 @@ import {
   SanitizedLogFilter,
   LogFilter,
   checkEvmExecutionError,
+  findTxFeeEvent,
   getAllReceiptsAtBlock,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
@@ -1740,22 +1741,6 @@ export abstract class BaseProvider extends AbstractProvider {
   static isProvider(value: any): value is Provider {
     return !!(value && value._isProvider);
   }
-
-  _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this.blockCache.getBlockNumber(txHash);
-    if (!targetBlockNumber) return null;
-
-    let targetBlockHash;
-    try {
-      targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
-    } catch (e) {
-      // this should only happen in local mode when head subscription notification
-      // is faster than node new head setup
-      return null;
-    }
-
-    return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
-  };
 
   // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
