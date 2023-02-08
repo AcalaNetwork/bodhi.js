@@ -325,10 +325,6 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   }
 
-  static isProvider(value: any): value is Provider {
-    return !!(value && value._isProvider);
-  }
-
   startSubscriptions = async (): Promise<void> => {
     await Promise.all([
       this._subscribeEventListeners(),
