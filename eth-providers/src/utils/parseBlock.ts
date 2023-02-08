@@ -144,10 +144,11 @@ const getEffectiveGasPrice = async (
   const usedGas = BigNumber.from(eventData[eventData.length - 2].toString());
   const usedStorage = BigNumber.from(eventData[eventData.length - 1].toString());
 
-  // add storage fee to final txFee
-  const storageDepositPerByte = api.consts.evm.storageDepositPerByte.toBigInt();
-  const storageFee = usedStorage.mul(storageDepositPerByte);
-  txFee = txFee.add(storageFee);
+  if (usedStorage.gt(0)) {    // ignore storage refund (usedStorage < 0) since it might result in negative gas
+    const storageDepositPerByte = api.consts.evm.storageDepositPerByte.toBigInt();
+    const storageFee = usedStorage.mul(storageDepositPerByte);
+    txFee = txFee.add(storageFee);
+  }
 
   return txFee.div(usedGas);
 };
