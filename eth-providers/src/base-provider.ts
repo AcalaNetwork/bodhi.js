@@ -343,6 +343,7 @@ export abstract class BaseProvider extends AbstractProvider {
       // update block cache
       const blockNumber = header.number.toNumber();
       const blockHash = header.hash.toHex();
+      if (blockNumber === 0) return;    // block 0 causes getAllReceiptsAtBlock to fail
       const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
       this.blockCache.addReceipts(blockNumber, receipts);
 
