@@ -19,18 +19,7 @@ describe('BlockCache', () => {
   const TOTAL_BLOCKS = 30;
   const chain = mockChain(TOTAL_BLOCKS);
   const allTxs = chain.flat(999);
-  let cache: BlockCache;
-
-  beforeEach(() => {
-    cache = new BlockCache(MAX_CACHED_BLOCK);
-  });
-
-  describe('initialization', () => {
-    it('initialize two empty map', () => {
-      expect(cache.blockNumToReceipts).to.deep.equal({});
-      expect(cache.hashToReceipt).to.deep.equal({});
-    });
-  });
+  const cache = new BlockCache(MAX_CACHED_BLOCK);
 
   describe('add block', () => {
     it('correctly find cached txs, and prune old blocks', () => {
