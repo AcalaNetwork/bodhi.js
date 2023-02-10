@@ -6,18 +6,18 @@ export type BlockHashToReceipts = Record<string, FullReceipt[]>;
 export interface CacheInspect {
   maxCachedBlocks: number;
   cachedBlocksCount: number;
-  hashToReceipt: HashToReceipt;
+  txHashToReceipt: TxHashToReceipt;
   blockHashToReceipts: BlockHashToReceipts;
 }
 
 export class BlockCache {
   blockHashToReceipts: BlockHashToReceipts;
-  hashToReceipt: HashToReceipt;
+  txHashToReceipt: TxHashToReceipt;
   cachedBlockHashes: string[];
   maxCachedBlocks: number;
 
   constructor(maxCachedBlocks: number = 200) {
-    this.hashToReceipt = {};
+    this.txHashToReceipt = {};
     this.blockHashToReceipts = {};
     this.cachedBlockHashes = [];
     this.maxCachedBlocks = maxCachedBlocks;
@@ -27,7 +27,7 @@ export class BlockCache {
   addReceipts = (blockHash: string, receipts: FullReceipt[]): void => {
     this.blockHashToReceipts[blockHash] = receipts;
     receipts.forEach(r => {
-      this.hashToReceipt[r.transactionHash] = r;
+      this.txHashToReceipt[r.transactionHash] = r;
     });
     this.cachedBlockHashes.push(blockHash);
 
@@ -36,13 +36,13 @@ export class BlockCache {
       const removingTxs = this.blockHashToReceipts[removingBlockHash];
 
       removingTxs?.forEach(tx => {
-        delete this.hashToReceipt[tx.transactionHash];
+        delete this.txHashToReceipt[tx.transactionHash];
       });
       delete this.blockHashToReceipts[removingBlockHash];
     }
   }
 
-  getReceiptByHash = (txHash: string): FullReceipt | null => this.hashToReceipt[txHash] ?? null;
+  getReceiptByHash = (txHash: string): FullReceipt | null => this.txHashToReceipt[txHash] ?? null;
 
   getAllReceiptsAtBlock = (blockHash: string): FullReceipt[] => this.blockHashToReceipts[blockHash] ?? [];
 
@@ -53,7 +53,7 @@ export class BlockCache {
   inspect = (): CacheInspect => ({
     maxCachedBlocks: this.maxCachedBlocks,
     cachedBlocksCount: Object.keys(this.blockHashToReceipts).length,
-    hashToReceipt: this.hashToReceipt,
+    txHashToReceipt: this.txHashToReceipt,
     blockHashToReceipts: this.blockHashToReceipts,
   });
 }
