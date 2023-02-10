@@ -73,7 +73,7 @@ describe('BlockCache', () => {
           .sort(sortReceipt);
 
         expect(
-          Object.values(cache.hashToReceipt).sort(sortReceipt)
+          Object.values(cache.txHashToReceipt).sort(sortReceipt)
         ).to.deep.equal(allExpectedReceiptsInCache);
         expect(
           Object.values(cache.blockHashToReceipts).flat().sort(sortReceipt)
