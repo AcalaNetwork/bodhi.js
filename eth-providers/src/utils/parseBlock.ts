@@ -1,4 +1,3 @@
-import { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Formatter } from '@ethersproject/providers';
 import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';

@@ -85,6 +85,7 @@ import {
   LogFilter,
   checkEvmExecutionError,
   findTxFeeEvent,
+  getAllReceiptsAtBlock,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
@@ -342,28 +343,28 @@ export abstract class BaseProvider extends AbstractProvider {
       // update block cache
       const blockNumber = header.number.toNumber();
       const blockHash = header.hash.toHex();
-      const txHashes = await this._getTxHashesAtBlock(blockHash);
-      this.blockCache.addTxsAtBlock(blockNumber, txHashes);
+
+      if (blockNumber === 0) return;    // getAllReceiptsAtBlock doesn't work for block 0
+      const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
+      this.blockCache.addReceipts(blockHash, receipts);
 
       // eth_subscribe
-      await this._notifySubscribers(blockNumber);
+      await this._notifySubscribers(blockHash);
     });
   }
 
-  _notifySubscribers = async (blockNumber: number) => {
+  _notifySubscribers = async (blockHash: string) => {
     const headSubscribers = this.eventListeners[SubscriptionType.NewHeads];
     const logSubscribers = this.eventListeners[SubscriptionType.Logs];
 
     if (headSubscribers.length > 0 || logSubscribers.length > 0) {
-      const block = await this.getBlockData(blockNumber, false);
+      const block = await this.getBlockData(blockHash, false);
 
       const response = hexlifyRpcResult(block);
       headSubscribers.forEach((l) => l.cb(response));
 
       if (logSubscribers.length > 0) {
-        const receipts = await Promise.all(
-          block.transactions.map((tx) => this.getTransactionReceiptAtBlock(tx as string, blockNumber))
-        );
+        const receipts = this.blockCache.getAllReceiptsAtBlock(blockHash);
         const logs = receipts.map((r) => r.logs).flat();
 
         logSubscribers.forEach(({ cb, filter }) => {
@@ -1580,16 +1581,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return resolveProperties(tx);
   };
 
-  _getTxHashesAtBlock = async (blockHash: string): Promise<string[]> => {
-    const block = await this.api.rpc.chain.getBlock(blockHash);
-    const normalTxHashes = block.block.extrinsics.map((e) => e.hash.toHex());
-
-    const orphanLogs = await this.getOrphanLogsAtBlock(blockHash);
-    const orphanHashes = [...new Set(orphanLogs.map((log) => log.transactionHash))];
-
-    return [...normalTxHashes, ...orphanHashes];
-  };
-
   _parseTxAtBlock = async (
     blockHash: string,
     targetTx: string | number
@@ -1753,22 +1744,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return !!(value && value._isProvider);
   }
 
-  _getTxReceiptFromCache = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const targetBlockNumber = this.blockCache.getBlockNumber(txHash);
-    if (!targetBlockNumber) return null;
-
-    let targetBlockHash;
-    try {
-      targetBlockHash = await this.api.rpc.chain.getBlockHash(targetBlockNumber);
-    } catch (e) {
-      // this should only happen in local mode when head subscription notification
-      // is faster than node new head setup
-      return null;
-    }
-
-    return this.getTransactionReceiptAtBlock(txHash, targetBlockHash.toHex());
-  };
-
   // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
@@ -1788,7 +1763,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
-    const txFromCache = await this._getTxReceiptFromCache(txHash);
+    const txFromCache = this.blockCache.getReceiptByHash(txHash);
     if (txFromCache) return txFromCache;
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
@@ -1852,9 +1827,9 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
-    throwNotImplemented('getTransactionReceipt (please use `getTXReceiptByHash` instead)');
+    throwNotImplemented('getTransactionReceipt (please use `getTxReceiptByHash` instead)');
 
-  getTXReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
+  getTxReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
     const tx = this.localMode
       ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
       : await this._getMinedTXReceipt(txHash);
@@ -1949,7 +1924,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return this.subql?.getIndexerMetadata();
   };
 
-  getCachInfo = (): CacheInspect | undefined => this.blockCache._inspect();
+  getCachInfo = (): CacheInspect | undefined => this.blockCache.inspect();
 
   _timeEthCalls = async (): Promise<{
     gasPriceTime: number;
