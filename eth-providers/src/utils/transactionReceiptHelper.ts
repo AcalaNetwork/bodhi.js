@@ -13,6 +13,7 @@ import { hexToU8a, nToU8a } from '@polkadot/util';
 import { BIGNUMBER_ONE, BIGNUMBER_ZERO, DUMMY_V_R_S } from '../consts';
 import { logger } from './logger';
 import { isOrphanEvmEvent, nativeToEthDecimal } from './utils';
+import { TransactionReceipt as TransactionReceiptSubql } from './gqlTypes';
 
 export interface PartialLog {
   removed: boolean;
@@ -391,4 +392,14 @@ export const getOrphanTxReceiptsFromEvents = (
     });
 
   return receipts.map(receipt => Formatter.check(fullReceiptFormatter, receipt));
+};
+
+export const subqlReceiptAdapter = (
+  receipt: TransactionReceiptSubql,
+  formatter: Formatter,
+): TransactionReceipt => {
+  return formatter.receipt({
+    ...receipt,
+    logs: receipt.logs.nodes,
+  });
 };

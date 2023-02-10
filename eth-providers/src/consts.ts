@@ -78,3 +78,11 @@ export const CACHE_SIZE_WARNING = `
   If memory exploded, try decrease MAX_CACHE_SIZE
   -----------------------------------------------
 `;
+
+export const ORPHAN_TX_DEFAULT_INFO = {
+  value: '0x0',
+  gas: 2_100_000,
+  input: '0x',
+  nonce: 0,
+  ...DUMMY_V_R_S,
+};

@@ -86,9 +86,10 @@ import {
   checkEvmExecutionError,
   findTxFeeEvent,
   getAllReceiptsAtBlock,
+  subqlReceiptAdapter,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
-import { TransactionReceipt as TransactionReceiptGQL, _Metadata } from './utils/gqlTypes';
+import { _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
 
 export interface Eip1898BlockTag {
@@ -1495,7 +1496,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
-    const tx = await this._getMinedTXReceipt(txHash);
+    const tx = await this._getMinedTxReceipt(txHash);
     if (!tx) return false;
 
     return this._isBlockFinalized(tx.blockHash);
@@ -1747,7 +1748,7 @@ export abstract class BaseProvider extends AbstractProvider {
   // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
-    const targetExtrinsic = pendingExtrinsics.find((e) => e.hash.toHex() === txHash);
+    const targetExtrinsic = pendingExtrinsics.find(ex => ex.hash.toHex() === txHash);
 
     if (!(targetExtrinsic && isEvmExtrinsic(targetExtrinsic))) return null;
 
@@ -1762,20 +1763,19 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  _getMinedTXReceipt = async (txHash: string): Promise<TransactionReceipt | TransactionReceiptGQL | null> => {
+  _getMinedTxReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
     const txFromCache = this.blockCache.getReceiptByHash(txHash);
     if (txFromCache) return txFromCache;
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-    const res = txFromSubql || null;
-    if (res) {
-      res.blockNumber = +res.blockNumber;
-      res.transactionIndex = +res.transactionIndex;
-      res.gasUsed = BigNumber.from(res.gasUsed);
-      res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
-    }
+    return txFromSubql
+      ? subqlReceiptAdapter(txFromSubql, this.formatter)
+      : null;
 
-    return res;
+    // res.blockNumber = +res.blockNumber;
+    // res.transactionIndex = +res.transactionIndex;
+    // res.gasUsed = BigNumber.from(res.gasUsed);
+    // res.effectiveGasPrice = BigNumber.from(res.effectiveGasPrice);
   };
 
   // Queries
@@ -1791,26 +1791,26 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const tx = this.localMode
-      ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
-      : await this._getMinedTXReceipt(txHash);
+      ? await runWithRetries(this._getMinedTxReceipt.bind(this), [txHash])
+      : await this._getMinedTxReceipt(txHash);
 
     if (!tx) return null;
 
-    let extraData;
+    // TODO: maybe save these parsed info in FullReceipt for ultimate performance
+    const block = await this.api.rpc.chain.getBlock(tx.blockHash);
+    const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
 
-    try {
-      const { extrinsic } = await this._parseTxAtBlock(tx.blockHash, txHash);
-      extraData = parseExtrinsic(extrinsic);
-    } catch (e) {
-      // virtual tx
-      extraData = {
-        value: '0x0',
-        gas: 2_100_000,
-        input: '0x',
-        nonce: 0,
-        ...DUMMY_V_R_S,
-      };
-    }
+    const ORPHAN_TX_DEFAULT_INFO = {
+      value: '0x0',
+      gas: 2_100_000,
+      input: '0x',
+      nonce: 0,
+      ...DUMMY_V_R_S,
+    };
+
+    const extraData = extrinsic
+      ? parseExtrinsic(extrinsic)
+      : ORPHAN_TX_DEFAULT_INFO;
 
     return {
       blockHash: tx.blockHash,
@@ -1830,28 +1830,9 @@ export abstract class BaseProvider extends AbstractProvider {
     throwNotImplemented('getTransactionReceipt (please use `getTxReceiptByHash` instead)');
 
   getTxReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
-    const tx = this.localMode
-      ? await runWithRetries(this._getMinedTXReceipt.bind(this), [txHash])
-      : await this._getMinedTXReceipt(txHash);
-    if (!tx) return null;
-
-    return this.formatter.receipt({
-      to: tx.to || null,
-      from: tx.from,
-      contractAddress: tx.contractAddress || null,
-      transactionIndex: tx.transactionIndex,
-      gasUsed: tx.gasUsed,
-      logsBloom: tx.logsBloom,
-      blockHash: tx.blockHash,
-      transactionHash: tx.transactionHash,
-      logs: Array.isArray(tx.logs) ? tx.logs : (tx.logs.nodes as Log[]),
-      blockNumber: tx.blockNumber,
-      cumulativeGasUsed: tx.cumulativeGasUsed,
-      type: tx.type,
-      status: tx.status,
-      effectiveGasPrice: tx.effectiveGasPrice,
-      confirmations: (await this.getBlockNumber()) - tx.blockNumber,
-    });
+    return this.localMode
+      ? await runWithRetries(this._getMinedTxReceipt.bind(this), [txHash])
+      : await this._getMinedTxReceipt(txHash);
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
