@@ -346,7 +346,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
       if (blockNumber === 0) return;    // getAllReceiptsAtBlock doesn't work for block 0
       const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
-      this.blockCache.addReceipts(blockNumber, receipts);
+      this.blockCache.addReceipts(blockHash, receipts);
 
       // eth_subscribe
       await this._notifySubscribers(blockNumber);

@@ -1,54 +1,59 @@
 import { FullReceipt } from './transactionReceiptHelper';
 
 export type HashToReceipt = Record<string, FullReceipt>;
-export type BlockNumToReceipts = Record<number, FullReceipt[]>;
+export type BlockHashToReceipts = Record<string, FullReceipt[]>;
 
 export interface CacheInspect {
   maxCachedBlocks: number;
   cachedBlocksCount: number;
   hashToReceipt: HashToReceipt;
-  blockNumToReceipts: BlockNumToReceipts;
+  blockHashToReceipts: BlockHashToReceipts;
 }
 
 export class BlockCache {
-  blockNumToReceipts: BlockNumToReceipts;
+  blockHashToReceipts: BlockHashToReceipts;
   hashToReceipt: HashToReceipt;
+  cachedBlockHashes: string[];
   maxCachedBlocks: number;
 
   constructor(maxCachedBlocks: number = 200) {
     this.hashToReceipt = {};
-    this.blockNumToReceipts = {};
+    this.blockHashToReceipts = {};
+    this.cachedBlockHashes = [];
     this.maxCachedBlocks = maxCachedBlocks;
   }
 
   // automatically preserve a sliding window of ${maxCachedBlocks} blocks
-  addReceipts = (blockNumber: number, receipts: FullReceipt[]): void => {
-    this.blockNumToReceipts[blockNumber] = receipts;
+  addReceipts = (blockHash: string, receipts: FullReceipt[]): void => {
+    this.blockHashToReceipts[blockHash] = receipts;
     receipts.forEach(r => {
       this.hashToReceipt[r.transactionHash] = r;
     });
+    this.cachedBlockHashes.push(blockHash);
 
-    const removingBlockNum = blockNumber - this.maxCachedBlocks;
-    const removingTxs = this.blockNumToReceipts[removingBlockNum];
+    if (this.cachedBlockHashes.length > this.maxCachedBlocks) {
+      const removingBlockHash = this.cachedBlockHashes.shift()!;
+      const removingTxs = this.blockHashToReceipts[removingBlockHash];
 
-    removingTxs?.forEach(tx => {
-      delete this.hashToReceipt[tx.transactionHash];
-    });
-    delete this.blockNumToReceipts[removingBlockNum];
+      removingTxs?.forEach(tx => {
+        delete this.hashToReceipt[tx.transactionHash];
+      });
+      delete this.blockHashToReceipts[removingBlockHash];
+    }
   }
 
   getReceiptByHash = (txHash: string): FullReceipt | null => this.hashToReceipt[txHash] ?? null;
 
-  getAllReceiptsAtBlock = (blockNumber: number): FullReceipt[] => this.blockNumToReceipts[blockNumber] ?? [];
+  getAllReceiptsAtBlock = (blockHash: string): FullReceipt[] => this.blockHashToReceipts[blockHash] ?? [];
 
-  getReceiptAtBlock = (blockNumber: number, txHash: string): FullReceipt | null => {
-    return this.getAllReceiptsAtBlock(blockNumber).find(r => r.transactionHash === txHash) ?? null;
+  getReceiptAtBlock = (txHash: string, blockHash: string): FullReceipt | null => {
+    return this.getAllReceiptsAtBlock(blockHash).find(r => r.transactionHash === txHash) ?? null;
   }
 
   inspect = (): CacheInspect => ({
     maxCachedBlocks: this.maxCachedBlocks,
-    cachedBlocksCount: Object.keys(this.blockNumToReceipts).length,
+    cachedBlocksCount: Object.keys(this.blockHashToReceipts).length,
     hashToReceipt: this.hashToReceipt,
-    blockNumToReceipts: this.blockNumToReceipts,
+    blockHashToReceipts: this.blockHashToReceipts,
   });
 }
