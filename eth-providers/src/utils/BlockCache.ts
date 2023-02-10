@@ -1,6 +1,6 @@
 import { FullReceipt } from './transactionReceiptHelper';
 
-export type HashToReceipt = Record<string, FullReceipt>;
+export type TxHashToReceipt = Record<string, FullReceipt>;
 export type BlockHashToReceipts = Record<string, FullReceipt[]>;
 
 export interface CacheInspect {
