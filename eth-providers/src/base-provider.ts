@@ -349,22 +349,22 @@ export abstract class BaseProvider extends AbstractProvider {
       this.blockCache.addReceipts(blockHash, receipts);
 
       // eth_subscribe
-      await this._notifySubscribers(blockNumber);
+      await this._notifySubscribers(blockHash);
     });
   }
 
-  _notifySubscribers = async (blockNumber: number) => {
+  _notifySubscribers = async (blockHash: string) => {
     const headSubscribers = this.eventListeners[SubscriptionType.NewHeads];
     const logSubscribers = this.eventListeners[SubscriptionType.Logs];
 
     if (headSubscribers.length > 0 || logSubscribers.length > 0) {
-      const block = await this.getBlockData(blockNumber, false);
+      const block = await this.getBlockData(blockHash, false);
 
       const response = hexlifyRpcResult(block);
       headSubscribers.forEach((l) => l.cb(response));
 
       if (logSubscribers.length > 0) {
-        const receipts = this.blockCache.getAllReceiptsAtBlock(blockNumber);
+        const receipts = this.blockCache.getAllReceiptsAtBlock(blockHash);
         const logs = receipts.map((r) => r.logs).flat();
 
         logSubscribers.forEach(({ cb, filter }) => {
