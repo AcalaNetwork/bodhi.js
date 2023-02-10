@@ -51,8 +51,8 @@ import {
   RICH_MODE_WARNING_MSG,
   SAFE_MODE_WARNING_MSG,
   ZERO,
-  DUMMY_V_R_S,
   DUMMY_BLOCK_HASH,
+  ORPHAN_TX_DEFAULT_INFO,
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -325,6 +325,10 @@ export abstract class BaseProvider extends AbstractProvider {
     } else {
       this.maxBlockCacheSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
+  }
+
+  static isProvider(value: any): value is Provider {
+    return !!(value && value._isProvider);
   }
 
   startSubscriptions = async (): Promise<void> => {
@@ -1496,7 +1500,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
-    const tx = await this._getMinedTxReceipt(txHash);
+    const tx = await this._getMinedReceipt(txHash);
     if (!tx) return false;
 
     return this._isBlockFinalized(tx.blockHash);
@@ -1741,10 +1745,6 @@ export abstract class BaseProvider extends AbstractProvider {
     });
   };
 
-  static isProvider(value: any): value is Provider {
-    return !!(value && value._isProvider);
-  }
-
   // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
@@ -1763,7 +1763,7 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  _getMinedTxReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
+  _getMinedReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
     const txFromCache = this.blockCache.getReceiptByHash(txHash);
     if (txFromCache) return txFromCache;
 
@@ -1791,22 +1791,14 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const tx = this.localMode
-      ? await runWithRetries(this._getMinedTxReceipt.bind(this), [txHash])
-      : await this._getMinedTxReceipt(txHash);
+      ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
+      : await this._getMinedReceipt(txHash);
 
     if (!tx) return null;
 
     // TODO: maybe save these parsed info in FullReceipt for ultimate performance
     const block = await this.api.rpc.chain.getBlock(tx.blockHash);
     const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
-
-    const ORPHAN_TX_DEFAULT_INFO = {
-      value: '0x0',
-      gas: 2_100_000,
-      input: '0x',
-      nonce: 0,
-      ...DUMMY_V_R_S,
-    };
 
     const extraData = extrinsic
       ? parseExtrinsic(extrinsic)
@@ -1821,18 +1813,25 @@ export abstract class BaseProvider extends AbstractProvider {
       gasPrice: tx.effectiveGasPrice,
       ...extraData,
 
-      // overrides to in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
+      // overrides `to` in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
       to: tx.to || null,
     };
   };
 
   getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
-    throwNotImplemented('getTransactionReceipt (please use `getTxReceiptByHash` instead)');
+    throwNotImplemented('getTransactionReceipt (please use `getReceiptByHash` instead)');
 
-  getTxReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
-    return this.localMode
-      ? await runWithRetries(this._getMinedTxReceipt.bind(this), [txHash])
-      : await this._getMinedTxReceipt(txHash);
+  getReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
+    const receipt = this.localMode
+      ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
+      : await this._getMinedReceipt(txHash);
+
+    if (!receipt) return null;
+
+    return {
+      ...receipt,
+      confirmations: (await this.getBlockNumber()) - receipt.blockNumber,
+    };
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
@@ -1884,21 +1883,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
     return filteredLogs.map((log) => this.formatter.filterLog(log));
-  };
-
-  // TODO: split this to getVirtualTxReceiptsAtBlock
-  getOrphanLogsAtBlock = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Log[]> => {
-    const blockHash = await this._getBlockHash(blockTag);
-    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
-    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
-
-    const block = await this.api.rpc.chain.getBlock(blockHash);
-    const evmTxCount = block.block.extrinsics.filter(isEvmExtrinsic).length;
-
-    const orphanReceipts = getOrphanTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount);
-    const orphanLogs = orphanReceipts.reduce<Log[]>((logs, receipt) => logs.concat(receipt.logs), []);
-
-    return hexlifyRpcResult(orphanLogs);
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
