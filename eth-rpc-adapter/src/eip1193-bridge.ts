@@ -333,7 +333,7 @@ class Eip1193BridgeImpl {
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this.#provider.getTxReceiptByHash(params[0]);
+    const res = await this.#provider.getReceiptByHash(params[0]);
     if (!res) return null;
 
     // @ts-ignore
