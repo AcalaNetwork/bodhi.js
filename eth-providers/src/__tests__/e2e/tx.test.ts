@@ -110,11 +110,11 @@ describe('transaction tests', () => {
         gasPrice: params.gasPrice
       });
 
-      console.log({
-        gasLimit: data.gasLimit.toString(),
-        storageLimit: data.storageLimit.toString(),
-        validUntil: data.validUntil.toString()
-      });
+      // console.log({
+      //   gasLimit: data.gasLimit.toString(),
+      //   storageLimit: data.storageLimit.toString(),
+      //   validUntil: data.validUntil.toString()
+      // });
 
       // expect((await randomWallet.getBalance()).toString()).eq(amount);
     });

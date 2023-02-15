@@ -26,8 +26,8 @@ import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { GenericExtrinsic, Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
-import { AccountId, EventRecord, Header, RuntimeVersion } from '@polkadot/types/interfaces';
+import { Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
+import { AccountId, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
@@ -61,11 +61,8 @@ import {
   computeDefaultSubstrateAddress,
   nativeToEthDecimal,
   filterLog,
-  findEvmEvent,
   getEvmExtrinsicIndexes,
   getHealthResult,
-  getPartialTransactionReceipt,
-  getTransactionIndexAndHash,
   HealthResult,
   hexlifyRpcResult,
   isEvmExtrinsic,
@@ -76,7 +73,6 @@ import {
   runWithTiming,
   sendTx,
   throwNotImplemented,
-  getEffectiveGasPrice,
   parseBlockTag,
   filterLogByTopics,
   getOrphanTxReceiptsFromEvents,
@@ -84,7 +80,6 @@ import {
   SanitizedLogFilter,
   LogFilter,
   checkEvmExecutionError,
-  findTxFeeEvent,
   getAllReceiptsAtBlock,
   subqlReceiptAdapter,
 } from './utils';
@@ -1345,15 +1340,15 @@ export abstract class BaseProvider extends AbstractProvider {
         };
 
         this.api.rpc.chain
-          .subscribeNewHeads((head) => {
+          .subscribeNewHeads(async (head) => {
             const blockNumber = head.number.toNumber();
 
             if ((confirms as number) <= blockNumber - startBlock + 1) {
-              const receipt = this.getTransactionReceiptAtBlock(hash, startBlockHash);
+              const receipt = await this.getTransactionReceiptAtBlockFromChain(hash, startBlockHash);
               if (alreadyDone()) {
                 return;
               }
-              resolve(receipt);
+              receipt && resolve(receipt);  // TODO:  any issue?
             }
           })
           .then((unsubscribe) => {
@@ -1586,163 +1581,57 @@ export abstract class BaseProvider extends AbstractProvider {
     return resolveProperties(tx);
   };
 
-  _parseTxAtBlock = async (
-    blockHash: string,
-    targetTx: string | number
-  ): Promise<{
-    extrinsic: GenericExtrinsic;
-    extrinsicEvents: EventRecord[];
-    transactionHash: string;
-    transactionIndex: number;
-    isExtrinsicFailed: boolean;
-  }> => {
-    const [block, blockEvents] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash),
-      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash),
-    ]);
+  getTransactionReceiptAtBlockFromChain = async (
+    txHash: string | Promise<string>,
+    _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag,
+  ): Promise<TransactionReceipt> => {
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    const { transactionHash, transactionIndex, extrinsicIndex, isExtrinsicFailed } = getTransactionIndexAndHash(
-      targetTx,
-      block.block.extrinsics,
-      blockEvents
-    );
+    // console.log({
+    //   blockTag,
+    // });
+    // await sleep(3000);
 
-    const extrinsicEvents = blockEvents.filter(
-      (event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === extrinsicIndex
-    );
+    const blockHash = await this._getBlockHash(blockTag);
+    const blockNumber = (await this.api.rpc.chain.getHeader(blockHash)).number.toNumber();
+    console.log('getTransactionReceiptAtBlockFromChain', {
+      txHash, blockNumber,
+    });
+    // await sleep(5000);
+    const receipt = (await getAllReceiptsAtBlock(this.api, blockHash, await txHash))[0];
+    // if (!receipt) {
+    //   logger.throwError('<getTransactionReceiptAtBlock> receipt not found');
+    // }
 
-    return {
-      extrinsic: block.block.extrinsics[extrinsicIndex],
-      extrinsicEvents,
-      transactionHash,
-      transactionIndex,
-      isExtrinsicFailed,
-    };
-  };
+    return receipt;
+  }
 
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
-    _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag
-  ): Promise<TransactionReceipt> => {
+    _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag,
+  ): Promise<TransactionReceipt | null> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
     hashOrNumber = await hashOrNumber;
 
-    const header = await this._getBlockHeader(blockTag);
-    const blockHash = header.hash.toHex();
+    const blockHash = await this._getBlockHash(blockTag);
 
-    // TODO: maybe should query normalReceipt first, since it's much more usual
-    const [normalReceipt, orphanReceipt] = await Promise.allSettled([
-      this.getNormalTxReceiptAtBlock(hashOrNumber, blockHash),
-      this.getOrphanTxReceiptAtBlock(hashOrNumber, blockHash),
-    ]);
-
-    if (normalReceipt.status === 'fulfilled') {
-      return normalReceipt.value;
-    } else if (orphanReceipt.status === 'fulfilled' && orphanReceipt.value) {
-      return orphanReceipt.value;
+    if (isHexString(hashOrNumber, 32)) {
+      const txHash = hashOrNumber as string;
+      const receipt = await this._getMinedReceipt(txHash);
+      return receipt?.blockHash === blockHash
+        ? receipt
+        : null;
     } else {
-      return logger.throwError('<getTransactionReceiptAtBlock> receipt not found');
+      const receiptIdx = BigNumber.from(hashOrNumber).toNumber();
+      const receiptFromCache = this.blockCache.getAllReceiptsAtBlock(blockHash)[receiptIdx];
+      if (receiptFromCache) return receiptFromCache;
+
+      const receiptsAtBlock = await this.subql?.getAllReceiptsAtBlock(blockHash);
+      console.log(receiptsAtBlock?.[receiptIdx], receiptIdx);
+      return receiptsAtBlock?.[receiptIdx]
+        ? subqlReceiptAdapter(receiptsAtBlock[receiptIdx], this.formatter)
+        : null;
     }
-  };
-
-  getOrphanTxReceiptAtBlock = async (
-    hashOrNumber: number | string,
-    blockHash: string
-  ): Promise<TransactionReceipt | null> => {
-    const [block, allEvents] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash),
-      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash),
-    ]);
-
-    const blockNumber = block.block.header.number.toNumber();
-    const evmTxCount = block.block.extrinsics.filter(isEvmExtrinsic).length;
-
-    const orphanReceipts = getOrphanTxReceiptsFromEvents(allEvents, blockHash, blockNumber, evmTxCount);
-    const targetReceipt = orphanReceipts.find(
-      (r, idx) => (typeof hashOrNumber === 'string' && r.transactionHash === hashOrNumber) || idx === hashOrNumber
-    );
-
-    if (!targetReceipt) return null;
-
-    return {
-      ...targetReceipt,
-      confirmations: (await this.getBlockNumber()) - blockNumber,
-      effectiveGasPrice: BIGNUMBER_ZERO,
-    };
-  };
-
-  getNormalTxReceiptAtBlock = async (hashOrNumber: number | string, blockHash: string): Promise<TransactionReceipt> => {
-    const blockNumber = (await this._getBlockHeader(blockHash)).number.toNumber();
-
-    const { extrinsic, extrinsicEvents, transactionIndex, transactionHash, isExtrinsicFailed } =
-      await this._parseTxAtBlock(blockHash, hashOrNumber);
-
-    const systemEvent = extrinsicEvents.find((event) =>
-      ['ExtrinsicSuccess', 'ExtrinsicFailed'].includes(event.event.method)
-    );
-
-    if (!systemEvent) {
-      return logger.throwError('<getTransactionReceiptAtBlock> find system event failed', Logger.errors.UNKNOWN_ERROR, {
-        hash: transactionHash,
-        blockHash,
-      });
-    }
-
-    if (isExtrinsicFailed) {
-      const [dispatchError] = extrinsicEvents[extrinsicEvents.length - 1].event.data as any[];
-
-      let message = dispatchError.type;
-
-      if (dispatchError.isModule) {
-        try {
-          const mod = dispatchError.asModule;
-          const error = this.api.registry.findMetaError(new Uint8Array([mod.index.toNumber(), mod.error.toNumber()]));
-          message = `${error.section}.${error.name}: ${error.docs}`;
-        } catch (error) {
-          // swallow
-        }
-      }
-
-      return logger.throwError(`ExtrinsicFailed: ${message}`, Logger.errors.UNKNOWN_ERROR, {
-        hash: transactionHash,
-        blockHash,
-      });
-    }
-
-    const { weight: actualWeight } = (systemEvent.event.data.toJSON() as any)[0]; // TODO: fix type
-
-    const evmEvent = findEvmEvent(extrinsicEvents);
-    if (!evmEvent) {
-      return logger.throwError('findEvmEvent failed', Logger.errors.UNKNOWN_ERROR, {
-        blockNumber,
-        tx: hashOrNumber,
-      });
-    }
-
-    // TODO: `getEffectiveGasPrice` and `getPartialTransactionReceipt` can potentially be merged and refactored
-    const effectiveGasPrice = await getEffectiveGasPrice(
-      evmEvent,
-      findTxFeeEvent(extrinsicEvents),
-      this.api,
-      blockHash,
-      extrinsic,
-      actualWeight.refTime ?? actualWeight
-    );
-    const partialTransactionReceipt = getPartialTransactionReceipt(evmEvent);
-
-    const transactionInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
-
-    // to and contractAddress may be undefined
-    return this.formatter.receipt({
-      effectiveGasPrice,
-      confirmations: (await this.getBlockNumber()) - blockNumber,
-      ...transactionInfo,
-      ...partialTransactionReceipt,
-      logs: partialTransactionReceipt.logs.map((log) => ({
-        ...transactionInfo,
-        ...log,
-      })),
-    });
   };
 
   // TODO: test pending

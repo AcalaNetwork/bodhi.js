@@ -1,19 +1,16 @@
 import { BigNumber } from '@ethersproject/bignumber';
-import { hexValue, isHexString } from '@ethersproject/bytes';
+import { hexValue } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
-import { Logger } from '@ethersproject/logger';
 import { Formatter, TransactionReceipt } from '@ethersproject/providers';
-import { ApiPromise } from '@polkadot/api';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
 import type { EventRecord } from '@polkadot/types/interfaces';
-import type { EvmLog, H160, ExitReason, RuntimeDispatchInfoV2 } from '@polkadot/types/interfaces/types';
+import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { AnyTuple } from '@polkadot/types/types';
 import { hexToU8a, nToU8a } from '@polkadot/util';
-import { BIGNUMBER_ONE, BIGNUMBER_ZERO, DUMMY_V_R_S } from '../consts';
 import { logger } from './logger';
-import { isOrphanEvmEvent, nativeToEthDecimal } from './utils';
+import { isOrphanEvmEvent } from './utils';
 import { TransactionReceipt as TransactionReceiptSubql } from './gqlTypes';
+import { BIGNUMBER_ZERO, DUMMY_V_R_S } from '../consts';
 
 export interface PartialLog {
   removed: boolean;
@@ -202,60 +199,6 @@ export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => 
     });
 };
 
-export const findTxFeeEvent = (events: EventRecord[]): EventRecord | undefined => {
-  return events.find(({ event }) => {
-    return event.section.toUpperCase() === 'TRANSACTIONPAYMENT' && event.method === 'TransactionFeePaid';
-  });
-};
-
-export const getTransactionIndexAndHash = (
-  hashOrNumber: string | number,
-  extrinsics: GenericExtrinsic[],
-  events: EventRecord[]
-): {
-  transactionIndex: number;
-  transactionHash: string;
-  isExtrinsicFailed: boolean;
-  extrinsicIndex: number;
-} => {
-  const evmExtrinsicIndexes = getEvmExtrinsicIndexes(events);
-  const extrinsicsHashes = extrinsics.map((extrinsic) => extrinsic.hash.toHex());
-
-  let extrinsicIndex: number | undefined = undefined;
-
-  if (isHexString(hashOrNumber, 32)) {
-    extrinsicIndex = extrinsicsHashes.findIndex((hash) => hashOrNumber === hash);
-  } else {
-    const index = BigNumber.from(hashOrNumber).toNumber();
-    extrinsicIndex = evmExtrinsicIndexes[index];
-  }
-
-  const transactionHash = extrinsicIndex ? extrinsics[extrinsicIndex]?.hash.toHex() : undefined;
-
-  if (extrinsicIndex === undefined || transactionHash === undefined || extrinsicIndex < 0) {
-    return logger.throwError('transaction hash not found', Logger.errors.UNKNOWN_ERROR, {
-      hashOrNumber,
-    });
-  }
-
-  const transactionIndex = evmExtrinsicIndexes.findIndex((index) => index === extrinsicIndex);
-
-  if (transactionIndex < 0) {
-    return logger.throwError('expected extrinsic include evm events', Logger.errors.UNKNOWN_ERROR, {
-      hashOrNumber,
-    });
-  }
-
-  const isExtrinsicFailed = events[events.length - 1].event.method === 'ExtrinsicFailed';
-
-  return {
-    transactionIndex,
-    transactionHash,
-    extrinsicIndex,
-    isExtrinsicFailed,
-  };
-};
-
 // parse info that can be extracted from extrinsic alone
 // only works for EVM extrinsics
 export const parseExtrinsic = (
@@ -295,58 +238,6 @@ export const parseExtrinsic = (
     nonce,
     ...DUMMY_V_R_S,
   };
-};
-
-export const getEffectiveGasPrice = async (
-  evmEvent: EventRecord,
-  txFeeEvent: EventRecord | undefined,
-  api: ApiPromise,
-  blockHash: string,
-  extrinsic: GenericExtrinsic<AnyTuple>,
-  actualWeight: number
-): Promise<BigNumber> => {
-  const { data: eventData, method: eventMethod } = evmEvent.event;
-
-  const gasInfoExists =
-    eventData.length > 5 || (eventData.length === 5 && ['Created', 'Executed'].includes(eventMethod));
-
-  if (!gasInfoExists) return BIGNUMBER_ONE;
-
-  const usedGas = BigNumber.from(eventData[eventData.length - 2].toString());
-  const usedStorage = BigNumber.from(eventData[eventData.length - 1].toString());
-
-  let txFee = BigNumber.from('0');
-
-  if (!txFeeEvent) {
-    const block = await api.rpc.chain.getBlock(blockHash);
-
-    // use parentHash to get tx fee
-    const parentHash = block.block.header.parentHash;
-    const apiAt = await api.at(parentHash);
-    const u8a = extrinsic.toU8a();
-
-    const paymentInfo = await apiAt.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV2>(u8a, u8a.length);
-    const estimatedWeight = paymentInfo.weight.refTime ?? paymentInfo.weight;
-
-    const { inclusionFee } = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
-    const { baseFee, lenFee, adjustedWeightFee } = inclusionFee.unwrap();
-
-    const weightFee = (adjustedWeightFee.toBigInt() * BigInt(actualWeight)) / estimatedWeight.toBigInt();
-    txFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + weightFee);
-  } else {
-    // [who, actualFee, actualTip, actualSurplus]
-    txFee = BigNumber.from(txFeeEvent.event.data[1].toString());
-  }
-
-  txFee = nativeToEthDecimal(txFee, 12);
-
-  // if usedStorage > 0, txFee include the storage fee.
-  if (usedStorage.gt(0)) {
-    const storageFee = usedStorage.mul(api.consts.evm.storageDepositPerByte.toBigInt());
-    txFee = txFee.add(storageFee);
-  }
-
-  return txFee.div(usedGas);
 };
 
 // a simulation of nToU8a from @polkadot/api@8
@@ -395,11 +286,12 @@ export const getOrphanTxReceiptsFromEvents = (
 };
 
 export const subqlReceiptAdapter = (
-  receipt: TransactionReceiptSubql,
+  receipt: TransactionReceiptSubql | null,
   formatter: Formatter,
-): TransactionReceipt => {
-  return formatter.receipt({
+): TransactionReceipt | null => (receipt ?
+  formatter.receipt({
     ...receipt,
     logs: receipt.logs.nodes,
-  });
-};
+  })
+  : null
+);
