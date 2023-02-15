@@ -1626,7 +1626,10 @@ export abstract class BaseProvider extends AbstractProvider {
     } else {
       const receiptIdx = BigNumber.from(hashOrNumber).toNumber();
       const receiptFromCache = this.blockCache.getAllReceiptsAtBlock(blockHash)[receiptIdx];
-      if (receiptFromCache) return receiptFromCache;
+      if (
+        receiptFromCache &&
+        await this._isBlockCanonical(receiptFromCache.blockHash, receiptFromCache.blockNumber)
+      ) return receiptFromCache;
 
       const receiptsAtBlock = await this.subql?.getAllReceiptsAtBlock(blockHash);
       console.log(receiptsAtBlock?.[receiptIdx], receiptIdx);
