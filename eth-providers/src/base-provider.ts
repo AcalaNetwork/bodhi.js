@@ -82,6 +82,7 @@ import {
   checkEvmExecutionError,
   getAllReceiptsAtBlock,
   subqlReceiptAdapter,
+  FullReceipt,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
@@ -349,11 +350,11 @@ export abstract class BaseProvider extends AbstractProvider {
       this.blockCache.addReceipts(blockHash, receipts);
 
       // eth_subscribe
-      await this._notifySubscribers(blockHash);
+      await this._notifySubscribers(blockHash, receipts);
     });
   }
 
-  _notifySubscribers = async (blockHash: string) => {
+  _notifySubscribers = async (blockHash: string, receipts: FullReceipt[]) => {
     const headSubscribers = this.eventListeners[SubscriptionType.NewHeads];
     const logSubscribers = this.eventListeners[SubscriptionType.Logs];
 
@@ -364,7 +365,6 @@ export abstract class BaseProvider extends AbstractProvider {
       headSubscribers.forEach((l) => l.cb(response));
 
       if (logSubscribers.length > 0) {
-        const receipts = this.blockCache.getAllReceiptsAtBlock(blockHash);
         const logs = receipts.map((r) => r.logs).flat();
 
         logSubscribers.forEach(({ cb, filter }) => {
@@ -1382,7 +1382,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return result;
   };
 
-  _getBlockNumberFromTag = async (blockTag: BlockTag): Promise<number> => {
+  _getBlockNumber = async (blockTag: BlockTag): Promise<number> => {
     switch (blockTag) {
       case 'pending': {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
@@ -1398,7 +1398,9 @@ export abstract class BaseProvider extends AbstractProvider {
         return this.latestFinalizedBlockNumber;
       }
       default: {
-        if (isHexString(blockTag) || typeof blockTag === 'number') {
+        if (isHexString(blockTag, 32)) {
+          return (await this.api.rpc.chain.getHeader(blockTag as string)).number.toNumber();
+        } else if (isHexString(blockTag) || typeof blockTag === 'number') {
           return BigNumber.from(blockTag).toNumber();
         }
 
@@ -1430,10 +1432,8 @@ export abstract class BaseProvider extends AbstractProvider {
         return this.latestFinalizedBlockHash;
       }
       default: {
-        let blockHash: undefined | string = undefined;
-
         if (isHexString(blockTag, 32)) {
-          blockHash = blockTag as string;
+          return blockTag as string;
         } else if (isHexString(blockTag) || typeof blockTag === 'number') {
           const blockNumber = BigNumber.from(blockTag);
 
@@ -1459,39 +1459,41 @@ export abstract class BaseProvider extends AbstractProvider {
             return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockNumber });
           }
 
-          blockHash = _blockHash.toHex();
+          const blockHash = _blockHash.toHex();
 
           if (isFinalized) {
             this.storageCache.set(cacheKey, _blockHash.toU8a());
           }
+
+          return blockHash;
         }
 
-        if (!blockHash) {
-          return logger.throwArgumentError('blocktag should be a hex string or number', 'blockTag', blockTag);
-        }
-
-        return blockHash;
+        return logger.throwArgumentError(
+          'blocktag should be number | hex string | \'latest\' | \'earliest\' | \'finalized\' | \'safe\'',
+          'blockTag',
+          blockTag
+        );
       }
     }
   };
 
+  _isBlockCanonical = async (blockHash: string, _blockNumber?: number): Promise<boolean> => {
+    const blockNumber = _blockNumber ?? await this._getBlockNumber(blockHash);
+    const canonicalHash = await this.api.rpc.chain.getBlockHash(blockNumber);
+
+    return canonicalHash.toString() === blockHash;
+  };
+
   _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
-    let isFinalized = false;
-    const [finalizedHead, verifyingBlockHash] = await Promise.all([
-      this.api.rpc.chain.getFinalizedHead(),
+    const [blockHash, blockNumber] = await Promise.all([
       this._getBlockHash(blockTag),
+      this._getBlockNumber(blockTag),
     ]);
 
-    const [finalizedBlockNumber, verifyingBlockNumber] = (
-      await Promise.all([this.api.rpc.chain.getHeader(finalizedHead), this.api.rpc.chain.getHeader(verifyingBlockHash)])
-    ).map((header) => header.number.toNumber());
-
-    if (finalizedBlockNumber >= verifyingBlockNumber) {
-      const canonicalHash = await this.api.rpc.chain.getBlockHash(verifyingBlockNumber);
-      isFinalized = canonicalHash.toString() === verifyingBlockHash;
-    }
-
-    return isFinalized;
+    return (
+      this.latestFinalizedBlockNumber >= blockNumber &&
+      this._isBlockCanonical(blockHash, blockNumber)
+    );
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
@@ -1654,7 +1656,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getMinedReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
     const txFromCache = this.blockCache.getReceiptByHash(txHash);
-    if (txFromCache) return txFromCache;
+    if (
+      txFromCache &&
+      await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
+    ) return txFromCache;
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
     return txFromSubql
@@ -1749,8 +1754,8 @@ export abstract class BaseProvider extends AbstractProvider {
       filter.fromBlock = blockNumber;
       filter.toBlock = blockNumber;
     } else {
-      const fromBlockNumber = await this._getBlockNumberFromTag(fromBlock ?? 'latest');
-      const toBlockNumber = await this._getBlockNumberFromTag(toBlock ?? 'latest');
+      const fromBlockNumber = await this._getBlockNumber(fromBlock ?? 'latest');
+      const toBlockNumber = await this._getBlockNumber(toBlock ?? 'latest');
 
       filter.fromBlock = fromBlockNumber;
       filter.toBlock = toBlockNumber;
