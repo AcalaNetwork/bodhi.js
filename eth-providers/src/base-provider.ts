@@ -1597,17 +1597,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return receipt ?? null;
   }
 
-  getReceiptAtBlockFromChain = async (
-    txHash: string | Promise<string>,
-    _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag,
-  ): Promise<TransactionReceipt | null> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
-    const blockHash = await this._getBlockHash(blockTag);
-
-    const receipt = (await getAllReceiptsAtBlock(this.api, blockHash, await txHash))[0];
-    return receipt ?? null;
-  }
-
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
     _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag,
