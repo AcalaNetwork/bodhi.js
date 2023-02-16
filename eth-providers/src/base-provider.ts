@@ -1345,11 +1345,13 @@ export abstract class BaseProvider extends AbstractProvider {
             const blockNumber = head.number.toNumber();
 
             if ((confirms as number) <= blockNumber - startBlock + 1) {
-              const receipt = await this.getReceiptAtBlockFromChain(hash, startBlockHash);
+              const receipt = this.getReceiptAtBlockFromChain(hash, startBlockHash);
               if (alreadyDone()) {
                 return;
               }
-              receipt && resolve(receipt);  // TODO:  any issue?
+
+              // tx was just mined so won't be null
+              resolve(receipt as Promise<TransactionReceipt>);
             }
           })
           .then((unsubscribe) => {
