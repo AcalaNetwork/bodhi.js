@@ -38,7 +38,7 @@ it('getTransactionReceipt', async () => {
     type: 0
   });
 
-  const receipt = await provider.getTransactionReceiptAtBlock(result.hash, result.blockHash);
+  const receipt = await provider.getReceiptAtBlock(result.hash, result.blockHash);
 
   expect(receipt.blockHash).equal(result.blockHash);
   expect(receipt.logs.length).equal(1);

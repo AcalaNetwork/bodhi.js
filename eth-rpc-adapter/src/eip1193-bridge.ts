@@ -385,7 +385,7 @@ class Eip1193BridgeImpl {
     validate([{ type: 'blockHash' }, { type: 'hexNumber' }], params);
 
     try {
-      const res = await this.#provider.getTransactionReceiptAtBlock(parseInt(params[1], 16), params[0]);
+      const res = await this.#provider.getReceiptAtBlock(parseInt(params[1], 16), params[0]);
       return hexlifyRpcResult(res);
     } catch (err: any) {
       if (err.reason?.includes('receipt not found')) return null;
@@ -397,7 +397,7 @@ class Eip1193BridgeImpl {
     validate([{ type: 'block' }, { type: 'hexNumber' }], params);
 
     try {
-      const res = await this.#provider.getTransactionReceiptAtBlock(parseInt(params[1], 16), params[0]);
+      const res = await this.#provider.getReceiptAtBlock(parseInt(params[1], 16), params[0]);
       return hexlifyRpcResult(res);
     } catch (err: any) {
       if (err.reason?.includes('receipt not found')) return null;

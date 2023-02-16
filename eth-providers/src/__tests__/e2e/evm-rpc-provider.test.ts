@@ -26,7 +26,7 @@ describe('connect chain', () => {
   });
 });
 
-describe('getTransactionReceiptAtBlock', () => {
+describe('getReceiptAtBlock', () => {
   const ACALA_NODE_URL = 'wss://acala-rpc-0.aca-api.network';
   const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
   const provider = EvmRpcProvider.from(ACALA_NODE_URL, { subqlUrl: ACALA_SUBQL });
@@ -44,14 +44,14 @@ describe('getTransactionReceiptAtBlock', () => {
   afterAll(async () => await provider.disconnect());
 
   it('should find tx using tx hash or index from subql', async () => {
-    receipt1 = await provider.getTransactionReceiptAtBlock(txHash1, blockHash);
-    receipt2 = await provider.getTransactionReceiptAtBlock(txHash2, blockHash);
+    receipt1 = await provider.getReceiptAtBlock(txHash1, blockHash);
+    receipt2 = await provider.getReceiptAtBlock(txHash2, blockHash);
 
     expect(receipt1?.transactionIndex).to.equal(0);
     expect(receipt2?.transactionIndex).to.equal(1);
 
-    const resIdx1 = await provider.getTransactionReceiptAtBlock(receipt1?.transactionIndex!, blockHash);
-    const resIdx2 = await provider.getTransactionReceiptAtBlock(receipt2?.transactionIndex!, blockHash);
+    const resIdx1 = await provider.getReceiptAtBlock(receipt1?.transactionIndex!, blockHash);
+    const resIdx2 = await provider.getReceiptAtBlock(receipt2?.transactionIndex!, blockHash);
 
     expect(resIdx1).to.deep.equal(receipt1);
     expect(resIdx2).to.deep.equal(receipt2);
