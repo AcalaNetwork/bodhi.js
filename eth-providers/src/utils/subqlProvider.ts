@@ -1,6 +1,6 @@
 import { Log } from '@ethersproject/abstract-provider';
 import { request, gql } from 'graphql-request';
-import { Query, _Metadata, TransactionReceipt as TXReceiptGQL, Log as LogGQL } from './gqlTypes';
+import { Query, _Metadata, TransactionReceipt as TxReceiptGQL, Log as LogGQL } from './gqlTypes';
 import { logger } from './logger';
 import { buildLogsGqlFilter, adaptLogs, LOGS_NODES, TX_RECEIPT_NODES, SanitizedLogFilter } from './logs';
 
@@ -30,7 +30,7 @@ export class SubqlProvider {
       `
     );
 
-  getAllTxReceipts = async (): Promise<TXReceiptGQL[]> => {
+  getAllTxReceipts = async (): Promise<TxReceiptGQL[]> => {
     const res = await this.queryGraphql(`
       query {
         transactionReceipts {
@@ -39,10 +39,10 @@ export class SubqlProvider {
       }
     `);
 
-    return res.transactionReceipts!.nodes as TXReceiptGQL[];
+    return res.transactionReceipts!.nodes as TxReceiptGQL[];
   };
 
-  getTxReceiptByHash = async (hash: string): Promise<TXReceiptGQL | null> => {
+  getTxReceiptByHash = async (hash: string): Promise<TxReceiptGQL | null> => {
     const res = await this.queryGraphql(`
       query {
         transactionReceipts(filter: {
@@ -56,6 +56,22 @@ export class SubqlProvider {
     `);
 
     return res.transactionReceipts!.nodes[0] || null;
+  };
+
+  getAllReceiptsAtBlock = async (hash: string): Promise<TxReceiptGQL[]> => {
+    const res = await this.queryGraphql(`
+      query {
+        transactionReceipts(filter: {
+          blockHash:{
+            equalTo: "${hash}"
+          }
+        }) {
+          ${TX_RECEIPT_NODES}
+        }
+      }
+    `);
+
+    return res.transactionReceipts!.nodes as TxReceiptGQL[];
   };
 
   getAllLogs = async (): Promise<Log[]> => {

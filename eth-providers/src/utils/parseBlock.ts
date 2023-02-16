@@ -22,7 +22,11 @@ import {
   nativeToEthDecimal,
 } from './utils';
 
-export const getAllReceiptsAtBlock = async (api: ApiPromise, blockHash: string): Promise<FullReceipt[]> => {
+export const getAllReceiptsAtBlock = async (
+  api: ApiPromise,
+  blockHash: string,
+  targetTxHash?: string,
+): Promise<FullReceipt[]> => {
   const apiAtTargetBlock = await api.at(blockHash);
 
   const [block, blockEvents] = await Promise.all([
@@ -30,20 +34,21 @@ export const getAllReceiptsAtBlock = async (api: ApiPromise, blockHash: string):
     apiAtTargetBlock.query.system.events<FrameSystemEventRecord[]>(),
   ]);
 
-  return parseReceiptsFromBlockData(api, block, blockEvents);
+  return parseReceiptsFromBlockData(api, block, blockEvents, targetTxHash);
 };
 
 export const parseReceiptsFromBlockData = async (
   api: ApiPromise,
   block: SignedBlock,
-  blockEvents: FrameSystemEventRecord[]
+  blockEvents: FrameSystemEventRecord[],
+  targetTxHash?: string,
 ): Promise<FullReceipt[]> => {
   const { header } = block.block;
   const blockNumber = header.number.toNumber();
   const blockHash = header.hash.toHex();
   const _apiAtParentBlock = api.at(header.parentHash); // don't wait here in case not being used
 
-  const normalTxs = block.block.extrinsics
+  let normalTxs = block.block.extrinsics
     .map((extrinsic, idx) => ({
       extrinsic,
       extrinsicEvents: extractTargetEvents(blockEvents, idx),
@@ -51,6 +56,10 @@ export const parseReceiptsFromBlockData = async (
     .filter(
       ({ extrinsicEvents }) => extrinsicEvents.some(isNormalEvmEvent) && !extrinsicEvents.find(isExtrinsicFailedEvent)
     );
+
+  if (targetTxHash) {
+    normalTxs = normalTxs.filter(({ extrinsic }) => extrinsic.hash.toHex() === targetTxHash);
+  }
 
   const normalReceiptsPending: Promise<FullReceipt>[] = normalTxs.map(
     async ({ extrinsicEvents, extrinsic }, transactionIndex) => {
@@ -83,11 +92,14 @@ export const parseReceiptsFromBlockData = async (
 
   const normalReceipts = await Promise.all(normalReceiptsPending);
   const orphanReceipts = getOrphanTxReceiptsFromEvents(blockEvents, blockHash, blockNumber, normalReceipts.length);
-
-  return [
+  const allCandidateReceipts = [
     ...normalReceipts,
     ...orphanReceipts,
   ];
+
+  return targetTxHash
+    ? allCandidateReceipts.filter(r => r.transactionHash === targetTxHash)
+    : allCandidateReceipts;
 };
 
 const extractTargetEvents = (allEvents: FrameSystemEventRecord[], targetIdx: number): FrameSystemEventRecord[] =>

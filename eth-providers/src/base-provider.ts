@@ -1344,11 +1344,13 @@ export abstract class BaseProvider extends AbstractProvider {
             const blockNumber = head.number.toNumber();
 
             if ((confirms as number) <= blockNumber - startBlock + 1) {
-              const receipt = this.getTransactionReceiptAtBlock(hash, startBlockHash);
+              const receipt = this.getReceiptAtBlockFromChain(hash, startBlockHash);
               if (alreadyDone()) {
                 return;
               }
-              resolve(receipt);
+
+              // tx was just mined so won't be null
+              resolve(receipt as Promise<TransactionReceipt>);
             }
           })
           .then((unsubscribe) => {
@@ -1616,6 +1618,17 @@ export abstract class BaseProvider extends AbstractProvider {
       isExtrinsicFailed,
     };
   };
+
+  getReceiptAtBlockFromChain = async (
+    txHash: string | Promise<string>,
+    _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag,
+  ): Promise<TransactionReceipt | null> => {
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
+    const blockHash = await this._getBlockHash(blockTag);
+
+    const receipt = (await getAllReceiptsAtBlock(this.api, blockHash, await txHash))[0];
+    return receipt ?? null;
+  }
 
   getTransactionReceiptAtBlock = async (
     hashOrNumber: number | string | Promise<string>,
