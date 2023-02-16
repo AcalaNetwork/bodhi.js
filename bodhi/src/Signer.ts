@@ -269,7 +269,9 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
                   const hex = result.status.isInBlock
                     ? result.status.asInBlock.toHex()
                     : result.status.asFinalized.toHex();
-                  return this.provider.getReceiptAtBlockFromChain(extrinsic.hash.toHex(), hex);
+
+                  // tx was just mined so won't be null
+                  return this.provider.getReceiptAtBlockFromChain(extrinsic.hash.toHex(), hex) as Promise<TransactionReceipt>;
                 },
               });
             })
