@@ -1609,11 +1609,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = await this._getBlockHash(blockTag);
 
     return isHexString(hashOrNumber, 32)
-      ? this._getReceiptAtBlockByHash(hashOrNumber as string, blockHash)
-      : this._getReceiptAtBlockByIndex(hashOrNumber, blockHash);
+      ? this._getReceiptByHashAtBlock(hashOrNumber as string, blockHash)
+      : this._getReceiptByIndexAtBlock(hashOrNumber, blockHash);
   };
 
-  _getReceiptAtBlockByHash = async (
+  _getReceiptByHashAtBlock = async (
     txHash: string,
     blockHash: string
   ) => {
@@ -1623,7 +1623,7 @@ export abstract class BaseProvider extends AbstractProvider {
       : null;
   }
 
-  _getReceiptAtBlockByIndex = async (
+  _getReceiptByIndexAtBlock = async (
     txIdx: number | string,
     blockHash: string
   ) => {
@@ -1636,24 +1636,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const receiptsAtBlock = await this.subql?.getAllReceiptsAtBlock(blockHash);
     const sortedReceipts = receiptsAtBlock?.sort(sortObjByKey('transactionIndex'));
-
     return sortedReceipts?.[receiptIdx]
       ? subqlReceiptAdapter(sortedReceipts[receiptIdx], this.formatter)
       : null;
   }
-
-  _getMinedReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const txFromCache = this.blockCache.getReceiptByHash(txHash);
-    if (
-      txFromCache &&
-      await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
-    ) return txFromCache;
-
-    const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-    return txFromSubql
-      ? subqlReceiptAdapter(txFromSubql, this.formatter)
-      : null;
-  };
 
   // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
@@ -1671,6 +1657,19 @@ export abstract class BaseProvider extends AbstractProvider {
       gasPrice: 0, // TODO: reverse calculate using args.storage_limit if needed
       ...parseExtrinsic(targetExtrinsic),
     };
+  };
+
+  _getMinedReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
+    const txFromCache = this.blockCache.getReceiptByHash(txHash);
+    if (
+      txFromCache &&
+      await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
+    ) return txFromCache;
+
+    const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
+    return txFromSubql
+      ? subqlReceiptAdapter(txFromSubql, this.formatter)
+      : null;
   };
 
   // Queries
