@@ -83,6 +83,7 @@ import {
   getAllReceiptsAtBlock,
   subqlReceiptAdapter,
   FullReceipt,
+  sortObjByKey,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
@@ -1344,7 +1345,7 @@ export abstract class BaseProvider extends AbstractProvider {
             const blockNumber = head.number.toNumber();
 
             if ((confirms as number) <= blockNumber - startBlock + 1) {
-              const receipt = await this.getTransactionReceiptAtBlockFromChain(hash, startBlockHash);
+              const receipt = await this.getReceiptAtBlockFromChain(hash, startBlockHash);
               if (alreadyDone()) {
                 return;
               }
@@ -1583,29 +1584,15 @@ export abstract class BaseProvider extends AbstractProvider {
     return resolveProperties(tx);
   };
 
-  getTransactionReceiptAtBlockFromChain = async (
+  getReceiptAtBlockFromChain = async (
     txHash: string | Promise<string>,
     _blockTag: BlockTag | Promise<BlockTag> | Eip1898BlockTag,
-  ): Promise<TransactionReceipt> => {
+  ): Promise<TransactionReceipt | null> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
-
-    // console.log({
-    //   blockTag,
-    // });
-    // await sleep(3000);
-
     const blockHash = await this._getBlockHash(blockTag);
-    const blockNumber = (await this.api.rpc.chain.getHeader(blockHash)).number.toNumber();
-    console.log('getTransactionReceiptAtBlockFromChain', {
-      txHash, blockNumber,
-    });
-    // await sleep(5000);
-    const receipt = (await getAllReceiptsAtBlock(this.api, blockHash, await txHash))[0];
-    // if (!receipt) {
-    //   logger.throwError('<getTransactionReceiptAtBlock> receipt not found');
-    // }
 
-    return receipt;
+    const receipt = (await getAllReceiptsAtBlock(this.api, blockHash, await txHash))[0];
+    return receipt ?? null;
   }
 
   getTransactionReceiptAtBlock = async (
@@ -1617,13 +1604,14 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockHash = await this._getBlockHash(blockTag);
 
-    if (isHexString(hashOrNumber, 32)) {
+    const isTxHash = isHexString(hashOrNumber, 32);
+    if (isTxHash) {
       const txHash = hashOrNumber as string;
       const receipt = await this._getMinedReceipt(txHash);
       return receipt?.blockHash === blockHash
         ? receipt
         : null;
-    } else {
+    } else {    // tx index
       const receiptIdx = BigNumber.from(hashOrNumber).toNumber();
       const receiptFromCache = this.blockCache.getAllReceiptsAtBlock(blockHash)[receiptIdx];
       if (
@@ -1632,9 +1620,9 @@ export abstract class BaseProvider extends AbstractProvider {
       ) return receiptFromCache;
 
       const receiptsAtBlock = await this.subql?.getAllReceiptsAtBlock(blockHash);
-      console.log(receiptsAtBlock?.[receiptIdx], receiptIdx);
-      return receiptsAtBlock?.[receiptIdx]
-        ? subqlReceiptAdapter(receiptsAtBlock[receiptIdx], this.formatter)
+      const sortedReceipts = receiptsAtBlock?.sort(sortObjByKey('transactionIndex'));
+      return sortedReceipts?.[receiptIdx]
+        ? subqlReceiptAdapter(sortedReceipts[receiptIdx], this.formatter)
         : null;
     }
   };
