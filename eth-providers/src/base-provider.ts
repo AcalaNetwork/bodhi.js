@@ -1627,15 +1627,18 @@ export abstract class BaseProvider extends AbstractProvider {
     txIdx: number | string,
     blockHash: string
   ) => {
+    // TODO: remove me after new subql re-indexing, it should be sorted automatically
+    const sortByTxIdx = sortObjByKey('transactionIndex');
+
     const receiptIdx = BigNumber.from(txIdx).toNumber();
-    const receiptFromCache = this.blockCache.getAllReceiptsAtBlock(blockHash)[receiptIdx];
+    const receiptFromCache = this.blockCache.getAllReceiptsAtBlock(blockHash).sort(sortByTxIdx)[receiptIdx];
     if (
       receiptFromCache &&
       await this._isBlockCanonical(receiptFromCache.blockHash, receiptFromCache.blockNumber)
     ) return receiptFromCache;
 
     const receiptsAtBlock = await this.subql?.getAllReceiptsAtBlock(blockHash);
-    const sortedReceipts = receiptsAtBlock?.sort(sortObjByKey('transactionIndex'));
+    const sortedReceipts = receiptsAtBlock?.sort(sortByTxIdx);
     return sortedReceipts?.[receiptIdx]
       ? subqlReceiptAdapter(sortedReceipts[receiptIdx], this.formatter)
       : null;
