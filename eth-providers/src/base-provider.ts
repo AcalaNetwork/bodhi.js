@@ -1690,7 +1690,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (!tx) return null;
 
-    // TODO: maybe save these parsed info in FullReceipt for ultimate performance
+    // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
+    // it's free info from getAllReceiptsAtBlock but requires 1 extra async call here
     const block = await this.api.rpc.chain.getBlock(tx.blockHash);
     const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
 
