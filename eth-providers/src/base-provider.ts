@@ -1609,11 +1609,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = await this._getBlockHash(blockTag);
 
     return isHexString(hashOrNumber, 32)
-      ? this._getReceiptByHashAtBlock(hashOrNumber as string, blockHash)
-      : this._getReceiptByIndexAtBlock(hashOrNumber, blockHash);
+      ? this._getReceiptAtBlockByHash(hashOrNumber as string, blockHash)
+      : this._getReceiptAtBlockByIndex(hashOrNumber, blockHash);
   };
 
-  _getReceiptByHashAtBlock = async (
+  _getReceiptAtBlockByHash = async (
     txHash: string,
     blockHash: string
   ) => {
@@ -1623,7 +1623,7 @@ export abstract class BaseProvider extends AbstractProvider {
       : null;
   }
 
-  _getReceiptByIndexAtBlock = async (
+  _getReceiptAtBlockByIndex = async (
     txIdx: number | string,
     blockHash: string
   ) => {
