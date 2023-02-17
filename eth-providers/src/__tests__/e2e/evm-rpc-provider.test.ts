@@ -58,7 +58,7 @@ describe('getReceiptAtBlock', () => {
   });
 
   // TODO: current subql uses old hash, enable me after reindexing with latest subql
-  it.skip('should find same txs from chain', async () => {
+  it.skip('getReceiptAtBlockFromChain should find same txs from chain', async () => {
     const res1 = await provider.getReceiptAtBlockFromChain(txHash1, blockHash);
     const res2 = await provider.getReceiptAtBlockFromChain(txHash2, blockHash);
 

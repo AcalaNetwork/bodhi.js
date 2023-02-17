@@ -98,8 +98,6 @@ describe('dex test', () => {
       value: '0x0'
     });
 
-    console.log(receipt)
-
     expect(hexlifyRpcResult(receipt)).deep.eq(hexlifyRpcResult({
       to: TokenA.address,
       from: aliceEvmAddress,
