@@ -262,12 +262,12 @@ export const getOrphanTxReceiptsFromEvents = (
   return receipts.map(receipt => Formatter.check(fullReceiptFormatter, receipt));
 };
 
-export const subqlReceiptAdapter = (
-  receipt: TransactionReceiptSubql | null,
-): TransactionReceipt | null => (receipt ?
-  Formatter.check(fullReceiptFormatter, {
-    ...receipt,
-    logs: receipt.logs.nodes,
-  })
-  : null
-);
+export const subqlReceiptAdapter =
+  <T extends TransactionReceiptSubql | null>(receipt: T)
+    : T extends null ? null : TransactionReceipt => (receipt ?
+    Formatter.check(fullReceiptFormatter, {
+      ...receipt,
+      logs: receipt.logs.nodes,
+    })
+    : null
+  );

@@ -1422,7 +1422,6 @@ describe('eth_getBlockByNumber', () => {
     const res = (await eth_getBlockByNumber_karura([1818188, false])).data.result;
 
     const block1818188NotFull = karuraBlock1818188;
-    block1818188NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
     expect(resFull).to.deep.equal(karuraBlock1818188);
     expect(res).to.deep.equal(block1818188NotFull);
@@ -1434,7 +1433,6 @@ describe('eth_getBlockByNumber', () => {
 
     const block1818518NotFull = { ...karuraBlock1818518 };
     block1818518NotFull.transactions = karuraBlock1818518.transactions.map((t) => t.hash) as any;
-    block1818518NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
     expect(resFull).to.deep.equal(karuraBlock1818518);
     expect(res).to.deep.equal(block1818518NotFull);
@@ -1446,7 +1444,6 @@ describe('eth_getBlockByNumber', () => {
 
     const block2449983NotFull = { ...karuraBlock2449983 };
     block2449983NotFull.transactions = karuraBlock2449983.transactions.map((t) => t.hash) as any;
-    block2449983NotFull.gasUsed = '0x0'; // FIXME: shouldn't be 0
 
     expect(resFull).to.deep.equal(karuraBlock2449983);
     expect(res).to.deep.equal(block2449983NotFull);

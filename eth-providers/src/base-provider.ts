@@ -519,11 +519,12 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const [block, validators, now, isCanonical] = await Promise.all([
+    const isCanonical = this._isBlockCanonical(blockHash, blockNumber);
+    const [block, validators, now, receiptsFromSubql] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
       this.queryStorage('timestamp.now', [], blockHash),
-      this._isBlockCanonical(blockHash, blockNumber),
+      this.subql?.getAllReceiptsAtBlock(blockHash),
     ]);
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
@@ -533,11 +534,16 @@ export abstract class BaseProvider extends AbstractProvider {
       ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase()
       : DUMMY_ADDRESS;
 
-    // if blocktag is blockhash, it means it's asking for that specific block
-    // so return the transactions even it's non-canonical
-    const receipts = isCanonical || isHexString(blockTag, 32)
-      ? this.blockCache.getAllReceiptsAtBlock(blockHash)
-      : [];
+    let receipts: FullReceipt[];
+    if (receiptsFromSubql?.length) {
+      receipts = receiptsFromSubql.map(subqlReceiptAdapter);
+    } else {
+      // if blocktag is blockhash, it means it's asking for that specific block
+      // so return the transactions even it's non-canonical
+      receipts = isHexString(blockTag, 32) || await isCanonical
+        ? this.blockCache.getAllReceiptsAtBlock(blockHash)
+        : [];
+    }
 
     const transactions = full
       ? receipts.map(tx => this._toTransaction(tx, block))
