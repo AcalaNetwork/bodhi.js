@@ -26,10 +26,10 @@ import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
-import { AccountId, Header, RuntimeVersion } from '@polkadot/types/interfaces';
+import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
+import { AccountId, Header, RuntimeVersion, SignedBlock } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
-import { FrameSystemAccountInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
@@ -61,7 +61,6 @@ import {
   computeDefaultSubstrateAddress,
   nativeToEthDecimal,
   filterLog,
-  getEvmExtrinsicIndexes,
   getHealthResult,
   HealthResult,
   hexlifyRpcResult,
@@ -75,7 +74,6 @@ import {
   throwNotImplemented,
   parseBlockTag,
   filterLogByTopics,
-  getOrphanTxReceiptsFromEvents,
   BaseLogFilter,
   SanitizedLogFilter,
   LogFilter,
@@ -118,15 +116,11 @@ export interface BlockData {
   size: number;
   uncles: string[];
 
-  transactions: `0x${string}`[];
+  transactions: `0x${string}`[] | TX[];
 
   // baseFeePerGas: BIGNUMBER_ZERO,
   // with baseFeePerGas Metamask will send token with EIP-1559 format
   // but we want it to send with legacy format
-}
-
-export interface FullBlockData extends Omit<BlockData, 'transactions'> {
-  transactions: TX[];
 }
 
 export type Numberish = bigint | string | number;
@@ -516,17 +510,20 @@ export abstract class BaseProvider extends AbstractProvider {
     return header.number.toNumber();
   };
 
-  _getBlock = async (_blockTag: BlockTag | Promise<BlockTag>): Promise<BlockData> => {
+  getBlockData = async (
+    _blockTag: BlockTag | Promise<BlockTag>,
+    full?: boolean,
+  ): Promise<BlockData> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const header = await this._getBlockHeader(blockTag);
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const [block, validators, now, blockEvents] = await Promise.all([
+    const [block, validators, now, isCanonical] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
       this.queryStorage('timestamp.now', [], blockHash),
-      this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash),
+      this._isBlockCanonical(blockHash, blockNumber),
     ]);
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
@@ -536,24 +533,17 @@ export abstract class BaseProvider extends AbstractProvider {
       ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase()
       : DUMMY_ADDRESS;
 
-    const evmExtrinsicIndexes = getEvmExtrinsicIndexes(blockEvents);
+    // if blocktag is blockhash, it means it's asking for that specific block
+    // so return the transactions even it's non-canonical
+    const receipts = isCanonical || isHexString(blockTag, 32)
+      ? this.blockCache.getAllReceiptsAtBlock(blockHash)
+      : [];
 
-    const normalTxHashes = evmExtrinsicIndexes.map((extrinsicIndex) =>
-      block.block.extrinsics[extrinsicIndex].hash.toHex()
-    );
+    const transactions = full
+      ? receipts.map(tx => this._toTransaction(tx, block))
+      : receipts.map(tx => tx.transactionHash as `0x${string}`);
 
-    const allEvents = await this.queryStorage<Vec<FrameSystemEventRecord>>('system.events', [], blockHash);
-    const orphanHashes = getOrphanTxReceiptsFromEvents(
-      allEvents,
-      blockHash,
-      blockNumber,
-      normalTxHashes.length,
-    ).map(r => r.transactionHash);
-
-    const alltxHashes = [
-      ...normalTxHashes,
-      ...(orphanHashes as '0x{string}'[]),
-    ];
+    const gasUsed = receipts.reduce((r, tx) => r.add(tx.gasUsed), BIGNUMBER_ZERO);
 
     return {
       hash: blockHash,
@@ -567,7 +557,7 @@ export abstract class BaseProvider extends AbstractProvider {
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
-      gasUsed: BIGNUMBER_ZERO, // TODO: not full is 0
+      gasUsed,
 
       miner: author,
       extraData: EMPTY_HEX_STRING,
@@ -577,27 +567,8 @@ export abstract class BaseProvider extends AbstractProvider {
       size: block.encodedLength,
       uncles: EMTPY_UNCLES,
 
-      transactions: alltxHashes,
-    };
-  };
-
-  _getFullBlock = async (blockTag: BlockTag | Promise<BlockTag>): Promise<FullBlockData> => {
-    const block = await this._getBlock(blockTag);
-    const transactions = await Promise.all(
-      block.transactions.map((txHash) => this.getTransactionByHash(txHash) as Promise<TX>)
-    );
-
-    const gasUsed = transactions.reduce((r, tx) => r.add(tx.gas), BIGNUMBER_ZERO);
-
-    return {
-      ...block,
       transactions,
-      gasUsed,
     };
-  };
-
-  getBlockData = async (blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData | FullBlockData> => {
-    return full ? this._getFullBlock(blockTag) : this._getBlock(blockTag);
   };
 
   getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
@@ -1695,6 +1666,11 @@ export abstract class BaseProvider extends AbstractProvider {
     // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
     // it's free info from getAllReceiptsAtBlock but requires 1 extra async call here
     const block = await this.api.rpc.chain.getBlock(tx.blockHash);
+
+    return this._toTransaction(tx, block);
+  };
+
+  _toTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
     const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
 
     const extraData = extrinsic
@@ -1713,7 +1689,7 @@ export abstract class BaseProvider extends AbstractProvider {
       // overrides `to` in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
       to: tx.to || null,
     };
-  };
+  }
 
   getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
     throwNotImplemented('getTransactionReceipt (please use `getReceiptByHash` instead)');

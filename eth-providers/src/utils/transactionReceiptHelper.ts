@@ -157,27 +157,6 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
   return logger.throwError(`unsupported event: ${event.event.method}`);
 };
 
-export const getEvmExtrinsicIndexes = (events: EventRecord[]): number[] => {
-  return events
-    .filter(
-      (event) =>
-        event.phase.isApplyExtrinsic &&
-        event.event.section.toUpperCase() === 'EVM' &&
-        ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.event.method)
-    )
-    .reduce((r, event) => {
-      const extrinsicIndex = event.phase.asApplyExtrinsic.toNumber();
-
-      if (!r.length) {
-        r = [extrinsicIndex];
-      } else if (r[r.length - 1] !== extrinsicIndex) {
-        r.push(extrinsicIndex);
-      }
-
-      return r;
-    }, [] as number[]);
-};
-
 export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
   return events
     .filter(
