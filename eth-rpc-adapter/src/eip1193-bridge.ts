@@ -336,6 +336,8 @@ class Eip1193BridgeImpl {
     const res = await this.#provider.getReceiptByHash(params[0]);
     if (!res) return null;
 
+    // @ts-ignore
+    delete res.confirmations;
     return hexlifyRpcResult(res);
   }
 
