@@ -538,8 +538,13 @@ export abstract class BaseProvider extends AbstractProvider {
     if (receiptsFromSubql?.length) {
       receipts = receiptsFromSubql.map(subqlReceiptAdapter);
     } else {
-      // if blocktag is blockhash, it means it's asking for that specific block
-      // so return the transactions even it's non-canonical
+      /* ----------
+         if nothing is returned from subql, either no tx exists in this block,
+         or the block not finalized. So we still need to ask block cache.
+
+         if blocktag is a blockhash, that means it's asking for that specific block
+         so return the transactions even block is non-canonical
+                                                                         ---------- */
       receipts = isHexString(blockTag, 32) || await isCanonical
         ? this.blockCache.getAllReceiptsAtBlock(blockHash)
         : [];
@@ -549,7 +554,8 @@ export abstract class BaseProvider extends AbstractProvider {
       ? receipts.map(tx => this._toTransaction(tx, block))
       : receipts.map(tx => tx.transactionHash as `0x${string}`);
 
-    const gasUsed = receipts.reduce((r, tx) => r.add(tx.gasUsed), BIGNUMBER_ZERO);
+
+    const gasUsed = receipts.reduce((totalGas, tx) => totalGas.add(tx.gasUsed), BIGNUMBER_ZERO);
 
     return {
       hash: blockHash,
