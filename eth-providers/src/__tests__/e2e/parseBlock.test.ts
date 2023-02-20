@@ -29,7 +29,7 @@ interface FormatedReceipt {
 const formatReceipt = (receipt: TransactionReceipt): FormatedReceipt => (
   Object.entries(hexlifyRpcResult(receipt)).reduce((acc, kvPair) => {
     const [k, v] = kvPair;
-    if (!['confirmations'].includes(k)) {
+    if (!['byzantium', 'confirmations'].includes(k)) {
       acc[k] = v;
     }
 

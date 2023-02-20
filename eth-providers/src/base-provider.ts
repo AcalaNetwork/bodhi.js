@@ -1639,7 +1639,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const receiptsAtBlock = await this.subql?.getAllReceiptsAtBlock(blockHash);
     const sortedReceipts = receiptsAtBlock?.sort(sortByTxIdx);
     return sortedReceipts?.[receiptIdx]
-      ? subqlReceiptAdapter(sortedReceipts[receiptIdx], this.formatter)
+      ? subqlReceiptAdapter(sortedReceipts[receiptIdx])
       : null;
   }
 
@@ -1670,7 +1670,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
     return txFromSubql
-      ? subqlReceiptAdapter(txFromSubql, this.formatter)
+      ? subqlReceiptAdapter(txFromSubql)
       : null;
   };
 

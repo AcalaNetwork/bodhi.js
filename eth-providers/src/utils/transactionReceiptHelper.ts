@@ -285,9 +285,8 @@ export const getOrphanTxReceiptsFromEvents = (
 
 export const subqlReceiptAdapter = (
   receipt: TransactionReceiptSubql | null,
-  formatter: Formatter,
 ): TransactionReceipt | null => (receipt ?
-  formatter.receipt({
+  Formatter.check(fullReceiptFormatter, {
     ...receipt,
     logs: receipt.logs.nodes,
   })
