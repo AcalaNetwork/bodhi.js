@@ -86,8 +86,7 @@ describe('dex test', () => {
 
     const txHash = swapWithExactSupplyExtrinsic.hash.toHex();
     const tx = await evmProvider.getTransactionByHash(txHash);
-
-    const receipt = await evmProvider.getTxReceiptByHash(txHash);
+    const receipt = await evmProvider.getReceiptByHash(txHash);
 
     const aliceEvmAddress = (await wallet.getAddress()).toLowerCase();
     expect(hexlifyRpcResult(tx)).to.contain({
@@ -99,52 +98,51 @@ describe('dex test', () => {
       value: '0x0'
     });
 
-    expect(hexlifyRpcResult(receipt)).deep.eq({
-      to: hexlifyRpcResult(TokenA.address),
+    expect(hexlifyRpcResult(receipt)).deep.eq(hexlifyRpcResult({
+      to: TokenA.address,
       from: aliceEvmAddress,
       contractAddress: null,
-      transactionIndex: hexlifyRpcResult(tx.transactionIndex),
-      gasUsed: hexlifyRpcResult(receipt.gasUsed),
-      logsBloom: hexlifyRpcResult(receipt.logsBloom),
+      transactionIndex: tx.transactionIndex,
+      gasUsed: receipt.gasUsed,
+      logsBloom: receipt.logsBloom,
       blockHash: tx.blockHash,
       transactionHash: txHash,
       logs: [
         {
-          transactionIndex: hexlifyRpcResult(tx.transactionIndex),
-          blockNumber: hexlifyRpcResult(tx.blockNumber),
+          transactionIndex: tx.transactionIndex,
+          blockNumber: tx.blockNumber,
           transactionHash: txHash,
-          address: hexlifyRpcResult(TokenA.address),
+          address: TokenA.address,
           topics: [
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
             '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743'
           ],
           data: '0x000000000000000000000000000000000000000000000000000000000000000a',
-          logIndex: hexlifyRpcResult(0),
+          logIndex: 0,
           blockHash: tx.blockHash
         },
         {
-          transactionIndex: hexlifyRpcResult(tx.transactionIndex),
-          blockNumber: hexlifyRpcResult(tx.blockNumber),
+          transactionIndex: tx.transactionIndex,
+          blockNumber: tx.blockNumber,
           transactionHash: txHash,
-          address: hexlifyRpcResult(TokenB.address),
+          address: TokenB.address,
           topics: [
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
             '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0'
           ],
           data: '0x0000000000000000000000000000000000000000000000000000000000000062',
-          logIndex: hexlifyRpcResult(1),
+          logIndex: 1,
           blockHash: tx.blockHash
         }
       ],
-      blockNumber: hexlifyRpcResult(tx.blockNumber),
-      cumulativeGasUsed: hexlifyRpcResult(receipt.cumulativeGasUsed),
-      effectiveGasPrice: hexlifyRpcResult(receipt.effectiveGasPrice),
+      blockNumber: tx.blockNumber,
+      cumulativeGasUsed: receipt.cumulativeGasUsed,
+      effectiveGasPrice: receipt.effectiveGasPrice,
       status: '0x1',
       type: '0x0',
-      byzantium: true,
-      confirmations: hexlifyRpcResult(0)
-    });
+      confirmations: null,
+    }));
   });
 });

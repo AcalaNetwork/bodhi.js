@@ -349,3 +349,12 @@ export const isExtrinsicFailedEvent = (event: FrameSystemEventRecord): boolean =
 export const isExtrinsicSuccessEvent = (event: FrameSystemEventRecord): boolean => (
   event.event.method === 'ExtrinsicSuccess'
 );
+
+export const sortObjByKey = <T extends Record<string, any>>(key: string) =>
+  (a: T, b: T) => (
+    !a[key]
+      ? -1
+      : typeof a[key] === 'string'
+        ? (a[key] as string).localeCompare(b[key] as string)
+        : (a[key] as number) - (b[key] as number)
+  );

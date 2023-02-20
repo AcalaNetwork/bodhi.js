@@ -333,11 +333,9 @@ class Eip1193BridgeImpl {
   async eth_getTransactionReceipt(params: any[]): Promise<TransactionReceipt | null> {
     validate([{ type: 'blockHash' }], params);
 
-    const res = await this.#provider.getTxReceiptByHash(params[0]);
+    const res = await this.#provider.getReceiptByHash(params[0]);
     if (!res) return null;
 
-    // @ts-ignore
-    delete res.byzantium;
     // @ts-ignore
     delete res.confirmations;
     return hexlifyRpcResult(res);
@@ -384,25 +382,15 @@ class Eip1193BridgeImpl {
   async eth_getTransactionByBlockHashAndIndex(params: any[]): Promise<any> {
     validate([{ type: 'blockHash' }, { type: 'hexNumber' }], params);
 
-    try {
-      const res = await this.#provider.getTransactionReceiptAtBlock(parseInt(params[1], 16), params[0]);
-      return hexlifyRpcResult(res);
-    } catch (err: any) {
-      if (err.reason?.includes('receipt not found')) return null;
-      throw err;
-    }
+    const res = await this.#provider.getReceiptAtBlock(parseInt(params[1], 16), params[0]);
+    return hexlifyRpcResult(res);
   }
 
   async eth_getTransactionByBlockNumberAndIndex(params: any[]): Promise<any> {
     validate([{ type: 'block' }, { type: 'hexNumber' }], params);
 
-    try {
-      const res = await this.#provider.getTransactionReceiptAtBlock(parseInt(params[1], 16), params[0]);
-      return hexlifyRpcResult(res);
-    } catch (err: any) {
-      if (err.reason?.includes('receipt not found')) return null;
-      throw err;
-    }
+    const res = await this.#provider.getReceiptAtBlock(parseInt(params[1], 16), params[0]);
+    return hexlifyRpcResult(res);
   }
 
   async eth_getUncleCountByBlockHash(params: any[]): Promise<any> {

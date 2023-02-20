@@ -8,9 +8,9 @@ import { acala1102030a, acala1102030b, acala1555311a, acala1555311b, acala156338
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 interface FormatedReceipt {
-  to: string;
+  to?: string;
   from: string;
-  contractAddress: string,
+  contractAddress?: string,
   transactionIndex: number,
   root?: string,
   gasUsed: string,
@@ -34,7 +34,7 @@ const formatReceipt = (receipt: TransactionReceipt): FormatedReceipt => (
     }
 
     return acc;
-  }, {} as FormatedReceipt)  
+  }, {} as FormatedReceipt)
 );
 
 const getAllReceiptsAtBlockNumber = async (
