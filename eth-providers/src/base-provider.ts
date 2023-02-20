@@ -27,7 +27,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
-import { AccountId, Header, RuntimeVersion, SignedBlock } from '@polkadot/types/interfaces';
+import { AccountId, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
@@ -52,7 +52,6 @@ import {
   SAFE_MODE_WARNING_MSG,
   ZERO,
   DUMMY_BLOCK_HASH,
-  ORPHAN_TX_DEFAULT_INFO,
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -82,6 +81,7 @@ import {
   subqlReceiptAdapter,
   FullReceipt,
   sortObjByKey,
+  receiptToTransaction,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
@@ -548,7 +548,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const transactions = full
-      ? receipts.map(tx => this._toTransaction(tx, block))
+      ? receipts.map(tx => receiptToTransaction(tx, block))
       : receipts.map(tx => tx.transactionHash as `0x${string}`);
 
 
@@ -579,27 +579,6 @@ export abstract class BaseProvider extends AbstractProvider {
       transactions,
     };
   };
-
-  _toTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
-    const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
-
-    const extraData = extrinsic
-      ? parseExtrinsic(extrinsic)
-      : ORPHAN_TX_DEFAULT_INFO;
-
-    return {
-      blockHash: tx.blockHash,
-      blockNumber: tx.blockNumber,
-      transactionIndex: tx.transactionIndex,
-      hash: tx.transactionHash,
-      from: tx.from,
-      gasPrice: tx.effectiveGasPrice,
-      ...extraData,
-
-      // overrides `to` in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
-      to: tx.to || null,
-    };
-  }
 
   getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
     throwNotImplemented('getBlock (please use `getBlockData` instead)');
@@ -1687,33 +1666,17 @@ export abstract class BaseProvider extends AbstractProvider {
       if (pendingTX) return pendingTX;
     }
 
-    const tx = this.localMode
+    const receipt = this.localMode
       ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
       : await this._getMinedReceipt(txHash);
 
-    if (!tx) return null;
+    if (!receipt) return null;
 
     // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
     // it's free info from getAllReceiptsAtBlock but requires 1 extra async call here
-    const block = await this.api.rpc.chain.getBlock(tx.blockHash);
-    const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
+    const block = await this.api.rpc.chain.getBlock(receipt.blockHash);
 
-    const extraData = extrinsic
-      ? parseExtrinsic(extrinsic)
-      : ORPHAN_TX_DEFAULT_INFO;
-
-    return {
-      blockHash: tx.blockHash,
-      blockNumber: tx.blockNumber,
-      transactionIndex: tx.transactionIndex,
-      hash: tx.transactionHash,
-      from: tx.from,
-      gasPrice: tx.effectiveGasPrice,
-      ...extraData,
-
-      // overrides `to` in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
-      to: tx.to || null,
-    };
+    return receiptToTransaction(receipt, block);
   }
 
   getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
