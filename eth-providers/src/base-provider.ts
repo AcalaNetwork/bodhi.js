@@ -26,8 +26,8 @@ import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
-import { AccountId, Header, RuntimeVersion, SignedBlock } from '@polkadot/types/interfaces';
+import { Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
+import { AccountId, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
@@ -61,6 +61,7 @@ import {
   computeDefaultSubstrateAddress,
   nativeToEthDecimal,
   filterLog,
+  getEvmExtrinsicIndexes,
   getHealthResult,
   HealthResult,
   hexlifyRpcResult,
@@ -1610,7 +1611,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const receiptsAtBlock = await this.subql?.getAllReceiptsAtBlock(blockHash);
     const sortedReceipts = receiptsAtBlock?.sort(sortByTxIdx);
     return sortedReceipts?.[receiptIdx]
-      ? subqlReceiptAdapter(sortedReceipts[receiptIdx], this.formatter)
+      ? subqlReceiptAdapter(sortedReceipts[receiptIdx])
       : null;
   }
 
@@ -1641,7 +1642,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
     return txFromSubql
-      ? subqlReceiptAdapter(txFromSubql, this.formatter)
+      ? subqlReceiptAdapter(txFromSubql)
       : null;
   };
 
@@ -1666,11 +1667,6 @@ export abstract class BaseProvider extends AbstractProvider {
     // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
     // it's free info from getAllReceiptsAtBlock but requires 1 extra async call here
     const block = await this.api.rpc.chain.getBlock(tx.blockHash);
-
-    return this._toTransaction(tx, block);
-  };
-
-  _toTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
     const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
 
     const extraData = extrinsic
