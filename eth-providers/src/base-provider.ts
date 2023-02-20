@@ -541,11 +541,8 @@ export abstract class BaseProvider extends AbstractProvider {
       /* ----------
          if nothing is returned from subql, either no tx exists in this block,
          or the block not finalized. So we still need to ask block cache.
-
-         if blocktag is a blockhash, that means it's asking for that specific block
-         so return the transactions even block is non-canonical
-                                                                         ---------- */
-      receipts = isHexString(blockTag, 32) || await isCanonical
+                                                                    ---------- */
+      receipts = await isCanonical
         ? this.blockCache.getAllReceiptsAtBlock(blockHash)
         : [];
     }
