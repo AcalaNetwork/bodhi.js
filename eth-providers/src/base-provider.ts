@@ -26,8 +26,8 @@ import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { Option, UInt, decorateStorage, unwrapStorageType, Vec } from '@polkadot/types';
-import { AccountId, Header, RuntimeVersion } from '@polkadot/types/interfaces';
+import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
+import { AccountId, Header, RuntimeVersion, SignedBlock } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
@@ -61,7 +61,6 @@ import {
   computeDefaultSubstrateAddress,
   nativeToEthDecimal,
   filterLog,
-  getEvmExtrinsicIndexes,
   getHealthResult,
   HealthResult,
   hexlifyRpcResult,
@@ -571,6 +570,27 @@ export abstract class BaseProvider extends AbstractProvider {
       transactions,
     };
   };
+
+  _toTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
+    const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
+
+    const extraData = extrinsic
+      ? parseExtrinsic(extrinsic)
+      : ORPHAN_TX_DEFAULT_INFO;
+
+    return {
+      blockHash: tx.blockHash,
+      blockNumber: tx.blockNumber,
+      transactionIndex: tx.transactionIndex,
+      hash: tx.transactionHash,
+      from: tx.from,
+      gasPrice: tx.effectiveGasPrice,
+      ...extraData,
+
+      // overrides `to` in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
+      to: tx.to || null,
+    };
+  }
 
   getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
     throwNotImplemented('getBlock (please use `getBlockData` instead)');
