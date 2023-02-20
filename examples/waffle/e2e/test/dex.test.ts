@@ -142,7 +142,6 @@ describe('dex test', () => {
       effectiveGasPrice: receipt.effectiveGasPrice,
       status: '0x1',
       type: '0x0',
-      confirmations: 0,
     }));
   });
 });

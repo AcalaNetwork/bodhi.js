@@ -8,9 +8,9 @@ import { acala1102030a, acala1102030b, acala1555311a, acala1555311b, acala156338
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 interface FormatedReceipt {
-  to: string;
+  to?: string;
   from: string;
-  contractAddress: string,
+  contractAddress?: string,
   transactionIndex: number,
   root?: string,
   gasUsed: string,
@@ -25,17 +25,17 @@ interface FormatedReceipt {
   status?: number
 };
 
-// format receipt to the shape returned by eth rpc
-const formatReceipt = (receipt: TransactionReceipt): FormatedReceipt => (
-  Object.entries(hexlifyRpcResult(receipt)).reduce((acc, kvPair) => {
-    const [k, v] = kvPair;
-    if (!['byzantium', 'confirmations'].includes(k)) {
-      acc[k] = v;
-    }
+// // format receipt to the shape returned by eth rpc
+// const formatReceipt = (receipt: TransactionReceipt): FormatedReceipt => (
+//   Object.entries(hexlifyRpcResult(receipt)).reduce((acc, kvPair) => {
+//     const [k, v] = kvPair;
+//     if (!['byzantium', 'confirmations'].includes(k)) {
+//       acc[k] = v;
+//     }
 
-    return acc;
-  }, {} as FormatedReceipt)  
-);
+//     return acc;
+//   }, {} as FormatedReceipt)  
+// );
 
 const getAllReceiptsAtBlockNumber = async (
   api: ApiPromise,
@@ -44,7 +44,7 @@ const getAllReceiptsAtBlockNumber = async (
   const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
   const receipts = await getAllReceiptsAtBlock(api, blockHash.toHex());
 
-  return receipts.map(formatReceipt);
+  return receipts;
 };
 
 describe.concurrent('getAllReceiptsAtBlock', () => {

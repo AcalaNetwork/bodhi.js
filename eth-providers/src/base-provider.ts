@@ -168,7 +168,6 @@ export interface TXReceipt extends partialTX {
   logsBloom: string;
   transactionHash: string;
   logs: Array<Log>;
-  confirmations: number;
   cumulativeGasUsed: BigNumber;
   effectiveGasPrice: BigNumber;
   type: number;
@@ -1724,12 +1723,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
       : await this._getMinedReceipt(txHash);
 
-    if (!receipt) return null;
-
-    return {
-      ...receipt,
-      confirmations: (await this.getBlockNumber()) - receipt.blockNumber,
-    };
+    return receipt;
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
