@@ -542,9 +542,7 @@ export abstract class BaseProvider extends AbstractProvider {
          if nothing is returned from subql, either no tx exists in this block,
          or the block not finalized. So we still need to ask block cache.
                                                                     ---------- */
-      receipts = await isCanonical
-        ? this.blockCache.getAllReceiptsAtBlock(blockHash)
-        : [];
+      receipts = this.blockCache.getAllReceiptsAtBlock(blockHash);
     }
 
     const transactions = full
