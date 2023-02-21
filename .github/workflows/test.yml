@@ -16,7 +16,7 @@ jobs:
           access_token: ${{ github.token }}
 
   eth-providers:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -44,7 +44,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   eth-rpc-adaptor:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -72,7 +72,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   waffle-examples:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
       - name: checkout

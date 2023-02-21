@@ -7,7 +7,7 @@ module.exports = {
   rules: {
     indent: [2, 2, { SwitchCase: 1 }],
     quotes: [2, 'single'],
-    semi: [2, 'always'],
+    semi: [1, 'always'],
     'no-trailing-spaces': [2],
     'quote-props': [2, 'as-needed'],
     'eol-last': [2, 'always'],

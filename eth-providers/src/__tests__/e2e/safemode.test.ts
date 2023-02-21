@@ -48,25 +48,34 @@ describe('safe mode', () => {
 
   it('_getBlock', async () => {
     // make sure latest finalized block and latest block are even
-    const [curBlock, curFinalizedBlock] = await Promise.all([provider._getBlock(), safeProvider._getBlock()]);
+    const [curBlock, curFinalizedBlock] = await Promise.all([
+      provider.getBlockData('latest'),
+      safeProvider.getBlockData('latest'),
+    ]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
     expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
 
     // real test
     await newBlock(false);
-    expect((await provider._getBlock()).number).to.equal(curBlock.number + 1);
-    expect((await safeProvider._getBlock()).number).to.equal(curBlock.number);
+    expect((await provider.getBlockData('latest')).number).to.equal(curBlock.number + 1);
+    expect((await safeProvider.getBlockData('latest')).number).to.equal(curBlock.number);
   });
 
   it('_ensureSafeModeBlockTagFinalization', async () => {
     // make sure latest finalized block and latest block are even
-    const [curBlock, curFinalizedBlock] = await Promise.all([provider._getBlock(), safeProvider._getBlock()]);
+    const [curBlock, curFinalizedBlock] = await Promise.all([
+      provider.getBlockData('latest'),
+      safeProvider.getBlockData('latest'),
+    ]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
     expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
 
     // make sure next block is not finalized
     await newBlock(false);
-    const [nextBlock, nextFinalizedBlock] = await Promise.all([provider._getBlock(), safeProvider._getBlock()]);
+    const [nextBlock, nextFinalizedBlock] = await Promise.all([
+      provider.getBlockData('latest'),
+      safeProvider.getBlockData('latest'),
+    ]);
     expect(curBlock.hash).to.not.equal(nextBlock.hash);
     expect(curFinalizedBlock.hash).to.equal(nextFinalizedBlock.hash);
     expect(curFinalizedBlock.hash).to.equal(curBlock.hash);
@@ -117,7 +126,7 @@ describe('safe mode', () => {
 
     // new finalized block
     await newBlock(true);
-    let curHash = (await provider._getBlock()).hash;
+    let curHash = (await provider.getBlockData('latest')).hash;
 
     expect(cb).to.have.been.calledWithMatch({
       subscription: sub,
@@ -135,7 +144,7 @@ describe('safe mode', () => {
 
     // new unfinalized block
     await newBlock(false);
-    curHash = (await provider._getBlock()).hash;
+    curHash = (await provider.getBlockData('latest')).hash;
 
     expect(cb).to.have.been.calledWithMatch({
       subscription: sub,

@@ -3,14 +3,15 @@ import { hexValue } from '@ethersproject/bytes';
 import { keccak256 } from '@ethersproject/keccak256';
 import { Formatter, TransactionReceipt } from '@ethersproject/providers';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
-import type { EventRecord } from '@polkadot/types/interfaces';
+import type { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
 import type { EvmLog, H160, ExitReason } from '@polkadot/types/interfaces/types';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { hexToU8a, nToU8a } from '@polkadot/util';
 import { logger } from './logger';
 import { isOrphanEvmEvent } from './utils';
 import { TransactionReceipt as TransactionReceiptSubql } from './gqlTypes';
-import { BIGNUMBER_ZERO, DUMMY_V_R_S } from '../consts';
+import { BIGNUMBER_ZERO, DUMMY_V_R_S, ORPHAN_TX_DEFAULT_INFO } from '../consts';
+import { TX } from 'src/base-provider';
 
 export interface PartialLog {
   removed: boolean;
@@ -157,27 +158,6 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
   return logger.throwError(`unsupported event: ${event.event.method}`);
 };
 
-export const getEvmExtrinsicIndexes = (events: EventRecord[]): number[] => {
-  return events
-    .filter(
-      (event) =>
-        event.phase.isApplyExtrinsic &&
-        event.event.section.toUpperCase() === 'EVM' &&
-        ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.event.method)
-    )
-    .reduce((r, event) => {
-      const extrinsicIndex = event.phase.asApplyExtrinsic.toNumber();
-
-      if (!r.length) {
-        r = [extrinsicIndex];
-      } else if (r[r.length - 1] !== extrinsicIndex) {
-        r.push(extrinsicIndex);
-      }
-
-      return r;
-    }, [] as number[]);
-};
-
 export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
   return events
     .filter(
@@ -283,12 +263,33 @@ export const getOrphanTxReceiptsFromEvents = (
   return receipts.map(receipt => Formatter.check(fullReceiptFormatter, receipt));
 };
 
-export const subqlReceiptAdapter = (
-  receipt: TransactionReceiptSubql | null,
-): TransactionReceipt | null => (receipt ?
-  Formatter.check(fullReceiptFormatter, {
-    ...receipt,
-    logs: receipt.logs.nodes,
-  })
-  : null
-);
+export const subqlReceiptAdapter =
+  <T extends TransactionReceiptSubql | null>(receipt: T)
+    : T extends null ? null : TransactionReceipt => (receipt ?
+    Formatter.check(fullReceiptFormatter, {
+      ...receipt,
+      logs: receipt.logs.nodes,
+    })
+    : null
+  );
+
+export const receiptToTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
+  const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
+
+  const extraData = extrinsic
+    ? parseExtrinsic(extrinsic)
+    : ORPHAN_TX_DEFAULT_INFO;
+
+  return {
+    blockHash: tx.blockHash,
+    blockNumber: tx.blockNumber,
+    transactionIndex: tx.transactionIndex,
+    hash: tx.transactionHash,
+    from: tx.from,
+    gasPrice: tx.effectiveGasPrice,
+    ...extraData,
+
+    // overrides `to` in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
+    to: tx.to || null,
+  };
+};
