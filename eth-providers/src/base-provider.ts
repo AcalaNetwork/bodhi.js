@@ -519,7 +519,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const isCanonical = this._isBlockCanonical(blockHash, blockNumber);
     const [block, validators, now, receiptsFromSubql] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
