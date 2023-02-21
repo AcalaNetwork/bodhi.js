@@ -1,0 +1,19 @@
+endpoint: wss://acala-rpc.dwellir.com
+mock-signature-host: true
+block: 2694000
+db: ./db.sqlite
+# wasm-override: acala-2101.wasm
+
+import-storage:
+  Sudo:
+    Key: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY # Alice
+  System:
+    Account:
+      - - - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+        - data:
+            free: 1000000000000000
+  Tokens:
+    Accounts:
+      - - - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+          - token: AUSD
+        - free: 1000000000000000
