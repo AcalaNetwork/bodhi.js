@@ -1,45 +1,8 @@
 import { expect } from 'chai';
-import { describe, it, beforeEach } from 'vitest';
+import { describe, it } from 'vitest';
 import { FullReceipt } from '../utils';
 import { BlockCache } from '../utils/BlockCache';
-
-type MochBlock = {
-  blockHash: string,
-  blockNumber: number,
-  receipts: FullReceipt[],
-}
-type MochChain = MochBlock[];
-
-const randHash = (): string => Math.floor(Math.random() * 66666666).toString(16);
-
-const randReceipt = (blockNumber: number, blockHash: string): FullReceipt => ({
-  blockHash,
-  blockNumber,
-  transactionHash: randHash(),
-}) as FullReceipt;
-
-const mockBlock = (blockNumber: number): MochBlock => {
-  const blockHash = randHash();
-  const receipts = Array.from({ length: Math.floor(Math.random() * 5) }, () => randReceipt(blockNumber, blockHash));
-
-  return {
-    blockNumber,
-    blockHash,
-    receipts,
-  }
-}
-  
-const mockChain = (blocksCount: number = 50): MochChain => {
-  return Array.from({ length: blocksCount }, (_, blockNum) => {
-    const forkCount = Math.floor(Math.random() * 3);
-    const blocks = [mockBlock(blockNum)];
-    for (let i = 0; i < forkCount; i++) {
-      blocks.push(mockBlock(blockNum));
-    }
-
-    return blocks;
-  }).flat();
-}
+import { mockChain } from './testUtils';
 
 const sortReceipt = (r1: FullReceipt, r2: FullReceipt) => {
   if (r1.blockNumber !== r2.blockNumber) {
@@ -62,7 +25,7 @@ describe('BlockCache', () => {
 
   describe('add block', () => {
     it('correctly find cached txs, and prune old blocks', () => {
-      chain.forEach(({ blockHash, blockNumber, receipts }, lastCacheBlockIdx) => {
+      chain.forEach(({ blockHash, receipts }, lastCacheBlockIdx) => {
         cache.addReceipts(blockHash, receipts);
 
         const firstCacheBlockIdx = Math.max(0, lastCacheBlockIdx - MAX_CACHED_BLOCK + 1);
