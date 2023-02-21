@@ -14,6 +14,10 @@ describe('MaxSizeSet', () => {
     it('correctly find hashes, and prune old blocks', () => {
       chain.forEach(({ blockHash }, lastCacheBlockIdx) => {
         finalizedBlocks.add(blockHash);
+
+        // check adding already-exist block
+        finalizedBlocks.add(blockHash);
+        finalizedBlocks.add(blockHash);
         
         // check cached hashes are correct
         const firstCacheBlockIdx = Math.max(0, lastCacheBlockIdx - MAX_CACHED_BLOCK + 1);

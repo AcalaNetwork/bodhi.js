@@ -5,6 +5,10 @@ export default defineConfig({
     testTimeout: 300000,
     hookTimeout: 60000,
     dangerouslyIgnoreUnhandledErrors: true,
-    threads: false
+    threads: false,
+    coverage: {
+      provider: 'c8', // or 'istanbul'
+      reporter: ['text', 'json', 'html'],
+    },
   }
 });
