@@ -1483,7 +1483,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
-    const tx = await this._getMinedReceipt(txHash);
+    const tx = await this.getReceiptByHash(txHash);
     if (!tx) return false;
 
     return this._isBlockFinalized(tx.blockHash);
@@ -1600,7 +1600,7 @@ export abstract class BaseProvider extends AbstractProvider {
     txHash: string,
     blockHash: string
   ) => {
-    const receipt = await this._getMinedReceipt(txHash);
+    const receipt = await this.getReceiptByHash(txHash);
     return receipt?.blockHash === blockHash
       ? receipt
       : null;
@@ -1670,10 +1670,7 @@ export abstract class BaseProvider extends AbstractProvider {
       if (pendingTX) return pendingTX;
     }
 
-    const receipt = this.localMode
-      ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
-      : await this._getMinedReceipt(txHash);
-
+    const receipt = await this.getReceiptByHash(txHash);
     if (!receipt) return null;
 
     // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
@@ -1686,13 +1683,11 @@ export abstract class BaseProvider extends AbstractProvider {
   getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
     throwNotImplemented('getTransactionReceipt (please use `getReceiptByHash` instead)');
 
-  getReceiptByHash = async (txHash: string): Promise<TXReceipt | null> => {
-    const receipt = this.localMode
+  getReceiptByHash = async (txHash: string): Promise<TransactionReceipt | null> => (
+    this.localMode
       ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
-      : await this._getMinedReceipt(txHash);
-
-    return receipt;
-  };
+      : await this._getMinedReceipt(txHash)
+  );
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
     const { fromBlock, toBlock, blockHash, address, topics } = rawFilter;
@@ -1778,9 +1773,17 @@ export abstract class BaseProvider extends AbstractProvider {
     const getBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, false));
     const getFullBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, true));
 
-    const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
-      await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])
-    ).map((res) => Math.floor(res.time));
+    const [
+      gasPriceTime,
+      estimateGasTime,
+      getBlockTime,
+      getFullBlockTime,
+    ] = (await Promise.all([
+      gasPricePromise,
+      estimateGasPromise,
+      getBlockPromise,
+      getFullBlockPromise,
+    ])).map((res) => Math.floor(res.time));
 
     return {
       gasPriceTime,
@@ -1791,7 +1794,10 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   healthCheck = async (): Promise<HealthResult> => {
-    const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
+    const [indexerMeta, ethCallTiming] = await Promise.all([
+      this.getIndexerMetadata(),
+      this._timeEthCalls(),
+    ]);
 
     const cacheInfo = this.getCachInfo();
     const curFinalizedHeight = this.latestFinalizedBlockNumber;
