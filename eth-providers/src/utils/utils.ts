@@ -77,24 +77,26 @@ export const promiseWithTimeout = <T = any>(value: any, interval = 1000): Promis
 export const runWithRetries = async <F extends AnyFunction>(
   fn: F,
   args: any[] = [],
-  maxRetries: number = 20,
-  interval: number = 1000
+  maxRetries: number = 50,
+  interval: number = 200
 ): Promise<F extends (...args: any[]) => infer R ? R : never> => {
   let res;
   let tries = 0;
 
   while (!res && tries++ < maxRetries) {
-    try {
-      res = await fn(...args);
-    } catch (e) {
-      if (tries === maxRetries) throw e;
-    }
+    res = await fn(...args);
 
-    if ((tries === 1 || tries % 10 === 0) && !res) {
-      console.log(`<local mode runWithRetries> still waiting for result # ${tries}/${maxRetries}`);
-    }
+    if (res) {
+      return res;
+    } else {
+      if (tries === maxRetries) return res;
 
-    await sleep(interval);
+      if ((tries === 1 || tries % 10 === 0) && !res) {
+        console.log(`<local mode runWithRetries> still waiting for result # ${tries}/${maxRetries}`);
+      }
+
+      await sleep(interval);
+    }
   }
 
   return res;
