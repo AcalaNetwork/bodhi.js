@@ -86,6 +86,7 @@ import {
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
+import { MaxSizeSet } from './utils/MaxSizeSet';
 
 export interface Eip1898BlockTag {
   blockNumber: string | number;
@@ -270,6 +271,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
   readonly storageCache: LRUCache<string, Uint8Array | null>;
   readonly blockCache: BlockCache;
+  readonly finalizedBlockHashes: MaxSizeSet;
 
   network?: Network | Promise<Network>;
   latestFinalizedBlockHash: string;
@@ -299,6 +301,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.storageCache = new LRUCache({ max: storageCacheSize });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
+    this.finalizedBlockHashes = new MaxSizeSet(this.maxBlockCacheSize);
     this.subscriptionStarted = false;
     this.subql = subqlUrl ? new SubqlProvider(subqlUrl): undefined;
 
@@ -373,6 +376,8 @@ export abstract class BaseProvider extends AbstractProvider {
     this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
       this.latestFinalizedBlockNumber = header.number.toNumber();
       this.latestFinalizedBlockHash = header.hash.toHex();
+
+      this.finalizedBlockHashes.add(this.latestFinalizedBlockHash);
     })
   );
 
@@ -1457,6 +1462,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _isBlockCanonical = async (blockHash: string, _blockNumber?: number): Promise<boolean> => {
+    if (this.finalizedBlockHashes.has(blockHash)) return true;
+
     const blockNumber = _blockNumber ?? await this._getBlockNumber(blockHash);
     const canonicalHash = await this.api.rpc.chain.getBlockHash(blockNumber);
 
