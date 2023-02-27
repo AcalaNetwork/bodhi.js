@@ -19,12 +19,10 @@ const config: HardhatUserConfig = {
     karura: {
       ...networkCommon,
       chainId: 686,
-      url: 'https://eth-rpc-karura.aca-api.network',
     },
     acala: {
       ...networkCommon,
       chainId: 787,
-      url: 'https://eth-rpc-acala.aca-api.network',
     },
   },
   mocha: {
