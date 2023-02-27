@@ -44,7 +44,7 @@ describe('New Runtime', function () {
         value: sendValue,
       });
       const receipt = await tx.wait();
-      console.log(tx, receipt)
+      console.log(tx, receipt);
       const curBalance = await deployer.getBalance();
 
       console.log(`balance diff: ${prevBalance.sub(curBalance).toBigInt()}`);
@@ -121,11 +121,11 @@ describe('New Runtime', function () {
         .withArgs(deployerAddress, userAddress, transferAmount);
 
       await expect(token.transfer(NULL_ADDRESS, transferAmount, gas)).to.be.revertedWith(
-        'ERC20: transfer to the zero address',
+        'ERC20: transfer to the zero address'
       );
 
       await expect(token.transfer(userAddress, initSupply.add(one.mul(100)), gas)).to.be.revertedWith(
-        'ERC20: transfer amount exceeds balance',
+        'ERC20: transfer amount exceeds balance'
       );
     });
 
