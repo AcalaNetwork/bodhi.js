@@ -5,8 +5,8 @@ const networkCommon = {
   url: 'http://127.0.0.1:8545',
   accounts: {
     mnemonic: 'fox sight canyon orphan hotel grow hedgehog build bless august weather swarm',
-    path: "m/44'/60'/0'/0"
-  }
+    path: 'm/44\'/60\'/0\'/0',
+  },
 };
 
 const config: HardhatUserConfig = {
@@ -19,10 +19,12 @@ const config: HardhatUserConfig = {
     karura: {
       ...networkCommon,
       chainId: 686,
+      url: 'https://eth-rpc-karura.aca-api.network',
     },
     acala: {
       ...networkCommon,
       chainId: 787,
+      url: 'https://eth-rpc-acala.aca-api.network',
     },
   },
   mocha: {

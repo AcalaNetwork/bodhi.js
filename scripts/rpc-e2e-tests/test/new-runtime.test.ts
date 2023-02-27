@@ -24,7 +24,8 @@ describe('New Runtime', function () {
   const one = ethers.utils.parseEther('1');
 
   before('get user info', async () => {
-    [deployer, user] = await ethers.getSigners();
+    [deployer] = await ethers.getSigners();
+    user = deployer;
     deployerAddress = await deployer.getAddress();
     userAddress = await user.getAddress();
 
