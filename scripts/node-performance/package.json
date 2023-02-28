@@ -1,0 +1,39 @@
+{
+  "name": "@acala-network/node-perf",
+  "version": "1.0.8",
+  "author": "Acala Developers <hello@acala.network>",
+  "main": "dist/index.js",
+  "bin": "bin/node-perf.js",
+  "files": [
+    "bin/",
+    "dist/"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "diff": "ts-node --transpile-only src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "test": "mocha src/__tests__/*",
+    "lint": "eslint src",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@acala-network/api": "^4.1.8-2.3",
+    "@acala-network/eth-providers": "file:/Users/shunjizhan/Acala/bodhi.js/eth-providers/lib",
+    "@polkadot/api": "^9.14.2",
+    "csv-parse": "^5.3.3",
+    "ws": "^8.12.1",
+    "yargs": "^17.6.2"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^18.11.19",
+    "@types/yargs": "^17.0.19",
+    "chai": "^4.3.7",
+    "eslint": "^8.31.0",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.9.4"
+  }
+}
