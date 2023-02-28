@@ -1,5 +1,5 @@
 {
-  "name": "@acala-network/node-perf",
+  "name": "eth-rpc-provider-playground",
   "version": "1.0.8",
   "author": "Acala Developers <hello@acala.network>",
   "main": "dist/index.js",
