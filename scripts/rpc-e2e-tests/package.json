@@ -25,8 +25,6 @@
     "@types/mocha": "^9.1.0",
     "@types/node": ">=12.0.0",
     "@types/yargs": "^17.0.19",
-    "@typescript-eslint/eslint-plugin": "^5.48.0",
-    "@typescript-eslint/parser": "^5.48.0",
     "chai": "^4.2.0",
     "dlx": "^0.2.1",
     "eslint": "^8.31.0",

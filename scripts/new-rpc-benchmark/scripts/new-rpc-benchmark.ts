@@ -70,7 +70,7 @@ const main = async () => {
     await eth_getBlockByNumber_new([blockNum, true]);
     const newBlockTime = Date.now() - start;
     getBlockTimeNew.push(newBlockTime);
-    
+
     start = Date.now();
     await eth_getBlockByNumber_old([blockNum, true]);
     const oldBlockTime = Date.now() - start;

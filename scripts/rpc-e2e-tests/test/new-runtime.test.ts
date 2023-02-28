@@ -32,7 +32,7 @@ describe('New Runtime', function () {
 
     console.log({
       deployerAddress,
-      userAddress
+      userAddress,
     });
   });
 
@@ -42,7 +42,7 @@ describe('New Runtime', function () {
       const sendValue = one.mul(10);
       await deployer.sendTransaction({
         to: userAddress,
-        value: sendValue
+        value: sendValue,
       });
       const curBalance = await user.getBalance();
 
@@ -122,11 +122,11 @@ describe('New Runtime', function () {
         .withArgs(deployerAddress, userAddress, transferAmount);
 
       await expect(token.transfer(NULL_ADDRESS, transferAmount, gas)).to.be.revertedWith(
-        'ERC20: transfer to the zero address'
+        'ERC20: transfer to the zero address',
       );
 
       await expect(token.transfer(userAddress, initSupply.add(one.mul(100)), gas)).to.be.revertedWith(
-        'ERC20: transfer amount exceeds balance'
+        'ERC20: transfer amount exceeds balance',
       );
     });
 
@@ -152,7 +152,7 @@ describe('New Runtime', function () {
       expect(await getCurAllowance()).to.equal(160);
 
       await expect(token.decreaseAllowance(userAddress, 100000)).to.be.revertedWith(
-        'ERC20: decreased allowance below zero'
+        'ERC20: decreased allowance below zero',
       );
     });
   });

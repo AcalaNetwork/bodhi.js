@@ -230,7 +230,7 @@ export const karuraBlock2449983 = {
       transactionIndex: '0x0',
       hash: '0x7b0361f47dc0be798cb9f7d115d74d68960e685714c515df81dd1a17e3db0cff',
       from: '0x9cb3b68e0c48c53b70f465bda3ba6481a9cb7720',
-      gasPrice: '0x15fde28661',
+      gasPrice: '0x15fde28667',
       value: '0x0',
       gas: '0x2b3e6',
       input:
