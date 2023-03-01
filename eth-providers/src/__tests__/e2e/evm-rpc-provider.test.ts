@@ -1,10 +1,14 @@
 import dotenv from 'dotenv';
 import { describe, it, expect, afterAll, beforeAll } from 'vitest';
+import { DUMMY_BLOCK_HASH } from '../../consts';
 import { EvmRpcProvider } from '../../rpc-provider';
+import { runWithTiming } from '../../utils';
 
 dotenv.config();
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+const ACALA_NODE_URL = 'wss://acala-rpc-0.aca-api.network';
+const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
 
 describe('connect random', () => {
   it('should throw error', async () => {
@@ -17,18 +21,22 @@ describe('connect random', () => {
   });
 });
 
-describe('connect chain', () => {
-  it('works', async () => {
-    const provider = EvmRpcProvider.from(endpoint);
+describe('initilization', () => {
+  it('should already has initial block number and hash', async () => {
+    const provider = EvmRpcProvider.from(ACALA_NODE_URL);
     await provider.isReady();
-    expect(provider.isConnected).to.be.true;
+
+    expect(provider.latestBlockNumber).to.gt(-1);
+    expect(provider.latestFinalizedBlockNumber).to.gt(-1);
+    expect(await provider.getBlockNumber()).to.gt(-1);
+    expect(provider.latestBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
+    expect(provider.latestFinalizedBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
+
     await provider.disconnect();
   });
 });
 
 describe('getReceiptAtBlock', () => {
-  const ACALA_NODE_URL = 'wss://acala-rpc-0.aca-api.network';
-  const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
   const provider = EvmRpcProvider.from(ACALA_NODE_URL, { subqlUrl: ACALA_SUBQL });
 
   const blockHash = '0xf9655bfef23bf7dad14a037aa39758daccfd8dc99a7ce69525f81548068a5946';
@@ -55,12 +63,52 @@ describe('getReceiptAtBlock', () => {
     expect(resIdx2).to.deep.equal(receipt2);
   });
 
-  // TODO: current subql uses old hash, enable me after reindexing with latest subql
-  it.skip('getReceiptAtBlockFromChain should find same txs from chain', async () => {
+  it('getReceiptAtBlockFromChain should find same txs from chain', async () => {
     const res1 = await provider.getReceiptAtBlockFromChain(txHash1, blockHash);
     const res2 = await provider.getReceiptAtBlockFromChain(txHash2, blockHash);
 
+    delete res2.exitReason;     // full receipt contains exitReason
     expect(res1).to.deep.equal(receipt1);
     expect(res2).to.deep.equal(receipt2);
   })
+});
+
+describe('all cache', () => {
+  const provider = EvmRpcProvider.from(ACALA_NODE_URL);
+
+  beforeAll(async () => await provider.isReady());
+  afterAll(async () => await provider.disconnect());
+
+  it('getBlockHeader at latest block => header cache', async () => {
+    const { time: time1, res: header1 } = await runWithTiming(() => provider._getBlockHeader('latest'), 1);
+    const { time: time2, res: header2 } = await runWithTiming(() => provider._getBlockHeader('latest'), 1);
+
+    // latest header should already be cached at the start
+    console.log('latest header:', { time1, time2 });
+    expect(time1).to.be.lt(10);
+    expect(time2).to.be.lt(10);
+    expect(header1.toJSON()).to.deep.equal(header2.toJSON())
+  });
+
+  it('getBlockHeader at random block => header cache', async () => {
+    const { time: time1, res: header1 } = await runWithTiming(() => provider._getBlockHeader(1234567), 1);
+    const { time: time2, res: header2 } = await runWithTiming(() => provider._getBlockHeader(1234567), 1);
+
+    // second time should be 100x faster with cache, in poor network 800ms => 0.5ms
+    console.log('getBlockHeader:', { time1, time2 });
+    expect(time2).to.be.lt(time1 / 20);     // conservative multiplier
+    expect(time2).to.be.lt(10);             // no async call
+    expect(header1.toJSON()).to.deep.equal(header2.toJSON())
+  });
+
+  it('getBlockData at random block => header cache + storage cache + receipt cache', async () => {
+    const { time: time1, res: blockData1 } = await runWithTiming(() => provider.getBlockData(1234321), 1);
+    const { time: time2, res: blockData2 } = await runWithTiming(() => provider.getBlockData(1234321), 1);
+
+    // second time should be 100x faster with cache, usually 1500ms => 3ms
+    console.log('getBlockData: ', { time1, time2 });
+    expect(time2).to.be.lt(time1 / 20);     // conservative multiplier
+    expect(time2).to.be.lt(30);             // no async call
+    expect(blockData1).to.deep.equal(blockData2)
+  });
 });

@@ -233,7 +233,7 @@ export const runWithTiming = async <F extends AnyFunction>(
   repeats: number = 3
 ): Promise<{
   time: number;
-  res: F extends (...args: any[]) => infer R ? R | string : any;
+  res: F extends (...args: any[]) => Promise<infer R> ? R : any;
 }> => {
   let res = null;
   const t0 = performance.now();

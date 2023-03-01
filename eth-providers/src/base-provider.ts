@@ -21,13 +21,12 @@ import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
 import { Formatter } from '@ethersproject/providers';
-import { accessListify, Transaction } from '@ethersproject/transactions';
 import { ApiPromise } from '@polkadot/api';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
-import { AccountId, Header, RuntimeVersion } from '@polkadot/types/interfaces';
+import { AccountId, H160, Header, RuntimeVersion, SignedBlock } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
@@ -82,6 +81,7 @@ import {
   FullReceipt,
   sortObjByKey,
   receiptToTransaction,
+  getTransactionRequest,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
@@ -274,7 +274,9 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly finalizedBlockHashes: MaxSizeSet;
 
   network?: Network | Promise<Network>;
+  latestBlockHash: string;
   latestFinalizedBlockHash: string;
+  latestBlockNumber: number;
   latestFinalizedBlockNumber: number;
   runtimeVersion: number | undefined;
   subscriptionStarted: boolean;
@@ -296,8 +298,10 @@ export abstract class BaseProvider extends AbstractProvider {
     this.localMode = localMode;
     this.richMode = richMode;
     this.verbose = verbose;
+    this.latestBlockHash = DUMMY_BLOCK_HASH;
     this.latestFinalizedBlockHash = DUMMY_BLOCK_HASH;
-    this.latestFinalizedBlockNumber = 0;
+    this.latestBlockNumber = -1;
+    this.latestFinalizedBlockNumber = -1;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.storageCache = new LRUCache({ max: storageCacheSize });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
@@ -327,9 +331,9 @@ export abstract class BaseProvider extends AbstractProvider {
   startSubscriptions = async (): Promise<void> => {
     await Promise.all([
       this._subscribeEventListeners(),
-      this._subscribeFinalizedBlock(),
+      this._subscribeNewBlocks(),
       this._subscribeRuntimeVersion(),
-    ]);
+    ].flat());
   };
 
   _subscribeEventListeners = () => {
@@ -372,14 +376,41 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   }
 
-  _subscribeFinalizedBlock = () => (
-    this.api.rpc.chain.subscribeFinalizedHeads(async (header: Header) => {
+  // this will ensure after isReady, latest block info is ready
+  _subscribeNewBlocks = () => ([
+    this._subscribeFinalizedHeadsEnsureOnce(),
+    this._subscribeHeadsEnsureOnce(),
+  ]);
+
+  _subscribeFinalizedHeadsEnsureOnce = () => new Promise<void>((resolve) => {
+    let resolved = false;
+    this.api.rpc.chain.subscribeFinalizedHeads((header: Header) => {
       this.latestFinalizedBlockNumber = header.number.toNumber();
       this.latestFinalizedBlockHash = header.hash.toHex();
 
       this.finalizedBlockHashes.add(this.latestFinalizedBlockHash);
-    })
-  );
+
+      if (!resolved) {
+        resolved = true;
+        resolve();
+      }
+    }).catch(e => { throw e; });
+  });
+
+  _subscribeHeadsEnsureOnce = () => new Promise<void>((resolve) => {
+    let resolved = false;
+    this.api.rpc.chain.subscribeNewHeads((header: Header) => {
+      this.latestBlockNumber = header.number.toNumber();
+      this.latestBlockHash = header.hash.toHex();
+
+      this.blockCache.setHeaderCache(this.latestBlockHash, header);
+
+      if (!resolved) {
+        resolved = true;
+        resolve();
+      }
+    }).catch(e => { throw e; });
+  });
 
   _subscribeRuntimeVersion = () => (
     this.api.rpc.state.subscribeRuntimeVersion((runtime: RuntimeVersion) => {
@@ -511,8 +542,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getBlockNumber = async (): Promise<number> => {
-    const header = await this._getBlockHeader('latest');
-    return header.number.toNumber();
+    return this.safeMode ? this.latestFinalizedBlockNumber : this.latestBlockNumber;
   };
 
   getBlockData = async (
@@ -525,7 +555,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockNumber = header.number.toNumber();
 
     const [block, validators, now, receiptsFromSubql] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash),
+      this._getBlockWithCache(blockHash),
       this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
       this.queryStorage('timestamp.now', [], blockHash),
       this.subql?.getAllReceiptsAtBlock(blockHash),
@@ -567,7 +597,7 @@ export abstract class BaseProvider extends AbstractProvider {
       mixHash: DUMMY_BLOCK_MIX_HASH,
       difficulty: ZERO,
       totalDifficulty: ZERO,
-      gasLimit: BigNumber.from(15000000), // 15m for now. TODO: query this from blockchain
+      gasLimit: BigNumber.from(29_990_102),
       gasUsed,
 
       miner: author,
@@ -581,6 +611,18 @@ export abstract class BaseProvider extends AbstractProvider {
       transactions,
     };
   };
+
+  _getBlockWithCache = async (blockHash: string): Promise<SignedBlock> => {
+    const cached = this.blockCache.getBlock(blockHash);
+    if (cached) {
+      return cached;
+    } else {
+      const block = await this.api.rpc.chain.getBlock(blockHash);
+      this.blockCache.setBlockCache(blockHash, block);
+
+      return block;
+    }
+  }
 
   getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
     throwNotImplemented('getBlock (please use `getBlockData` instead)');
@@ -701,7 +743,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const { txRequest, blockHash } = await resolveProperties({
-      txRequest: this._getTransactionRequest(_transaction),
+      txRequest: getTransactionRequest(_transaction),
       blockHash: this._getBlockHash(blockTag),
     });
 
@@ -816,10 +858,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
     const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
-    const currentHeader = await this.api.rpc.chain.getHeader();
-    const currentBlockNumber = BigNumber.from(currentHeader.number.toBigInt());
-
-    return txFeePerGas.add(currentBlockNumber.div(30).add(5).shl(16)).add(10);
+    return txFeePerGas.add(BigNumber.from(this.latestBlockNumber).div(30).add(5).shl(16)).add(10);
   };
 
   getFeeData = async (): Promise<FeeData> => {
@@ -971,11 +1010,11 @@ export abstract class BaseProvider extends AbstractProvider {
     storage: BigNumber;
   }> => {
     // TODO: get these from chain to be more precise
-    const MAX_GAS_LIMIT = 21000000;
+    const MAX_GAS_LIMIT = 29_990_102;
     const MIN_GAS_LIMIT = 21000;
     const MAX_STORAGE_LIMIT = 640000;
 
-    const _txRequest = await this._getTransactionRequest(transaction);
+    const _txRequest = await getTransactionRequest(transaction);
     const txRequest = {
       ..._txRequest,
       value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
@@ -1028,7 +1067,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAccount = await this.queryStorage<Option<AccountId>>('evmAccounts.accounts', [address], blockHash);
 
-    return substrateAccount.isEmpty ? computeDefaultSubstrateAddress(address) : substrateAccount.toString();
+    return substrateAccount.isEmpty
+      ? computeDefaultSubstrateAddress(address)
+      : substrateAccount.toString();
   };
 
   getEvmAddress = async (
@@ -1036,11 +1077,13 @@ export abstract class BaseProvider extends AbstractProvider {
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const apiAt = await this.api.at(blockHash);
+    const evmAddress = await this.queryStorage<Option<H160>>('evmAccounts.evmAddresses', [substrateAddress], blockHash);
 
-    const evmAddress = await apiAt.query.evmAccounts.evmAddresses(substrateAddress);
-
-    return getAddress(evmAddress.isEmpty ? computeDefaultEvmAddress(substrateAddress) : evmAddress.toString());
+    return getAddress(
+      evmAddress.isEmpty
+        ? computeDefaultEvmAddress(substrateAddress)
+        : evmAddress.toString()
+    );
   };
 
   queryAccountInfo = async (
@@ -1383,7 +1426,7 @@ export abstract class BaseProvider extends AbstractProvider {
       }
       default: {
         if (isHexString(blockTag, 32)) {
-          return (await this.api.rpc.chain.getHeader(blockTag as string)).number.toNumber();
+          return (await this._getBlockHeader(blockTag as string)).number.toNumber();
         } else if (isHexString(blockTag) || typeof blockTag === 'number') {
           return BigNumber.from(blockTag).toNumber();
         }
@@ -1405,7 +1448,7 @@ export abstract class BaseProvider extends AbstractProvider {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
-        return this.safeMode ? this.latestFinalizedBlockHash : (await this.api.rpc.chain.getBlockHash()).toHex();
+        return this.safeMode ? this.latestFinalizedBlockHash : this.latestBlockHash;
       }
       case 'earliest': {
         const hash = this.api.genesisHash;
@@ -1506,8 +1549,12 @@ export abstract class BaseProvider extends AbstractProvider {
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
     const blockHash = await this._getBlockHash(blockTag);
 
+    const cached = this.blockCache.getHeader(blockHash);
+    if (cached) return cached;
+
     try {
       const header = await this.api.rpc.chain.getHeader(blockHash);
+      this.blockCache.setHeaderCache(blockHash, header);
 
       return header;
     } catch (error) {
@@ -1527,46 +1574,6 @@ export abstract class BaseProvider extends AbstractProvider {
   _getAddress = async (addressOrName: string | Promise<string>): Promise<string> => {
     addressOrName = await addressOrName;
     return addressOrName;
-  };
-
-  _getTransactionRequest = async (transaction: Deferrable<TransactionRequest>): Promise<Partial<Transaction>> => {
-    const values: any = await transaction;
-
-    const tx: any = {};
-
-    ['from', 'to'].forEach((key) => {
-      if (values[key] === null || values[key] === undefined) {
-        return;
-      }
-      tx[key] = Promise.resolve(values[key]).then((v) => (v ? this._getAddress(v) : null));
-    });
-
-    ['gasLimit', 'gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas', 'value'].forEach((key) => {
-      if (values[key] === null || values[key] === undefined) {
-        return;
-      }
-      tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v) : null));
-    });
-
-    ['type'].forEach((key) => {
-      if (values[key] === null || values[key] === undefined) {
-        return;
-      }
-      tx[key] = Promise.resolve(values[key]).then((v) => (v !== null || v !== undefined ? v : null));
-    });
-
-    if (values.accessList) {
-      tx.accessList = accessListify(values.accessList);
-    }
-
-    ['data'].forEach((key) => {
-      if (values[key] === null || values[key] === undefined) {
-        return;
-      }
-      tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v) : null));
-    });
-
-    return resolveProperties(tx);
   };
 
   // from chain only
@@ -1675,7 +1682,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
     // it's free info from getAllReceiptsAtBlock but requires 1 extra async call here
-    const block = await this.api.rpc.chain.getBlock(receipt.blockHash);
+    const block = await this._getBlockWithCache(receipt.blockHash);
 
     return receiptToTransaction(receipt, block);
   }
