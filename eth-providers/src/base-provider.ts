@@ -51,6 +51,7 @@ import {
   SAFE_MODE_WARNING_MSG,
   ZERO,
   DUMMY_BLOCK_HASH,
+  BLOCK_GAS_LIMIT,
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -597,7 +598,7 @@ export abstract class BaseProvider extends AbstractProvider {
       mixHash: DUMMY_BLOCK_MIX_HASH,
       difficulty: ZERO,
       totalDifficulty: ZERO,
-      gasLimit: BigNumber.from(29_990_102),
+      gasLimit: BigNumber.from(BLOCK_GAS_LIMIT),
       gasUsed,
 
       miner: author,
@@ -1009,8 +1010,7 @@ export abstract class BaseProvider extends AbstractProvider {
     gas: BigNumber;
     storage: BigNumber;
   }> => {
-    // TODO: get these from chain to be more precise
-    const MAX_GAS_LIMIT = 29_990_102;
+    const MAX_GAS_LIMIT = BLOCK_GAS_LIMIT;
     const MIN_GAS_LIMIT = 21000;
     const MAX_STORAGE_LIMIT = 640000;
 
