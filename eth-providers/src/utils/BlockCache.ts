@@ -1,5 +1,3 @@
-import { Header, SignedBlock } from '@polkadot/types/interfaces';
-import LRUCache from 'lru-cache';
 import { FullReceipt } from './transactionReceiptHelper';
 
 export type TxHashToReceipt = Record<string, FullReceipt>;
@@ -13,8 +11,6 @@ export interface CacheInspect {
 }
 
 export class BlockCache {
-  headerCache: LRUCache<string, Header>;
-  blockCache: LRUCache<string, SignedBlock>;
   blockHashToReceipts: BlockHashToReceipts;
   txHashToReceipt: TxHashToReceipt;
   cachedBlockHashes: string[];
@@ -25,8 +21,6 @@ export class BlockCache {
     this.blockHashToReceipts = {};
     this.cachedBlockHashes = [];
     this.maxCachedBlocks = maxCachedBlocks;
-    this.headerCache = new LRUCache({ max: maxCachedBlocks });
-    this.blockCache = new LRUCache({ max: maxCachedBlocks });
   }
 
   // automatically preserve a sliding window of ${maxCachedBlocks} blocks
@@ -54,22 +48,6 @@ export class BlockCache {
 
   getReceiptAtBlock = (txHash: string, blockHash: string): FullReceipt | null => {
     return this.getAllReceiptsAtBlock(blockHash).find(r => r.transactionHash === txHash) ?? null;
-  }
-
-  setHeaderCache = (blockHash: string, header: Header): void => {
-    this.headerCache.set(blockHash, header);
-  }
-
-  setBlockCache = (blockHash: string, block: SignedBlock): void => {
-    this.blockCache.set(blockHash, block);
-  }
-
-  getHeader = (blockHash: string): Header | undefined => {
-    return this.headerCache.get(blockHash);
-  }
-
-  getBlock = (blockHash: string): SignedBlock | undefined => {
-    return this.blockCache.get(blockHash);
   }
 
   inspect = (): CacheInspect => ({

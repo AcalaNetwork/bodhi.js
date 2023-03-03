@@ -556,7 +556,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockNumber = header.number.toNumber();
 
     const [block, validators, now, receiptsFromSubql] = await Promise.all([
-      this._getBlockWithCache(blockHash),
+      this.api.rpc.chain.getBlock(blockHash),
       this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
       this.queryStorage('timestamp.now', [], blockHash),
       this.subql?.getAllReceiptsAtBlock(blockHash),
@@ -612,18 +612,6 @@ export abstract class BaseProvider extends AbstractProvider {
       transactions,
     };
   };
-
-  _getBlockWithCache = async (blockHash: string): Promise<SignedBlock> => {
-    const cached = this.blockCache.getBlock(blockHash);
-    if (cached) {
-      return cached;
-    } else {
-      const block = await this.api.rpc.chain.getBlock(blockHash);
-      this.blockCache.setBlockCache(blockHash, block);
-
-      return block;
-    }
-  }
 
   getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
     throwNotImplemented('getBlock (please use `getBlockData` instead)');
@@ -1549,12 +1537,8 @@ export abstract class BaseProvider extends AbstractProvider {
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
     const blockHash = await this._getBlockHash(blockTag);
 
-    const cached = this.blockCache.getHeader(blockHash);
-    if (cached) return cached;
-
     try {
       const header = await this.api.rpc.chain.getHeader(blockHash);
-      this.blockCache.setHeaderCache(blockHash, header);
 
       return header;
     } catch (error) {
@@ -1682,7 +1666,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
     // it's free info from getAllReceiptsAtBlock but requires 1 extra async call here
-    const block = await this._getBlockWithCache(receipt.blockHash);
+    const block = await this.api.rpc.chain.getBlock(receipt.blockHash);
 
     return receiptToTransaction(receipt, block);
   }
