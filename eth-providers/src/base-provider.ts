@@ -26,7 +26,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
-import { AccountId, H160, Header, RuntimeVersion, SignedBlock } from '@polkadot/types/interfaces';
+import { AccountId, H160, Header, RuntimeVersion } from '@polkadot/types/interfaces';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
@@ -403,8 +403,6 @@ export abstract class BaseProvider extends AbstractProvider {
     this.api.rpc.chain.subscribeNewHeads((header: Header) => {
       this.latestBlockNumber = header.number.toNumber();
       this.latestBlockHash = header.hash.toHex();
-
-      this.blockCache.setHeaderCache(this.latestBlockHash, header);
 
       if (!resolved) {
         resolved = true;
