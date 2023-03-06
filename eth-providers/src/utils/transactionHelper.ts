@@ -1,4 +1,8 @@
-import { BigNumber, BigNumberish } from 'ethers';
+import { TransactionRequest } from '@ethersproject/abstract-provider';
+import { hexlify } from '@ethersproject/bytes';
+import { Deferrable, resolveProperties } from '@ethersproject/properties';
+import { accessListify } from '@ethersproject/transactions';
+import { BigNumber, BigNumberish, Transaction } from 'ethers';
 
 type TxConsts = {
   storageByteDeposit: BigNumberish;
@@ -67,4 +71,44 @@ export const calcSubstrateTransactionParams = (
     storageLimit,
     validUntil,
   };
+};
+
+export const getTransactionRequest = async (transaction: Deferrable<TransactionRequest>): Promise<Partial<Transaction>> => {
+  const values: any = await transaction;
+
+  const tx: any = {};
+
+  ['from', 'to'].forEach((key) => {
+    if (values[key] === null || values[key] === undefined) {
+      return;
+    }
+    tx[key] = Promise.resolve(values[key]).then((v) => (v ? v : null));
+  });
+
+  ['gasLimit', 'gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas', 'value'].forEach((key) => {
+    if (values[key] === null || values[key] === undefined) {
+      return;
+    }
+    tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v) : null));
+  });
+
+  ['type'].forEach((key) => {
+    if (values[key] === null || values[key] === undefined) {
+      return;
+    }
+    tx[key] = Promise.resolve(values[key]).then((v) => (v !== null || v !== undefined ? v : null));
+  });
+
+  if (values.accessList) {
+    tx.accessList = accessListify(values.accessList);
+  }
+
+  ['data'].forEach((key) => {
+    if (values[key] === null || values[key] === undefined) {
+      return;
+    }
+    tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v) : null));
+  });
+
+  return resolveProperties(tx);
 };

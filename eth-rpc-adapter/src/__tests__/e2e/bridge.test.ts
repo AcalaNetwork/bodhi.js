@@ -15,6 +15,9 @@ describe('e2e test', () => {
   const signer = new Wallet('0x5a214c9bcb10dfe58af9b349cad6f4564cd6f10d880bdfcf780e5812c3cbc855');
   const provider = EvmRpcProvider.from(endpoint);
 
+  before(async () => { await provider.isReady(); });
+  after(async () => { await provider.disconnect(); });
+
   const bridge = new Eip1193Bridge(provider, signer as any);
 
   it('eth_getBlockByNumber latest', async () => {
