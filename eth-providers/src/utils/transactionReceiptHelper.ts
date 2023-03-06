@@ -223,7 +223,7 @@ const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof n
   return params[0] === 0 ? new Uint8Array() : nToU8a(...params);
 };
 
-const formatter = new Formatter();
+export const formatter = new Formatter();
 export const fullReceiptFormatter = {
   ...formatter.formats.receipt,
   exitReason: (x: any) => x,

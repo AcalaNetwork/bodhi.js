@@ -86,3 +86,5 @@ export const ORPHAN_TX_DEFAULT_INFO = {
   nonce: 0,
   ...DUMMY_V_R_S,
 };
+
+export const BLOCK_GAS_LIMIT = 29_990_102;
