@@ -62,7 +62,7 @@ forge create src/Counter.sol:Counter \
 ```
 
 ### to public network
-in order to deploy to public network, we can skip step 1 and 2 in previous section, and switch to public eth rpc endpoint for step 3 and 4. For example, to deploy to public mandala, substitute `http://localhost:8545` to `wss://mandala-rpc.aca-staging.network/ws`.
+in order to deploy to public network, we can skip step 1 and 2 in previous section, and switch to public eth rpc endpoint for step 3 and 4. For example, to deploy to public mandala, substitute `http://localhost:8545` with `https://eth-rpc-mandala.aca-staging.network`.
 
 ### use a deploy script
 For more complex deployments, you might need to write a script. However, foundry has poor support for custom gas, which is required to deploy a contract. In this case, we recommend using other tools such as waffle, truffle, or hardhat. You can still write, test, and build the contract in foundry.
