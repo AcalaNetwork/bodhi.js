@@ -3,6 +3,7 @@ import { hexlify } from '@ethersproject/bytes';
 import { Deferrable, resolveProperties } from '@ethersproject/properties';
 import { accessListify } from '@ethersproject/transactions';
 import { BigNumber, BigNumberish, Transaction } from 'ethers';
+import { formatter } from './transactionReceiptHelper';
 
 type TxConsts = {
   storageByteDeposit: BigNumberish;
@@ -110,5 +111,5 @@ export const getTransactionRequest = async (transaction: Deferrable<TransactionR
     tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v) : null));
   });
 
-  return resolveProperties(tx);
+  return formatter.transactionRequest(await resolveProperties(tx));
 };
