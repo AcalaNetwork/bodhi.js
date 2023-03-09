@@ -10,7 +10,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "diff": "ts-node --transpile-only src/index.ts",
+    "start": "ts-node --transpile-only src/index.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "mocha src/__tests__/*",
     "lint": "eslint src",
