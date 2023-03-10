@@ -1,8 +1,10 @@
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { BigNumber } from '@ethersproject/bignumber';
+import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
 import { hexToU8a } from '@polkadot/util';
+import { hexToBn, isHex, isU8a, u8aToBn } from '@polkadot/util';
+import BN from 'bn.js';
 import { BlockTagish, CallInfo, Eip1898BlockTag } from '../base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
@@ -360,3 +362,24 @@ export const sortObjByKey = <T extends Record<string, any>>(key: string) =>
         ? (a[key] as string).localeCompare(b[key] as string)
         : (a[key] as number) - (b[key] as number)
   );
+
+// TODO: dedup in signer
+export const toBN = (bigNumberis: BigNumberish = 0): BN => {
+  if (isU8a(bigNumberis)) {
+    return u8aToBn(bigNumberis);
+  }
+  if (isHex(bigNumberis)) {
+    return hexToBn(bigNumberis);
+  }
+
+  if (BigNumber.isBigNumber(bigNumberis)) {
+    const hex = bigNumberis.toHexString();
+    if (hex[0] === '-') {
+      return new BN('-' + hex.substring(3), 16);
+    }
+    return new BN(hex.substring(2), 16);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new BN(bigNumberis as any);
+};

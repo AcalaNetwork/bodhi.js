@@ -83,6 +83,7 @@ import {
   sortObjByKey,
   receiptToTransaction,
   getTransactionRequest,
+  toBN,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
@@ -839,13 +840,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getGasPrice = async (): Promise<BigNumber> => {
-    if (this.richMode) {
-      return (await this._getEthGas()).gasPrice;
-    }
-
-    // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
-    const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
-    return txFeePerGas.add(BigNumber.from(this.latestBlockNumber).div(30).add(5).shl(16)).add(10);
+    const DEFAULT_VALID_BLOCKS = 100;
+    return BigNumber.from(100000000000n).add(this.latestBlockNumber + DEFAULT_VALID_BLOCKS);
   };
 
   getFeeData = async (): Promise<FeeData> => {
@@ -868,15 +864,91 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated gas used by this transaction
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    await this.call(transaction);
-    const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
-    const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
-    const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
-    const storageEntryDeposit = BigNumber.from(storageDepositPerByte).mul(64);
-    const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
+    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction);
+    const { storageDepositPerByte } = this._getGasConsts();
 
-    const resources = await this.estimateResources(transaction);
-    return resources.gas.add(storageGasLimit);
+    const tx = await resolveProperties(transaction);
+
+    const gasPrice = tx.gasPrice || 100000000000n;
+
+    const data = tx.data?.toString() ?? '0x';
+    const from = tx.from;
+
+    if (!data) {
+      return logger.throwError('Request data not found');
+    }
+
+    if (!from) {
+      return logger.throwError('Request from not found');
+    }
+
+    let extrinsic: SubmittableExtrinsic<'promise'>;
+
+    if (!tx.to) {
+      try {
+        extrinsic = this.api.tx.evm.create(
+          data,
+          toBN(BigNumber.from(tx.value ?? 0)),
+          toBN(gasLimit),
+          toBN(usedStorage.isNegative() ? 0 : usedStorage),
+          (tx.accessList as any) || []
+        );
+      } catch (error) {
+        console.log(error);
+        console.log(tx.value, gasLimit, usedStorage.isNegative() ? 0 : usedStorage);
+        throw error;
+      }
+
+    } else {
+      extrinsic = this.api.tx.evm.call(
+        tx.to,
+        data,
+        toBN(BigNumber.from(tx.value ?? 0)),
+        toBN(gasLimit),
+        toBN(usedStorage.isNegative() ? 0 : usedStorage),
+        (tx.accessList as any) || []
+      );
+    }
+
+    const u8a = extrinsic.toU8a();
+    const header = await this._getBlockHeader('latest');
+    const apiAtParentBlock = await this.api.at(header.parentHash);
+    const feeDetails = await apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
+    const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
+    const nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + adjustedWeightFee.toBigInt());
+
+    let txFee = nativeToEthDecimal(nativeTxFee);
+    txFee = txFee.mul(gasLimit).div(usedGas);   // scale it to the same ratio when estimate passing gasLimit
+
+    if (usedStorage.gt(0)) {
+      const storageFee = usedStorage.mul(storageDepositPerByte);
+      txFee = txFee.add(storageFee);
+    }
+
+    const rawEthGasLimit = txFee.div(gasPrice);
+
+    const gasMask = 10000;
+    const storageMask = 100;
+
+    const encodedStorageLimit = Math.ceil(Math.log2(usedStorage.toNumber() + 1));
+    const encodedGasLimit = gasLimit.div(300000);
+
+    const aaaaa = rawEthGasLimit.div(gasMask).mul(gasMask);
+    const bb = encodedGasLimit.div(storageMask).add(1).mul(storageMask);
+    const cc = encodedStorageLimit;
+    const ethGasLimit = aaaaa.add(bb).add(cc);   // aaaaabbcc
+
+    console.log({
+      txFee: txFee.toBigInt(),
+      usedGas: usedGas.toBigInt(),
+      usedStorage: usedStorage.toBigInt(),
+      gasLimit: gasLimit.toBigInt(),
+      ethGasLimit: ethGasLimit.toBigInt(),
+      gasPrice: BigNumber.from(gasPrice).toBigInt(),
+      estimatedCost: ethGasLimit.mul(gasPrice).toBigInt(),
+    });
+
+    return ethGasLimit;
   };
 
   /**
@@ -899,7 +971,7 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: BigNumber;
   }> => {
     if (!gasLimit || !storageLimit) {
-      const { gas, storage } = await this.estimateResources(transaction);
+      const { gasLimit: gas, usedStorage: storage } = await this.estimateResources(transaction);
       gasLimit = gasLimit ?? gas;
       storageLimit = storageLimit ?? storage;
     }
@@ -993,8 +1065,9 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated resources used by this transaction
    */
   estimateResources = async (transaction: Deferrable<TransactionRequest>): Promise<{
-    gas: BigNumber;
-    storage: BigNumber;
+    usedGas: BigNumber,
+    gasLimit: BigNumber;
+    usedStorage: BigNumber;
   }> => {
     const MAX_GAS_LIMIT = BLOCK_GAS_LIMIT;
     const MIN_GAS_LIMIT = 21000;
@@ -1037,8 +1110,9 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     return {
-      gas: BigNumber.from(highest),
-      storage: BigNumber.from(usedStorage),
+      usedGas: BigNumber.from(usedGas),     // actual used gas
+      gasLimit: BigNumber.from(highest),    // gasLimit to pass execution
+      usedStorage: BigNumber.from(usedStorage),
     };
   };
 
@@ -1111,6 +1185,8 @@ export abstract class BaseProvider extends AbstractProvider {
     tip: bigint;
     accessList?: [string, string[]][];
   } => {
+    console.log(`decoding gasLimit: ${ethTx.gasLimit!.toBigInt()}`);
+
     let gasLimit = 0n;
     let storageLimit = 0n;
     let validUntil = 0n;
@@ -1129,48 +1205,19 @@ export abstract class BaseProvider extends AbstractProvider {
       tip = BigInt(ethTx.tip.toString());
     } else if (ethTx.type === null || ethTx.type === undefined || ethTx.type === 0 || ethTx.type === 2) {
       // Legacy, EIP-155, and EIP-1559 transaction
-      const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
+      const bbcc = ethTx.gasLimit!.mod(10000);
+      const encodedStorageLimit = bbcc.mod(100);  // bb
+      const encodedGasLimit = bbcc.div(100);      // cc
 
-      const _getErrInfo = (): any => ({
-        txGasLimit: ethTx.gasLimit?.toBigInt(),
-        txGasPrice: ethTx.gasPrice?.toBigInt(),
-        maxPriorityFeePerGas: ethTx.maxPriorityFeePerGas?.toBigInt(),
-        maxFeePerGas: ethTx.maxFeePerGas?.toBigInt(),
-        txFeePerGas,
-        storageDepositPerByte,
-      });
+      const res = {
+        validUntil: ethTx.gasPrice!.sub(100000000000).toBigInt(),   // TODO: type
+        gasLimit: encodedGasLimit.mul(300000).toBigInt(),
+        storageLimit: BigNumber.from(2).pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit).toBigInt(),
+        tip: 0n,
+      };
 
-      const errHelpMsg =
-        'invalid ETH gasLimit/gasPrice combination provided. Please DO NOT change gasLimit/gasPrice in metamask when sending token, if you are deploying contract, DO NOT provide random gasLimit/gasPrice, please check out our doc for how to compute gas, easiest way is to call eth_getEthGas directly';
-
-      try {
-        const params = calcSubstrateTransactionParams({
-          txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
-          txGasLimit: ethTx.gasLimit || '0',
-          storageByteDeposit: storageDepositPerByte,
-          txFeePerGas: txFeePerGas,
-        });
-
-        gasLimit = params.gasLimit.toBigInt();
-        validUntil = params.validUntil.toBigInt();
-        storageLimit = params.storageLimit.toBigInt();
-        tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
-      } catch {
-        return logger.throwError(
-          `calculating substrate gas failed: ${errHelpMsg}`,
-          Logger.errors.INVALID_ARGUMENT,
-          _getErrInfo()
-        );
-      }
-
-      if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
-        return logger.throwError(`bad substrate gas params caused by ${errHelpMsg}`, Logger.errors.INVALID_ARGUMENT, {
-          ..._getErrInfo(),
-          gasLimit,
-          validUntil,
-          storageLimit,
-        });
-      }
+      console.log(res);
+      return res;
     } else if (ethTx.type === 1) {
       // EIP-2930 transaction
       return throwNotImplemented('EIP-2930 transactions');
@@ -1202,6 +1249,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
+    console.log({ storageLimit, validUntil, gasLimit, tip });
 
     // check excuted error
     const callRequest: SubstrateEvmCallRequest = {
