@@ -1,6 +1,6 @@
 services:
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-3cc5ec9
+    image: ghcr.io/acalanetwork/mandala-node:sha-104e277
     container_name: mandala-node
     ports:
       - 9944:9944
