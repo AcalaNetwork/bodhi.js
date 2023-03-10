@@ -9,5 +9,5 @@ COPY examples/truffle-tutorials examples/truffle-tutorials
 
 WORKDIR /app/examples/truffle-tutorials
 RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV ENDPOINT_URL=ws://mandala-subway:9955
 CMD ["/bin/bash", "run.sh", "CI_build_and_test"]

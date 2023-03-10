@@ -72,7 +72,7 @@ services:
         condition: service_started
     restart: always
     command:
-      - --endpoint=ws://mandala-node:9944
+      - --endpoint=ws://mandala-subway:9944
       - --subql=http://graphql-engine:3001
       - --port=8545
       - --localMode
@@ -111,13 +111,23 @@ services:
       - --instant-sealing
       - --tmp
 
+  mandala-subway:
+    image: acala/subway:sha-7c1610c
+    ports:
+      - 9955:9955
+    environment:
+      - ENDPOINTS=ws://mandala-node:9944
+      - PORT:9955
+    depends_on:
+      - mandala-node
+
   feed-tx:
     build:
       context: .
       dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: feed-tx
     depends_on:
-      - mandala-node
+      - mandala-subway
 
   feed-tx-step-2:
     build:
@@ -147,10 +157,10 @@ services:
     ports:
       - 8545:8545
     depends_on:
-      - mandala-node
+      - mandala-subway
     restart: always
     command:
-      - --endpoint=ws://mandala-node:9944
+      - --endpoint=ws://mandala-subway:9944
       - --port=8545
       - --localMode
 
@@ -162,10 +172,10 @@ services:
     ports:
       - 8545:8545
     depends_on:
-      - mandala-node
+      - mandala-subway
     restart: always
     command:
-      - --endpoint=ws://mandala-node:9944
+      - --endpoint=ws://mandala-subway:9944
       - --port=8545
       - --localMode
       - --richMode
@@ -189,7 +199,7 @@ services:
       dockerfile: docker/waffle-examples-test.Dockerfile
       target: waffle-examples
     depends_on:
-      - mandala-node
+      - mandala-subway
 
   waffle-tutorials-test:
     build:
@@ -197,7 +207,7 @@ services:
       dockerfile: docker/waffle-tutorials-test.Dockerfile
       target: waffle-tutorials
     depends_on:
-      - mandala-node
+      - mandala-subway
   hardhat-tutorials-test:
     build:
       context: .
@@ -211,6 +221,6 @@ services:
       dockerfile: docker/truffle-tutorials-test.Dockerfile
       target: truffle-tutorials
     environment:
-      - ENDPOINT_URL=ws://mandala-node:9944
+      - ENDPOINT_URL=ws://mandala-subway:9944
     depends_on:
       - eth-rpc-adapter-server

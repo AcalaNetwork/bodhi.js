@@ -9,5 +9,5 @@ COPY examples/waffle ./examples/waffle
 
 WORKDIR /app/examples/waffle
 RUN chmod 777 run.sh
-ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV ENDPOINT_URL=ws://mandala-subway:9955
 CMD ["/bin/bash", "run.sh", "build_and_test"]

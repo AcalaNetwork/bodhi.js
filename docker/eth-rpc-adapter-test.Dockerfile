@@ -9,7 +9,7 @@ COPY examples/waffle ./examples/waffle
 WORKDIR /app/examples/waffle/dex
 RUN rush build -o .
 
-ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV ENDPOINT_URL=ws://mandala-subway:9955
 CMD ["yarn", "test"]
 
 # =============== feed-tx-dex-erc20 =============== #
@@ -23,7 +23,7 @@ COPY examples/waffle ./examples/waffle
 WORKDIR /app/examples/waffle/e2e
 RUN rush build -o .
 
-ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV ENDPOINT_URL=ws://mandala-subway:9955
 CMD ["yarn", "test-dex"]
 
 # =============== eth-rpc-adapter-test =============== #
@@ -34,7 +34,7 @@ WORKDIR /app
 COPY eth-rpc-adapter ./eth-rpc-adapter
 
 WORKDIR /app/eth-rpc-adapter
-ENV ENDPOINT_URL=ws://mandala-node:9944
+ENV ENDPOINT_URL=ws://mandala-subway:9955
 ENV SUBQL_URL=http://graphql-engine:3001
 ENV RPC_URL=http://eth-rpc-adapter-server-with-subql:8545
 ENV WS_URL=ws://eth-rpc-adapter-server-with-subql:8545
