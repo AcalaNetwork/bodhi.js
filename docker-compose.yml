@@ -117,7 +117,7 @@ services:
       - 9955:9955
     environment:
       - ENDPOINTS=ws://mandala-node:9944
-      - PORT:9955
+      - PORT=9955
     depends_on:
       - mandala-node
 
