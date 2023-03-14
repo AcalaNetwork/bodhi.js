@@ -1213,9 +1213,7 @@ export abstract class BaseProvider extends AbstractProvider {
       const tipNumber = gasPrice.div(ONE_GWEI).sub(100);
       if (tipNumber.gt(0)) {
         gasPrice = gasPrice.sub(tipNumber.mul(ONE_GWEI));
-        const extraCost = gasPrice.mul(ethTx.gasLimit!).div(100).mul(tipNumber);
-        const COST_PER_TIP = 1;   // TODO: find out real value
-        tip = extraCost.div(COST_PER_TIP).toBigInt();
+        tip = gasPrice.mul(ethTx.gasLimit!).div(100).mul(tipNumber).toBigInt();
       }
 
       const res = {
