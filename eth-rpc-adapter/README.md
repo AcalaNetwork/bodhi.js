@@ -176,8 +176,12 @@ cd ../e2e/ && yarn test
 ```
 
 - start rpc adapter
+```
 rush update && rush build -t .
 yarn start -l --subql http://localhost:3001
+```
 
 - run tests
+```
 SKIP_PUBLIC=true yarn mocha **/*.test.ts
+```
