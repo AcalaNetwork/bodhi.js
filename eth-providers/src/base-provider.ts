@@ -52,6 +52,11 @@ import {
   ZERO,
   DUMMY_BLOCK_HASH,
   BLOCK_GAS_LIMIT,
+  ONE_HUNDRED_GWEI,
+  GAS_LIMIT_CHUNK,
+  GAS_MASK,
+  STORAGE_MASK,
+  ONE_GWEI,
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -839,9 +844,8 @@ export abstract class BaseProvider extends AbstractProvider {
     // return resolver.getAddress();
   };
 
-  getGasPrice = async (): Promise<BigNumber> => {
-    const DEFAULT_VALID_BLOCKS = 100;
-    return BigNumber.from(100000000000n).add(this.latestBlockNumber + DEFAULT_VALID_BLOCKS);
+  getGasPrice = async (validBlocks = 200): Promise<BigNumber> => {
+    return BigNumber.from(ONE_HUNDRED_GWEI).add(this.latestBlockNumber + validBlocks);
   };
 
   getFeeData = async (): Promise<FeeData> => {
@@ -869,7 +873,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const tx = await resolveProperties(transaction);
 
-    const gasPrice = tx.gasPrice || 100000000000n;
+    const gasPrice = tx.gasPrice || ONE_HUNDRED_GWEI;
 
     const data = tx.data?.toString() ?? '0x';
     const from = tx.from;
@@ -883,22 +887,14 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     let extrinsic: SubmittableExtrinsic<'promise'>;
-
     if (!tx.to) {
-      try {
-        extrinsic = this.api.tx.evm.create(
-          data,
-          toBN(BigNumber.from(tx.value ?? 0)),
-          toBN(gasLimit),
-          toBN(usedStorage.isNegative() ? 0 : usedStorage),
-          (tx.accessList as any) || []
-        );
-      } catch (error) {
-        console.log(error);
-        console.log(tx.value, gasLimit, usedStorage.isNegative() ? 0 : usedStorage);
-        throw error;
-      }
-
+      extrinsic = this.api.tx.evm.create(
+        data,
+        toBN(BigNumber.from(tx.value ?? 0)),
+        toBN(gasLimit),
+        toBN(usedStorage.isNegative() ? 0 : usedStorage),
+        (tx.accessList as any) || []
+      );
     } else {
       extrinsic = this.api.tx.evm.call(
         tx.to,
@@ -910,9 +906,13 @@ export abstract class BaseProvider extends AbstractProvider {
       );
     }
 
-    const u8a = extrinsic.toU8a();
     const header = await this._getBlockHeader('latest');
-    const apiAtParentBlock = await this.api.at(header.parentHash);
+    const parentHash = header.parentHash.toHex() === '0x0000000000000000000000000000000000000000000000000000000000000000'
+      ? header.hash
+      : header.parentHash;
+    const apiAtParentBlock = await this.api.at(parentHash);
+
+    const u8a = extrinsic.toU8a();
     const feeDetails = await apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
     const nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + adjustedWeightFee.toBigInt());
@@ -926,18 +926,17 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const rawEthGasLimit = txFee.div(gasPrice);
+    const encodedGasLimit = gasLimit.div(GAS_LIMIT_CHUNK).add(1);
+    const encodedStorageLimit = usedStorage.gt(0)
+      ? Math.ceil(Math.log2(usedStorage.toNumber()))
+      : 0;
 
-    const gasMask = 10000;
-    const storageMask = 100;
-
-    const encodedStorageLimit = Math.ceil(Math.log2(usedStorage.toNumber() + 1));
-    const encodedGasLimit = gasLimit.div(300000);
-
-    const aaaaa = rawEthGasLimit.div(gasMask).mul(gasMask);
-    const bb = encodedGasLimit.div(storageMask).add(1).mul(storageMask);
+    const aaaa00000 = rawEthGasLimit.div(GAS_MASK).mul(GAS_MASK);
+    const bbb00 = encodedGasLimit.mul(STORAGE_MASK);
     const cc = encodedStorageLimit;
-    const ethGasLimit = aaaaa.add(bb).add(cc);   // aaaaabbcc
+    const ethGasLimit = aaaa00000.add(bbb00).add(cc);   // aaaabbbcc
 
+    console.log('encoding finished ...');
     console.log({
       txFee: txFee.toBigInt(),
       usedGas: usedGas.toBigInt(),
@@ -1205,15 +1204,25 @@ export abstract class BaseProvider extends AbstractProvider {
       tip = BigInt(ethTx.tip.toString());
     } else if (ethTx.type === null || ethTx.type === undefined || ethTx.type === 0 || ethTx.type === 2) {
       // Legacy, EIP-155, and EIP-1559 transaction
-      const bbcc = ethTx.gasLimit!.mod(10000);
-      const encodedStorageLimit = bbcc.mod(100);  // bb
-      const encodedGasLimit = bbcc.div(100);      // cc
+      const bbbcc = ethTx.gasLimit!.mod(GAS_MASK);
+      const encodedGasLimit = bbbcc.div(STORAGE_MASK);      // bbb
+      const encodedStorageLimit = bbbcc.mod(STORAGE_MASK);  // cc
+
+      let gasPrice = ethTx.gasPrice!;                       // TODO: type
+      let tip = 0n;
+      const tipNumber = gasPrice.div(ONE_GWEI).sub(100);
+      if (tipNumber.gt(0)) {
+        gasPrice = gasPrice.sub(tipNumber.mul(ONE_GWEI));
+        const extraCost = gasPrice.mul(ethTx.gasLimit!).div(100).mul(tipNumber);
+        const COST_PER_TIP = 1;   // TODO: find out real value
+        tip = extraCost.div(COST_PER_TIP).toBigInt();
+      }
 
       const res = {
-        validUntil: ethTx.gasPrice!.sub(100000000000).toBigInt(),   // TODO: type
-        gasLimit: encodedGasLimit.mul(300000).toBigInt(),
+        validUntil: gasPrice.sub(ONE_HUNDRED_GWEI).toBigInt(),
+        gasLimit: encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt(),
         storageLimit: BigNumber.from(2).pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit).toBigInt(),
-        tip: 0n,
+        tip,
       };
 
       console.log(res);
