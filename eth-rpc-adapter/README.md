@@ -169,16 +169,16 @@ yarn && yarn build
 docker compose up
 ```
 
-- feed deterministic txs
-```
-cd ../examples/waffle/dex/ && yarn test
-cd ../e2e/ && yarn test
-```
-
 - start rpc adapter
 ```
 rush update && rush build -t .
 yarn start -l --subql http://localhost:3001
+```
+
+- feed deterministic txs (after this step there should be 22 blocks)
+```
+cd ../examples/waffle/dex/ && yarn test
+cd ../e2e/ && yarn test
 ```
 
 - run tests
