@@ -160,3 +160,28 @@ We still recommend reading through the [gas params](https://evmdocs.acala.networ
 
 ## For Production
 For production deployment we can simply use [acala/eth-rpc-adapter](https://hub.docker.com/r/acala/eth-rpc-adapter/tags) directly. Remember **NOT** to turn on `local mode` or `rich mode`
+
+## Run Tests Locally 
+- start local mandala node + subql stacks
+```
+cd ../evm-subql
+yarn && yarn build
+docker compose up
+```
+
+- start rpc adapter
+```
+rush update && rush build -t .
+yarn start -l --subql http://localhost:3001
+```
+
+- feed deterministic txs (after this step there should be 22 blocks)
+```
+cd ../examples/waffle/dex/ && yarn test
+cd ../e2e/ && yarn test
+```
+
+- run tests
+```
+SKIP_PUBLIC=true yarn mocha **/*.test.ts
+```
