@@ -72,7 +72,7 @@ services:
         condition: service_started
     restart: always
     command:
-      - --endpoint=ws://mandala-subway:9944
+      - --endpoint=ws://mandala-subway:9955
       - --subql=http://graphql-engine:3001
       - --port=8545
       - --localMode
@@ -160,7 +160,7 @@ services:
       - mandala-subway
     restart: always
     command:
-      - --endpoint=ws://mandala-subway:9944
+      - --endpoint=ws://mandala-subway:9955
       - --port=8545
       - --localMode
 
@@ -175,7 +175,7 @@ services:
       - mandala-subway
     restart: always
     command:
-      - --endpoint=ws://mandala-subway:9944
+      - --endpoint=ws://mandala-subway:9955
       - --port=8545
       - --localMode
       - --richMode
@@ -221,6 +221,6 @@ services:
       dockerfile: docker/truffle-tutorials-test.Dockerfile
       target: truffle-tutorials
     environment:
-      - ENDPOINT_URL=ws://mandala-subway:9944
+      - ENDPOINT_URL=ws://mandala-subway:9955
     depends_on:
       - eth-rpc-adapter-server
