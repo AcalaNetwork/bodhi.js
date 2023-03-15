@@ -112,7 +112,7 @@ services:
       - --tmp
 
   mandala-subway:
-    image: acala/subway:sha-7c1610c
+    image: shunhahaha/subway-dev:v0.0.1
     ports:
       - 9955:9955
     environment:
