@@ -99,7 +99,7 @@ const main = async () => {
   const ws = new WebSocket(rpcWs);
 
   ws.on('open', () => {
-    ws.send(JSON.stringify({ id: 1, method: 'eth_subscribe', params: ['logs', {}] }));
+    ws.send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_subscribe', params: ['logs', {}] }));
     console.log('👌 successfully subscribed to logs!');
   });
 

@@ -89,7 +89,7 @@ const queryWs = async () => {
   const ws = new WebSocket(MANDALA_RPC_WS_SUBQL);
 
   ws.on('open', () => {
-    ws.send(JSON.stringify({ id: 1, method: 'eth_subscribe', params: ['newHeads'] }));
+    ws.send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_subscribe', params: ['newHeads'] }));
   });
 
   ws.on('message', (data) => {

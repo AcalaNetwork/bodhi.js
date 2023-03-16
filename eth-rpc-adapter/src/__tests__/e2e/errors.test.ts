@@ -25,13 +25,12 @@ describe('errors', () => {
       }
     });
 
-    expect(res.data).to.deep.equal({
+    expect(res.data).to.deep.include({
       id,
       jsonrpc: '2.0',
       error: {
         code: -32600,
-        data: { id, method: null, params: null },
-        message: 'invalid json request'
+        message: 'Invalid request'
       }
     });
   });

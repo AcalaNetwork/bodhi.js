@@ -1527,19 +1527,22 @@ describe('eth_subscribe', () => {
       });
 
       ws.send(JSON.stringify({
-        id: '0',
+        jsonrpc: "2.0",
+        id: 0,
         method: 'eth_subscribe',
         params: ['newHeads']
       }));
 
       ws.send(JSON.stringify({
-        id: '1',
+        jsonrpc: "2.0",
+        id: 1,
         method: 'eth_subscribe',
         params: ['logs', {}]
       }));
 
       ws.send(JSON.stringify({
-        id: '2',
+        jsonrpc: "2.0",
+        id: 2,
         method: 'eth_subscribe',
         params: ['logs', {
           topics: [
@@ -1551,7 +1554,8 @@ describe('eth_subscribe', () => {
       }));
 
       ws.send(JSON.stringify({
-        id: '3',
+        jsonrpc: "2.0",
+        id: 3,
         method: 'eth_subscribe',
         params: ['logs', {
           topics: [
@@ -1573,10 +1577,10 @@ describe('eth_subscribe', () => {
 
     await sleep(3000);    // give ws some time to notify
 
-    subId0 = notifications.find(n => n.id === '0').result;
-    subId1 = notifications.find(n => n.id === '1').result;
-    subId2 = notifications.find(n => n.id === '2').result;
-    subId3 = notifications.find(n => n.id === '3').result;
+    subId0 = notifications.find(n => n.id === 0).result;
+    subId1 = notifications.find(n => n.id === 1).result;
+    subId2 = notifications.find(n => n.id === 2).result;
+    subId3 = notifications.find(n => n.id === 3).result;
 
     const notification0 = notifications.find(n => n.params?.subscription === subId0);   // new block
     const notification1 = notifications.find(n => n.params?.subscription === subId1);   // ACA transfer
@@ -1630,6 +1634,7 @@ describe('eth_subscribe', () => {
     let reqId = 10;
     const unsubscribe = async (id: string) => {
       ws.send(JSON.stringify({
+        jsonrpc: '2.0',
         id: reqId++,
         method: 'eth_unsubscribe',
         params: [id]
