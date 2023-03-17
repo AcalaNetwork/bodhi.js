@@ -269,10 +269,10 @@ export const runWithTiming = async <F extends AnyFunction>(
 
 const ETH_DECIMALS = 18;
 const NATIVE_DECIMALS = 12;
-export const nativeToEthDecimal = (value: any, nativeDecimals: number = NATIVE_DECIMALS): BigNumber =>
-  BigNumber.from(value).mul(10 ** (ETH_DECIMALS - nativeDecimals));
-export const ethToNativeDecimal = (value: any, nativeDecimals: number = NATIVE_DECIMALS): BigNumber =>
-  BigNumber.from(value).div(10 ** (ETH_DECIMALS - nativeDecimals));
+export const nativeToEthDecimal = (value: any): BigNumber =>
+  BigNumber.from(value).mul(10 ** (ETH_DECIMALS - NATIVE_DECIMALS));
+export const ethToNativeDecimal = (value: any): BigNumber =>
+  BigNumber.from(value).div(10 ** (ETH_DECIMALS - NATIVE_DECIMALS));
 
 export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): Promise<string | number | undefined> => {
   const blockTag = await _blockTag;
@@ -366,7 +366,6 @@ export const sortObjByKey = <T extends Record<string, any>>(key: string) =>
         : (a[key] as number) - (b[key] as number)
   );
 
-// TODO: dedup in signer
 export const toBN = (bigNumberis: BigNumberish = 0): BN => {
   if (isU8a(bigNumberis)) {
     return u8aToBn(bigNumberis);

@@ -645,7 +645,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash
     );
 
-    return nativeToEthDecimal(accountInfo.data.free.toBigInt(), this.chainDecimal);
+    return nativeToEthDecimal(accountInfo.data.free.toBigInt());
   };
 
   getTransactionCount = async (

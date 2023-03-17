@@ -1,4 +1,4 @@
-import { SignerProvider } from '@acala-network/eth-providers';
+import { SignerProvider, toBN } from '@acala-network/eth-providers';
 import { handleTxResponse } from '@acala-network/eth-providers/lib';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
@@ -18,7 +18,7 @@ import { SubmittableResult } from '@polkadot/api';
 import { SubmittableExtrinsic, Signer as PolkaSigner } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
-import { dataToString, toBN } from './utils';
+import { dataToString } from './utils';
 import { version } from './_version';
 
 export const logger = new Logger(version);
@@ -203,13 +203,13 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     let totalLimit = await transaction.gasLimit;
 
     if (totalLimit === null || totalLimit === undefined) {
-      gasLimit = resources.gas;
-      storageLimit = resources.storage;
-      totalLimit = resources.gas.add(resources.storage);
+      gasLimit = resources.gasLimit;
+      storageLimit = resources.usedStorage;
+      totalLimit = resources.gasLimit.add(resources.usedStorage);
     } else {
-      const estimateTotalLimit = resources.gas.add(resources.storage);
-      gasLimit = BigNumber.from(totalLimit).mul(resources.gas).div(estimateTotalLimit).add(1);
-      storageLimit = BigNumber.from(totalLimit).mul(resources.storage).div(estimateTotalLimit).add(1);
+      const estimateTotalLimit = resources.gasLimit.add(resources.usedStorage);
+      gasLimit = BigNumber.from(totalLimit).mul(resources.gasLimit).div(estimateTotalLimit).add(1);
+      storageLimit = BigNumber.from(totalLimit).mul(resources.usedStorage).div(estimateTotalLimit).add(1);
     }
 
     transaction.gasLimit = totalLimit;
