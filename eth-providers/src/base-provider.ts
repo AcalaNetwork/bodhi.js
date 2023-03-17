@@ -953,17 +953,6 @@ export abstract class BaseProvider extends AbstractProvider {
     const cc = encodedStorageLimit;
     const ethGasLimit = aaaa00000.add(bbb00).add(cc);   // aaaabbbcc
 
-    console.log('encoding finished ...');
-    console.log({
-      txFee: txFee.toBigInt(),
-      usedGas: usedGas.toBigInt(),
-      usedStorage: usedStorage.toBigInt(),
-      gasLimit: gasLimit.toBigInt(),
-      ethGasLimit: ethGasLimit.toBigInt(),
-      gasPrice: BigNumber.from(gasPrice).toBigInt(),
-      estimatedCost: ethGasLimit.mul(gasPrice).toBigInt(),
-    });
-
     return ethGasLimit;
   };
 
@@ -1295,7 +1284,6 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const { storageLimit, gasLimit, tip, accessList, validUntil, v2 } = this._getSubstrateGasParams(ethTx);
-    console.log({ storageLimit, gasLimit, tip, accessList, validUntil, v2 });
 
     // check excuted error
     const callRequest: SubstrateEvmCallRequest = {
