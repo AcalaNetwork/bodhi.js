@@ -5,23 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "rpc adapter",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "node",
-      "env": { "NODE_URL": "ws://localhost:9944" },
-      "runtimeArgs": [
-        "--inspect-brk=8888",
-        "--nolazy",
-        "-r",
-        "ts-node/register/transpile-only",
-      ],
-      "args": ["src/index"],
-      "cwd": "${workspaceRoot}/eth-rpc-adapter",
-      "internalConsoleOptions": "openOnSessionStart",
-      "skipFiles": ["<node_internals>/**"]
-    }
-    {
       "name": "hardhat test",
       "type": "node",
       "request": "launch",
