@@ -1,5 +1,5 @@
 {
-  "name": "eth-rpc-provider-playground",
+  "name": "subway-perf",
   "version": "1.0.8",
   "author": "Acala Developers <hello@acala.network>",
   "main": "dist/index.js",
@@ -10,7 +10,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "diff": "ts-node --transpile-only src/index.ts",
+    "start": "ts-node --transpile-only src/index.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "mocha src/__tests__/*",
     "lint": "eslint src",
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@acala-network/api": "^4.1.8-2.3",
-    "@acala-network/eth-providers": "file:/Users/shunjizhan/Acala/bodhi.js/eth-providers/lib",
+    "@acala-network/eth-providers": "^2.6.2",
     "@polkadot/api": "^9.14.2",
     "csv-parse": "^5.3.3",
     "ws": "^8.12.1",

@@ -4,7 +4,7 @@ A node service that provides [JSON-RPC](https://eth.wiki/json-rpc/API) for [Acal
 ## Run
 First run a Mandala node locally
 ```
-docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-3cc5ec9 --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
+docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-104e277 --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
 ```
 
 Then there are 3 ways to run an RPC adapter:
@@ -160,3 +160,28 @@ We still recommend reading through the [gas params](https://evmdocs.acala.networ
 
 ## For Production
 For production deployment we can simply use [acala/eth-rpc-adapter](https://hub.docker.com/r/acala/eth-rpc-adapter/tags) directly. Remember **NOT** to turn on `local mode` or `rich mode`
+
+## Run Tests Locally 
+- start local mandala node + subql stacks
+```
+cd ../evm-subql
+yarn && yarn build
+docker compose up
+```
+
+- start rpc adapter
+```
+rush update && rush build -t .
+yarn start -l --subql http://localhost:3001
+```
+
+- feed deterministic txs (after this step there should be 22 blocks)
+```
+cd ../examples/waffle/dex/ && yarn test
+cd ../e2e/ && yarn test
+```
+
+- run tests
+```
+SKIP_PUBLIC=true yarn mocha **/*.test.ts
+```
