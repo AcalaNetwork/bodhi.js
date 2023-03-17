@@ -268,8 +268,11 @@ export const runWithTiming = async <F extends AnyFunction>(
 };
 
 const ETH_DECIMALS = 18;
-export const nativeToEthDecimal = (value: any, nativeDecimals: number = 12): BigNumber =>
+const NATIVE_DECIMALS = 12;
+export const nativeToEthDecimal = (value: any, nativeDecimals: number = NATIVE_DECIMALS): BigNumber =>
   BigNumber.from(value).mul(10 ** (ETH_DECIMALS - nativeDecimals));
+export const ethToNativeDecimal = (value: any, nativeDecimals: number = NATIVE_DECIMALS): BigNumber =>
+  BigNumber.from(value).div(10 ** (ETH_DECIMALS - nativeDecimals));
 
 export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): Promise<string | number | undefined> => {
   const blockTag = await _blockTag;

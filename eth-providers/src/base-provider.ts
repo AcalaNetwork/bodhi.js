@@ -38,7 +38,7 @@ import {
   BIGNUMBER_ZERO,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
-  DUMMY_BLOCK_MIX_HASH,
+  ZERO_BLOCK_HASH,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
   EMPTY_HEX_STRING,
@@ -56,7 +56,7 @@ import {
   GAS_LIMIT_CHUNK,
   GAS_MASK,
   STORAGE_MASK,
-  ONE_GWEI,
+  TEN_GWEI,
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -89,6 +89,7 @@ import {
   receiptToTransaction,
   getTransactionRequest,
   toBN,
+  ethToNativeDecimal,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
@@ -599,7 +600,7 @@ export abstract class BaseProvider extends AbstractProvider {
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: Math.floor(now.toNumber() / 1000),
       nonce: DUMMY_BLOCK_NONCE,
-      mixHash: DUMMY_BLOCK_MIX_HASH,
+      mixHash: ZERO_BLOCK_HASH,
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(BLOCK_GAS_LIMIT),
@@ -844,7 +845,19 @@ export abstract class BaseProvider extends AbstractProvider {
     // return resolver.getAddress();
   };
 
+  getGasPriceV1 = async (): Promise<BigNumber> => {
+    if (this.richMode) {
+      return (await this._getEthGas()).gasPrice;
+    }
+
+    // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
+    const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
+    return txFeePerGas.add(BigNumber.from(this.latestBlockNumber).div(30).add(5).shl(16)).add(10);
+  };
+
   getGasPrice = async (validBlocks = 200): Promise<BigNumber> => {
+    if (!process.env.V2) return this.getGasPriceV1();
+
     return BigNumber.from(ONE_HUNDRED_GWEI).add(this.latestBlockNumber + validBlocks);
   };
 
@@ -862,52 +875,51 @@ export abstract class BaseProvider extends AbstractProvider {
     txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt(),
   });
 
+  estimateGasV1 = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
+    // await this.call(transaction);
+    const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
+    const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
+    const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
+    const storageEntryDeposit = BigNumber.from(storageDepositPerByte).mul(64);
+    const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
+
+    const resources = await this.estimateResources(transaction);
+    return resources.gasLimit.add(storageGasLimit);
+  };
+
   /**
    * Estimate gas for a transaction.
    * @param transaction The transaction to estimate the gas of
    * @returns The estimated gas used by this transaction
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
+    if (!process.env.V2) return this.estimateGasV1(transaction);
+
     const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction);
-    const { storageDepositPerByte } = this._getGasConsts();
 
     const tx = await resolveProperties(transaction);
-
-    const gasPrice = tx.gasPrice || ONE_HUNDRED_GWEI;
-
     const data = tx.data?.toString() ?? '0x';
-    const from = tx.from;
+    const gasPrice = tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0)
+      ? tx.gasPrice
+      : await this.getGasPrice();
 
-    if (!data) {
-      return logger.throwError('Request data not found');
-    }
+    const createParams = [
+      data,
+      toBN(BigNumber.from(tx.value ?? 0)),
+      toBN(gasLimit),
+      toBN(usedStorage.isNegative() ? 0 : usedStorage),
+      (tx.accessList as any) || [],
+    ] as const;
 
-    if (!from) {
-      return logger.throwError('Request from not found');
-    }
+    const callParams = [tx.to!, ...createParams ] as const;
 
-    let extrinsic: SubmittableExtrinsic<'promise'>;
-    if (!tx.to) {
-      extrinsic = this.api.tx.evm.create(
-        data,
-        toBN(BigNumber.from(tx.value ?? 0)),
-        toBN(gasLimit),
-        toBN(usedStorage.isNegative() ? 0 : usedStorage),
-        (tx.accessList as any) || []
-      );
-    } else {
-      extrinsic = this.api.tx.evm.call(
-        tx.to,
-        data,
-        toBN(BigNumber.from(tx.value ?? 0)),
-        toBN(gasLimit),
-        toBN(usedStorage.isNegative() ? 0 : usedStorage),
-        (tx.accessList as any) || []
-      );
-    }
+    const extrinsic = tx.to
+      ? this.api.tx.evm.call(...callParams)
+      : this.api.tx.evm.create(...createParams);
 
     const header = await this._getBlockHeader('latest');
-    const parentHash = header.parentHash.toHex() === '0x0000000000000000000000000000000000000000000000000000000000000000'
+    const isLocalModeFirstBlock = this.localMode && header.parentHash.toHex() === ZERO_BLOCK_HASH;
+    const parentHash = isLocalModeFirstBlock
       ? header.hash
       : header.parentHash;
     const apiAtParentBlock = await this.api.at(parentHash);
@@ -915,13 +927,17 @@ export abstract class BaseProvider extends AbstractProvider {
     const u8a = extrinsic.toU8a();
     const feeDetails = await apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
-    const nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + adjustedWeightFee.toBigInt());
+    const nativeTxFee = BigNumber.from(
+      baseFee.toBigInt() +
+      lenFee.toBigInt() +
+      adjustedWeightFee.toBigInt()
+    );
 
     let txFee = nativeToEthDecimal(nativeTxFee);
     txFee = txFee.mul(gasLimit).div(usedGas);   // scale it to the same ratio when estimate passing gasLimit
 
     if (usedStorage.gt(0)) {
-      const storageFee = usedStorage.mul(storageDepositPerByte);
+      const storageFee = usedStorage.mul(this._getGasConsts().storageDepositPerByte);
       txFee = txFee.add(storageFee);
     }
 
@@ -1183,16 +1199,15 @@ export abstract class BaseProvider extends AbstractProvider {
     validUntil: bigint;
     tip: bigint;
     accessList?: [string, string[]][];
+    v2: boolean;
   } => {
-    console.log(`decoding gasLimit: ${ethTx.gasLimit!.toBigInt()}`);
-
     let gasLimit = 0n;
     let storageLimit = 0n;
     let validUntil = 0n;
     let tip = 0n;
+    let v2 = false;
 
-    if (ethTx.type === 96) {
-      // EIP-712 transaction
+    if (ethTx.type === 96) {        // EIP-712 transaction
       if (!ethTx.gasLimit) return logger.throwError('expect gasLimit');
       if (!ethTx.storageLimit) return logger.throwError('expect storageLimit');
       if (!ethTx.validUntil) return logger.throwError('expect validUntil');
@@ -1202,31 +1217,53 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit = BigInt(ethTx.storageLimit.toString());
       validUntil = BigInt(ethTx.validUntil.toString());
       tip = BigInt(ethTx.tip.toString());
-    } else if (ethTx.type === null || ethTx.type === undefined || ethTx.type === 0 || ethTx.type === 2) {
-      // Legacy, EIP-155, and EIP-1559 transaction
-      const bbbcc = ethTx.gasLimit!.mod(GAS_MASK);
-      const encodedGasLimit = bbbcc.div(STORAGE_MASK);      // bbb
-      const encodedStorageLimit = bbbcc.mod(STORAGE_MASK);  // cc
+    } else if (
+      ethTx.type === undefined ||   // legacy
+      ethTx.type === null      ||   // legacy
+      ethTx.type === 0         ||   // EIP-155
+      ethTx.type === 2              // EIP-1559
+    ) {
+      try {
+        const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
 
-      let gasPrice = ethTx.gasPrice!;                       // TODO: type
-      let tip = 0n;
-      const tipNumber = gasPrice.div(ONE_GWEI).sub(100);
-      if (tipNumber.gt(0)) {
-        gasPrice = gasPrice.sub(tipNumber.mul(ONE_GWEI));
-        tip = gasPrice.mul(ethTx.gasLimit!).div(100).mul(tipNumber).toBigInt();
+        const params = calcSubstrateTransactionParams({
+          txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
+          txGasLimit: ethTx.gasLimit || '0',
+          storageByteDeposit: storageDepositPerByte,
+          txFeePerGas: txFeePerGas,
+        });
+
+        gasLimit = params.gasLimit.toBigInt();
+        validUntil = params.validUntil.toBigInt();
+        storageLimit = params.storageLimit.toBigInt();
+        tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
+
+        if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
+          throw new Error();
+        }
+      } catch (error) {   // v2
+        v2 = true;
+
+        if (!ethTx.gasLimit) return logger.throwError('expect gasLimit');
+        if (!ethTx.gasPrice) return logger.throwError('expect gasPrice');
+
+        const bbbcc = ethTx.gasLimit.mod(GAS_MASK);
+        const encodedGasLimit = bbbcc.div(STORAGE_MASK);      // bbb
+        const encodedStorageLimit = bbbcc.mod(STORAGE_MASK);  // cc
+
+        let gasPrice = ethTx.gasPrice;
+        const tipNumber = gasPrice.div(TEN_GWEI).sub(10);
+        if (tipNumber.gt(0)) {
+          gasPrice = gasPrice.sub(tipNumber.mul(TEN_GWEI));
+          const ethTip = gasPrice.mul(ethTx.gasLimit).mul(tipNumber).div(10);
+          tip = ethToNativeDecimal(ethTip).toBigInt();
+        }
+
+        validUntil = gasPrice.sub(ONE_HUNDRED_GWEI).toBigInt();
+        gasLimit = encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt();
+        storageLimit = BigNumber.from(2).pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit).toBigInt();
       }
-
-      const res = {
-        validUntil: gasPrice.sub(ONE_HUNDRED_GWEI).toBigInt(),
-        gasLimit: encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt(),
-        storageLimit: BigNumber.from(2).pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit).toBigInt(),
-        tip,
-      };
-
-      console.log(res);
-      return res;
-    } else if (ethTx.type === 1) {
-      // EIP-2930 transaction
+    } else if (ethTx.type === 1) {    // EIP-2930 transaction
       return throwNotImplemented('EIP-2930 transactions');
     }
 
@@ -1238,6 +1275,7 @@ export abstract class BaseProvider extends AbstractProvider {
       validUntil,
       tip,
       accessList,
+      v2,
     };
   };
 
@@ -1247,7 +1285,6 @@ export abstract class BaseProvider extends AbstractProvider {
     extrinsic: SubmittableExtrinsic<'promise'>;
     transaction: AcalaEvmTX;
   }> => {
-
     const signatureType = checkSignatureType(rawTx);
     const ethTx = parseTransaction(rawTx);
 
@@ -1255,8 +1292,8 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError('missing from address', Logger.errors.INVALID_ARGUMENT, ethTx);
     }
 
-    const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
-    console.log({ storageLimit, validUntil, gasLimit, tip });
+    const { storageLimit, gasLimit, tip, accessList, validUntil, v2 } = this._getSubstrateGasParams(ethTx);
+    console.log({ storageLimit, gasLimit, tip, accessList, validUntil, v2 });
 
     // check excuted error
     const callRequest: SubstrateEvmCallRequest = {
@@ -1271,15 +1308,24 @@ export abstract class BaseProvider extends AbstractProvider {
 
     await this._ethCall(callRequest);
 
-    const extrinsic = this.api.tx.evm.ethCall(
-      ethTx.to ? { Call: ethTx.to } : { Create: null },
-      ethTx.data,
-      ethTx.value.toString(),
-      gasLimit,
-      storageLimit,
-      accessList || [],
-      validUntil
-    );
+    const extrinsic = v2
+      ? this.api.tx.evm.ethCallV2(
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        ethTx.gasPrice?.toBigInt(),
+        ethTx.gasLimit.toBigInt(),
+        accessList || [],
+      )
+      : this.api.tx.evm.ethCall(
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        gasLimit,
+        storageLimit,
+        accessList || [],
+        validUntil
+      );
 
     const subAddr = await this.getSubstrateAddress(ethTx.from);
 
