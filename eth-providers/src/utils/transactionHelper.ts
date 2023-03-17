@@ -10,7 +10,7 @@ type TxConsts = {
   txFeePerGas: BigNumberish;
 };
 
-export const divRoundUp = (x: BigNumber, y: BigNumber): BigNumber => {
+const divRoundUp = (x: BigNumber, y: BigNumber): BigNumber => {
   const mod = x.mod(y);
   const div = x.div(y);
 
@@ -113,5 +113,3 @@ export const getTransactionRequest = async (transaction: Deferrable<TransactionR
 
   return formatter.transactionRequest(await resolveProperties(tx));
 };
-
-// export const encodeEthGasLimit = (txFee: BigNumber, gasPrice: BigNumber): BigNumber => {};
