@@ -27,7 +27,7 @@ export class JSONRPCError extends Error {
 
 export class InvalidRequest extends JSONRPCError {
   constructor(data?: any) {
-    super('invalid json request', -32600, data);
+    super('Invalid request', -32600, data);
   }
 }
 

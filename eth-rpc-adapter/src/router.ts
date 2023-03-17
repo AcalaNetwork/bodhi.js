@@ -53,7 +53,7 @@ export class Router {
           }
         }
 
-        return { error: error?.json() || new JSONRPCError(`Error: ${message}`, 6969) };
+        return { error: error?.json() || new JSONRPCError(`Error: ${message}`, 6969).json() };
       }
     } else {
       return { error: new MethodNotFound('Method not found', `The method ${methodName} does not exist`).json() };

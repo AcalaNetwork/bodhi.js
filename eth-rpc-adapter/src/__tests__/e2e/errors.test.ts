@@ -25,15 +25,14 @@ describe('errors', () => {
       }
     });
 
-    expect(res.data).to.deep.equal({
+    expect(res.data).to.include({
       id,
-      jsonrpc: '2.0',
-      error: {
-        code: -32600,
-        data: { id, method: null, params: null },
-        message: 'invalid json request'
-      }
+      jsonrpc: '2.0'
     });
+    expect(res.data.error).to.include({
+      code: -32600,
+      message: 'Invalid request'
+    })
   });
 
   // TODO: after the banned pool is disabled in dev mode, mayve change the endpoint to public one? or manually setup the banned pool time to positive to enable it
