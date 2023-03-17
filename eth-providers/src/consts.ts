@@ -97,3 +97,5 @@ export const ONE_THOUSAND_GWEI = ONE_GWEI * 1000n;
 export const GAS_MASK = 100000;
 export const STORAGE_MASK = 100;
 export const GAS_LIMIT_CHUNK = BigNumber.from(30000);
+
+export const U32_MAX = 4_294_967_295n;

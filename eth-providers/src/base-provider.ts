@@ -57,6 +57,7 @@ import {
   GAS_MASK,
   STORAGE_MASK,
   TEN_GWEI,
+  U32_MAX,
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -1260,6 +1261,7 @@ export abstract class BaseProvider extends AbstractProvider {
         }
 
         validUntil = gasPrice.sub(ONE_HUNDRED_GWEI).toBigInt();
+        if (validUntil > U32_MAX) { validUntil = U32_MAX; }
         gasLimit = encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt();
         storageLimit = BigNumber.from(2).pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit).toBigInt();
       }
