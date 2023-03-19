@@ -3,6 +3,7 @@ import { hexlify } from '@ethersproject/bytes';
 import { Deferrable, resolveProperties } from '@ethersproject/properties';
 import { accessListify } from '@ethersproject/transactions';
 import { BigNumber, BigNumberish, Transaction } from 'ethers';
+import { GAS_LIMIT_CHUNK, GAS_MASK, STORAGE_MASK } from '../consts';
 import { formatter } from './transactionReceiptHelper';
 
 type TxConsts = {
@@ -112,4 +113,22 @@ export const getTransactionRequest = async (transaction: Deferrable<TransactionR
   });
 
   return formatter.transactionRequest(await resolveProperties(tx));
+};
+
+export const encodeGasLimit = (
+  txFee: BigNumber,
+  gasPrice: BigNumber,
+  gasLimit: BigNumber,
+  usedStorage: BigNumber,
+): BigNumber => {
+  const rawEthGasLimit = txFee.div(gasPrice);
+  const encodedGasLimit = gasLimit.div(GAS_LIMIT_CHUNK).add(1);
+  const encodedStorageLimit = usedStorage.gt(0)
+    ? Math.ceil(Math.log2(usedStorage.toNumber()))
+    : 0;
+
+  const aaaa00000 = rawEthGasLimit.div(GAS_MASK).mul(GAS_MASK);
+  const bbb00 = encodedGasLimit.mul(STORAGE_MASK);
+  const cc = encodedStorageLimit;
+  return aaaa00000.add(bbb00).add(cc);   // aaaabbbcc
 };

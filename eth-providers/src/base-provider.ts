@@ -91,11 +91,13 @@ import {
   getTransactionRequest,
   toBN,
   ethToNativeDecimal,
+  encodeGasLimit,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
 import { MaxSizeSet } from './utils/MaxSizeSet';
+import { ISubmittableResult } from '@polkadot/types/types';
 
 export interface Eip1898BlockTag {
   blockNumber: string | number;
@@ -731,6 +733,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return code.toHex();
   };
 
+  // TODO: removable?
   call = async (
     _transaction: Deferrable<TransactionRequest>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
@@ -877,7 +880,6 @@ export abstract class BaseProvider extends AbstractProvider {
   });
 
   estimateGasV1 = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    // await this.call(transaction);
     const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
     const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
     const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
@@ -900,9 +902,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const tx = await resolveProperties(transaction);
     const data = tx.data?.toString() ?? '0x';
-    const gasPrice = tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0)
-      ? tx.gasPrice
-      : await this.getGasPrice();
 
     const createParams = [
       data,
@@ -918,6 +917,22 @@ export abstract class BaseProvider extends AbstractProvider {
       ? this.api.tx.evm.call(...callParams)
       : this.api.tx.evm.create(...createParams);
 
+    let txFee = await this._estimateGasCost(extrinsic);
+    txFee = txFee.mul(gasLimit).div(usedGas);   // scale it to the same ratio when estimate passing gasLimit
+
+    if (usedStorage.gt(0)) {
+      const storageFee = usedStorage.mul(this._getGasConsts().storageDepositPerByte);
+      txFee = txFee.add(storageFee);
+    }
+
+    const gasPrice = tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0)
+      ? BigNumber.from(tx.gasPrice)
+      : await this.getGasPrice();
+
+    return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage);
+  };
+
+  _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
     const header = await this._getBlockHeader('latest');
     const isLocalModeFirstBlock = this.localMode && header.parentHash.toHex() === ZERO_BLOCK_HASH;
     const parentHash = isLocalModeFirstBlock
@@ -934,26 +949,7 @@ export abstract class BaseProvider extends AbstractProvider {
       adjustedWeightFee.toBigInt()
     );
 
-    let txFee = nativeToEthDecimal(nativeTxFee);
-    txFee = txFee.mul(gasLimit).div(usedGas);   // scale it to the same ratio when estimate passing gasLimit
-
-    if (usedStorage.gt(0)) {
-      const storageFee = usedStorage.mul(this._getGasConsts().storageDepositPerByte);
-      txFee = txFee.add(storageFee);
-    }
-
-    const rawEthGasLimit = txFee.div(gasPrice);
-    const encodedGasLimit = gasLimit.div(GAS_LIMIT_CHUNK).add(1);
-    const encodedStorageLimit = usedStorage.gt(0)
-      ? Math.ceil(Math.log2(usedStorage.toNumber()))
-      : 0;
-
-    const aaaa00000 = rawEthGasLimit.div(GAS_MASK).mul(GAS_MASK);
-    const bbb00 = encodedGasLimit.mul(STORAGE_MASK);
-    const cc = encodedStorageLimit;
-    const ethGasLimit = aaaa00000.add(bbb00).add(cc);   // aaaabbbcc
-
-    return ethGasLimit;
+    return nativeToEthDecimal(nativeTxFee);
   };
 
   /**
