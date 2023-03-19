@@ -933,15 +933,9 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
-    const header = await this._getBlockHeader('latest');
-    const isLocalModeFirstBlock = this.localMode && header.parentHash.toHex() === ZERO_BLOCK_HASH;
-    const parentHash = isLocalModeFirstBlock
-      ? header.hash
-      : header.parentHash;
-    const apiAtParentBlock = await this.api.at(parentHash);
-
     const u8a = extrinsic.toU8a();
-    const feeDetails = await apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
+    const apiAt = await this.api.at(this.latestBlockHash);
+    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
     const nativeTxFee = BigNumber.from(
       baseFee.toBigInt() +
