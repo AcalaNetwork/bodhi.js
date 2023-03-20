@@ -1,37 +1,16 @@
 /* eslint-disable prefer-promise-reject-errors */
 import { SignerProvider } from '@acala-network/eth-providers';
-import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import { BigNumber } from '@ethersproject/bignumber';
 import { BytesLike } from '@ethersproject/bytes';
 import { WsProvider } from '@polkadot/api';
 import { createTestPairs } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { bufferToU8a, hexToBn, isBuffer, isHex, isU8a, u8aToBn, u8aToHex } from '@polkadot/util';
-import BN from 'bn.js';
+import { bufferToU8a, isBuffer, isU8a, u8aToHex } from '@polkadot/util';
 import { PolkaSigner } from './PolkaSigner';
 import { Signer } from './Signer';
 
 export const U32MAX = BigNumber.from('0xffffffff');
 export const U64MAX = BigNumber.from('0xffffffffffffffff');
-
-export const toBN = (bigNumberis: BigNumberish = 0): BN => {
-  if (isU8a(bigNumberis)) {
-    return u8aToBn(bigNumberis);
-  }
-  if (isHex(bigNumberis)) {
-    return hexToBn(bigNumberis);
-  }
-
-  if (BigNumber.isBigNumber(bigNumberis)) {
-    const hex = bigNumberis.toHexString();
-    if (hex[0] === '-') {
-      return new BN('-' + hex.substring(3), 16);
-    }
-    return new BN(hex.substring(2), 16);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return new BN(bigNumberis as any);
-};
 
 export const dataToString = (bytes: BytesLike): string => {
   if (isBuffer(bytes)) {

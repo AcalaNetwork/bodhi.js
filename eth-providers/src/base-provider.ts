@@ -38,7 +38,7 @@ import {
   BIGNUMBER_ZERO,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
-  DUMMY_BLOCK_MIX_HASH,
+  ZERO_BLOCK_HASH,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
   EMPTY_HEX_STRING,
@@ -52,6 +52,12 @@ import {
   ZERO,
   DUMMY_BLOCK_HASH,
   BLOCK_GAS_LIMIT,
+  ONE_HUNDRED_GWEI,
+  GAS_LIMIT_CHUNK,
+  GAS_MASK,
+  STORAGE_MASK,
+  TEN_GWEI,
+  U32_MAX,
 } from './consts';
 import {
   calcEthereumTransactionParams,
@@ -83,11 +89,15 @@ import {
   sortObjByKey,
   receiptToTransaction,
   getTransactionRequest,
+  toBN,
+  ethToNativeDecimal,
+  encodeGasLimit,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { _Metadata } from './utils/gqlTypes';
 import { SubqlProvider } from './utils/subqlProvider';
 import { MaxSizeSet } from './utils/MaxSizeSet';
+import { ISubmittableResult } from '@polkadot/types/types';
 
 export interface Eip1898BlockTag {
   blockNumber: string | number;
@@ -593,7 +603,7 @@ export abstract class BaseProvider extends AbstractProvider {
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
       timestamp: Math.floor(now.toNumber() / 1000),
       nonce: DUMMY_BLOCK_NONCE,
-      mixHash: DUMMY_BLOCK_MIX_HASH,
+      mixHash: ZERO_BLOCK_HASH,
       difficulty: ZERO,
       totalDifficulty: ZERO,
       gasLimit: BigNumber.from(BLOCK_GAS_LIMIT),
@@ -638,7 +648,7 @@ export abstract class BaseProvider extends AbstractProvider {
       blockHash
     );
 
-    return nativeToEthDecimal(accountInfo.data.free.toBigInt(), this.chainDecimal);
+    return nativeToEthDecimal(accountInfo.data.free.toBigInt());
   };
 
   getTransactionCount = async (
@@ -723,6 +733,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return code.toHex();
   };
 
+  // TODO: removable?
   call = async (
     _transaction: Deferrable<TransactionRequest>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
@@ -838,7 +849,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // return resolver.getAddress();
   };
 
-  getGasPrice = async (): Promise<BigNumber> => {
+  getGasPriceV1 = async (): Promise<BigNumber> => {
     if (this.richMode) {
       return (await this._getEthGas()).gasPrice;
     }
@@ -846,6 +857,12 @@ export abstract class BaseProvider extends AbstractProvider {
     // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
     const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
     return txFeePerGas.add(BigNumber.from(this.latestBlockNumber).div(30).add(5).shl(16)).add(10);
+  };
+
+  getGasPrice = async (validBlocks = 200): Promise<BigNumber> => {
+    if (!process.env.V2) return this.getGasPriceV1();
+
+    return BigNumber.from(ONE_HUNDRED_GWEI).add(this.latestBlockNumber + validBlocks);
   };
 
   getFeeData = async (): Promise<FeeData> => {
@@ -862,13 +879,7 @@ export abstract class BaseProvider extends AbstractProvider {
     txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt(),
   });
 
-  /**
-   * Estimate gas for a transaction.
-   * @param transaction The transaction to estimate the gas of
-   * @returns The estimated gas used by this transaction
-   */
-  estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    await this.call(transaction);
+  estimateGasV1 = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
     const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
     const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
     const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
@@ -876,7 +887,63 @@ export abstract class BaseProvider extends AbstractProvider {
     const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
 
     const resources = await this.estimateResources(transaction);
-    return resources.gas.add(storageGasLimit);
+    return resources.gasLimit.add(storageGasLimit);
+  };
+
+  /**
+   * Estimate gas for a transaction.
+   * @param transaction The transaction to estimate the gas of
+   * @returns The estimated gas used by this transaction
+   */
+  estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
+    if (!process.env.V2) return this.estimateGasV1(transaction);
+
+    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction);
+
+    const tx = await resolveProperties(transaction);
+    const data = tx.data?.toString() ?? '0x';
+
+    const createParams = [
+      data,
+      toBN(BigNumber.from(tx.value ?? 0)),
+      toBN(gasLimit),
+      toBN(usedStorage.isNegative() ? 0 : usedStorage),
+      (tx.accessList as any) || [],
+    ] as const;
+
+    const callParams = [tx.to!, ...createParams ] as const;
+
+    const extrinsic = tx.to
+      ? this.api.tx.evm.call(...callParams)
+      : this.api.tx.evm.create(...createParams);
+
+    let txFee = await this._estimateGasCost(extrinsic);
+    txFee = txFee.mul(gasLimit).div(usedGas);   // scale it to the same ratio when estimate passing gasLimit
+
+    if (usedStorage.gt(0)) {
+      const storageFee = usedStorage.mul(this._getGasConsts().storageDepositPerByte);
+      txFee = txFee.add(storageFee);
+    }
+
+    const gasPrice = tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0)
+      ? BigNumber.from(tx.gasPrice)
+      : await this.getGasPrice();
+
+    return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage);
+  };
+
+  _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
+    const u8a = extrinsic.toU8a();
+    const apiAt = await this.api.at(this.latestBlockHash);
+    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
+    const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
+    const nativeTxFee = BigNumber.from(
+      baseFee.toBigInt() +
+      lenFee.toBigInt() +
+      adjustedWeightFee.toBigInt()
+    );
+
+    return nativeToEthDecimal(nativeTxFee);
   };
 
   /**
@@ -899,7 +966,7 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: BigNumber;
   }> => {
     if (!gasLimit || !storageLimit) {
-      const { gas, storage } = await this.estimateResources(transaction);
+      const { gasLimit: gas, usedStorage: storage } = await this.estimateResources(transaction);
       gasLimit = gasLimit ?? gas;
       storageLimit = storageLimit ?? storage;
     }
@@ -993,8 +1060,9 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated resources used by this transaction
    */
   estimateResources = async (transaction: Deferrable<TransactionRequest>): Promise<{
-    gas: BigNumber;
-    storage: BigNumber;
+    usedGas: BigNumber,
+    gasLimit: BigNumber;
+    usedStorage: BigNumber;
   }> => {
     const MAX_GAS_LIMIT = BLOCK_GAS_LIMIT;
     const MIN_GAS_LIMIT = 21000;
@@ -1037,8 +1105,9 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     return {
-      gas: BigNumber.from(highest),
-      storage: BigNumber.from(usedStorage),
+      usedGas: BigNumber.from(usedGas),     // actual used gas
+      gasLimit: BigNumber.from(highest),    // gasLimit to pass execution
+      usedStorage: BigNumber.from(usedStorage),
     };
   };
 
@@ -1110,14 +1179,15 @@ export abstract class BaseProvider extends AbstractProvider {
     validUntil: bigint;
     tip: bigint;
     accessList?: [string, string[]][];
+    v2: boolean;
   } => {
     let gasLimit = 0n;
     let storageLimit = 0n;
     let validUntil = 0n;
     let tip = 0n;
+    let v2 = false;
 
-    if (ethTx.type === 96) {
-      // EIP-712 transaction
+    if (ethTx.type === 96) {        // EIP-712 transaction
       if (!ethTx.gasLimit) return logger.throwError('expect gasLimit');
       if (!ethTx.storageLimit) return logger.throwError('expect storageLimit');
       if (!ethTx.validUntil) return logger.throwError('expect validUntil');
@@ -1127,23 +1197,15 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit = BigInt(ethTx.storageLimit.toString());
       validUntil = BigInt(ethTx.validUntil.toString());
       tip = BigInt(ethTx.tip.toString());
-    } else if (ethTx.type === null || ethTx.type === undefined || ethTx.type === 0 || ethTx.type === 2) {
-      // Legacy, EIP-155, and EIP-1559 transaction
-      const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
-
-      const _getErrInfo = (): any => ({
-        txGasLimit: ethTx.gasLimit?.toBigInt(),
-        txGasPrice: ethTx.gasPrice?.toBigInt(),
-        maxPriorityFeePerGas: ethTx.maxPriorityFeePerGas?.toBigInt(),
-        maxFeePerGas: ethTx.maxFeePerGas?.toBigInt(),
-        txFeePerGas,
-        storageDepositPerByte,
-      });
-
-      const errHelpMsg =
-        'invalid ETH gasLimit/gasPrice combination provided. Please DO NOT change gasLimit/gasPrice in metamask when sending token, if you are deploying contract, DO NOT provide random gasLimit/gasPrice, please check out our doc for how to compute gas, easiest way is to call eth_getEthGas directly';
-
+    } else if (
+      ethTx.type === undefined ||   // legacy
+      ethTx.type === null      ||   // legacy
+      ethTx.type === 0         ||   // EIP-155
+      ethTx.type === 2              // EIP-1559
+    ) {
       try {
+        const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
+
         const params = calcSubstrateTransactionParams({
           txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
           txGasLimit: ethTx.gasLimit || '0',
@@ -1155,24 +1217,34 @@ export abstract class BaseProvider extends AbstractProvider {
         validUntil = params.validUntil.toBigInt();
         storageLimit = params.storageLimit.toBigInt();
         tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
-      } catch {
-        return logger.throwError(
-          `calculating substrate gas failed: ${errHelpMsg}`,
-          Logger.errors.INVALID_ARGUMENT,
-          _getErrInfo()
-        );
-      }
 
-      if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
-        return logger.throwError(`bad substrate gas params caused by ${errHelpMsg}`, Logger.errors.INVALID_ARGUMENT, {
-          ..._getErrInfo(),
-          gasLimit,
-          validUntil,
-          storageLimit,
-        });
+        if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
+          throw new Error();
+        }
+      } catch (error) {   // v2
+        v2 = true;
+
+        if (!ethTx.gasLimit) return logger.throwError('expect gasLimit');
+        if (!ethTx.gasPrice) return logger.throwError('expect gasPrice');
+
+        const bbbcc = ethTx.gasLimit.mod(GAS_MASK);
+        const encodedGasLimit = bbbcc.div(STORAGE_MASK);      // bbb
+        const encodedStorageLimit = bbbcc.mod(STORAGE_MASK);  // cc
+
+        let gasPrice = ethTx.gasPrice;
+        const tipNumber = gasPrice.div(TEN_GWEI).sub(10);
+        if (tipNumber.gt(0)) {
+          gasPrice = gasPrice.sub(tipNumber.mul(TEN_GWEI));
+          const ethTip = gasPrice.mul(ethTx.gasLimit).mul(tipNumber).div(10);
+          tip = ethToNativeDecimal(ethTip).toBigInt();
+        }
+
+        validUntil = gasPrice.sub(ONE_HUNDRED_GWEI).toBigInt();
+        if (validUntil > U32_MAX) { validUntil = U32_MAX; }
+        gasLimit = encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt();
+        storageLimit = BigNumber.from(2).pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit).toBigInt();
       }
-    } else if (ethTx.type === 1) {
-      // EIP-2930 transaction
+    } else if (ethTx.type === 1) {    // EIP-2930 transaction
       return throwNotImplemented('EIP-2930 transactions');
     }
 
@@ -1184,6 +1256,7 @@ export abstract class BaseProvider extends AbstractProvider {
       validUntil,
       tip,
       accessList,
+      v2,
     };
   };
 
@@ -1193,7 +1266,6 @@ export abstract class BaseProvider extends AbstractProvider {
     extrinsic: SubmittableExtrinsic<'promise'>;
     transaction: AcalaEvmTX;
   }> => {
-
     const signatureType = checkSignatureType(rawTx);
     const ethTx = parseTransaction(rawTx);
 
@@ -1201,7 +1273,7 @@ export abstract class BaseProvider extends AbstractProvider {
       return logger.throwError('missing from address', Logger.errors.INVALID_ARGUMENT, ethTx);
     }
 
-    const { storageLimit, validUntil, gasLimit, tip, accessList } = this._getSubstrateGasParams(ethTx);
+    const { storageLimit, gasLimit, tip, accessList, validUntil, v2 } = this._getSubstrateGasParams(ethTx);
 
     // check excuted error
     const callRequest: SubstrateEvmCallRequest = {
@@ -1216,15 +1288,24 @@ export abstract class BaseProvider extends AbstractProvider {
 
     await this._ethCall(callRequest);
 
-    const extrinsic = this.api.tx.evm.ethCall(
-      ethTx.to ? { Call: ethTx.to } : { Create: null },
-      ethTx.data,
-      ethTx.value.toString(),
-      gasLimit,
-      storageLimit,
-      accessList || [],
-      validUntil
-    );
+    const extrinsic = v2
+      ? this.api.tx.evm.ethCallV2(
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        ethTx.gasPrice?.toBigInt(),
+        ethTx.gasLimit.toBigInt(),
+        accessList || [],
+      )
+      : this.api.tx.evm.ethCall(
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        gasLimit,
+        storageLimit,
+        accessList || [],
+        validUntil
+      );
 
     const subAddr = await this.getSubstrateAddress(ethTx.from);
 
