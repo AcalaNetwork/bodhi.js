@@ -211,6 +211,7 @@ export type BlockTagish = BlockTag | Promise<BlockTag> | undefined;
 /* ---------- subscriptions ---------- */
 export enum SubscriptionType {
   NewHeads = 'newHeads',
+  NewFinalizedHeads = 'newFinalizedHeads',
   Logs = 'logs'
 }
 export interface BlockListener {
@@ -224,6 +225,7 @@ export interface LogListener extends BlockListener {
 
 export interface EventListeners {
   [SubscriptionType.NewHeads]: BlockListener[];
+  [SubscriptionType.NewFinalizedHeads]: BlockListener[];
   [SubscriptionType.Logs]: LogListener[];
 }
 
@@ -303,7 +305,7 @@ export abstract class BaseProvider extends AbstractProvider {
   }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
-    this.eventListeners = { [SubscriptionType.NewHeads]: [], [SubscriptionType.Logs]: [] };
+    this.eventListeners = { [SubscriptionType.NewHeads]: [], [SubscriptionType.NewFinalizedHeads]: [], [SubscriptionType.Logs]: [] };
     this.pollFilters = { [PollFilterType.NewBlocks]: [], [PollFilterType.Logs]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
@@ -347,12 +349,12 @@ export abstract class BaseProvider extends AbstractProvider {
     ].flat());
   };
 
-  _subscribeEventListeners = () => {
+  _subscribeEventListeners = async () => {
     const subscriptionMethod = this.safeMode
       ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
       : this.api.rpc.chain.subscribeNewHeads.bind(this);
 
-    return subscriptionMethod(async (header: Header) => {
+    const headsUnsub = await subscriptionMethod(async (header: Header) => {
       // update block cache
       const blockNumber = header.number.toNumber();
       const blockHash = header.hash.toHex();
@@ -364,6 +366,21 @@ export abstract class BaseProvider extends AbstractProvider {
       // eth_subscribe
       await this._notifySubscribers(blockHash, receipts);
     });
+
+    const finalizedHeads = this.api.rpc.chain.subscribeFinalizedHeads.bind(this);
+    const finalizedUnsub = await finalizedHeads(async (header: Header) => {
+      if (header.number.toNumber() === 0) return;
+
+      // notify subscribers
+      const block = await this.getBlockData(header.hash.toHex(), false);
+      const response = hexlifyRpcResult(block);
+      this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach((l) => l.cb(response));
+    });
+
+    return () => {
+      headsUnsub();
+      finalizedUnsub();
+    };
   }
 
   _notifySubscribers = async (blockHash: string, receipts: FullReceipt[]) => {
@@ -1873,6 +1890,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const curFinalizedHeight = this.latestFinalizedBlockNumber;
     const listenersCount = {
       newHead: this.eventListeners[SubscriptionType.NewHeads]?.length || 0,
+      newFinalizedHead: this.eventListeners[SubscriptionType.NewFinalizedHeads]?.length || 0,
       logs: this.eventListeners[SubscriptionType.Logs]?.length || 0,
     };
 
@@ -1904,6 +1922,8 @@ export abstract class BaseProvider extends AbstractProvider {
       });
 
     if (eventName === SubscriptionType.NewHeads) {
+      this.eventListeners[eventName].push({ cb: eventCallBack, id });
+    } else if (eventName === SubscriptionType.NewFinalizedHeads) {
       this.eventListeners[eventName].push({ cb: eventCallBack, id });
     } else if (eventName === SubscriptionType.Logs) {
       this.eventListeners[eventName].push({ cb: eventCallBack, filter, id });
