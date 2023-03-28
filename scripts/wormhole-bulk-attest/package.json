@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "author": "Acala Developers <hello@acala.network>",
   "main": "dist/index.js",
-  "bin": "bin/node-perf.js",
   "files": [
     "bin/",
     "dist/"
