@@ -11,7 +11,7 @@ import { logger } from './logger';
 import { isOrphanEvmEvent } from './utils';
 import { TransactionReceipt as TransactionReceiptSubql } from './gqlTypes';
 import { BIGNUMBER_ZERO, DUMMY_V_R_S, ORPHAN_TX_DEFAULT_INFO } from '../consts';
-import { TX } from 'src/base-provider';
+import { TX } from '../base-provider';
 
 export interface PartialLog {
   removed: boolean;
