@@ -12,7 +12,7 @@ import {
 import { FrameSystemEventRecord, FrameSupportDispatchDispatchInfo } from '@polkadot/types/lookup';
 import { AnyTuple } from '@polkadot/types/types';
 import { BigNumber } from 'ethers';
-import { BIGNUMBER_ZERO } from '../consts';
+import { BIGNUMBER_ZERO, ONE_HUNDRED_GWEI } from '../consts';
 import { findEvmEvent, getPartialTransactionReceipt, getOrphanTxReceiptsFromEvents, fullReceiptFormatter, FullReceipt } from './transactionReceiptHelper';
 import {
   isExtrinsicFailedEvent,
@@ -154,6 +154,8 @@ const getEffectiveGasPrice = async (
   const eventData = evmEvent.event.data;
   const usedGas = BigNumber.from(eventData[eventData.length - 2].toString());
   const usedStorage = BigNumber.from(eventData[eventData.length - 1].toString());
+
+  if (usedGas.eq(0)) return BigNumber.from(ONE_HUNDRED_GWEI);
 
   if (usedStorage.gt(0)) {    // ignore storage refund (usedStorage < 0) since it might result in negative gas
     const storageDepositPerByte = api.consts.evm.storageDepositPerByte.toBigInt();
