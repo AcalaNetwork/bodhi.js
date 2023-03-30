@@ -47,6 +47,8 @@ const main = async () => {
     '0x1F3a10587A20114EA25Ba1b388EE2dD4A337ce27',
     '0x4bB6afB5Fa2b07a5D1c499E1c3DDb5A15e709a71',
     '0xE20683ad1ED8bbeED7E1aE74Be10F19D8045B530',
+    '0xecE0cc38021e734bEF1D5Da071B027Ac2f71181f',
+    '0x66291c7D88D2Ed9a708147Bae4E0814A76705e2f',
   ]
 
   for (const addr of addresses) {
