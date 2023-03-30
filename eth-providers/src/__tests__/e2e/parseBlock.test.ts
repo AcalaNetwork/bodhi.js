@@ -4,7 +4,7 @@ import { options } from '@acala-network/api';
 import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
 import { hexlifyRpcResult } from '../../utils';
 import { expect } from 'chai';
-import { acala1102030a, acala1102030b, acala1555311a, acala1555311b, acala1563383, karura1824665, karura2449983a, karura2449983b, acala2669090, karura2826860, karura2936174, karura3524761, karura3597964, karura3607973, acala2859806, karura2043397b } from './receipt-snapshots';
+import { acala1102030a, acala1102030b, acala1555311a, acala1555311b, acala1563383, karura1824665, karura2449983a, karura2449983b, acala2669090, karura2826860, karura2936174, karura3524761, karura3597964, karura3607973, acala2859806, karura2043397b, mandala938075 } from './receipt-snapshots';
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 interface FormatedReceipt {
@@ -50,11 +50,13 @@ const getAllReceiptsAtBlockNumber = async (
 describe.concurrent('getAllReceiptsAtBlock', () => {
   let apiK: ApiPromise;
   let apiA: ApiPromise;
+  let apiM: ApiPromise;
 
   beforeAll(async () => {
     console.log('connecting to node...');
     const KARURA_NODE_URL = 'wss://karura-rpc-1.aca-api.network';
     const ACALA_NODE_URL = 'wss://acala-rpc-1.aca-api.network';
+    const MANDALA_NODE_URL = 'wss://mandala-rpc.aca-staging.network/ws';
 
     apiK = new ApiPromise(options({
       provider: new WsProvider(KARURA_NODE_URL),
@@ -64,11 +66,17 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       provider: new WsProvider(ACALA_NODE_URL),
     }));
 
+    apiM = new ApiPromise(options({
+      provider: new WsProvider(MANDALA_NODE_URL),
+    }));
+
     await apiK.isReady;
     await apiA.isReady;
+    await apiM.isReady;
     console.log(`connected to [
       ${KARURA_NODE_URL},
       ${ACALA_NODE_URL},
+      ${MANDALA_NODE_URL},
     ]`);
   });
 
@@ -195,8 +203,12 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   describe.concurrent('other types', () => {
-    it.skip('failed EVM extrinsic', async () => {
-      // didn't find any block like this yet...
+    it('failed EVM extrinsic - 0 gasLimit', async () => {
+      const blockNumber = 938075;
+      const receipts = await getAllReceiptsAtBlockNumber(apiM, blockNumber);
+
+      expect(receipts.length).to.equal(1);
+      expect(receipts[0]).to.deep.equal(mandala938075);
     });
   });
 });
