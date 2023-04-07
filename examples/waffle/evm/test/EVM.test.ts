@@ -1,4 +1,4 @@
-import { Signer, evmChai, getTestUtils, SignerProvider } from '@acala-network/bodhi';
+import { BodhiSigner, evmChai, getTestUtils, BodhiProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
@@ -17,11 +17,11 @@ const formatAmount = (amount: String) => {
 };
 
 describe('EVM', () => {
-  let wallet: Signer;
-  let walletTo: Signer;
+  let wallet: BodhiSigner;
+  let walletTo: BodhiSigner;
   let evm: Contract;
   let evmPredeployed: Contract;
-  let provider: SignerProvider;
+  let provider: BodhiProvider;
 
   before(async () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';

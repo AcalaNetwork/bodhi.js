@@ -1,4 +1,4 @@
-import { evmChai, getTestUtils, SignerProvider } from '@acala-network/bodhi';
+import { evmChai, getTestUtils, BodhiProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
@@ -11,7 +11,7 @@ use(evmChai);
 
 const testPairs = createTestPairs();
 
-const feedValues = async (provider: SignerProvider, token: string, price: string) => {
+const feedValues = async (provider: BodhiProvider, token: string, price: string) => {
   return new Promise((resolve) => {
     provider.api.tx.acalaOracle
       .feedValues([[{ Token: token }, price]])
@@ -25,7 +25,7 @@ const feedValues = async (provider: SignerProvider, token: string, price: string
 
 describe('Prices', () => {
   let prices: Contract;
-  let provider: SignerProvider;
+  let provider: BodhiProvider;
 
   before(async () => {
     const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';

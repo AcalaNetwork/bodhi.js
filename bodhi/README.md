@@ -1,7 +1,7 @@
 # @acala-network/bodhi.js
 bodhi.js SDK provides utils for interaction with [Acala EVM+](https://evmdocs.acala.network/general/about-acala-evm+):
-- a `SignerProvider` that extends `ethers.js` [Provider](https://docs.ethers.io/v5/single-page/#/v5/api/providers/provider/-%23-Provider)
-- a `Signer` that extends `ethers.js` [Signer](https://docs.ethers.io/v5/single-page/#/v5/api/signer/-%23-Signer)
+- a `BodhiProvider` that extends `ethers.js` [Provider](https://docs.ethers.io/v5/single-page/#/v5/api/providers/provider/-%23-Provider)
+- a `BodhiSigner` that extends `ethers.js` [Signer](https://docs.ethers.io/v5/single-page/#/v5/api/signer/-%23-Signer)
 
 ## Getting Started
 ### install
@@ -15,9 +15,9 @@ npm install @acala-network/bodhi
 ```ts
 import { WsProvider } from "@polkadot/api";
 import { createTestPairs } from "@polkadot/keyring/testingPairs";
-import { SubstrateSigner, SignerProvider, Signer } from "@acala-network/bodhi";
+import { SubstrateSigner, BodhiProvider, BodhiSigner } from "@acala-network/bodhi";
 
-const provider = new SignerProvider({
+const provider = new BodhiProvider({
   provider: new WsProvider("ws://localhost:9944")
 });
 
@@ -25,7 +25,7 @@ const provider = new SignerProvider({
 const { alice } = createTestPairs();
 const signer = new SubstrateSigner(provider.api.registry, alice);
 
-const wallet = new Signer(provider, alice.address, signer);
+const wallet = new BodhiSigner(provider, alice.address, signer);
 ```
 
 alternatively, for a quick testing setup, we can use the `getTestUtils` helper, which basically encapsulates the above setup.
@@ -56,10 +56,10 @@ You may notice there are so many "providers" and "signers", basically there are 
 
 Here is a brief hierachy of how they work together:
 
-- `Signer`: top level eth signer (wallet), compatible with ethers.js AbstractSigner, can be directly used by any eth toolings, such as ethers, waffle, etc.
+- `BodhiSigner`: top level eth signer (wallet), compatible with ethers.js AbstractSigner, can be directly used by any eth toolings, such as ethers, waffle, etc.
   - `SubstrateSigner`: substrate payload signer, usually from keyring pair or an extension wallet, such as polkadotjs or talisman
-  - `Provider` (SignerProvider): eth provider for eth related communications, mostly compatible with ethers.js AbstractProvider
-    - `WsProvider`: provides websocket connection with substrate based chains, used by SignerProvider internally
+  - `Provider` (BodhiProvider): eth provider for eth related communications, mostly compatible with ethers.js AbstractProvider
+    - `WsProvider`: provides websocket connection with substrate based chains, used by BodhiProvider internally
   
 
 TODO: maybe a graph is better.

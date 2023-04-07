@@ -1,4 +1,4 @@
-import { Signer, evmChai, SignerProvider, getTestUtils } from '@acala-network/bodhi';
+import { BodhiSigner, evmChai, BodhiProvider, getTestUtils } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
@@ -28,7 +28,7 @@ const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressO
 
 describe('incentives', () => {
   let wallet: Signer;
-  let provider: SignerProvider;
+  let provider: BodhiProvider;
   let incentives: Contract;
   let incentivesPredeployed: Contract;
 

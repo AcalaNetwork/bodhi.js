@@ -1,8 +1,8 @@
 import { expect, use } from 'chai';
 import { BigNumber } from 'ethers';
 import { deployContract } from 'ethereum-waffle';
-import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
-import { EvmRpcProvider, hexlifyRpcResult, SignerProvider } from '@acala-network/eth-providers';
+import { BodhiSigner, evmChai, getTestUtils } from '@acala-network/bodhi';
+import { EvmRpcProvider, hexlifyRpcResult, BodhiProvider } from '@acala-network/eth-providers';
 import TestToken from '../build/TestToken.json';
 import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 
@@ -22,8 +22,8 @@ const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressO
   });
 
 describe('dex test', () => {
-  let wallet: Signer;
-  let provider: SignerProvider;
+  let wallet: BodhiSigner;
+  let provider: BodhiProvider;
 
   before(async () => {
     const testUtils = await getTestUtils(endpoint);
