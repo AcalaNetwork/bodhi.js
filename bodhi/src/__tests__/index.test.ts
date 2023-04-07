@@ -1,13 +1,8 @@
 import { u8aConcat, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress } from '@polkadot/util-crypto';
 import { describe, expect, it } from 'vitest';
-import { Provider } from '..';
 
 describe('bodhi', () => {
-  it('should export the Provider', () => {
-    expect(Provider).to.not.be.undefined;
-  });
-
   it('default evm address', () => {
     const accountid = decodeAddress('5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY');
 
