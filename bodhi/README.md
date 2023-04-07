@@ -65,7 +65,7 @@ Here is a brief hierachy of how they work together:
 TODO: maybe a graph is better.
 
 ## Evm+ Specific Features
-besides classic signer methods, we have some additional features available only for Evm+. For a comprehensive list please checkout [here](./src/Signer.ts)
+besides classic signer methods, we have some additional features available only for Evm+. For a comprehensive list please checkout [here](./src/BodhiSigner.ts)
 ```ts
 await wallet.claimEvmAccounts(evmAddress);  // bind an evm address to the signer substrate address
 await wallet.claimDefaultAccount();         // bind default evm address to the signer substrate address
