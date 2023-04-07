@@ -41,9 +41,10 @@ export const getTestUtils = async (
   const { alice, alice_stash, bob, bob_stash } = createTestPairs();
   const pairs = [alice, alice_stash, bob, bob_stash];
 
+  const signer = new SubstrateSigner(provider.api.registry, pairs);
+
   const wallets: Signer[] = [];
   for (const pair of pairs) {
-    const signer = new SubstrateSigner(provider.api.registry, pair);
     const wallet = new Signer(provider, pair.address, signer);
 
     const isClaimed = await wallet.isClaimed();
