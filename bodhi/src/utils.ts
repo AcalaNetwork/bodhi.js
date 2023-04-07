@@ -6,7 +6,7 @@ import { WsProvider } from '@polkadot/api';
 import { createTestPairs } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { bufferToU8a, isBuffer, isU8a, u8aToHex } from '@polkadot/util';
-import { PolkaSigner } from './PolkaSigner';
+import { SubstrateSigner } from './SubstrateSigner';
 import { Signer } from './Signer';
 
 export const U32MAX = BigNumber.from('0xffffffff');
@@ -41,11 +41,10 @@ export const getTestUtils = async (
   const { alice, alice_stash, bob, bob_stash } = createTestPairs();
   const pairs = [alice, alice_stash, bob, bob_stash];
 
-  const polkaSigner = new PolkaSigner(provider.api.registry, pairs);
-
   const wallets: Signer[] = [];
   for (const pair of pairs) {
-    const wallet = new Signer(provider, pair.address, polkaSigner);
+    const signer = new SubstrateSigner(provider.api.registry, pair);
+    const wallet = new Signer(provider, pair.address, signer);
 
     const isClaimed = await wallet.isClaimed();
     if (!isClaimed) {

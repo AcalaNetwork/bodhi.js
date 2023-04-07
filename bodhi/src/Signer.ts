@@ -15,7 +15,7 @@ import { Logger } from '@ethersproject/logger';
 import { Deferrable } from '@ethersproject/properties';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { SubmittableResult } from '@polkadot/api';
-import { SubmittableExtrinsic, Signer as PolkaSigner } from '@polkadot/api/types';
+import { SubmittableExtrinsic, Signer as SubstrateSigner } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { dataToString } from './utils';
@@ -25,10 +25,10 @@ export const logger = new Logger(version);
 
 export class Signer extends Abstractsigner implements TypedDataSigner {
   readonly provider: SignerProvider;
-  readonly signingKey: PolkaSigner;
+  readonly signingKey: SubstrateSigner;
   readonly substrateAddress: string;
 
-  constructor(provider: SignerProvider, substrateAddress: string, signingKey: PolkaSigner) {
+  constructor(provider: SignerProvider, substrateAddress: string, signingKey: SubstrateSigner) {
     super();
 
     if (isEthereumAddress(substrateAddress)) {

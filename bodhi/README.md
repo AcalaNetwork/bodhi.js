@@ -15,17 +15,17 @@ npm install @acala-network/bodhi
 ```ts
 import { WsProvider } from "@polkadot/api";
 import { createTestPairs } from "@polkadot/keyring/testingPairs";
-import { PolkaSigner, SignerProvider, Signer } from "@acala-network/bodhi";
+import { SubstrateSigner, SignerProvider, Signer } from "@acala-network/bodhi";
 
 const provider = new SignerProvider({
   provider: new WsProvider("ws://localhost:9944")
 });
 
-// create a testing polkaSigner, in prod this is usually an extension signer
+// create a substrate payload signer, dapps will use an extension signer
 const { alice } = createTestPairs();
-const polkaSigner = new PolkaSigner(provider.api.registry, [alice]);
+const signer = new SubstrateSigner(provider.api.registry, alice);
 
-const wallet = new Signer(provider, alice.address, polkaSigner);
+const wallet = new Signer(provider, alice.address, signer);
 ```
 
 alternatively, for a quick testing setup, we can use the `getTestUtils` helper, which basically encapsulates the above setup.
@@ -52,12 +52,12 @@ await instance.callSomeFunction();
 ```
 
 ## Concepts
-You may notice there are so many "providers" and "signers", basically there are two from substrate world (`WsProvider`, `PolkaSigner`), and two from traditional eth world (`Signer`, `Provider`). 
+You may notice there are so many "providers" and "signers", basically there are two from substrate world (`WsProvider`, `SubstrateSigner`), and two from traditional eth world (`Signer`, `Provider`).
 
 Here is a brief hierachy of how they work together:
 
 - `Signer`: top level eth signer (wallet), compatible with ethers.js AbstractSigner, can be directly used by any eth toolings, such as ethers, waffle, etc.
-  - `PolkaSigner`: polkadot signer, usually from an extension wallet, such as polkadotjs or talisman
+  - `SubstrateSigner`: substrate payload signer, usually from keyring pair or an extension wallet, such as polkadotjs or talisman
   - `Provider` (SignerProvider): eth provider for eth related communications, mostly compatible with ethers.js AbstractProvider
     - `WsProvider`: provides websocket connection with substrate based chains, used by SignerProvider internally
   
