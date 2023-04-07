@@ -23,7 +23,7 @@ const provider = new BodhiProvider({
 
 // create a substrate payload signer, dapps will use an extension signer
 const { alice } = createTestPairs();
-const signer = new SubstrateSigner(provider.api.registry, [alice]);
+const signer = new SubstrateSigner(provider.api.registry, [alice, /** bob */]);
 
 const wallet = new BodhiSigner(provider, alice.address, signer);
 ```
