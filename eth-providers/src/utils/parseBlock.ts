@@ -1,7 +1,7 @@
 import { Formatter } from '@ethersproject/providers';
 import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';
-import { GenericExtrinsic, UInt } from '@polkadot/types';
+import { GenericExtrinsic } from '@polkadot/types';
 import {
   RuntimeDispatchInfoV1,
   RuntimeDispatchInfoV2,
