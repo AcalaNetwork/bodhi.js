@@ -6,12 +6,7 @@ import type { SignerPayloadJSON } from '@polkadot/types/types';
 
 let id = 0;
 
-/* ----------
-   in prod we usually use the extension signer
-   so this Signer is mostly for testing purpose
-   with testing keyringPairs
-                                     ---------- */
-export class PolkaSigner implements Signer {
+export class SubstrateSigner implements Signer {
   #keyringPairs: KeyringPair[];
   #registry: Registry;
 

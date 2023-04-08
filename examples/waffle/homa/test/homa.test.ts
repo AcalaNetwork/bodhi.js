@@ -1,4 +1,4 @@
-import { Signer, evmChai, getTestUtils, SignerProvider } from '@acala-network/bodhi';
+import { BodhiSigner, evmChai, getTestUtils, BodhiProvider } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
@@ -26,8 +26,8 @@ const dollar = BigNumber.from(formatAmount('1_000_000_000_000'));
 const HomaABI = require('@acala-network/contracts/build/contracts/Homa.json').abi;
 
 describe('homa', () => {
-  let wallet: Signer;
-  let provider: SignerProvider;
+  let wallet: BodhiSigner;
+  let provider: BodhiProvider;
   let homa: Contract;
   let homaPredeployed: Contract;
 

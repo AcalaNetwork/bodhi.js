@@ -1,4 +1,4 @@
-import { Signer, evmChai, getTestUtils, SignerProvider } from '@acala-network/bodhi';
+import { BodhiSigner, evmChai, getTestUtils, BodhiProvider } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
@@ -26,8 +26,8 @@ const send = async (extrinsic: SubmittableExtrinsic<'promise'>, sender: AddressO
   });
 
 describe('stable asset', () => {
-  let wallet: Signer;
-  let provider: SignerProvider;
+  let wallet: BodhiSigner;
+  let provider: BodhiProvider;
   let stableAsset: Contract;
   let stableAssetPredeployed: Contract;
 

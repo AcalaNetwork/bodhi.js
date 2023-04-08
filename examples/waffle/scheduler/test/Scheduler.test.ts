@@ -1,7 +1,7 @@
 import { expect, use } from 'chai';
 import { ethers, BigNumber, Contract } from 'ethers';
 import { deployContract } from 'ethereum-waffle';
-import { getTestUtils, Signer, evmChai, SignerProvider } from '@acala-network/bodhi';
+import { getTestUtils, BodhiSigner, evmChai, BodhiProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import RecurringPayment from '../build/RecurringPayment.json';
 import Subscription from '../build/Subscription.json';
@@ -15,7 +15,7 @@ const formatAmount = (amount: String) => {
 };
 const dollar = BigNumber.from(formatAmount('1_000_000_000_000'));
 
-const nextBlock = async (provider: SignerProvider): Promise<void> => {
+const nextBlock = async (provider: BodhiProvider): Promise<void> => {
   await provider.api.rpc.engine.createBlock(true /* create empty */, true);
 };
 
@@ -23,10 +23,10 @@ const SCHEDULE_CALL_ABI = require('@acala-network/contracts/build/contracts/Sche
 const ERC20_ABI = require('@openzeppelin/contracts/build/contracts/ERC20.json').abi;
 
 describe('Schedule', () => {
-  let wallet: Signer;
-  let walletTo: Signer;
-  let subscriber: Signer;
-  let provider: SignerProvider;
+  let wallet: BodhiSigner;
+  let walletTo: BodhiSigner;
+  let subscriber: BodhiSigner;
+  let provider: BodhiProvider;
   let schedule: Contract;
 
   before(async () => {

@@ -1,9 +1,9 @@
-import { SignerProvider, toBN } from '@acala-network/eth-providers';
+import { BodhiProvider, toBN } from '@acala-network/eth-providers';
 import { handleTxResponse } from '@acala-network/eth-providers/lib';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
 import {
-  Signer as Abstractsigner,
+  Signer as AbstractSigner,
   TypedDataDomain,
   TypedDataField,
   TypedDataSigner,
@@ -15,7 +15,7 @@ import { Logger } from '@ethersproject/logger';
 import { Deferrable } from '@ethersproject/properties';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { SubmittableResult } from '@polkadot/api';
-import { SubmittableExtrinsic, Signer as PolkaSigner } from '@polkadot/api/types';
+import { SubmittableExtrinsic, Signer } from '@polkadot/api/types';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { dataToString } from './utils';
@@ -23,12 +23,12 @@ import { version } from './_version';
 
 export const logger = new Logger(version);
 
-export class Signer extends Abstractsigner implements TypedDataSigner {
-  readonly provider: SignerProvider;
-  readonly signingKey: PolkaSigner;
+export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
+  readonly provider: BodhiProvider;
+  readonly signer: Signer;
   readonly substrateAddress: string;
 
-  constructor(provider: SignerProvider, substrateAddress: string, signingKey: PolkaSigner) {
+  constructor(provider: BodhiProvider, substrateAddress: string, signer: Signer) {
     super();
 
     if (isEthereumAddress(substrateAddress)) {
@@ -42,13 +42,13 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     }
 
     this.provider = provider;
-    this.signingKey = signingKey;
+    this.signer = signer;
     this.substrateAddress = substrateAddress;
 
-    this.provider.api.setSigner(signingKey);
+    this.provider.api.setSigner(signer);
   }
 
-  connect(provider: SignerProvider): Signer {
+  connect(provider: BodhiProvider): BodhiSigner {
     return logger.throwError('cannot alter JSON-RPC Signer connection', Logger.errors.UNSUPPORTED_OPERATION, {
       operation: 'connect',
     });
@@ -296,7 +296,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
       return logger.throwError('No binding evm address');
     }
 
-    if (!this.signingKey.signRaw) {
+    if (!this.signer.signRaw) {
       return logger.throwError('Need to implement signRaw method');
     }
 
@@ -306,7 +306,7 @@ export class Signer extends Abstractsigner implements TypedDataSigner {
     }
     const msg = u8aToHex(concat([toUtf8Bytes(messagePrefix), toUtf8Bytes(String(message.length)), message]));
 
-    const result = await this.signingKey.signRaw({
+    const result = await this.signer.signRaw({
       address: evmAddress,
       data: msg,
       type: 'bytes',

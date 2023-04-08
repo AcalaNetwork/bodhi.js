@@ -2,7 +2,7 @@ import { expect, use } from 'chai';
 import { Contract } from 'ethers';
 import { deployContract, solidity } from 'ethereum-waffle';
 import BasicToken from '../build/BasicToken.json';
-import { getTestUtils, Signer, evmChai, SignerProvider } from '@acala-network/bodhi';
+import { getTestUtils, BodhiSigner, evmChai, BodhiProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 
 use(solidity);
@@ -11,10 +11,10 @@ use(evmChai);
 const testPairs = createTestPairs();
 
 describe('BasicToken', () => {
-  let wallet: Signer;
-  let walletTo: Signer;
-  let emptyWallet: Signer;
-  let provider: SignerProvider;
+  let wallet: BodhiSigner;
+  let walletTo: BodhiSigner;
+  let emptyWallet: BodhiSigner;
+  let provider: BodhiProvider;
   let token: Contract;
 
   before(async () => {

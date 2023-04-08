@@ -1,13 +1,13 @@
 /* eslint-disable prefer-promise-reject-errors */
-import { SignerProvider } from '@acala-network/eth-providers';
+import { BodhiProvider } from '@acala-network/eth-providers';
 import { BigNumber } from '@ethersproject/bignumber';
 import { BytesLike } from '@ethersproject/bytes';
 import { WsProvider } from '@polkadot/api';
 import { createTestPairs } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { bufferToU8a, isBuffer, isU8a, u8aToHex } from '@polkadot/util';
-import { PolkaSigner } from './PolkaSigner';
-import { Signer } from './Signer';
+import { SubstrateSigner } from './SubstrateSigner';
+import { BodhiSigner } from './BodhiSigner';
 
 export const U32MAX = BigNumber.from('0xffffffff');
 export const U64MAX = BigNumber.from('0xffffffffffffffff');
@@ -29,11 +29,11 @@ export const dataToString = (bytes: BytesLike): string => {
 export const getTestUtils = async (
   url: string = 'ws://localhost:9944'
 ): Promise<{
-  wallets: Signer[];
+  wallets: BodhiSigner[];
   pairs: KeyringPair[];
-  provider: SignerProvider;
+  provider: BodhiProvider;
 }> => {
-  const provider = new SignerProvider({
+  const provider = new BodhiProvider({
     provider: new WsProvider(url),
   });
   await provider.isReady();
@@ -41,11 +41,11 @@ export const getTestUtils = async (
   const { alice, alice_stash, bob, bob_stash } = createTestPairs();
   const pairs = [alice, alice_stash, bob, bob_stash];
 
-  const polkaSigner = new PolkaSigner(provider.api.registry, pairs);
+  const substrateSigner = new SubstrateSigner(provider.api.registry, pairs);
 
-  const wallets: Signer[] = [];
+  const wallets: BodhiSigner[] = [];
   for (const pair of pairs) {
-    const wallet = new Signer(provider, pair.address, polkaSigner);
+    const wallet = new BodhiSigner(provider, pair.address, substrateSigner);
 
     const isClaimed = await wallet.isClaimed();
     if (!isClaimed) {
