@@ -23,9 +23,11 @@ const provider = new BodhiProvider({
 
 // create a substrate payload signer, dapps will use an extension signer
 const { alice } = createTestPairs();
-const signer = new SubstrateSigner(provider.api.registry, [alice, /** bob */]);
+const signer = new SubstrateSigner(provider.api.registry, alice);
 
 const wallet = new BodhiSigner(provider, alice.address, signer);
+// or from pair
+const wallet = BodhiSigner.fromPair(provider, alice);
 ```
 
 alternatively, for a quick testing setup, we can use the `getTestUtils` helper, which basically encapsulates the above setup.

@@ -20,6 +20,9 @@ import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { dataToString } from './utils';
 import { version } from './_version';
+import { MultiSigner } from './MultiSigner';
+import { KeyringPair } from '@polkadot/keyring/types';
+import { SubstrateSigner } from './SubstrateSigner';
 
 export const logger = new Logger(version);
 
@@ -45,7 +48,20 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
     this.signer = signer;
     this.substrateAddress = substrateAddress;
 
-    this.provider.api.setSigner(signer);
+    if (!this.provider.api['_rx'].signer) {
+      this.provider.api.setSigner(new MultiSigner({ [substrateAddress]: signer }));
+    } else {
+      const multiSigner = this.provider.api['_rx'].signer;
+      if (MultiSigner.isMultiSigner(multiSigner)) {
+        multiSigner.addSigner(substrateAddress, signer);
+      } else {
+        throw new Error('Current signer is not MultiSigner, cannot override signer.');
+      }
+    }
+  }
+
+  static fromPair(provider: BodhiProvider, pair: KeyringPair): BodhiSigner {
+    return new BodhiSigner(provider, pair.address, new SubstrateSigner(provider.api.registry, pair));
   }
 
   connect(provider: BodhiProvider): BodhiSigner {
