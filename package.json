@@ -14,8 +14,8 @@
   "scripts": {
     "clean": "yarn workspaces foreach -pt --include \"@acala-network/*\" run clean",
     "build": "yarn workspaces foreach -pt --include \"@acala-network/*\" run build",
-    "lint": "tsc --noEmit --project tsconfig.json && eslint . --ext .js,.ts && prettier --check .",
-    "fix": "eslint . --ext .js,.ts --fix && prettier -w .",
+    "lint": "tsc --noEmit --project tsconfig.json && eslint . --ext .js,.ts",
+    "fix": "eslint . --ext .js,.ts --fix",
     "test:all": "yarn workspaces foreach -pt run test",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -26,15 +26,12 @@
   "devDependencies": {
     "@swc/core": "^1.3.46",
     "@types/eslint": "^8",
-    "@types/prettier": "^2",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "eslint": "^8.38.0",
-    "eslint-config-prettier": "^8.8.0",
     "eslint-import-resolver-typescript": "^3.5.5",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-sort-imports-es6-autofix": "^0.6.0",
-    "prettier": "^2.8.7",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.0.4",
     "unplugin-swc": "^1.3.2",
