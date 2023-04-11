@@ -56,7 +56,10 @@ describe('BlockCache', () => {
 
         // /* --------------- test getAllReceiptsAtBlock --------------- */
         for (let blockIdx = 0; blockIdx < TOTAL_BLOCKS; blockIdx++) {
-          const isBlockInCache = blockIdx >= firstCacheBlockIdx && blockIdx <= lastCacheBlockIdx;
+          const isBlockInCache = (
+            blockIdx >= firstCacheBlockIdx &&
+            blockIdx <= lastCacheBlockIdx
+          );
 
           const expectedReceiptsInCurBlock = isBlockInCache ? chain[blockIdx].receipts : [];
           expect(cache.getAllReceiptsAtBlock(chain[blockIdx].blockHash)).to.deep.equal(expectedReceiptsInCurBlock);

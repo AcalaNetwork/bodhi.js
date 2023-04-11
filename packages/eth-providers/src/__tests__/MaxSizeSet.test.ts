@@ -21,7 +21,9 @@ describe('MaxSizeSet', () => {
 
         // check cached hashes are correct
         const firstCacheBlockIdx = Math.max(0, lastCacheBlockIdx - MAX_CACHED_BLOCK + 1);
-        const expectedCachedHashes = allBlockHashes.filter((_, i) => i >= firstCacheBlockIdx && i <= lastCacheBlockIdx);
+        const expectedCachedHashes = allBlockHashes.filter(
+          (_, i) => i >= firstCacheBlockIdx && i <= lastCacheBlockIdx
+        );
         expect(expectedCachedHashes).to.deep.equal(finalizedBlocks.toString());
 
         // check has() method behaves as expected
