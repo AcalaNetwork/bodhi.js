@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "test": "ts-node --transpile-only src/deploy.ts",
-    "build": "waffle waffle.json"
+    "build": "echo noop"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "~3.4.2",

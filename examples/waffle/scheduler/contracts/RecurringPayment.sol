@@ -1,4 +1,5 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 import "@acala-network/contracts/schedule/ISchedule.sol";
 import "@acala-network/contracts/utils/MandalaAddress.sol";

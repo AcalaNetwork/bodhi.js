@@ -1,4 +1,5 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 import "@acala-network/contracts/schedule/ISchedule.sol";
 import "@acala-network/contracts/utils/MandalaAddress.sol";
@@ -16,7 +17,7 @@ contract Subscription is ADDRESS {
   ISchedule scheduler = ISchedule(ADDRESS.SCHEDULE);
 
   constructor(uint _subscriptionPrice, uint _subscriptionPeriod) public payable {
-    owner = msg.sender;
+    owner = payable(msg.sender);
     subscriptionPrice = _subscriptionPrice;
     subscriptionPeriod = _subscriptionPeriod;
   }
@@ -44,7 +45,7 @@ contract Subscription is ADDRESS {
     monthsSubscribed[msg.sender] = 0;
 
     if (balanceOf[msg.sender] > 0) {
-      msg.sender.transfer(balanceOf[msg.sender]);
+      payable(msg.sender).transfer(balanceOf[msg.sender]);
       balanceOf[msg.sender] = 0;
     }
   }

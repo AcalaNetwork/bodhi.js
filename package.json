@@ -12,13 +12,15 @@
     "examples/waffle/*"
   ],
   "scripts": {
-    "clean": "yarn workspaces foreach -pt --include \"@acala-network/*\" run clean",
-    "build": "yarn workspaces foreach -pt --include \"@acala-network/*\" run build",
+    "clean": "yarn workspaces foreach -pvit --include \"@acala-network/*\" run clean",
+    "build": "yarn workspaces foreach -pvit --include \"@acala-network/*\" run build",
     "lint": "tsc --noEmit --project tsconfig.json && eslint . --ext .js,.ts",
     "fix": "eslint . --ext .js,.ts --fix",
-    "test:all": "yarn workspaces foreach -pt run test",
+    "test:all": "yarn workspaces foreach -vit run test",
     "test": "vitest run",
     "test:watch": "vitest",
+    "build:examples": "yarn workspaces foreach -vit --include \"evm-*\" run build",
+    "test:examples": "yarn workspaces foreach -vit --include \"evm-*\" run test",
     "postinstall": "husky install"
   },
   "resolutions": {
