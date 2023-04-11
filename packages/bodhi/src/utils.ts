@@ -4,7 +4,6 @@ import { BodhiProvider } from '@acala-network/eth-providers';
 import { BodhiSigner } from './BodhiSigner';
 import { BytesLike } from '@ethersproject/bytes';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { SubstrateSigner } from './SubstrateSigner';
 import { WsProvider } from '@polkadot/api';
 import { bufferToU8a, isBuffer, isU8a, u8aToHex } from '@polkadot/util';
 import { createTestPairs } from '@polkadot/keyring';
@@ -41,11 +40,9 @@ export const getTestUtils = async (
   const { alice, alice_stash, bob, bob_stash } = createTestPairs();
   const pairs = [alice, alice_stash, bob, bob_stash];
 
-  const substrateSigner = new SubstrateSigner(provider.api.registry, pairs);
-
   const wallets: BodhiSigner[] = [];
   for (const pair of pairs) {
-    const wallet = new BodhiSigner(provider, pair.address, substrateSigner);
+    const wallet = BodhiSigner.fromPair(provider, pair);
 
     const isClaimed = await wallet.isClaimed();
     if (!isClaimed) {

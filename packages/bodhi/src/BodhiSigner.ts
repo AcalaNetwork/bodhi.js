@@ -8,9 +8,12 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { BodhiProvider, handleTxResponse, toBN } from '@acala-network/eth-providers';
 import { Bytes, concat, joinSignature } from '@ethersproject/bytes';
 import { Deferrable } from '@ethersproject/properties';
+import { KeyringPair } from '@polkadot/keyring/types';
 import { Logger } from '@ethersproject/logger';
+import { MultiSigner } from './MultiSigner';
 import { Signer, SubmittableExtrinsic } from '@polkadot/api/types';
 import { SubmittableResult } from '@polkadot/api';
+import { SubstrateSigner } from './SubstrateSigner';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { dataToString } from './utils';
@@ -41,7 +44,21 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
     this.provider = provider;
     this.substrateAddress = substrateAddress;
     this.signer = signer;
-    this.provider.api.setSigner(signer);
+
+    if (!this.provider.api['_rx'].signer) {
+      this.provider.api.setSigner(new MultiSigner({ [substrateAddress]: signer }));
+    } else {
+      const multiSigner = this.provider.api['_rx'].signer;
+      if (MultiSigner.isMultiSigner(multiSigner)) {
+        multiSigner.addSigner(substrateAddress, signer);
+      } else {
+        throw new Error('Current signer is not MultiSigner, cannot override signer.');
+      }
+    }
+  }
+
+  static fromPair(provider: BodhiProvider, pair: KeyringPair): BodhiSigner {
+    return new BodhiSigner(provider, pair.address, new SubstrateSigner(provider.api.registry, pair));
   }
 
   connect(provider: BodhiProvider): BodhiSigner {

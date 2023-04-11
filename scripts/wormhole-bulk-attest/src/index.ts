@@ -64,7 +64,7 @@ const attestToken = async (
   });
 }
 
-const getSingers = async (ethRpc: string, karuraNodeUrl: string) => {
+const getSigners = async (ethRpc: string, karuraNodeUrl: string) => {
   const providerEth = new JsonRpcProvider(ethRpc);
   const signerEth = new Wallet(privateKey, providerEth);
 
@@ -86,7 +86,7 @@ const main = async () => {
   // const ETH_RPC = 'https://rpc.ankr.com/eth_goerli';
   // const KARURA_NODE_URL = 'wss://karura-dev.aca-dev.network/rpc/ws';
 
-  const { signerEth, signerKarura, providerKarura } = await getSingers(ETH_RPC, KARURA_NODE_URL);
+  const { signerEth, signerKarura, providerKarura } = await getSigners(ETH_RPC, KARURA_NODE_URL);
 
   const addresses = [
     '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',

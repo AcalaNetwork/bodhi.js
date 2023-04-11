@@ -21,7 +21,7 @@ module.exports = {
     'import/no-named-as-default': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unused-vars': [
-      'off',
+      'off'
       // {
       //   argsIgnorePattern: '^_',
       //   varsIgnorePattern: '^_',

@@ -70,8 +70,12 @@ jspm_packages/
 yarn.lock
 
 # Build outputs
-dist
-lib
+dist/
+lib/
+examples/
+evm-subql/
+scripts/
+
 
 # Prettier reformats code blocks inside Markdown, which affects rendered output
 *.md
