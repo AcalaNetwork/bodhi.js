@@ -22,7 +22,7 @@ describe('ACAToken', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
   });
 
   it('get token name', async () => {

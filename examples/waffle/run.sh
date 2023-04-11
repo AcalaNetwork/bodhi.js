@@ -3,37 +3,21 @@
 failed=0
 
 build_all() {
-  sh -c 'rush build \
-    -t evm-waffle-example-arbitrager \
-    -t evm-waffle-example-dex \
-    -t evm-waffle-example-e2e \
-    -t evm-waffle-example-erc20 \
-    -t evm-waffle-example-evm \
-    -t evm-waffle-example-evm-accounts \
-    -t evm-waffle-example-hello-world \
-    -t evm-waffle-example-homa \
-    -t evm-waffle-example-honzon \
-    -t evm-waffle-example-incentives \
-    -t evm-waffle-example-oracle \
-    -t evm-waffle-example-scheduler \
-    -t evm-waffle-example-stable-asset'
-}
-
-rebuild_all() {
-  sh -c 'rush rebuild \
-    -t evm-waffle-example-arbitrager \
-    -t evm-waffle-example-dex \
-    -t evm-waffle-example-e2e \
-    -t evm-waffle-example-erc20 \
-    -t evm-waffle-example-evm \
-    -t evm-waffle-example-evm-accounts \
-    -t evm-waffle-example-hello-world \
-    -t evm-waffle-example-homa \
-    -t evm-waffle-example-honzon \
-    -t evm-waffle-example-incentives \
-    -t evm-waffle-example-oracle \
-    -t evm-waffle-example-scheduler \
-    -t evm-waffle-example-stable-asset'
+  sh -c 'yarn \
+    workspace evm-waffle-example-arbitrager \
+    workspace evm-waffle-example-dex \
+    workspace evm-waffle-example-e2e \
+    workspace evm-waffle-example-erc20 \
+    workspace evm-waffle-example-evm \
+    workspace evm-waffle-example-evm-accounts \
+    workspace evm-waffle-example-hello-world \
+    workspace evm-waffle-example-homa \
+    workspace evm-waffle-example-honzon \
+    workspace evm-waffle-example-incentives \
+    workspace evm-waffle-example-oracle \
+    workspace evm-waffle-example-scheduler \
+    workspace evm-waffle-example-stable-asset \
+    build'
 }
 
 test_all() {
@@ -83,7 +67,6 @@ build_and_test() {
 
 case "$1" in
   "build") build_all ;;
-  "rebuild") rebuild_all ;;
   "test") test_all ;;
   "build_and_test") build_and_test ;;
   *) build_and_test ;;

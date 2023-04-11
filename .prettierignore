@@ -62,31 +62,12 @@ jspm_packages/
 # OS X temporary files
 .DS_Store
 
-# Rush temporary files
-common/deploy/
-common/temp/
-common/autoinstallers/*/.npmrc
-**/.rush/temp/
-
-# Heft
-.heft
-
-
 #-------------------------------------------------------------------------------------------------------------------
 # Prettier-specific overrides
 #-------------------------------------------------------------------------------------------------------------------
 
-# Rush files
-common/changes/
-common/scripts/
-common/config/
-CHANGELOG.*
-
 # Package manager files
-pnpm-lock.yaml
 yarn.lock
-package-lock.json
-shrinkwrap.json
 
 # Build outputs
 dist
@@ -96,3 +77,5 @@ lib
 *.md
 
 eth-rpc-adapter/src/__tests__/e2e/endpoint.test.ts
+
+.vscode

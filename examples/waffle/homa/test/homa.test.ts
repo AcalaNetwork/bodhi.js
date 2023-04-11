@@ -41,7 +41,7 @@ describe('homa', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
   });
 
   it('homa works', async () => {
@@ -94,5 +94,7 @@ describe('homa', () => {
     await expect(homaPredeployed.requestRedeem(dollar, true))
       .to.emit(homaPredeployed, 'RequestedRedeem')
       .withArgs(await wallet.getAddress(), dollar, true);
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 });

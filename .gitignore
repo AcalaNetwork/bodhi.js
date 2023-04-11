@@ -72,9 +72,4 @@ common/autoinstallers/*/.npmrc
 
 dist
 lib
-**/temp
-
-# rush temp file
-common/changes
-**/cache/solcjs
-**/examples/**/build
+tsconfig.tsbuildinfo

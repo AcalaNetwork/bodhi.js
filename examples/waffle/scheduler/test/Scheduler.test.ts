@@ -38,7 +38,7 @@ describe('Schedule', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
   });
 
   it('ScheduleCall works', async () => {

@@ -1,0 +1,56 @@
+{
+  "name": "@acala-network/bodhi",
+  "version": "2.6.5",
+  "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
+  "author": "Acala Developers <hello@acala.network>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "clean": "rm -rf lib tsconfig.tsbuildinfo",
+    "build": "tsc --build ./tsconfig.json",
+    "lint": "tsc --noEmit && eslint \"**/*.ts\""
+  },
+  "dependencies": {
+    "@acala-network/eth-providers": "workspace:*",
+    "@ethersproject/abstract-provider": "~5.7.0",
+    "@ethersproject/abstract-signer": "~5.7.0",
+    "@ethersproject/address": "~5.7.0",
+    "@ethersproject/bignumber": "~5.7.0",
+    "@ethersproject/bytes": "~5.7.0",
+    "@ethersproject/logger": "~5.7.0",
+    "@ethersproject/properties": "~5.7.0",
+    "@ethersproject/strings": "~5.7.0",
+    "@polkadot/api": "9.10.3",
+    "@polkadot/keyring": "^10.2.1",
+    "@polkadot/types": "9.10.3",
+    "@polkadot/util": "^10.2.1",
+    "@polkadot/util-crypto": "^10.2.1",
+    "@types/bn.js": "~5.1.0",
+    "bn.js": "~5.2.0",
+    "ethers": "~5.7.0"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-config": "~2.5.4",
+    "@rushstack/heft": "~0.44.13",
+    "@types/chai": "~4.2.22",
+    "chai": "~4.3.4",
+    "eslint": "~7.32.0",
+    "ts-node": "~10.7.0",
+    "typescript": "~4.6.3"
+  },
+  "files": [
+    "lib"
+  ],
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./*": {
+      "types": "./lib/*.d.ts",
+      "default": "./lib/*.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

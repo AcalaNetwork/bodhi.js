@@ -33,7 +33,7 @@ describe('LP ACA-AUSD Token', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
   });
 
   it('get token name', async () => {

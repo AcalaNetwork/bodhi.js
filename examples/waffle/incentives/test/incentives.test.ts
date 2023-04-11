@@ -42,7 +42,8 @@ describe('incentives', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   it('incentives getIncentiveRewardAmount works', async () => {
@@ -172,5 +173,7 @@ describe('incentives', () => {
     await expect(incentivesPredeployed.claimRewards(1, ADDRESS.LP_ACA_AUSD))
       .to.emit(incentivesPredeployed, 'ClaimedRewards')
       .withArgs(await wallet.getAddress(), 1, ADDRESS.LP_ACA_AUSD);
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 });

@@ -1,4 +1,4 @@
-import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
+import { BodhiSigner as Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';

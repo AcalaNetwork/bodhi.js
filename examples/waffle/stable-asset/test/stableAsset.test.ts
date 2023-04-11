@@ -41,7 +41,8 @@ describe('stable asset', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   it('stable asset get function works', async () => {
@@ -127,5 +128,7 @@ describe('stable asset', () => {
     await expect(stableAssetPredeployed.stableAssetRedeemMulti(0, [500000, 2], 1000000000))
       .to.emit(stableAssetPredeployed, 'StableAssetRedeemedMulti')
       .withArgs(await wallet.getAddress(), 0, [500000, 2], 1000000000);
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 });
