@@ -17,7 +17,7 @@ import {
   karura3524761,
   karura3597964,
   karura3607973,
-  mandala938075
+  mandala938075,
 } from './receipt-snapshots';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 import { expect } from 'chai';
@@ -74,19 +74,19 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
 
     apiK = new ApiPromise(
       options({
-        provider: new WsProvider(KARURA_NODE_URL)
+        provider: new WsProvider(KARURA_NODE_URL),
       })
     );
 
     apiA = new ApiPromise(
       options({
-        provider: new WsProvider(ACALA_NODE_URL)
+        provider: new WsProvider(ACALA_NODE_URL),
       })
     );
 
     apiM = new ApiPromise(
       options({
-        provider: new WsProvider(MANDALA_NODE_URL)
+        provider: new WsProvider(MANDALA_NODE_URL),
       })
     );
 

@@ -3,12 +3,12 @@ import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers';
 export const evmAccounts = [
   {
     privateKey: '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f',
-    evmAddress: '0x75E480dB528101a381Ce68544611C169Ad7EB342'
+    evmAddress: '0x75E480dB528101a381Ce68544611C169Ad7EB342',
   },
   {
     privateKey: '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269acd85c',
-    evmAddress: '0xb00cB924ae22b2BBb15E10c17258D6a2af980421'
-  }
+    evmAddress: '0xb00cB924ae22b2BBb15E10c17258D6a2af980421',
+  },
 ];
 
 export const ADDRESS_ALICE = '0x82a258cb20e2adb4788153cd5eb5839615ece9a0';
@@ -31,8 +31,8 @@ export const log6 = {
   removed: false,
   topics: [
     '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
-  ]
+    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
+  ],
 };
 
 export const log7 = {
@@ -44,8 +44,8 @@ export const log7 = {
   removed: false,
   topics: [
     '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
-  ]
+    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
+  ],
 };
 
 export const log8 = {
@@ -57,8 +57,8 @@ export const log8 = {
   removed: false,
   topics: [
     '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
-  ]
+    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
+  ],
 };
 
 export const log9 = {
@@ -70,8 +70,8 @@ export const log9 = {
   removed: false,
   topics: [
     '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
-  ]
+    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
+  ],
 };
 
 export const log10 = {
@@ -83,8 +83,8 @@ export const log10 = {
   removed: false,
   topics: [
     '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
-  ]
+    '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
+  ],
 };
 
 export const log11 = {
@@ -98,8 +98,8 @@ export const log11 = {
     '0x5b6f5f6550282279c4e72b95a8ba538bea92c64dec9e8c7c08a556d4457225c8',
     '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
     '0x0000000000000000000000000000000000000000000100000000000000000000',
-    '0x0000000000000000000000000000000000000000000100000000000000000001'
-  ]
+    '0x0000000000000000000000000000000000000000000100000000000000000001',
+  ],
 };
 
 export const log12 = {
@@ -113,8 +113,8 @@ export const log12 = {
     '0x038116623990e7d0fed04a27e35b5dc88000ea942b37360c5898ae750bfa5df6',
     '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
     '0x0000000000000000000000000000000000000000000100000000000000000000',
-    '0x0000000000000000000000000000000000000000000100000000000000000001'
-  ]
+    '0x0000000000000000000000000000000000000000000100000000000000000001',
+  ],
 };
 
 export const log13 = {
@@ -126,9 +126,9 @@ export const log13 = {
   topics: [
     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
     '0x0000000000000000000000000000000000000000000000000000000000000000',
-    '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0'
+    '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
   ],
-  logIndex: '0x0'
+  logIndex: '0x0',
 };
 
 export const log14 = {
@@ -140,9 +140,9 @@ export const log14 = {
   topics: [
     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
     '0x0000000000000000000000000000000000000000000000000000000000000000',
-    '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0'
+    '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
   ],
-  logIndex: '0x0'
+  logIndex: '0x0',
 };
 
 export const log20_0 = {
@@ -154,9 +154,9 @@ export const log20_0 = {
   topics: [
     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
     '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
-    '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743'
+    '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
   ],
-  logIndex: '0x0'
+  logIndex: '0x0',
 };
 
 export const log20_1 = {
@@ -168,9 +168,9 @@ export const log20_1 = {
   topics: [
     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
     '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
-    '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743'
+    '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
   ],
-  logIndex: '0x1'
+  logIndex: '0x1',
 };
 
 export const log22_0 = {
@@ -182,9 +182,9 @@ export const log22_0 = {
   topics: [
     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
     '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
-    '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743'
+    '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
   ],
-  logIndex: '0x0'
+  logIndex: '0x0',
 };
 
 export const log22_1 = {
@@ -196,9 +196,9 @@ export const log22_1 = {
   topics: [
     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
     '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
-    '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0'
+    '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
   ],
-  logIndex: '0x1'
+  logIndex: '0x1',
 };
 
 export const allLogs = [log6, log7, log8, log9, log10, log11, log12, log13, log14, log20_0, log20_1, log22_0, log22_1];
@@ -239,7 +239,7 @@ export const karuraBlock2449983 = {
       nonce: '0x3',
       v: '0x25',
       r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c'
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
     },
     {
       blockHash: '0xbdae06c67294bca57bffd390c997d6730a837e1c11252d9bba00cac7384c1f16',
@@ -255,9 +255,9 @@ export const karuraBlock2449983 = {
       nonce: '0x65',
       v: '0x25',
       r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c'
-    }
-  ]
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+    },
+  ],
 };
 
 export const karuraBlock1818188 = {
@@ -280,7 +280,7 @@ export const karuraBlock1818188 = {
   logsBloom: DUMMY_LOGS_BLOOM,
   size: '0x1e5f',
   uncles: [],
-  transactions: []
+  transactions: [],
 };
 
 export const karuraBlock1818518 = {
@@ -318,9 +318,9 @@ export const karuraBlock1818518 = {
       nonce: '0x1cb',
       v: '0x25',
       r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c'
-    }
-  ]
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
+    },
+  ],
 };
 
 export const karuraContractCallTxReceipt = {
@@ -342,18 +342,18 @@ export const karuraContractCallTxReceipt = {
         '0x9e6c2a5268879d41429e8c2d6f88e2c3d1a20752070e9afb3f6b9aa9dbb01a90',
         '0x0000000000000000000000000000000000000000000000000000000000000012',
         '0x7ba288a014555c9b1446b215605b4f6803e68a8b430bcbc08e75400e4b38a1a1',
-        '0x0000000000000000000000000000000000000000000000000000000000000000'
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       ],
       data: '0x00000000000000000000000000000000000000000000000000000000002a8aa000000000000000000000000000000000000000000000000000000000002ac150000000000000000000000000000000000000000000000000000000006340cef600000000000000000000000000000000000000000000000000000000002ac207',
       logIndex: '0x0',
-      blockHash: '0x073b225ae078184815ed7e3d51c35ab44cef6cba3a9cde2bbf6e360e2844cc55'
-    }
+      blockHash: '0x073b225ae078184815ed7e3d51c35ab44cef6cba3a9cde2bbf6e360e2844cc55',
+    },
   ],
   blockNumber: '0x2ac207',
   cumulativeGasUsed: '0x0',
   effectiveGasPrice: '0xc691dc448',
   status: '0x1',
-  type: '0x0'
+  type: '0x0',
 };
 
 export const karuraSendKarTxReceipt = {
@@ -370,7 +370,7 @@ export const karuraSendKarTxReceipt = {
   cumulativeGasUsed: '0x0',
   effectiveGasPrice: '0x1bb7d40e19',
   status: '0x1',
-  type: '0x0'
+  type: '0x0',
 };
 
 export const karuraContractDeployTxReceipt = {
@@ -390,11 +390,11 @@ export const karuraContractDeployTxReceipt = {
       address: '0xa321448d90d4e5b0a732867c18ea198e75cac48e',
       topics: [
         '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b',
-        '0x000000000000000000000000141fba8ad5d61bdab45a047cf60b5ad9784987fb'
+        '0x000000000000000000000000141fba8ad5d61bdab45a047cf60b5ad9784987fb',
       ],
       data: '0x',
       logIndex: '0x0',
-      blockHash: '0x6b1378795aeedc85a88d40b2d48cf0e2408f783ba84f7cea068bfbb3ff3ad90a'
+      blockHash: '0x6b1378795aeedc85a88d40b2d48cf0e2408f783ba84f7cea068bfbb3ff3ad90a',
     },
     {
       transactionIndex: '0x0',
@@ -403,18 +403,18 @@ export const karuraContractDeployTxReceipt = {
       address: '0xa321448d90d4e5b0a732867c18ea198e75cac48e',
       topics: [
         '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b',
-        '0x000000000000000000000000c0946f51ddd63e12c51b23f5814b43c9bc8aa700'
+        '0x000000000000000000000000c0946f51ddd63e12c51b23f5814b43c9bc8aa700',
       ],
       data: '0x',
       logIndex: '0x1',
-      blockHash: '0x6b1378795aeedc85a88d40b2d48cf0e2408f783ba84f7cea068bfbb3ff3ad90a'
-    }
+      blockHash: '0x6b1378795aeedc85a88d40b2d48cf0e2408f783ba84f7cea068bfbb3ff3ad90a',
+    },
   ],
   blockNumber: '0x1bd799',
   cumulativeGasUsed: '0x0',
   effectiveGasPrice: '0x2e73326680e',
   status: '0x1',
-  type: '0x0'
+  type: '0x0',
 };
 
 export const karuraSendKarTx = {
@@ -431,7 +431,7 @@ export const karuraSendKarTx = {
   nonce: '0x41',
   v: '0x25',
   r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-  s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c'
+  s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
 };
 
 export const karuraContractCallTx = {
@@ -449,7 +449,7 @@ export const karuraContractCallTx = {
   nonce: '0x98',
   v: '0x25',
   r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-  s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c'
+  s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
 };
 
 export const karuraContractDeployTx = {
@@ -467,5 +467,5 @@ export const karuraContractDeployTx = {
   nonce: '0x4',
   v: '0x25',
   r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-  s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c'
+  s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
 };

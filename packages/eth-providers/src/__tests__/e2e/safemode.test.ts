@@ -50,7 +50,7 @@ describe('safe mode', () => {
     // make sure latest finalized block and latest block are even
     const [curBlock, curFinalizedBlock] = await Promise.all([
       provider.getBlockData('latest'),
-      safeProvider.getBlockData('latest')
+      safeProvider.getBlockData('latest'),
     ]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
     expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
@@ -65,7 +65,7 @@ describe('safe mode', () => {
     // make sure latest finalized block and latest block are even
     const [curBlock, curFinalizedBlock] = await Promise.all([
       provider.getBlockData('latest'),
-      safeProvider.getBlockData('latest')
+      safeProvider.getBlockData('latest'),
     ]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
     expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
@@ -74,7 +74,7 @@ describe('safe mode', () => {
     await newBlock(false);
     const [nextBlock, nextFinalizedBlock] = await Promise.all([
       provider.getBlockData('latest'),
-      safeProvider.getBlockData('latest')
+      safeProvider.getBlockData('latest'),
     ]);
     expect(curBlock.hash).to.not.equal(nextBlock.hash);
     expect(curFinalizedBlock.hash).to.equal(nextFinalizedBlock.hash);
@@ -131,15 +131,15 @@ describe('safe mode', () => {
     expect(cb).to.have.been.calledWithMatch({
       subscription: sub,
       result: {
-        hash: curHash
-      }
+        hash: curHash,
+      },
     });
 
     expect(safeCb).to.have.been.calledWithMatch({
       subscription: safeSub,
       result: {
-        hash: curHash
-      }
+        hash: curHash,
+      },
     });
 
     // new unfinalized block
@@ -149,15 +149,15 @@ describe('safe mode', () => {
     expect(cb).to.have.been.calledWithMatch({
       subscription: sub,
       result: {
-        hash: curHash
-      }
+        hash: curHash,
+      },
     });
 
     expect(safeCb).to.have.not.been.calledWithMatch({
       subscription: safeSub,
       result: {
-        hash: curHash
-      }
+        hash: curHash,
+      },
     });
   });
 });

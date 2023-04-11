@@ -121,7 +121,7 @@ export const validateSubstrateGasParams = (data: any) => {
 
   for (const k of Object.keys(data)) {
     if (!['storageLimit', 'gasLimit', 'validUntil'].includes(k)) {
-      throw new Error("parameter can only be 'storageLimit' | 'gasLimit' | 'validUntil'");
+      throw new Error('parameter can only be \'storageLimit\' | \'gasLimit\' | \'validUntil\'');
     }
   }
 };

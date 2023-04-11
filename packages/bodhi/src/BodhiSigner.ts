@@ -2,7 +2,7 @@ import {
   Signer as AbstractSigner,
   TypedDataDomain,
   TypedDataField,
-  TypedDataSigner
+  TypedDataSigner,
 } from '@ethersproject/abstract-signer';
 import { BigNumber } from '@ethersproject/bignumber';
 import { BodhiProvider, handleTxResponse, toBN } from '@acala-network/eth-providers';
@@ -63,7 +63,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
 
   connect(provider: BodhiProvider): BodhiSigner {
     return logger.throwError('cannot alter JSON-RPC Signer connection', Logger.errors.UNSUPPORTED_OPERATION, {
-      operation: 'connect'
+      operation: 'connect',
     });
   }
 
@@ -187,7 +187,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
 
   signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
     return logger.throwError('signing transactions is unsupported', Logger.errors.UNSUPPORTED_OPERATION, {
-      operation: 'signTransaction'
+      operation: 'signTransaction',
     });
   }
 
@@ -205,7 +205,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
     // However, when creating the contract, there is no from parameter in the tx
     const transaction = {
       from: evmAddress,
-      ..._transaction
+      ..._transaction,
     };
 
     const resources = await this.provider.estimateResources(transaction);
@@ -288,7 +288,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
                     extrinsic.hash.toHex(),
                     hex
                   ) as Promise<TransactionReceipt>;
-                }
+                },
               });
             })
             .catch(reject);
@@ -325,7 +325,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
     const result = await this.signer.signRaw({
       address: evmAddress,
       data: msg,
-      type: 'bytes'
+      type: 'bytes',
     });
 
     return joinSignature(result.signature);
@@ -338,7 +338,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
     value: Record<string, any>
   ): Promise<string> {
     return logger.throwError('_signTypedData is unsupported', Logger.errors.UNSUPPORTED_OPERATION, {
-      operation: '_signTypedData'
+      operation: '_signTypedData',
     });
   }
 }

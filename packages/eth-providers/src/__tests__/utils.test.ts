@@ -8,7 +8,7 @@ import {
   isEvmExtrinsic,
   parseBlockTag,
   runWithTiming,
-  sleep
+  sleep,
 } from '../utils';
 import { _Metadata } from '../utils/gqlTypes';
 import { describe, it } from 'vitest';
@@ -40,8 +40,8 @@ describe('utils', () => {
         data: '0x426ab38338be5d42c2cafd1075db80e71965e43f87c11536d8cf0a0dae40d54300000000000000000000000029b563951ed0eb9ae5c49692266e1fbc81445cfe00000000000000000000000029b563951ed0eb9ae5c49692266e1fbc81445cfe00000000000000000000000064ff10dced55d2efeb47f132dd09d37616bfbd18000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000002532c0a3b36bf2a0bbe9a9e96ceeb0ef55ed415dfaafae68823b57bcbffab4e0cca',
         topics: ['0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c'],
         transactionHash: '0x20220cf9d4bf9a666fc7507b47ae85339a81a899c958a83af644453243c86603',
-        logIndex: 1
-      }
+        logIndex: 1,
+      },
     ];
 
     const result = hexlifyRpcResult(data);
@@ -56,8 +56,8 @@ describe('utils', () => {
         data: '0x426ab38338be5d42c2cafd1075db80e71965e43f87c11536d8cf0a0dae40d54300000000000000000000000029b563951ed0eb9ae5c49692266e1fbc81445cfe00000000000000000000000029b563951ed0eb9ae5c49692266e1fbc81445cfe00000000000000000000000064ff10dced55d2efeb47f132dd09d37616bfbd18000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000002532c0a3b36bf2a0bbe9a9e96ceeb0ef55ed415dfaafae68823b57bcbffab4e0cca',
         topics: ['0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c'],
         transactionHash: '0x20220cf9d4bf9a666fc7507b47ae85339a81a899c958a83af644453243c86603',
-        logIndex: '0x1'
-      }
+        logIndex: '0x1',
+      },
     ]);
   });
 });
@@ -69,9 +69,9 @@ describe('isEvmExtrinsic', () => {
         section: {
           toLowerCase() {
             return 'evm';
-          }
-        }
-      }
+          },
+        },
+      },
     };
 
     const fakeSUDOExtrinsic = {
@@ -79,9 +79,9 @@ describe('isEvmExtrinsic', () => {
         section: {
           toLowerCase() {
             return 'sudo';
-          }
-        }
-      }
+          },
+        },
+      },
     };
 
     expect(isEvmExtrinsic(fakeEVMExtrinsic)).to.equal(true);
@@ -152,7 +152,7 @@ describe('getHealthResult', () => {
     indexerHealthy,
     lastProcessedHeight,
     lastProcessedTimestamp,
-    targetHeight
+    targetHeight,
   };
 
   const maxCachedBlocks = 200;
@@ -162,7 +162,7 @@ describe('getHealthResult', () => {
     cachedBlocksCount,
     cachedBlocks: [],
     allBlockToHash: {},
-    allHashToBlock: {}
+    allHashToBlock: {},
   };
 
   const curFinalizedHeight = targetHeight;
@@ -175,7 +175,7 @@ describe('getHealthResult', () => {
     gasPriceTime,
     estimateGasTime,
     getBlockTime,
-    getFullBlockTime
+    getFullBlockTime,
   };
 
   const healthResult = {
@@ -195,8 +195,8 @@ describe('getHealthResult', () => {
       idleBlocks: curFinalizedHeight - lastProcessedHeight,
       indexerHealthy,
       // RPC
-      ethCallTiming
-    }
+      ethCallTiming,
+    },
   };
 
   it('return correct healthy data when healthy', () => {
@@ -204,7 +204,7 @@ describe('getHealthResult', () => {
       indexerMeta,
       cacheInfo,
       curFinalizedHeight,
-      ethCallTiming
+      ethCallTiming,
     });
 
     expect(res).containSubset(healthResult);
@@ -219,11 +219,11 @@ describe('getHealthResult', () => {
         indexerMeta: {
           ...indexerMeta,
           lastProcessedHeight: lastProcessedHeightBad,
-          lastProcessedTimestamp: lastProcessedTimestampBad
+          lastProcessedTimestamp: lastProcessedTimestampBad,
         },
         cacheInfo,
         curFinalizedHeight,
-        ethCallTiming
+        ethCallTiming,
       });
 
       expect(res).containSubset({
@@ -235,8 +235,8 @@ describe('getHealthResult', () => {
           maxCachedBlocksCount: maxCachedBlocks,
           lastProcessedHeight: lastProcessedHeightBad,
           lastProcessedTimestamp: lastProcessedTimestampBad,
-          idleBlocks: curFinalizedHeight - lastProcessedHeightBad
-        }
+          idleBlocks: curFinalizedHeight - lastProcessedHeightBad,
+        },
       });
 
       expect(res.msg.length).to.equal(2);
@@ -251,7 +251,7 @@ describe('getHealthResult', () => {
         indexerMeta,
         cacheInfo,
         curFinalizedHeight: curFinalizedHeightBad,
-        ethCallTiming
+        ethCallTiming,
       });
 
       expect(res).containSubset({
@@ -260,8 +260,8 @@ describe('getHealthResult', () => {
         moreInfo: {
           ...healthResult.moreInfo,
           idleBlocks: idleBlocks,
-          curFinalizedHeight: curFinalizedHeightBad
-        }
+          curFinalizedHeight: curFinalizedHeightBad,
+        },
       });
 
       expect(res.msg.length).to.equal(1);
@@ -274,10 +274,10 @@ describe('getHealthResult', () => {
         indexerMeta,
         cacheInfo: {
           ...cacheInfo,
-          cachedBlocksCount: cachedBlocksCountBad
+          cachedBlocksCount: cachedBlocksCountBad,
         },
         curFinalizedHeight,
-        ethCallTiming
+        ethCallTiming,
       });
 
       expect(res).containSubset({
@@ -285,25 +285,25 @@ describe('getHealthResult', () => {
         isHealthy: false,
         isCacheOK: false,
         msg: [
-          `cached blocks size is bigger than expected: ${cachedBlocksCountBad}, expect at most ~${maxCachedBlocks}`
+          `cached blocks size is bigger than expected: ${cachedBlocksCountBad}, expect at most ~${maxCachedBlocks}`,
         ],
         moreInfo: {
           ...healthResult.moreInfo,
-          cachedBlocksCount: cachedBlocksCountBad
-        }
+          cachedBlocksCount: cachedBlocksCountBad,
+        },
       });
     });
 
     it('when RPC becomes slow', () => {
       const ethCallTimingBad = {
         ...ethCallTiming,
-        getFullBlockTime: 23000
+        getFullBlockTime: 23000,
       };
       const res = getHealthResult({
         indexerMeta,
         cacheInfo,
         curFinalizedHeight,
-        ethCallTiming: ethCallTimingBad
+        ethCallTiming: ethCallTimingBad,
       });
 
       expect(res).containSubset({
@@ -313,25 +313,25 @@ describe('getHealthResult', () => {
         msg: [
           `an RPC is getting slow, takes more than 5 seconds to complete internally. All timings: ${JSON.stringify(
             ethCallTimingBad
-          )}`
+          )}`,
         ],
         moreInfo: {
           ...healthResult.moreInfo,
-          ethCallTiming: ethCallTimingBad
-        }
+          ethCallTiming: ethCallTimingBad,
+        },
       });
     });
 
     it('when RPC has running error', () => {
       const ethCallTimingBad = {
         ...ethCallTiming,
-        getFullBlockTime: -1
+        getFullBlockTime: -1,
       };
       const res = getHealthResult({
         indexerMeta,
         cacheInfo,
         curFinalizedHeight,
-        ethCallTiming: ethCallTimingBad
+        ethCallTiming: ethCallTimingBad,
       });
 
       expect(res).containSubset({
@@ -341,21 +341,21 @@ describe('getHealthResult', () => {
         msg: [`an RPC is getting running errors. All timings: ${JSON.stringify(ethCallTimingBad)}`],
         moreInfo: {
           ...healthResult.moreInfo,
-          ethCallTiming: ethCallTimingBad
-        }
+          ethCallTiming: ethCallTimingBad,
+        },
       });
     });
 
     it('when RPC timeouts', () => {
       const ethCallTimingBad = {
         ...ethCallTiming,
-        getFullBlockTime: -999
+        getFullBlockTime: -999,
       };
       const res = getHealthResult({
         indexerMeta,
         cacheInfo,
         curFinalizedHeight,
-        ethCallTiming: ethCallTimingBad
+        ethCallTiming: ethCallTimingBad,
       });
 
       expect(res).containSubset({
@@ -365,8 +365,8 @@ describe('getHealthResult', () => {
         msg: [`an RPC is getting timeouts. All timings: ${JSON.stringify(ethCallTimingBad)}`],
         moreInfo: {
           ...healthResult.moreInfo,
-          ethCallTiming: ethCallTimingBad
-        }
+          ethCallTiming: ethCallTimingBad,
+        },
       });
     });
   });
@@ -412,14 +412,14 @@ describe('eth call error handling', () => {
     const commonData = {
       used_gas: 0,
       used_storage: 0,
-      logs: []
+      logs: [],
     };
 
     it('when should throw - reverted', () => {
       const data = {
         exit_reason: { revert: 'Reverted' as const },
         value: invalidCurrencyIdHex,
-        ...commonData
+        ...commonData,
       };
 
       expect(() => checkEvmExecutionError(data)).to.throw('invalid currency id');
@@ -428,10 +428,10 @@ describe('eth call error handling', () => {
     it('when should throw - outOfFund', () => {
       const data = {
         exit_reason: {
-          error: { outOfFund: null }
+          error: { outOfFund: null },
         },
         value: invalidCurrencyIdHex,
-        ...commonData
+        ...commonData,
       };
 
       expect(() => checkEvmExecutionError(data)).to.throw('outOfFund');
@@ -440,10 +440,10 @@ describe('eth call error handling', () => {
     it('when should throw - ExistentialDeposit', () => {
       const data = {
         exit_reason: {
-          error: { other: 'ExistentialDeposit' }
+          error: { other: 'ExistentialDeposit' },
         },
         value: invalidCurrencyIdHex,
-        ...commonData
+        ...commonData,
       };
 
       expect(() => checkEvmExecutionError(data)).to.throw('ExistentialDeposit');
@@ -454,7 +454,7 @@ describe('eth call error handling', () => {
         const data = {
           exit_reason: { succeed: 'Returned' as const },
           value: '0x123456789',
-          ...commonData
+          ...commonData,
         };
         expect(() => checkEvmExecutionError(data)).to.not.throw();
       }
@@ -463,7 +463,7 @@ describe('eth call error handling', () => {
         const data = {
           exit_reason: { succeed: 'Stopped' as const },
           value: '0x',
-          ...commonData
+          ...commonData,
         };
         expect(() => checkEvmExecutionError(data)).to.not.throw();
       }

@@ -42,7 +42,7 @@ export function handleTxResponse(
         .filter(({ event: { section } }): boolean => section === 'system')
         .forEach((event): void => {
           const {
-            event: { data, method }
+            event: { data, method },
           } = event;
 
           if (method === 'ExtrinsicFailed') {
@@ -70,7 +70,7 @@ export function handleTxResponse(
 
               reject(
                 makeError(decodeMessage(exitReason, output as string), {
-                  result
+                  result,
                 })
               );
             }

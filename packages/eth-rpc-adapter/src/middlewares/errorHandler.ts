@@ -19,7 +19,7 @@ export const errorHandler: ErrorHandleFunction = (err, req, res, next) => {
       JSON.stringify({
         id: null,
         jsonrpc: '2.0',
-        error: error.json()
+        error: error.json(),
       })
     );
   }

@@ -42,7 +42,7 @@ export const calcEthereumTransactionParams = (
 
   return {
     txGasPrice,
-    txGasLimit
+    txGasLimit,
   };
 };
 
@@ -71,7 +71,7 @@ export const calcSubstrateTransactionParams = (
   return {
     gasLimit,
     storageLimit,
-    validUntil
+    validUntil,
   };
 };
 

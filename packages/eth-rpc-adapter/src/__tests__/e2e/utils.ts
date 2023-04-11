@@ -8,15 +8,15 @@ export const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
 
 export const rpcGet =
   (method: string, url: string = RPC_URL) =>
-  (params: any[] = []): any =>
-    axios.get(url, {
-      data: {
-        id: 0,
-        jsonrpc: '2.0',
-        method,
-        params
-      }
-    });
+    (params: any[] = []): any =>
+      axios.get(url, {
+        data: {
+          id: 0,
+          jsonrpc: '2.0',
+          method,
+          params,
+        },
+      });
 
 export const bigIntDiff = (x: bigint, y: bigint): bigint => {
   return x > y ? x - y : y - x;

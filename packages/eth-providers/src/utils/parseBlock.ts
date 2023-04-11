@@ -8,7 +8,7 @@ import {
   EventRecord,
   RuntimeDispatchInfoV1,
   RuntimeDispatchInfoV2,
-  SignedBlock
+  SignedBlock,
 } from '@polkadot/types/interfaces';
 import { Formatter } from '@ethersproject/providers';
 import { FrameSupportDispatchDispatchInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
@@ -17,7 +17,7 @@ import {
   findEvmEvent,
   fullReceiptFormatter,
   getOrphanTxReceiptsFromEvents,
-  getPartialTransactionReceipt
+  getPartialTransactionReceipt,
 } from './transactionReceiptHelper';
 import { GenericExtrinsic } from '@polkadot/types';
 import {
@@ -25,7 +25,7 @@ import {
   isExtrinsicSuccessEvent,
   isNormalEvmEvent,
   isTxFeeEvent,
-  nativeToEthDecimal
+  nativeToEthDecimal,
 } from './utils';
 
 export const getAllReceiptsAtBlock = async (
@@ -37,7 +37,7 @@ export const getAllReceiptsAtBlock = async (
 
   const [block, blockEvents] = await Promise.all([
     api.rpc.chain.getBlock(blockHash),
-    apiAtTargetBlock.query.system.events<FrameSystemEventRecord[]>()
+    apiAtTargetBlock.query.system.events<FrameSystemEventRecord[]>(),
   ]);
 
   return parseReceiptsFromBlockData(api, block, blockEvents, targetTxHash);
@@ -57,7 +57,7 @@ export const parseReceiptsFromBlockData = async (
   let normalTxs = block.block.extrinsics
     .map((extrinsic, idx) => ({
       extrinsic,
-      extrinsicEvents: extractTargetEvents(blockEvents, idx)
+      extrinsicEvents: extractTargetEvents(blockEvents, idx),
     }))
     .filter(
       ({ extrinsicEvents }) => extrinsicEvents.some(isNormalEvmEvent) && !extrinsicEvents.find(isExtrinsicFailedEvent)
@@ -84,14 +84,14 @@ export const parseReceiptsFromBlockData = async (
       const partialReceipt = getPartialTransactionReceipt(evmEvent);
       const logs = partialReceipt.logs.map((log) => ({
         ...txInfo,
-        ...log
+        ...log,
       }));
 
       return Formatter.check(fullReceiptFormatter, {
         effectiveGasPrice,
         ...txInfo,
         ...partialReceipt,
-        logs
+        logs,
       });
     }
   );
@@ -138,7 +138,7 @@ const getEffectiveGasPrice = async (
         u8a,
         u8a.length
       ),
-      apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length)
+      apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length),
     ]);
 
     const estimatedWeight =

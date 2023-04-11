@@ -9,7 +9,7 @@ describe('create Claim Signature', () => {
       createClaimPayload({
         salt: '0x000',
         chainId: 55,
-        substrateAddress: '5G'
+        substrateAddress: '5G',
       });
     }).throw('invalid substrateAddress');
   });
@@ -18,7 +18,7 @@ describe('create Claim Signature', () => {
     expect(() => {
       createClaimPayload({
         chainId: 55,
-        substrateAddress: '5G'
+        substrateAddress: '5G',
       } as any);
     }).throw('missing salt');
   });
@@ -27,7 +27,7 @@ describe('create Claim Signature', () => {
     expect(() => {
       createClaimPayload({
         salt: '0x000',
-        substrateAddress: '5G'
+        substrateAddress: '5G',
       } as any);
     }).throw('missing chainId');
   });
@@ -36,7 +36,7 @@ describe('create Claim Signature', () => {
     const payload = createClaimPayload({
       salt: '0x702ba380a53e096363da1b73f2a05faff77c274fd356253eb877e6d221b7ffe7',
       chainId: 595,
-      substrateAddress: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+      substrateAddress: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
     });
 
     expect(payload.domain.name).equal('Acala EVM claim');
@@ -50,7 +50,7 @@ describe('create Claim Signature', () => {
     const signature = createClaimSignature(wallet.privateKey, {
       salt: '0x702ba380a53e096363da1b73f2a05faff77c274fd356253eb877e6d221b7ffe7',
       chainId: 595,
-      substrateAddress: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'
+      substrateAddress: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
     });
 
     expect(signature).equal(

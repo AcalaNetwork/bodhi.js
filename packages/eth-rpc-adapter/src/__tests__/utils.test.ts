@@ -19,7 +19,7 @@ describe('parseBooleanOption', () => {
     expect(parseBooleanOption('xxx', false, 'true')).to.equal(true);
 
     expect(() => parseBooleanOption('xxx', false, 'hahaha')).to.throw(
-      `boolean env xxx should be any of { true, false, 1, 0 }, got hahaha`
+      'boolean env xxx should be any of { true, false, 1, 0 }, got hahaha'
     );
   });
 });

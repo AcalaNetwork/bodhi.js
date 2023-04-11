@@ -17,7 +17,7 @@ import {
   karuraSendKarTx,
   karuraSendKarTxReceipt,
   log22_0,
-  log22_1
+  log22_1,
 } from './consts';
 import { AcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { ApiPromise, WsProvider } from '@polkadot/api';
@@ -175,18 +175,18 @@ describe('eth_getTransactionReceipt', () => {
           address: '0x0000000000000000000000000000000000000803',
           topics: [
             '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
           ],
           data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000748849ea0c000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
           logIndex: '0x0',
-          blockHash: txR.blockHash
-        }
+          blockHash: txR.blockHash,
+        },
       ],
       blockNumber: '0xa',
       cumulativeGasUsed: '0x0', // FIXME:
       // effectiveGasPrice: '0x7b501b0da7',
       status: '0x1',
-      type: '0x0'
+      type: '0x0',
     });
 
     txR = allTxReceipts.find((r) => r.blockNumber === '9');
@@ -208,18 +208,18 @@ describe('eth_getTransactionReceipt', () => {
           address: '0x0000000000000000000000000000000000000803',
           topics: [
             '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
           ],
           data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
           logIndex: '0x0',
-          blockHash: txR.blockHash
-        }
+          blockHash: txR.blockHash,
+        },
       ],
       blockNumber: '0x9',
       cumulativeGasUsed: '0x0', // FIXME:
       // effectiveGasPrice: '0x71ca23a4e3',
       status: '0x1',
-      type: '0x0'
+      type: '0x0',
     });
 
     txR = allTxReceipts.find((r) => r.blockNumber === '6');
@@ -241,18 +241,18 @@ describe('eth_getTransactionReceipt', () => {
           address: '0x0000000000000000000000000000000000000803',
           topics: [
             '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4'
+            '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
           ],
           data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000001d131f6171f000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
           logIndex: '0x0',
-          blockHash: txR.blockHash
-        }
+          blockHash: txR.blockHash,
+        },
       ],
       blockNumber: '0x6',
       cumulativeGasUsed: '0x0', // FIXME:
       // effectiveGasPrice: '0x7b3ad33de2',
       status: '0x1',
-      type: '0x0'
+      type: '0x0',
     });
 
     // dex.swap with erc20
@@ -276,11 +276,11 @@ describe('eth_getTransactionReceipt', () => {
           topics: [
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
-            '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743'
+            '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
           ],
           data: '0x0000000000000000000000000000000000000000000000000000000000002710',
           logIndex: '0x0',
-          blockHash: txR.blockHash
+          blockHash: txR.blockHash,
         },
         {
           transactionIndex: '0x0',
@@ -290,18 +290,18 @@ describe('eth_getTransactionReceipt', () => {
           topics: [
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
-            '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743'
+            '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
           ],
           data: '0x00000000000000000000000000000000000000000000000000000000000003e8',
           logIndex: '0x1',
-          blockHash: txR.blockHash
-        }
+          blockHash: txR.blockHash,
+        },
       ],
       blockNumber: '0x14',
       cumulativeGasUsed: '0x0',
       // effectiveGasPrice: '0x8885941ca0',
       status: '0x1',
-      type: '0x0'
+      type: '0x0',
     });
   });
 
@@ -314,7 +314,7 @@ describe('eth_getTransactionReceipt', () => {
     const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
       eth_getTransactionReceipt_karura([KARURA_CONTRACT_CALL_TX_HASH]),
       eth_getTransactionReceipt_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
-      eth_getTransactionReceipt_karura([KARURA_SEND_KAR_TX_HASH])
+      eth_getTransactionReceipt_karura([KARURA_SEND_KAR_TX_HASH]),
     ]);
 
     expect(contractCallRes.status).to.equal(200);
@@ -366,7 +366,7 @@ describe('eth_getLogs', () => {
       // should support different case and array of addresses
       for (const log of allLogs) {
         const res = await eth_getLogs([
-          { address: [log.address.toLocaleUpperCase(), '0x13579'], ...ALL_BLOCK_RANGE_FILTER }
+          { address: [log.address.toLocaleUpperCase(), '0x13579'], ...ALL_BLOCK_RANGE_FILTER },
         ]);
         const expectedLogs = allLogs.filter((l) => l.address === log.address);
         expectLogsEqual(res.data.result, expectedLogs);
@@ -505,13 +505,13 @@ describe('eth_getLogs', () => {
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([
-          { topics: [['ooo', log.topics[0], 'xxx', 'yyy'], null, []], ...ALL_BLOCK_RANGE_FILTER }
+          { topics: [['ooo', log.topics[0], 'xxx', 'yyy'], null, []], ...ALL_BLOCK_RANGE_FILTER },
         ]);
         expectedLogs = allLogs.filter((l) => l.topics[0] === log.topics[0]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([
-          { topics: [...new Array(log.topics.length - 1).fill(null), log.topics.at(-1)], ...ALL_BLOCK_RANGE_FILTER }
+          { topics: [...new Array(log.topics.length - 1).fill(null), log.topics.at(-1)], ...ALL_BLOCK_RANGE_FILTER },
         ]);
         expectedLogs = allLogs.filter((l) => l.topics[log.topics.length - 1] === log.topics.at(-1));
         expectLogsEqual(res.data.result, expectedLogs);
@@ -583,12 +583,12 @@ describe('eth_getLogs', () => {
       /* ---------- invalid tag ---------- */
       res = await eth_getLogs([{ fromBlock: 'polkadot' }]);
       expect(res.data.error.code).to.equal(-32602);
-      expect(res.data.error.message).to.contain("blocktag should be number | hex string | 'latest' | 'earliest'");
+      expect(res.data.error.message).to.contain('blocktag should be number | hex string | \'latest\' | \'earliest\'');
 
       /* ---------- invalid hex string ---------- */
       res = await eth_getLogs([{ toBlock: '0xzzzz' }]);
       expect(res.data.error.code).to.equal(-32602);
-      expect(res.data.error.message).to.contain("blocktag should be number | hex string | 'latest' | 'earliest'");
+      expect(res.data.error.message).to.contain('blocktag should be number | hex string | \'latest\' | \'earliest\'');
 
       /* ---------- invalid params combination ---------- */
       res = await eth_getLogs([{ toBlock: 123, blockHash: '0x12345' }]);
@@ -629,7 +629,7 @@ describe('eth_getTransactionByHash', () => {
       nonce: '0x6',
       from: ADDRESS_ALICE,
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-      value: '0xde0b6b3a7640000'
+      value: '0xde0b6b3a7640000',
     });
 
     res = await eth_getTransactionByHash([tx2.transactionHash]);
@@ -648,7 +648,7 @@ describe('eth_getTransactionByHash', () => {
       nonce: '0x5',
       from: ADDRESS_ALICE,
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-      value: '0xde0b6b3a7640000'
+      value: '0xde0b6b3a7640000',
     });
 
     res = await eth_getTransactionByHash([tx3.transactionHash]);
@@ -667,7 +667,7 @@ describe('eth_getTransactionByHash', () => {
       nonce: '0x2',
       from: ADDRESS_ALICE,
       to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-      value: '0xde0b6b3a7640000'
+      value: '0xde0b6b3a7640000',
     });
 
     // dex.swap with erc20 tokens
@@ -686,7 +686,7 @@ describe('eth_getTransactionByHash', () => {
       nonce: '0x10',
       v: '0x25',
       r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c'
+      s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
     });
   });
 
@@ -699,7 +699,7 @@ describe('eth_getTransactionByHash', () => {
     const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
       eth_getTransactionByHash_karura([KARURA_CONTRACT_CALL_TX_HASH]),
       eth_getTransactionByHash_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
-      eth_getTransactionByHash_karura([KARURA_SEND_KAR_TX_HASH])
+      eth_getTransactionByHash_karura([KARURA_SEND_KAR_TX_HASH]),
     ]);
 
     expect(contractCallRes.status).to.equal(200);
@@ -788,17 +788,17 @@ describe('eth_sendRawTransaction', () => {
         gasLimit: txGasLimit,
         gasPrice: txGasPrice,
         data: deployHelloWorldData,
-        value: BigNumber.from(0)
+        value: BigNumber.from(0),
       };
     });
 
     describe('with legacy EIP-155 signature', () => {
-      it("serialize, parse, and send tx correctly, and receipt's gas info is accurate", async () => {
+      it('serialize, parse, and send tx correctly, and receipt\'s gas info is accurate', async () => {
         const prevBalance = await queryNativeBalance(wallet1.address);
 
         const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         };
 
         const rawTx = await wallet1.signTransaction(unsignedTx);
@@ -827,7 +827,7 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with EIP-1559 signature', () => {
-      it("serialize, parse, and send tx correctly, and receipt's gas info is accurate", async () => {
+      it('serialize, parse, and send tx correctly, and receipt\'s gas info is accurate', async () => {
         const prevBalance = await queryNativeBalance(wallet1.address);
 
         const priorityFee = BigNumber.from(0); // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
@@ -837,7 +837,7 @@ describe('eth_sendRawTransaction', () => {
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: txGasPrice,
-          type: 2
+          type: 2,
         };
 
         const rawTx = await wallet1.signTransaction(unsignedTx);
@@ -866,7 +866,7 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with EIP-712 signature', () => {
-      it("serialize, parse, and send tx correctly, and receipt's gas info is accurate", async () => {
+      it('serialize, parse, and send tx correctly, and receipt\'s gas info is accurate', async () => {
         const prevBalance = await queryNativeBalance(wallet1.address);
 
         const gasLimit = BigNumber.from('210000');
@@ -880,7 +880,7 @@ describe('eth_sendRawTransaction', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -923,18 +923,18 @@ describe('eth_sendRawTransaction', () => {
         gasLimit: txGasLimit,
         gasPrice: txGasPrice,
         data: iface.encodeFunctionData('transfer', [account2.evmAddress, transferAmount]),
-        value: BigNumber.from(0)
+        value: BigNumber.from(0),
       };
     });
 
     describe('with legacy EIP-155 signature', () => {
-      it("has correct balance after transfer, and receipt's gas info is accurate", async () => {
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
         const balance1 = await queryNativeBalance(account1.evmAddress);
         const balance2 = await queryNativeBalance(account2.evmAddress);
 
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
-          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -945,7 +945,7 @@ describe('eth_sendRawTransaction', () => {
         const calculatedTxFee = await getCalculatedTxFee(res.data.result); // this has to come first
         const [_balance1, _balance2] = await Promise.all([
           queryNativeBalance(account1.evmAddress),
-          queryNativeBalance(account2.evmAddress)
+          queryNativeBalance(account2.evmAddress),
         ]);
 
         const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
@@ -957,7 +957,7 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with EIP-1559 signature', () => {
-      it("has correct balance after transfer, and receipt's gas info is accurate", async () => {
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
         const balance1 = await queryNativeBalance(account1.evmAddress);
         const balance2 = await queryNativeBalance(account2.evmAddress);
 
@@ -968,7 +968,7 @@ describe('eth_sendRawTransaction', () => {
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: txGasPrice,
-          type: 2
+          type: 2,
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -980,7 +980,7 @@ describe('eth_sendRawTransaction', () => {
         const calculatedTxFee = await getCalculatedTxFee(res.data.result); // this has to come first
         const [_balance1, _balance2] = await Promise.all([
           queryNativeBalance(account1.evmAddress),
-          queryNativeBalance(account2.evmAddress)
+          queryNativeBalance(account2.evmAddress),
         ]);
 
         const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
@@ -992,7 +992,7 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with EIP-712 signature', () => {
-      it("has correct balance after transfer, and receipt's gas info is accurate", async () => {
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
         const balance1 = await queryNativeBalance(account1.evmAddress);
         const balance2 = await queryNativeBalance(account2.evmAddress);
 
@@ -1007,7 +1007,7 @@ describe('eth_sendRawTransaction', () => {
           gasLimit,
           validUntil,
           storageLimit,
-          type: 0x60
+          type: 0x60,
         };
 
         const sig = signTransaction(account1.privateKey, transferTX);
@@ -1020,7 +1020,7 @@ describe('eth_sendRawTransaction', () => {
         const calculatedTxFee = await getCalculatedTxFee(res.data.result); // this has to come first
         const [_balance1, _balance2] = await Promise.all([
           queryNativeBalance(account1.evmAddress),
-          queryNativeBalance(account2.evmAddress)
+          queryNativeBalance(account2.evmAddress),
         ]);
 
         const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
@@ -1048,14 +1048,14 @@ describe('eth_sendRawTransaction', () => {
             to: account2.evmAddress,
             value: transferAmount,
             data: null,
-            gasPrice
-          }
+            gasPrice,
+          },
         ])
       ).data.result;
 
       return {
         gasPrice,
-        gasLimit
+        gasLimit,
       };
     };
 
@@ -1064,21 +1064,21 @@ describe('eth_sendRawTransaction', () => {
         chainId,
         to: account2.evmAddress,
         data: '0x',
-        value: transferAmount
+        value: transferAmount,
       };
     });
 
     describe('with legacy EIP-155 signature', () => {
-      it("has correct balance after transfer, and receipt's gas info is accurate", async () => {
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
         const [balance1, balance2] = await Promise.all([
           queryEthBalance(account1.evmAddress),
-          queryEthBalance(account2.evmAddress)
+          queryEthBalance(account2.evmAddress),
         ]);
 
         const transferTX: AcalaEvmTX = {
           ...partialNativeTransferTX,
           ...(await estimateGas()),
-          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result
+          nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -1089,7 +1089,7 @@ describe('eth_sendRawTransaction', () => {
         const calculatedTxFee = await getCalculatedTxFee(res.data.result, false); // this has to come first
         const [_balance1, _balance2] = await Promise.all([
           queryEthBalance(account1.evmAddress),
-          queryEthBalance(account2.evmAddress)
+          queryEthBalance(account2.evmAddress),
         ]);
 
         const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
@@ -1101,10 +1101,10 @@ describe('eth_sendRawTransaction', () => {
     });
 
     describe('with EIP-1559 signature', () => {
-      it("has correct balance after transfer, and receipt's gas info is accurate", async () => {
+      it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
         const [balance1, balance2] = await Promise.all([
           queryEthBalance(account1.evmAddress),
-          queryEthBalance(account2.evmAddress)
+          queryEthBalance(account2.evmAddress),
         ]);
 
         const priorityFee = BigNumber.from(0); // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
@@ -1116,7 +1116,7 @@ describe('eth_sendRawTransaction', () => {
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: gasPrice,
-          type: 2
+          type: 2,
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -1128,7 +1128,7 @@ describe('eth_sendRawTransaction', () => {
         const calculatedTxFee = await getCalculatedTxFee(res.data.result, false); // this has to come first
         const [_balance1, _balance2] = await Promise.all([
           queryEthBalance(account1.evmAddress),
-          queryEthBalance(account2.evmAddress)
+          queryEthBalance(account2.evmAddress),
         ]);
 
         const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
@@ -1198,26 +1198,26 @@ describe('eth_call', () => {
         address: '0x0000000000000000000100000000000000000000',
         name: 'Acala',
         symbol: 'ACA',
-        decimals: 12
+        decimals: 12,
       },
       {
         address: '0x0000000000000000000100000000000000000001',
         name: 'Acala Dollar',
         symbol: 'AUSD',
-        decimals: 12
+        decimals: 12,
       },
       {
         address: '0x0000000000000000000100000000000000000002',
         name: 'Polkadot',
         symbol: 'DOT',
-        decimals: 10
+        decimals: 10,
       },
       {
         address: '0x0000000000000000000100000000000000000003',
         name: 'Liquid DOT',
         symbol: 'LDOT',
-        decimals: 10
-      }
+        decimals: 10,
+      },
     ];
 
     const tests = tokenMetaData.map(async ({ address, name, symbol, decimals }) => {
@@ -1254,12 +1254,12 @@ describe('eth_call', () => {
 
     expect((await eth_call([{ to: dexAddr, data }, { hahaha: 13542 }])).data.error).to.deep.equal({
       code: -32602,
-      message: 'invalid argument 1: invalid eip-1898 blocktag, expected to contain blockNumber or blockHash'
+      message: 'invalid argument 1: invalid eip-1898 blocktag, expected to contain blockNumber or blockHash',
     });
 
     expect((await eth_call([{ to: dexAddr, data }, { blockHash: 123 }])).data.error).to.deep.equal({
       code: -32602,
-      message: 'invalid argument 1: invalid block hash, expected type String'
+      message: 'invalid argument 1: invalid block hash, expected type String',
     });
   });
 });
@@ -1275,7 +1275,7 @@ describe('eth_getEthGas', () => {
       eth_getEthGas([{ gasLimit, storageLimit, validUntil }]),
       eth_getEthGas([{ gasLimit, validUntil }]),
       eth_getEthGas([{ storageLimit, validUntil }]),
-      eth_getEthGas([{ validUntil }])
+      eth_getEthGas([{ validUntil }]),
     ]);
 
     for (const res of defaultResults1) {
@@ -1291,8 +1291,8 @@ describe('eth_getEthGas', () => {
       (
         await eth_getEthGas([
           {
-            validUntil: curBlock + 150
-          }
+            validUntil: curBlock + 150,
+          },
         ])
       ).data.result.gasPrice,
       16
@@ -1303,7 +1303,7 @@ describe('eth_getEthGas', () => {
       eth_getEthGas([{ storageLimit }]),
       eth_getEthGas([{ gasLimit, storageLimit }]),
       eth_getEthGas([{}]),
-      eth_getEthGas([])
+      eth_getEthGas([]),
     ]);
 
     for (const res of defaultResults2) {
@@ -1329,7 +1329,7 @@ describe('eth_getEthGas', () => {
     const res = await eth_getEthGas([{ anyParam: 12345 }]);
 
     expect(res.data.error.code).to.equal(-32602);
-    expect(res.data.error.message).to.contain(`parameter can only be 'storageLimit' | 'gasLimit' | 'validUntil'`);
+    expect(res.data.error.message).to.contain('parameter can only be \'storageLimit\' | \'gasLimit\' | \'validUntil\'');
   });
 });
 
@@ -1337,7 +1337,7 @@ describe('eth_getCode', () => {
   const preCompileAddresses = [
     '0x0000000000000000000100000000000000000001', // AUSD
     '0x0000000000000000000200000000000000000001', // LP_ACA_AUSD
-    '0x0000000000000000000000000000000000000803' // DEX
+    '0x0000000000000000000000000000000000000803', // DEX
   ];
 
   const tags = ['latest', 'earliest', 'finalized', 'safe'];
@@ -1377,8 +1377,8 @@ describe('eth_getEthResources', () => {
         {
           from: '0xd2a5c8867d1b3665fb3b2d93d514bd1c73bb2227',
           to: '0x4e3e1108e86c3fafb389629e99bff9c4fa911e54',
-          data: '0x'
-        }
+          data: '0x',
+        },
       ])
     ).data.result;
     expect(rawRes.gasPrice).to.equal('0x2e90f20000');
@@ -1473,7 +1473,7 @@ describe('eth_getStorageAt', () => {
         await eth_getStorageAt_karura([
           contractAddr,
           '0x0000000000000000000000000000000000000000000000000000000000000000',
-          2000000
+          2000000,
         ])
       ).data.result
     ).to.equal('0x55534420436f696e000000000000000000000000000000000000000000000010');
@@ -1514,7 +1514,7 @@ describe('eth_subscribe', () => {
           jsonrpc: '2.0',
           id: 0,
           method: 'eth_subscribe',
-          params: ['newHeads']
+          params: ['newHeads'],
         })
       );
 
@@ -1523,7 +1523,7 @@ describe('eth_subscribe', () => {
           jsonrpc: '2.0',
           id: 1,
           method: 'eth_subscribe',
-          params: ['logs', {}]
+          params: ['logs', {}],
         })
       );
 
@@ -1538,10 +1538,10 @@ describe('eth_subscribe', () => {
               topics: [
                 '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', // transfer
                 null,
-                ['0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421']
-              ]
-            }
-          ]
+                ['0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421'],
+              ],
+            },
+          ],
         })
       );
 
@@ -1554,10 +1554,10 @@ describe('eth_subscribe', () => {
             'logs',
             {
               topics: [
-                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aaaaaaaaaaa' // shouldn't match
-              ]
-            }
-          ]
+                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aaaaaaaaaaa', // shouldn't match
+              ],
+            },
+          ],
         })
       );
     });
@@ -1592,16 +1592,16 @@ describe('eth_subscribe', () => {
       method: 'eth_subscription',
       params: {
         subscription: subId0,
-        result: curBlockInfo
-      }
+        result: curBlockInfo,
+      },
     });
 
     await sleep(10000); // give subql some time to index
     const expectedLog = (
       await eth_getLogs([
         {
-          blockHash: curBlockInfo.hash
-        }
+          blockHash: curBlockInfo.hash,
+        },
       ])
     ).data.result;
 
@@ -1613,8 +1613,8 @@ describe('eth_subscribe', () => {
       method: 'eth_subscription',
       params: {
         subscription: subId1,
-        result: expectedLog[0]
-      }
+        result: expectedLog[0],
+      },
     });
 
     expect(notification2).to.deep.contains({
@@ -1622,8 +1622,8 @@ describe('eth_subscribe', () => {
       method: 'eth_subscription',
       params: {
         subscription: subId2,
-        result: expectedLog[0]
-      }
+        result: expectedLog[0],
+      },
     });
 
     expect(notification3).to.equal(undefined);
@@ -1639,7 +1639,7 @@ describe('eth_subscribe', () => {
           jsonrpc: '2.0',
           id: reqId++,
           method: 'eth_unsubscribe',
-          params: [id]
+          params: [id],
         })
       );
 
@@ -1657,7 +1657,7 @@ describe('eth_subscribe', () => {
       { id: 10, jsonrpc: '2.0', result: true },
       { id: 11, jsonrpc: '2.0', result: true },
       { id: 12, jsonrpc: '2.0', result: true },
-      { id: 13, jsonrpc: '2.0', result: false }
+      { id: 13, jsonrpc: '2.0', result: false },
     ]);
 
     // only sub2 is left
@@ -1682,8 +1682,8 @@ describe('eth_subscribe', () => {
     const expectedLog = (
       await eth_getLogs([
         {
-          blockHash: curBlockInfo.hash
-        }
+          blockHash: curBlockInfo.hash,
+        },
       ])
     ).data.result;
 
@@ -1695,8 +1695,8 @@ describe('eth_subscribe', () => {
       method: 'eth_subscription',
       params: {
         subscription: subId2,
-        result: expectedLog[0]
-      }
+        result: expectedLog[0],
+      },
     });
   });
 });
@@ -1821,9 +1821,9 @@ describe('eth_newFilter', () => {
           topics: [
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             null,
-            ['0x12332', '0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421', '0x78723681eeeee']
-          ]
-        }
+            ['0x12332', '0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421', '0x78723681eeeee'],
+          ],
+        },
       ])
     ).data.result;
     logFilterId2 = (
@@ -1832,8 +1832,8 @@ describe('eth_newFilter', () => {
           // normal log poll
           address: ADDRESS.ACA,
           fromBlock: startBlockNum,
-          toBlock: startBlockNum + 3
-        }
+          toBlock: startBlockNum + 3,
+        },
       ])
     ).data.result;
     logFilterId3 = (
@@ -1841,8 +1841,8 @@ describe('eth_newFilter', () => {
         {
           // empty
           fromBlock: 3,
-          toBlock: 5
-        }
+          toBlock: 5,
+        },
       ])
     ).data.result;
 
@@ -1895,8 +1895,8 @@ describe('eth_newFilter', () => {
       await eth_getLogs([
         {
           fromBlock: curBlockNum - txCount,
-          toBlock: curBlockNum
-        }
+          toBlock: curBlockNum,
+        },
       ])
     ).data.result;
 
@@ -1968,9 +1968,9 @@ describe('eth_getFilterLogs', () => {
           topics: [
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
             null,
-            ['0x12332', '0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421', '0x78723681eeeee']
-          ]
-        }
+            ['0x12332', '0x000000000000000000000000b00cb924ae22b2bbb15e10c17258d6a2af980421', '0x78723681eeeee'],
+          ],
+        },
       ])
     ).data.result;
     logFilterId2 = (
@@ -1979,8 +1979,8 @@ describe('eth_getFilterLogs', () => {
           // normal log poll
           address: ADDRESS.ACA,
           fromBlock: startBlockNum,
-          toBlock: startBlockNum + 3
-        }
+          toBlock: startBlockNum + 3,
+        },
       ])
     ).data.result;
     logFilterId3 = (
@@ -1988,8 +1988,8 @@ describe('eth_getFilterLogs', () => {
         {
           // empty
           fromBlock: 3,
-          toBlock: 5
-        }
+          toBlock: 5,
+        },
       ])
     ).data.result;
 
@@ -2042,8 +2042,8 @@ describe('eth_getFilterLogs', () => {
       await eth_getLogs([
         {
           fromBlock: curBlockNum - txCount,
-          toBlock: curBlockNum
-        }
+          toBlock: curBlockNum,
+        },
       ])
     ).data.result;
 

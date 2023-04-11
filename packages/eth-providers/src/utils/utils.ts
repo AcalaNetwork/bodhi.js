@@ -108,7 +108,7 @@ export const getHealthResult = ({
   cacheInfo,
   curFinalizedHeight,
   ethCallTiming,
-  listenersCount
+  listenersCount,
 }: HealthData): HealthResult => {
   const MAX_IDLE_TIME = 30 * 60; // half an hour
   const MAX_IDLE_BLOCKS = 50; // ~10 minutes
@@ -223,8 +223,8 @@ export const getHealthResult = ({
       ethCallTiming,
       // listeners
       // TODO: currently only print out info, no threshold check
-      listenersCount
-    }
+      listenersCount,
+    },
   };
 };
 
@@ -262,7 +262,7 @@ export const runWithTiming = async <F extends AnyFunction>(
 
   return {
     res,
-    time
+    time,
   };
 };
 
@@ -346,12 +346,12 @@ export const isExtrinsicSuccessEvent = (event: FrameSystemEventRecord): boolean 
 
 export const sortObjByKey =
   <T extends Record<string, any>>(key: string) =>
-  (a: T, b: T) =>
-    !a[key]
-      ? -1
-      : typeof a[key] === 'string'
-      ? (a[key] as string).localeCompare(b[key] as string)
-      : (a[key] as number) - (b[key] as number);
+    (a: T, b: T) =>
+      !a[key]
+        ? -1
+        : typeof a[key] === 'string'
+          ? (a[key] as string).localeCompare(b[key] as string)
+          : (a[key] as number) - (b[key] as number);
 
 export const toBN = (bigNumberis: BigNumberish = 0): BN => {
   if (isU8a(bigNumberis)) {

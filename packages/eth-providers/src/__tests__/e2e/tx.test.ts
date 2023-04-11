@@ -54,7 +54,7 @@ describe('transaction tests', () => {
       validUntil: 360001n,
       storageLimit: 64001n,
       txFeePerGas,
-      storageByteDeposit
+      storageByteDeposit,
     }));
 
     // make sure wallet 1 has balance
@@ -63,7 +63,7 @@ describe('transaction tests', () => {
       to: wallet1.address,
       gasLimit: txGasLimit,
       gasPrice: txGasPrice,
-      value: 100000000000000000000n
+      value: 100000000000000000000n,
     });
   });
 
@@ -81,14 +81,14 @@ describe('transaction tests', () => {
         type: 0,
         from: wallet3.address,
         to: randomWallet.address,
-        value: BigNumber.from(amount)
+        value: BigNumber.from(amount),
       });
 
       await wallet3.sendTransaction({
         type: 0,
         to: randomWallet.address,
         value: BigNumber.from(amount),
-        ...resources
+        ...resources,
       });
 
       expect((await randomWallet.getBalance()).toString()).eq(amount);
@@ -102,12 +102,12 @@ describe('transaction tests', () => {
       const params = await wallet3.populateTransaction({
         type: 0,
         to: randomWallet.address,
-        value: BigNumber.from(amount)
+        value: BigNumber.from(amount),
       });
 
       const data = provider.validSubstrateResources({
         gasLimit: params.gasLimit,
-        gasPrice: params.gasPrice
+        gasPrice: params.gasPrice,
       });
 
       // console.log({
@@ -128,7 +128,7 @@ describe('transaction tests', () => {
           to: wallet2.address,
           value: 1000001,
           gasLimit: txGasLimit,
-          gasPrice: txGasPrice
+          gasPrice: txGasPrice,
         })
       ).to.be.rejectedWith('InvalidDecimals');
     });
@@ -140,7 +140,7 @@ describe('transaction tests', () => {
           to: wallet2.address,
           value: 1000000000n * 10n ** 18n,
           gasLimit: txGasLimit,
-          gasPrice: txGasPrice
+          gasPrice: txGasPrice,
         })
       ).to.be.rejectedWith('outOfFund');
     });
@@ -152,7 +152,7 @@ describe('transaction tests', () => {
           to: Wallet.createRandom().address,
           value: 1000000,
           gasLimit: txGasLimit,
-          gasPrice: txGasPrice
+          gasPrice: txGasPrice,
         })
       ).to.be.rejectedWith('ExistentialDeposit');
     });
@@ -170,7 +170,7 @@ describe('transaction tests', () => {
         gasLimit: txGasLimit,
         gasPrice: txGasPrice,
         data: deployHelloWorldData,
-        value: BigNumber.from(0)
+        value: BigNumber.from(0),
       };
     });
 
@@ -178,7 +178,7 @@ describe('transaction tests', () => {
       it('succeeds', async () => {
         const response = await wallet1.sendTransaction({
           ...partialDeployTx,
-          type: 0
+          type: 0,
         });
         const receipt = await response.wait(0);
 
@@ -192,7 +192,7 @@ describe('transaction tests', () => {
       it('serialize, parse, and send tx correctly', async () => {
         const unsignedTx: AcalaEvmTX = {
           ...partialDeployTx,
-          nonce: await wallet1.getTransactionCount()
+          nonce: await wallet1.getTransactionCount(),
         };
 
         const rawTx = await wallet1.signTransaction(unsignedTx);
@@ -225,7 +225,7 @@ describe('transaction tests', () => {
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: txGasPrice,
-          type: 2
+          type: 2,
         };
 
         const rawTx = await wallet1.signTransaction(unsignedTx);
@@ -266,7 +266,7 @@ describe('transaction tests', () => {
           validUntil,
           storageLimit,
           type: 0x60,
-          accessList: []
+          accessList: [],
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -298,7 +298,7 @@ describe('transaction tests', () => {
           storageLimit,
           tip: 2,
           type: 0x60,
-          accessList: []
+          accessList: [],
         };
 
         const sig = signTransaction(account1.privateKey, unsignEip712Tx);
@@ -339,7 +339,7 @@ describe('transaction tests', () => {
         gasLimit: txGasLimit,
         gasPrice: txGasPrice,
         data: iface.encodeFunctionData('transfer', [account2.evmAddress, transferAmount]),
-        value: BigNumber.from(0)
+        value: BigNumber.from(0),
       };
     });
 
@@ -373,7 +373,7 @@ describe('transaction tests', () => {
 
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
-          nonce: await wallet1.getTransactionCount()
+          nonce: await wallet1.getTransactionCount(),
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -403,7 +403,7 @@ describe('transaction tests', () => {
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
           maxFeePerGas: txGasPrice,
-          type: 2
+          type: 2,
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
@@ -438,7 +438,7 @@ describe('transaction tests', () => {
           validUntil,
           storageLimit,
           type: 0x60,
-          accessList: []
+          accessList: [],
         };
 
         const sig = signTransaction(account1.privateKey, transferTX);

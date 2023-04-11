@@ -35,7 +35,7 @@ it('getTransactionReceipt', async () => {
   const result = await acaContract.functions.transfer(account2.evmAddress, 10n * oneAca, {
     gasLimit: BigNumber.from(34132001n),
     gasPrice: BigNumber.from(200786445289n),
-    type: 0
+    type: 0,
   });
 
   const receipt = await provider.getReceiptAtBlock(result.hash, result.blockHash);

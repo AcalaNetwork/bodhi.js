@@ -54,6 +54,6 @@ export class BlockCache {
     maxCachedBlocks: this.maxCachedBlocks,
     cachedBlocksCount: Object.keys(this.blockHashToReceipts).length,
     txHashToReceipt: this.txHashToReceipt,
-    blockHashToReceipts: this.blockHashToReceipts
+    blockHashToReceipts: this.blockHashToReceipts,
   });
 }

@@ -49,7 +49,7 @@ export const getPartialLog = (evmLog: EvmLog, logIndex: number): PartialLog => {
     address: evmLog.address.toString().toLowerCase(),
     data: evmLog.data.toString().toLowerCase(),
     topics: evmLog.topics.toJSON() as any,
-    logIndex: logIndex
+    logIndex: logIndex,
   };
 };
 
@@ -80,7 +80,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     logsBloom: DUMMY_LOGS_BLOOM,
     // @TODO EIP712
     type: 0,
-    cumulativeGasUsed: BIGNUMBER_ZERO
+    cumulativeGasUsed: BIGNUMBER_ZERO,
   };
 
   switch (event.event.method) {
@@ -94,7 +94,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         gasUsed: BigNumber.from(usedGas?.toString() || 0),
         status: 1,
         logs: getPartialLogs(logs),
-        ...defaultValue
+        ...defaultValue,
       };
     }
     case 'Executed': {
@@ -107,7 +107,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         gasUsed: BigNumber.from(usedGas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 1,
-        ...defaultValue
+        ...defaultValue,
       };
     }
     case 'CreatedFailed': {
@@ -128,7 +128,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         logs: getPartialLogs(logs),
         status: 0,
         exitReason: _exitReason.toString(),
-        ...defaultValue
+        ...defaultValue,
       };
     }
     case 'ExecutedFailed': {
@@ -150,7 +150,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         status: 0,
         exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
-        ...defaultValue
+        ...defaultValue,
       };
     }
   }
@@ -199,7 +199,7 @@ export const parseExtrinsic = (
     input: '0x',
     to: null,
     nonce,
-    ...DUMMY_V_R_S // TODO: get correct VRS
+    ...DUMMY_V_R_S, // TODO: get correct VRS
   };
 
   if (extrinsic.method.section.toUpperCase() !== 'EVM') {
@@ -214,7 +214,7 @@ export const parseExtrinsic = (
     input: args.input || args.init || '0x',
     to: args.action?.call || args.target || null,
     nonce,
-    ...DUMMY_V_R_S
+    ...DUMMY_V_R_S,
   };
 };
 
@@ -226,7 +226,7 @@ const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof n
 export const formatter = new Formatter();
 export const fullReceiptFormatter = {
   ...formatter.formats.receipt,
-  exitReason: (x: any) => x
+  exitReason: (x: any) => x,
 };
 
 export const getOrphanTxReceiptsFromEvents = (
@@ -244,19 +244,19 @@ export const getOrphanTxReceiptsFromEvents = (
         transactionIndex: indexOffset + i,
         transactionHash,
         blockHash,
-        blockNumber
+        blockNumber,
       };
 
       const logs = partialReceipt.logs.map((log) => ({
         ...log,
-        ...txInfo
+        ...txInfo,
       }));
 
       return {
         effectiveGasPrice: BIGNUMBER_ZERO,
         ...partialReceipt,
         ...txInfo,
-        logs
+        logs,
       };
     });
 
@@ -266,12 +266,12 @@ export const getOrphanTxReceiptsFromEvents = (
 export const subqlReceiptAdapter = <T extends TransactionReceiptSubql | null>(
   receipt: T
 ): T extends null ? null : TransactionReceipt =>
-  receipt
-    ? Formatter.check(fullReceiptFormatter, {
+    receipt
+      ? Formatter.check(fullReceiptFormatter, {
         ...receipt,
-        logs: receipt.logs.nodes
+        logs: receipt.logs.nodes,
       })
-    : null;
+      : null;
 
 export const receiptToTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
   const extrinsic = block.block.extrinsics.find((ex) => ex.hash.toHex() === tx.transactionHash);
@@ -288,6 +288,6 @@ export const receiptToTransaction = (tx: FullReceipt, block: SignedBlock): TX =>
     ...extraData,
 
     // overrides `to` in parseExtrinsic, in case of non-evm extrinsic, such as dex.xxx
-    to: tx.to || null
+    to: tx.to || null,
   };
 };

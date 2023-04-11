@@ -21,17 +21,17 @@ describe('errors', () => {
       data: {
         id,
         methodddddddd: 'vdhgkjshdbfksdh',
-        jsonrpc: '2.0'
-      }
+        jsonrpc: '2.0',
+      },
     });
 
     expect(res.data).to.include({
       id,
-      jsonrpc: '2.0'
+      jsonrpc: '2.0',
     });
     expect(res.data.error).to.include({
       code: -32600,
-      message: 'Invalid request'
+      message: 'Invalid request',
     });
   });
 
@@ -40,7 +40,7 @@ describe('errors', () => {
     const [gasRes, chainIdRes, nonce] = await Promise.all([
       eth_getEthGas(),
       eth_chainId(),
-      poorWallet.getTransactionCount('pending')
+      poorWallet.getTransactionCount('pending'),
     ]);
 
     const chainId = Number(chainIdRes.data.result);
@@ -52,7 +52,7 @@ describe('errors', () => {
       value: 0,
       chainId,
       nonce,
-      ...gas
+      ...gas,
     };
     const rawTx = await poorWallet.signTransaction(tx);
 
@@ -63,8 +63,8 @@ describe('errors', () => {
       error: {
         code: -32603,
         message:
-          'internal JSON-RPC error [1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low]. More info: https://evmdocs.acala.network/reference/common-errors'
-      }
+          'internal JSON-RPC error [1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low]. More info: https://evmdocs.acala.network/reference/common-errors',
+      },
     });
 
     res = await eth_sendRawTransaction([rawTx]);
@@ -74,8 +74,8 @@ describe('errors', () => {
       error: {
         code: -32603,
         message:
-          'internal JSON-RPC error [1012: Transaction is temporarily banned]. More info: https://evmdocs.acala.network/reference/common-errors'
-      }
+          'internal JSON-RPC error [1012: Transaction is temporarily banned]. More info: https://evmdocs.acala.network/reference/common-errors',
+      },
     });
   });
 
@@ -83,7 +83,7 @@ describe('errors', () => {
     const [gasRes, chainIdRes, nonce] = await Promise.all([
       eth_getEthGas(),
       eth_chainId(),
-      poorWallet.getTransactionCount('pending')
+      poorWallet.getTransactionCount('pending'),
     ]);
 
     const chainId = Number(chainIdRes.data.result);
@@ -95,7 +95,7 @@ describe('errors', () => {
       value: 123,
       chainId,
       nonce,
-      ...gas
+      ...gas,
     };
     const rawTx = await poorWallet.signTransaction(tx);
     const res = await eth_sendRawTransaction([rawTx]);

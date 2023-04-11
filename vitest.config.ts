@@ -10,10 +10,10 @@ export default defineConfig({
     threads: false,
     coverage: {
       provider: 'c8', // or 'istanbul'
-      reporter: ['text', 'json', 'html']
+      reporter: ['text', 'json', 'html'],
     },
     include: ['packages/**/*.test.ts'],
-    exclude: ['**/e2e/*']
+    exclude: ['**/e2e/*'],
   },
-  plugins: [swc.vite(), tsconfigPaths()]
+  plugins: [swc.vite(), tsconfigPaths()],
 });

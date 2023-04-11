@@ -47,7 +47,7 @@ describe('rpc test', () => {
     const result = await provider.call({
       data: '0x70a0823100000000000000000000000033f9440ff970496a09e391f3773a66f1e98eb13c',
       from: '0x33f9440ff970496a09e391f3773a66f1e98eb13c',
-      to: '0xbffb25b73c6a0581a28988ce34c9f240d525b152'
+      to: '0xbffb25b73c6a0581a28988ce34c9f240d525b152',
     });
 
     expect(result).to.not.be.undefined;

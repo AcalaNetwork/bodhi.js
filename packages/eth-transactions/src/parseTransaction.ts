@@ -57,7 +57,7 @@ function _parseEip712Signature(
       data: tx.data,
       validUntil: tx.validUntil,
       tip: tx.tip,
-      accessList: tx.accessList
+      accessList: tx.accessList,
     },
     joinSignature({ r: tx.r, s: tx.s, v: tx.v })
   );
@@ -85,7 +85,7 @@ export function parseEip712(payload: Uint8Array): AcalaEvmTX {
     data: transaction[7],
     validUntil: handleNumber(transaction[8]),
     tip: handleNumber(transaction[9]),
-    accessList: accessListify(transaction[10])
+    accessList: accessListify(transaction[10]),
   };
 
   // Unsigned EIP-712 Transaction
@@ -104,7 +104,7 @@ export function parseEip712(payload: Uint8Array): AcalaEvmTX {
     value: tx.value,
     data: tx.data,
     tip: tx.tip,
-    accessList: tx.accessList
+    accessList: tx.accessList,
   });
 
   _parseEip712Signature(tx, transaction.slice(EIP712_PARAMS_LENGTH + 1), serializeEip712);
@@ -127,7 +127,7 @@ export function parseTransaction(rawTransaction: BytesLike): AcalaEvmTX {
 
   return logger.throwError(`unsupported transaction type: ${payload[0]}`, Logger.errors.UNSUPPORTED_OPERATION, {
     operation: 'parseTransaction',
-    transactionType: payload[0]
+    transactionType: payload[0],
   });
 }
 
@@ -140,6 +140,6 @@ export function checkSignatureType(rawTransaction: BytesLike): SignatureType {
 
   return logger.throwError(`unsupported transaction type: ${payload[0]}`, Logger.errors.UNSUPPORTED_OPERATION, {
     operation: 'checkSignatureType',
-    transactionType: payload[0]
+    transactionType: payload[0],
   });
 }

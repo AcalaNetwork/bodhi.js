@@ -9,7 +9,7 @@ export const transactionHash = (tx: AcalaEvmTXPayload): string => {
     payload.domain,
     {
       AccessList: payload.types.AccessList,
-      Transaction: payload.types.Transaction
+      Transaction: payload.types.Transaction,
     },
     payload.message
   );

@@ -11,6 +11,6 @@ export enum PROVIDER_ERRORS {
 export const throwNotImplemented = (method: string): never => {
   return logger.throwError(`${method} not implemented`, Logger.errors.NOT_IMPLEMENTED, {
     method,
-    provider: 'eth-providers'
+    provider: 'eth-providers',
   });
 };

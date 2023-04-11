@@ -294,7 +294,7 @@ class Eip1193BridgeImpl {
 
     return {
       gasPrice: hexValue(res.gasPrice),
-      gasLimit: hexValue(res.gasLimit)
+      gasLimit: hexValue(res.gasLimit),
     };
   }
 
@@ -308,7 +308,7 @@ class Eip1193BridgeImpl {
 
     return {
       gasPrice: hexValue(res.gasPrice),
-      gasLimit: hexValue(res.gasLimit)
+      gasLimit: hexValue(res.gasLimit),
     };
   }
 
@@ -471,7 +471,7 @@ class Eip1193BridgeImpl {
         JSON.stringify({
           jsonrpc: '2.0',
           method: 'eth_subscription',
-          params: data
+          params: data,
         })
       );
 

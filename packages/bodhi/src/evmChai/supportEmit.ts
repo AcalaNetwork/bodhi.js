@@ -24,11 +24,11 @@ export function supportEmit(Assertion: Chai.AssertionStatic): void {
           this.assert(
             isNegated,
             `Expected event "${eventName}" to be emitted, but it doesn't` +
-              " exist in the contract. Please make sure you've compiled" +
+              ' exist in the contract. Please make sure you\'ve compiled' +
               ' its latest version before running the test.',
             `WARNING: Expected event "${eventName}" NOT to be emitted.` +
-              " The event wasn't emitted because it doesn't" +
-              " exist in the contract. Please make sure you've compiled" +
+              ' The event wasn\'t emitted because it doesn\'t' +
+              ' exist in the contract. Please make sure you\'ve compiled' +
               ' its latest version before running the test.',
             eventName,
             ''

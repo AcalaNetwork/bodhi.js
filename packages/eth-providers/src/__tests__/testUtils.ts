@@ -13,7 +13,7 @@ export const randReceipt = (blockNumber: number, blockHash: string): FullReceipt
   ({
     blockHash,
     blockNumber,
-    transactionHash: randHash()
+    transactionHash: randHash(),
   } as FullReceipt);
 
 export const mockBlock = (blockNumber: number): MochBlock => {
@@ -23,7 +23,7 @@ export const mockBlock = (blockNumber: number): MochBlock => {
   return {
     blockNumber,
     blockHash,
-    receipts
+    receipts,
   };
 };
 

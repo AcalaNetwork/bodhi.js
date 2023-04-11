@@ -16,7 +16,7 @@ export async function start(): Promise<void> {
     verbose: opts.verbose,
     subqlUrl: opts.subqlUrl,
     maxBlockCacheSize: opts.maxBlockCacheSize,
-    storageCacheSize: opts.storageCacheSize
+    storageCacheSize: opts.storageCacheSize,
   });
 
   const bridge = new Eip1193Bridge(provider);
@@ -26,7 +26,7 @@ export async function start(): Promise<void> {
   const server = new EthRpcServer({
     port: opts.port,
     batchSize: opts.maxBatchSize,
-    httpOnly: opts.httpOnly
+    httpOnly: opts.httpOnly,
   });
 
   server.addRouter(router);
@@ -39,7 +39,7 @@ export async function start(): Promise<void> {
       throw new Error(
         `subql genesis hash doesn\'t match! You might have connected to a wrong subql ${JSON.stringify({
           subqlGenesisHash: genesisHash,
-          providerGenesisHash: provider.genesisHash
+          providerGenesisHash: provider.genesisHash,
         })}`
       );
     }

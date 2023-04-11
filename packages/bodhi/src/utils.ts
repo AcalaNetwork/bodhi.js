@@ -33,7 +33,7 @@ export const getTestUtils = async (
   provider: BodhiProvider;
 }> => {
   const provider = new BodhiProvider({
-    provider: new WsProvider(url)
+    provider: new WsProvider(url),
   });
   await provider.isReady();
 
@@ -55,6 +55,6 @@ export const getTestUtils = async (
   return {
     wallets,
     pairs,
-    provider
+    provider,
   };
 };

@@ -10,7 +10,7 @@ import {
   Provider,
   TransactionReceipt,
   TransactionRequest,
-  TransactionResponse
+  TransactionResponse,
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { AccessListish } from 'ethers/lib/utils';
@@ -57,7 +57,7 @@ import {
   TEN_GWEI,
   U32_MAX,
   ZERO,
-  ZERO_BLOCK_HASH
+  ZERO_BLOCK_HASH,
 } from './consts';
 import {
   BaseLogFilter,
@@ -91,7 +91,7 @@ import {
   sortObjByKey,
   subqlReceiptAdapter,
   throwNotImplemented,
-  toBN
+  toBN,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { ISubmittableResult } from '@polkadot/types/types';
@@ -301,14 +301,14 @@ export abstract class BaseProvider extends AbstractProvider {
     verbose = false,
     maxBlockCacheSize = 200,
     storageCacheSize = 5000,
-    subqlUrl
+    subqlUrl,
   }: BaseProviderOptions = {}) {
     super();
     this.formatter = new Formatter();
     this.eventListeners = {
       [SubscriptionType.NewHeads]: [],
       [SubscriptionType.NewFinalizedHeads]: [],
-      [SubscriptionType.Logs]: []
+      [SubscriptionType.Logs]: [],
     };
     this.pollFilters = { [PollFilterType.NewBlocks]: [], [PollFilterType.Logs]: [] };
     this.safeMode = safeMode;
@@ -513,7 +513,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const result = registry.registry.createTypeUnsafe(outputType, [input], {
       blockHash,
-      isPedantic: !entry.meta.modifier.isOptional
+      isPedantic: !entry.meta.modifier.isOptional,
     });
 
     return result as any as T;
@@ -562,7 +562,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (!this.network) {
       this.network = {
         name: this.api.runtimeVersion.specName.toString(),
-        chainId: await this.chainId()
+        chainId: await this.chainId(),
       };
     }
 
@@ -591,7 +591,7 @@ export abstract class BaseProvider extends AbstractProvider {
       this.api.rpc.chain.getBlock(blockHash),
       this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
       this.queryStorage('timestamp.now', [], blockHash),
-      this.subql?.getAllReceiptsAtBlock(blockHash)
+      this.subql?.getAllReceiptsAtBlock(blockHash),
     ]);
 
     const headerExtended = createHeaderExtended(header.registry, header, validators);
@@ -640,7 +640,7 @@ export abstract class BaseProvider extends AbstractProvider {
       size: block.encodedLength,
       uncles: EMTPY_UNCLES,
 
-      transactions
+      transactions,
     };
   };
 
@@ -660,7 +660,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag)
+      blockHash: this._getBlockHash(blockTag),
     });
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
@@ -690,7 +690,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if ((await blockTag) === 'pending') {
       const [substrateAddress, pendingExtrinsics] = await Promise.all([
         this.getSubstrateAddress(await addressOrName),
-        this.api.rpc.author.pendingExtrinsics()
+        this.api.rpc.author.pendingExtrinsics(),
       ]);
 
       pendingNonce = pendingExtrinsics.filter(
@@ -713,7 +713,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const address = await this._getAddress(addressOrName);
     const [substrateAddress, blockHash] = await Promise.all([
       this.getSubstrateAddress(address),
-      this._getBlockHash(blockTag)
+      this._getBlockHash(blockTag),
     ]);
 
     if (resolvedBlockTag === 'pending') {
@@ -736,7 +736,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag)
+      blockHash: this._getBlockHash(blockTag),
     });
 
     const contractInfo = await this.queryContractInfo(address, blockHash);
@@ -763,7 +763,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { txRequest, blockHash } = await resolveProperties({
       txRequest: getTransactionRequest(_transaction),
-      blockHash: this._getBlockHash(blockTag)
+      blockHash: this._getBlockHash(blockTag),
     });
 
     const transaction =
@@ -778,7 +778,7 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit,
       value: transaction.value?.toBigInt(),
       data: transaction.data,
-      accessList: transaction.accessList
+      accessList: transaction.accessList,
     };
 
     const res = await this._ethCall(callRequest, blockHash);
@@ -810,7 +810,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
       const errInfo = this.api.registry.findMetaError({
         index: new BN(err.module.index),
-        error: new BN(hexToU8a(err.module.error)[0])
+        error: new BN(hexToU8a(err.module.error)[0]),
       });
       const msg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
 
@@ -833,7 +833,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const { address, blockHash, resolvedPosition } = await resolveProperties({
       address: this._getAddress(addressOrName),
       blockHash: this._getBlockHash(blockTag),
-      resolvedPosition: Promise.resolve(position).then((p) => hexValue(p))
+      resolvedPosition: Promise.resolve(position).then((p) => hexValue(p)),
     });
 
     const code = await this.queryStorage('evm.accountStorages', [address, hexZeroPad(resolvedPosition, 32)], blockHash);
@@ -890,13 +890,13 @@ export abstract class BaseProvider extends AbstractProvider {
       maxFeePerGas: null,
       maxPriorityFeePerGas: null,
       lastBaseFeePerGas: null,
-      gasPrice: await this.getGasPrice()
+      gasPrice: await this.getGasPrice(),
     };
   };
 
   _getGasConsts = (): GasConsts => ({
     storageDepositPerByte: (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt(),
-    txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt()
+    txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt(),
   });
 
   estimateGasV1 = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
@@ -928,7 +928,7 @@ export abstract class BaseProvider extends AbstractProvider {
       toBN(BigNumber.from(tx.value ?? 0)),
       toBN(gasLimit),
       toBN(usedStorage.isNegative() ? 0 : usedStorage),
-      (tx.accessList as any) || []
+      (tx.accessList as any) || [],
     ] as const;
 
     const callParams = [tx.to!, ...createParams] as const;
@@ -968,7 +968,7 @@ export abstract class BaseProvider extends AbstractProvider {
     {
       gasLimit,
       storageLimit,
-      validUntil
+      validUntil,
     }: {
       gasLimit?: BigNumberish;
       storageLimit?: BigNumberish;
@@ -998,12 +998,12 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit,
       validUntil,
       storageByteDeposit,
-      txFeePerGas
+      txFeePerGas,
     });
 
     return {
       gasLimit: txGasLimit,
-      gasPrice: txGasPrice
+      gasPrice: txGasPrice,
     };
   };
 
@@ -1015,7 +1015,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _getEthGas = async ({
     gasLimit = 21000000,
     storageLimit = 64100,
-    validUntil: _validUntil
+    validUntil: _validUntil,
   }: {
     gasLimit?: BigNumberish;
     storageLimit?: BigNumberish;
@@ -1033,12 +1033,12 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit,
       validUntil,
       storageByteDeposit,
-      txFeePerGas
+      txFeePerGas,
     });
 
     return {
       gasLimit: txGasLimit,
-      gasPrice: txGasPrice
+      gasPrice: txGasPrice,
     };
   };
 
@@ -1047,7 +1047,7 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   validSubstrateResources = ({
     gasLimit,
-    gasPrice
+    gasPrice,
   }: {
     gasLimit: BigNumberish;
     gasPrice: BigNumberish;
@@ -1063,7 +1063,7 @@ export abstract class BaseProvider extends AbstractProvider {
       txGasPrice: gasPrice,
       txGasLimit: gasLimit,
       storageByteDeposit,
-      txFeePerGas
+      txFeePerGas,
     });
   };
 
@@ -1088,7 +1088,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ..._txRequest,
       value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
       gasLimit: MAX_GAS_LIMIT,
-      storageLimit: MAX_STORAGE_LIMIT
+      storageLimit: MAX_STORAGE_LIMIT,
     };
 
     const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
@@ -1102,7 +1102,7 @@ export abstract class BaseProvider extends AbstractProvider {
       try {
         await this._ethCall({
           ...txRequest,
-          gasLimit: mid
+          gasLimit: mid,
         });
         highest = mid;
 
@@ -1122,14 +1122,14 @@ export abstract class BaseProvider extends AbstractProvider {
     return {
       usedGas: BigNumber.from(usedGas), // actual used gas
       gasLimit: BigNumber.from(highest), // gasLimit to pass execution
-      usedStorage: BigNumber.from(usedStorage)
+      usedStorage: BigNumber.from(usedStorage),
     };
   };
 
   getSubstrateAddress = async (addressOrName: string, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag)
+      blockHash: this._getBlockHash(blockTag),
     });
 
     const substrateAccount = await this.queryStorage<Option<AccountId>>('evmAccounts.accounts', [address], blockHash);
@@ -1155,7 +1155,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const { address, blockHash } = await resolveProperties({
       address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag)
+      blockHash: this._getBlockHash(blockTag),
     });
 
     const accountInfo = await this.queryStorage<Option<EvmAccountInfo>>('evm.accounts', [address], blockHash);
@@ -1216,7 +1216,7 @@ export abstract class BaseProvider extends AbstractProvider {
           txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
           txGasLimit: ethTx.gasLimit || '0',
           storageByteDeposit: storageDepositPerByte,
-          txFeePerGas: txFeePerGas
+          txFeePerGas: txFeePerGas,
         });
 
         gasLimit = params.gasLimit.toBigInt();
@@ -1268,7 +1268,7 @@ export abstract class BaseProvider extends AbstractProvider {
       validUntil,
       tip,
       accessList,
-      v2
+      v2,
     };
   };
 
@@ -1295,29 +1295,29 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit: storageLimit,
       value: ethTx.value.toString(),
       data: ethTx.data,
-      accessList: ethTx.accessList
+      accessList: ethTx.accessList,
     };
 
     await this._ethCall(callRequest);
 
     const extrinsic = v2
       ? this.api.tx.evm.ethCallV2(
-          ethTx.to ? { Call: ethTx.to } : { Create: null },
-          ethTx.data,
-          ethTx.value.toString(),
-          ethTx.gasPrice?.toBigInt(),
-          ethTx.gasLimit.toBigInt(),
-          accessList || []
-        )
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        ethTx.gasPrice?.toBigInt(),
+        ethTx.gasLimit.toBigInt(),
+        accessList || []
+      )
       : this.api.tx.evm.ethCall(
-          ethTx.to ? { Call: ethTx.to } : { Create: null },
-          ethTx.data,
-          ethTx.value.toString(),
-          gasLimit,
-          storageLimit,
-          accessList || [],
-          validUntil
-        );
+        ethTx.to ? { Call: ethTx.to } : { Create: null },
+        ethTx.data,
+        ethTx.value.toString(),
+        gasLimit,
+        storageLimit,
+        accessList || [],
+        validUntil
+      );
 
     const subAddr = await this.getSubstrateAddress(ethTx.from);
 
@@ -1331,12 +1331,12 @@ export abstract class BaseProvider extends AbstractProvider {
       specVersion: 0, // ignored
       transactionVersion: 0, // ignored
       nonce: ethTx.nonce,
-      tip
+      tip,
     });
 
     return {
       extrinsic,
-      transaction: ethTx
+      transaction: ethTx,
     };
   };
 
@@ -1379,7 +1379,7 @@ export abstract class BaseProvider extends AbstractProvider {
             JSON.stringify({
               message: `${errDetails.section}.${errDetails.name}: ${errDetails.docs}`,
               transaction: tx,
-              transactionHash: tx.hash
+              transactionHash: tx.hash,
             })
           );
         }
@@ -1511,7 +1511,7 @@ export abstract class BaseProvider extends AbstractProvider {
         }
 
         return logger.throwArgumentError(
-          "blocktag should be number | hex string | 'latest' | 'earliest' | 'finalized' | 'safe'",
+          'blocktag should be number | hex string | \'latest\' | \'earliest\' | \'finalized\' | \'safe\'',
           'blockTag',
           blockTag
         );
@@ -1575,7 +1575,7 @@ export abstract class BaseProvider extends AbstractProvider {
         }
 
         return logger.throwArgumentError(
-          "blocktag should be number | hex string | 'latest' | 'earliest' | 'finalized' | 'safe'",
+          'blocktag should be number | hex string | \'latest\' | \'earliest\' | \'finalized\' | \'safe\'',
           'blockTag',
           blockTag
         );
@@ -1616,7 +1616,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return isBlockFinalized
       ? blockTag
       : // We can also throw header not found error here, which is more consistent with actual block not found error. However, This error is more informative.
-        logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
+      logger.throwError('SAFE MODE ERROR: target block is not finalized', Logger.errors.UNKNOWN_ERROR, { blockTag });
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
@@ -1705,7 +1705,7 @@ export abstract class BaseProvider extends AbstractProvider {
       transactionIndex: null,
       hash: txHash,
       gasPrice: 0, // TODO: reverse calculate using args.storage_limit if needed
-      ...parseExtrinsic(targetExtrinsic)
+      ...parseExtrinsic(targetExtrinsic),
     };
   };
 
@@ -1752,7 +1752,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const { fromBlock, toBlock, blockHash, address, topics } = rawFilter;
     const filter: SanitizedLogFilter = {
       address,
-      topics
+      topics,
     };
 
     if (blockHash && (fromBlock || toBlock)) {
@@ -1762,7 +1762,7 @@ export abstract class BaseProvider extends AbstractProvider {
         {
           blockHash,
           fromBlock,
-          toBlock
+          toBlock,
         }
       );
     }
@@ -1820,7 +1820,7 @@ export abstract class BaseProvider extends AbstractProvider {
         value: '0x0',
         gasPrice: '0x2f0276000a',
         data: '0x',
-        to: '0x22293227a254a481883ca5e823023633308cb9ca'
+        to: '0x22293227a254a481883ca5e823023633308cb9ca',
       })
     );
 
@@ -1840,7 +1840,7 @@ export abstract class BaseProvider extends AbstractProvider {
       gasPriceTime,
       estimateGasTime,
       getBlockTime,
-      getFullBlockTime
+      getFullBlockTime,
     };
   };
 
@@ -1852,7 +1852,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const listenersCount = {
       newHead: this.eventListeners[SubscriptionType.NewHeads]?.length || 0,
       newFinalizedHead: this.eventListeners[SubscriptionType.NewFinalizedHeads]?.length || 0,
-      logs: this.eventListeners[SubscriptionType.Logs]?.length || 0
+      logs: this.eventListeners[SubscriptionType.Logs]?.length || 0,
     };
 
     return getHealthResult({
@@ -1860,7 +1860,7 @@ export abstract class BaseProvider extends AbstractProvider {
       cacheInfo,
       curFinalizedHeight,
       ethCallTiming,
-      listenersCount
+      listenersCount,
     });
   };
 
@@ -1879,7 +1879,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const eventCallBack = (data: any): void =>
       listener({
         subscription: id,
-        result: data
+        result: data,
       });
 
     if (eventName === SubscriptionType.NewHeads) {
@@ -1916,7 +1916,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const baseFilter = {
       id,
       lastPollBlockNumber: await this.getBlockNumber(),
-      lastPollTimestamp: Date.now() // TODO: add expire
+      lastPollTimestamp: Date.now(), // TODO: add expire
     };
 
     if (filterType === PollFilterType.NewBlocks) {
@@ -1924,7 +1924,7 @@ export abstract class BaseProvider extends AbstractProvider {
     } else if (filterType === PollFilterType.Logs) {
       this.pollFilters[filterType].push({
         ...baseFilter,
-        logFilter
+        logFilter,
       });
     } else {
       return logger.throwError(
@@ -1944,7 +1944,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (UNSUPPORTED_TAGS.includes(fromBlock) || UNSUPPORTED_TAGS.includes(toBlock)) {
       return logger.throwArgumentError('pending/finalized/safe logs not supported', 'fromBlock / toBlock', {
         fromBlock,
-        toBlock
+        toBlock,
       });
     }
 
@@ -1972,7 +1972,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const effectiveFilter = {
       ...sanitizedFilter,
       fromBlock: effectiveFrom,
-      toBlock: effectiveTo
+      toBlock: effectiveTo,
     };
 
     if (!this.subql) {

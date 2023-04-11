@@ -18,7 +18,7 @@ const data = {
   value: 0,
   data: '0xcfae3217',
   type: 96,
-  accessList: []
+  accessList: [],
 };
 
 //[chainId, nonce, gasLimit, to, value, data, eip712sig]
@@ -40,7 +40,7 @@ describe('transaction', () => {
       salt: (parsedTx as any).salt,
       data: parsedTx.data,
       type: parsedTx.type,
-      accessList: parsedTx.accessList
+      accessList: parsedTx.accessList,
     });
 
     expect(parsedTx.hash).equal(ethersHash);
@@ -65,7 +65,7 @@ describe('transaction', () => {
       salt: (parsedTx as any).salt,
       data: parsedTx.data,
       type: parsedTx.type,
-      accessList: parsedTx.accessList
+      accessList: parsedTx.accessList,
     });
   });
 

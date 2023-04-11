@@ -18,19 +18,19 @@ describe('filterLog', () => {
     blockHash: '0x2b77e91ddb94c8a37d21dd22c0fdf53481a97517de3146cd526868f106cf5e60',
     blockNumber: '0x98765',
     data: '0x12345',
-    type: 'mined'
+    type: 'mined',
   };
 
   const log1 = {
     address: addr1,
     topics: [topic1],
-    ...partialLog
+    ...partialLog,
   };
 
   const log2 = {
     address: addr2,
     topics: [topic1, topic2, topic3],
-    ...partialLog
+    ...partialLog,
   };
 
   const goodAddrFilter2 = [
@@ -40,7 +40,7 @@ describe('filterLog', () => {
     [addr2],
     [addr2, addr2],
     [addr2, addr1],
-    [addr2.toLowerCase(), addr1]
+    [addr2.toLowerCase(), addr1],
   ];
 
   const badAddrFilter2 = [addr1, [addr1], [addr3, addr1], addr1.toUpperCase(), [addr3.toLowerCase(), addr1]];
@@ -55,7 +55,7 @@ describe('filterLog', () => {
     [[topic1]],
     [[topic2, topic1, 'xxxxx']],
     [topic1.toUpperCase()],
-    [topic1, null]
+    [topic1, null],
   ];
 
   const badTopicsFilter1 = [[topic2], [topic1, topic2], [null, [topic1]], [null, [topic2]]];
@@ -74,7 +74,7 @@ describe('filterLog', () => {
     [[topic2, topic1, 'xxxxx'], null, topic3, [], 'overflowwwwwwwww'],
     [topic1.toUpperCase(), [topic2, topic1, 'xxxxx'], [], [], [], []],
     [null, topic2, [topic3], []],
-    [[topic2, topic1, 'xxxxx'], null, [topic3], []]
+    [[topic2, topic1, 'xxxxx'], null, [topic3], []],
   ];
 
   const badTopicsFilter2 = [
@@ -83,7 +83,7 @@ describe('filterLog', () => {
     [[topic3], null, []],
     [topic1, topic3],
     [null, ['xxxxx']],
-    [null, null, null, ['xxxxx']]
+    [null, null, null, ['xxxxx']],
   ];
 
   it('when no filter', () => {

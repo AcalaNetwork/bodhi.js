@@ -21,24 +21,24 @@ export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
       EIP712Domain: [
         {
           name: 'name',
-          type: 'string'
+          type: 'string',
         },
         {
           name: 'version',
-          type: 'string'
+          type: 'string',
         },
         {
           name: 'chainId',
-          type: 'uint256'
+          type: 'uint256',
         },
         {
           name: 'salt',
-          type: 'bytes32'
-        }
+          type: 'bytes32',
+        },
       ],
       AccessList: [
         { name: 'address', type: 'address' },
-        { name: 'storageKeys', type: 'uint256[]' }
+        { name: 'storageKeys', type: 'uint256[]' },
       ],
       Transaction: [
         { name: 'action', type: 'string' },
@@ -50,15 +50,15 @@ export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
         { name: 'gasLimit', type: 'uint256' },
         { name: 'storageLimit', type: 'uint256' },
         { name: 'accessList', type: 'AccessList[]' },
-        { name: 'validUntil', type: 'uint256' }
-      ]
+        { name: 'validUntil', type: 'uint256' },
+      ],
     },
     primaryType: 'Transaction' as const,
     domain: {
       name: 'Acala EVM',
       version: '1',
       chainId: tx.chainId,
-      salt: hexlify(tx.salt || '0x')
+      salt: hexlify(tx.salt || '0x'),
     },
     message: {
       action: tx.action || (tx.to ? 'Call' : 'Create'),
@@ -70,7 +70,7 @@ export const createTransactionPayload = (tx: AcalaEvmTXPayload) => {
       gasLimit: BigNumber.from(tx.gasLimit || 0).toString(),
       storageLimit: BigNumber.from(tx.storageLimit || 0).toString(),
       accessList: tx.accessList ? accessListify(tx.accessList) : [],
-      validUntil: BigNumber.from(tx.validUntil || MAX_UINT256).toString()
-    }
+      validUntil: BigNumber.from(tx.validUntil || MAX_UINT256).toString(),
+    },
   };
 };

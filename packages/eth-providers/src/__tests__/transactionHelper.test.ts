@@ -11,14 +11,14 @@ it('transactionHelper', async () => {
     validUntil: 3601n,
     storageLimit: 64001n,
     txFeePerGas,
-    storageByteDeposit
+    storageByteDeposit,
   });
 
   const subParams = calcSubstrateTransactionParams({
     txGasLimit: ethParams.txGasLimit,
     txGasPrice: ethParams.txGasPrice,
     txFeePerGas,
-    storageByteDeposit
+    storageByteDeposit,
   });
 
   expect(subParams.gasLimit.toNumber()).eq(2100001);
