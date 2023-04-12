@@ -14,4 +14,4 @@ ADD . .
 
 RUN yarn install --immutable
 ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "run", "test"]
+CMD ["yarn", "workspace", "@acala-network/eth-providers", "run", "test:CI"]
