@@ -22,12 +22,9 @@
     "test:all": "yarn workspaces foreach -vit run test",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:examples": "yarn workspaces foreach -vit --include \"evm-*\" run build",
-    "test:examples": "yarn workspaces foreach -vit --include \"evm-*\" run test",
+    "build:examples": "yarn workspaces foreach -pvit --include \"evm-waffle-example*\" run build",
+    "test:examples": "yarn workspaces foreach -vit --include \"evm-waffle-example*\" run test",
     "postinstall": "husky install"
-  },
-  "resolutions": {
-    "@acala-network/contracts": "4.3.4"
   },
   "devDependencies": {
     "@swc/core": "^1.3.46",

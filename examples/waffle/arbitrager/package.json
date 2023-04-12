@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "ts-node --transpile-only src/deploy.ts",
-    "build": "echo noop"
+    "test": "ts-node --transpile-only -r tsconfig-paths/register src/deploy.ts",
+    "build": "waffle waffle.json"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "~3.4.2",

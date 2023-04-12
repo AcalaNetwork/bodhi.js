@@ -35,7 +35,7 @@
     "yargs": "16.2.0"
   },
   "devDependencies": {
-    "@acala-network/contracts": "~4.3.4",
+    "@acala-network/contracts": "4.3.4",
     "@ethersproject/contracts": "~5.7.0",
     "@ethersproject/providers": "~5.7.0",
     "@polkadot/types": "8.1.1",

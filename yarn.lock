@@ -70,12 +70,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@acala-network/contracts@npm:~2.3.4":
+  version: 2.3.4
+  resolution: "@acala-network/contracts@npm:2.3.4"
+  checksum: abe826e6700541abcb838ad90f5a5487784073e915492fba3c3749902e83a051fd0e6511a5f260a9e083e6a5ba96e8abf3e7649ea6bcc97f42b6da7de03dbb0b
+  languageName: node
+  linkType: hard
+
 "@acala-network/eth-providers@workspace:*, @acala-network/eth-providers@workspace:packages/eth-providers":
   version: 0.0.0-use.local
   resolution: "@acala-network/eth-providers@workspace:packages/eth-providers"
   dependencies:
     "@acala-network/api": ~4.1.8-9
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@acala-network/eth-transactions": "workspace:*"
     "@acala-network/types": ~4.1.8-9
     "@ethersproject/abstract-provider": ~5.7.0
@@ -125,7 +132,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@acala-network/eth-rpc-adapter@workspace:packages/eth-rpc-adapter"
   dependencies:
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@acala-network/eth-providers": "workspace:*"
     "@acala-network/eth-transactions": "workspace:*"
     "@ethersproject/abstract-provider": ~5.7.0
@@ -7872,7 +7879,7 @@ __metadata:
   resolution: "evm-waffle-example-dex@workspace:examples/waffle/dex"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@polkadot/api": 9.10.3
     "@types/chai": ~4.2.22
     "@types/mocha": ~9.0.0
@@ -7890,7 +7897,7 @@ __metadata:
   resolution: "evm-waffle-example-e2e@workspace:examples/waffle/e2e"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@acala-network/eth-providers": "workspace:*"
     "@openzeppelin/contracts": ^4.4.2
     "@polkadot/api": 9.10.3
@@ -7911,7 +7918,7 @@ __metadata:
   resolution: "evm-waffle-example-erc20@workspace:examples/waffle/erc20"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@openzeppelin/contracts": ~4.4.2
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
@@ -7931,7 +7938,7 @@ __metadata:
   resolution: "evm-waffle-example-evm-accounts@workspace:examples/waffle/evm-accounts"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -7950,7 +7957,7 @@ __metadata:
   resolution: "evm-waffle-example-evm@workspace:examples/waffle/evm"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -7984,7 +7991,7 @@ __metadata:
   resolution: "evm-waffle-example-homa@workspace:examples/waffle/homa"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -8003,7 +8010,7 @@ __metadata:
   resolution: "evm-waffle-example-honzon@workspace:examples/waffle/honzon"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -8022,7 +8029,7 @@ __metadata:
   resolution: "evm-waffle-example-incentives@workspace:examples/waffle/incentives"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -8041,7 +8048,7 @@ __metadata:
   resolution: "evm-waffle-example-oracle@workspace:examples/waffle/oracle"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@types/chai": ~4.2.22
     "@types/mocha": ~9.0.0
     chai: ~4.3.4
@@ -8058,7 +8065,7 @@ __metadata:
   resolution: "evm-waffle-example-scheduler@workspace:examples/waffle/scheduler"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~2.3.4
+    "@acala-network/contracts": 4.3.4
     "@openzeppelin/contracts": ~4.4.2
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
@@ -8078,7 +8085,7 @@ __metadata:
   resolution: "evm-waffle-example-stable-asset@workspace:examples/waffle/stable-asset"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -8097,7 +8104,7 @@ __metadata:
   resolution: "evm-waffle-example-uniswap@workspace:examples/waffle/uniswap"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": 4.3.4
     "@openzeppelin/contracts": ~4.4.2
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1

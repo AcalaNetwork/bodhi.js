@@ -1,6 +1,5 @@
 # =============== waffle-tutorials =============== #
 FROM node:16-alpine as waffle-tutorials
-COPY --from=bodhi-base /app /app
 
 ### required to build some native deps
 RUN apk add git python3 make gcc g++ musl-dev
