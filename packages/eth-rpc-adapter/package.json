@@ -39,8 +39,6 @@
     "@ethersproject/contracts": "~5.7.0",
     "@ethersproject/providers": "~5.7.0",
     "@polkadot/types": "8.1.1",
-    "@rushstack/eslint-config": "~2.5.4",
-    "@rushstack/heft": "~0.44.13",
     "@types/body-parser": "~1.19.1",
     "@types/connect": "~3.4.35",
     "@types/cors": "~2.8.12",

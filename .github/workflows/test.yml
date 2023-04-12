@@ -15,7 +15,7 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  eth-providers:
+  eth-providers: # TODO: remove this, covered by vitest
     runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
@@ -155,7 +155,7 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v2
 
-  bodhi:
+  vitest:
     runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
@@ -170,34 +170,12 @@ jobs:
           node-version: '16.13.1'
 
       - name: install dependencies
-        run: node common/scripts/install-run-rush.js update
+        run: yarn install --immutable
 
       - name: build
-        run: node common/scripts/install-run-rush.js build -t @acala-network/bodhi
+        run: yarn build
 
       - name: test
-        run: cd bodhi && yarn test
+        run: yarn test
         env:
           NPM_TOKEN: doesnt-matter
-
-  eth-transactions:
-    runs-on: ubuntu-latest
-    needs: cancel-prev-runs
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16.13.1'
-
-      - name: install dependencies
-        run: node common/scripts/install-run-rush.js update
-
-      - name: build
-        run: node common/scripts/install-run-rush.js build -t @acala-network/eth-transactions
-      - name: test
-        run: cd eth-transactions && yarn test
