@@ -10,7 +10,8 @@
     "lint": "tsc --noEmit -p tsconfig.json && eslint \"**/*.ts\"",
     "test:e2e": "SKIP_PUBLIC=true mocha -r tsconfig-paths/register src/__tests__/e2e/*",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "dev": "nodemon --watch \"*\" --ext \"js,ts,json\" --ignore \"src/**/*.{spec,test}.ts\" --exec \"ts-node src/index.ts -l\" | pino-pretty"
+    "dev": "nodemon --watch \"*\" --ext \"js,ts,json\" --ignore \"src/**/*.{spec,test}.ts\" --exec \"ts-node src/index.ts -l\" | pino-pretty",
+    "test:CI": "mocha -r tsconfig-paths/register src/__tests__/e2e/* --timeout 300000"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",

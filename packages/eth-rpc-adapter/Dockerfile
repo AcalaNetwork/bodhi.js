@@ -11,15 +11,10 @@ RUN unlink /usr/bin/python && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
-# install rush. should match version in rush.json
-RUN npm install -g @microsoft/rush@5.55.0
-
 COPY . .
-RUN rush update
+RUN yarn install --immutable
+RUN yarn workspace @acala-network/eth-rpc-adapter build
 
-WORKDIR /app/eth-rpc-adapter
-
-RUN rush build -t .
 
 # =============
 
@@ -28,7 +23,7 @@ LABEL maintainer="hello@acala.network"
 
 COPY --from=builder /app /app
 
-WORKDIR /app/eth-rpc-adapter
+WORKDIR /app/packages/eth-rpc-adapter
 
 EXPOSE 8545
 

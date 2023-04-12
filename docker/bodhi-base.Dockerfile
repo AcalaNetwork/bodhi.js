@@ -14,8 +14,6 @@ RUN unlink /usr/bin/python && \
 ### build base packages
 COPY . .
 
-RUN yarn
-
-RUN yarn workspace @acala-network/eth-providers build
-RUN yarn workspace @acala-network/bodhi build
-RUN yarn workspace @acala-network/eth-rpc-adapter build
+RUN yarn install --immutable
+RUN yarn build
+RUN yarn build:examples

@@ -13,7 +13,7 @@ RUN unlink /usr/bin/python && \
 
 
 WORKDIR /app/evm-subql
-
+COPY . .
 RUN yarn && yarn build
 
 # =============

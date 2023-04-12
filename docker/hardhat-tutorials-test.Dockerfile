@@ -1,13 +1,18 @@
 # =============== hardhat-tutorials =============== #
 FROM node:16-alpine as hardhat-tutorials
-COPY --from=bodhi-base /app /app
-RUN apk add bash
-RUN npm install -g @microsoft/rush@5.55.0
 
-WORKDIR /app
-COPY examples/hardhat-tutorials examples/hardhat-tutorials
+### required to build some native deps
+RUN apk add git python3 make gcc g++ musl-dev
 
-WORKDIR /app/examples/hardhat-tutorials
-RUN chmod 777 run.sh
+### required by some legacy deps
+RUN unlink /usr/bin/python && \
+  ln -s /usr/bin/python3 /usr/bin/python && \
+  ln -s /usr/bin/pip3 /usr/bin/pip
+
+COPY examples/hardhat-tutorials /examples/hardhat-tutorials
+
+WORKDIR /examples/hardhat-tutorials
+RUN yarn install
+RUN yarn build
 ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["/bin/bash", "run.sh", "CI_build_and_test"]
+CMD ["yarn", "run", "test:mandala:ci"]
