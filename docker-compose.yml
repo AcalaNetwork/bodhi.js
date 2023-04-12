@@ -96,7 +96,13 @@ services:
   mandala-node:
     image: ghcr.io/acalanetwork/mandala-node:sha-104e277
     ports:
+      - 9933:9933
       - 9944:9944
+    healthcheck:
+      test: "curl --fail -X POST -H \"Content-Type: application/json\" http://localhost:9933 -d \"{\"jsonrpc\": \"2.0\" }\" || exit 1"
+      interval: 10s
+      retries: 10
+      start_period: 30s
     command:
       - --dev
       # - -lruntime=debug
@@ -117,7 +123,8 @@ services:
       dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: feed-tx
     depends_on:
-      - mandala-node
+      mandala-node:
+        condition: service_healthy
 
   feed-tx-step-2:
     build:
@@ -147,8 +154,8 @@ services:
     ports:
       - 8545:8545
     depends_on:
-      - mandala-node
-    restart: always
+      mandala-node:
+        condition: service_healthy
     command:
       - --endpoint=ws://mandala-node:9944
       - --port=8545
@@ -162,8 +169,8 @@ services:
     ports:
       - 8545:8545
     depends_on:
-      - mandala-node
-    restart: always
+      mandala-node:
+        condition: service_healthy
     command:
       - --endpoint=ws://mandala-node:9944
       - --port=8545
@@ -189,7 +196,8 @@ services:
       dockerfile: docker/waffle-examples-test.Dockerfile
       target: waffle-examples
     depends_on:
-      - mandala-node
+      mandala-node:
+        condition: service_healthy
 
   waffle-tutorials-test:
     build:
@@ -197,14 +205,16 @@ services:
       dockerfile: docker/waffle-tutorials-test.Dockerfile
       target: waffle-tutorials
     depends_on:
-      - mandala-node
+      mandala-node:
+        condition: service_healthy
   hardhat-tutorials-test:
     build:
       context: .
       dockerfile: docker/hardhat-tutorials-test.Dockerfile
       target: hardhat-tutorials
     depends_on:
-      - eth-rpc-adapter-server-rich
+      eth-rpc-adapter-server-rich:
+        condition: service_healthy
   truffle-tutorials-test:
     build:
       context: .
@@ -213,4 +223,5 @@ services:
     environment:
       - ENDPOINT_URL=ws://mandala-node:9944
     depends_on:
-      - eth-rpc-adapter-server
+      eth-rpc-adapter-server:
+        condition: service_healthy
