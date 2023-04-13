@@ -61,6 +61,9 @@ services:
       target: eth-rpc-adapter
     ports:
       - 8545:8545
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       feed-tx-step-2:
         condition: service_started
@@ -82,6 +85,9 @@ services:
       context: .
       dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: eth-rpc-adapter-test
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       feed-tx-step-2:
         condition: service_completed_successfully
@@ -122,6 +128,9 @@ services:
       context: .
       dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: feed-tx
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       mandala-node:
         condition: service_healthy
@@ -131,6 +140,9 @@ services:
       context: .
       dockerfile: docker/eth-rpc-adapter-test.Dockerfile
       target: feed-tx-dex-erc20
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       feed-tx:
         condition: service_completed_successfully
@@ -140,6 +152,9 @@ services:
       context: .
       dockerfile: docker/eth-providers-test.Dockerfile
       target: eth-providers-test
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       feed-tx:
         condition: service_completed_successfully
@@ -153,6 +168,9 @@ services:
       target: eth-rpc-adapter
     ports:
       - 8545:8545
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       mandala-node:
         condition: service_healthy
@@ -168,6 +186,9 @@ services:
       target: eth-rpc-adapter
     ports:
       - 8545:8545
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       mandala-node:
         condition: service_healthy
@@ -184,6 +205,9 @@ services:
       target: eth-rpc-adapter
     ports:
       - 8546:8546
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     restart: always
     command:
       - --endpoint=wss://acala-karura-eu-1.bdnodes.net:8443/parachain?auth=4VFR_UEvc8mUAd58z11nSRqp-EBZcqPl14j_MgEm-4E
@@ -195,6 +219,9 @@ services:
       context: .
       dockerfile: docker/waffle-examples-test.Dockerfile
       target: waffle-examples
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
     depends_on:
       mandala-node:
         condition: service_healthy
@@ -212,6 +239,9 @@ services:
       context: .
       dockerfile: docker/hardhat-tutorials-test.Dockerfile
       target: hardhat-tutorials
+    volumes:
+      - ./examples/hardhat-tutorials/:/app
+      - /app/node_modules
     depends_on:
       eth-rpc-adapter-server-rich:
         condition: service_healthy
@@ -222,6 +252,11 @@ services:
       target: truffle-tutorials
     environment:
       - ENDPOINT_URL=ws://mandala-node:9944
+    volumes:
+      - ./examples/truffle-tutorials:/app
     depends_on:
       eth-rpc-adapter-server:
         condition: service_healthy
+
+volumes:
+  node_modules:

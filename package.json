@@ -24,6 +24,11 @@
     "test:watch": "vitest",
     "build:examples": "yarn workspaces foreach -pvit --include \"evm-waffle-example*\" run build",
     "test:examples": "yarn workspaces foreach -vit --include \"evm-waffle-example*\" run test",
+    "e2e:eth-providers": "docker compose up --build -- eth-providers-test",
+    "e2e:eth-rpc-adapter": "docker compose up --build -- eth-rpc-adapter-test",
+    "e2e:waffle": "docker compose up --build -- waffle-examples-test",
+    "e2e:truffle": "docker compose up --build -- truffle-turorials-test",
+    "e2e:hardhat": "docker compose up --build -- hardhat-turorials-test",
     "postinstall": "husky install"
   },
   "devDependencies": {

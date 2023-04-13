@@ -15,7 +15,7 @@ jobs:
         with:
           access_token: ${{ github.token }}
 
-  eth-providers: # TODO: remove this, covered by vitest
+  eth-providers:
     runs-on: [self-hosted, linux]
     needs: cancel-prev-runs
     steps:
@@ -109,7 +109,7 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v2
 
-  vitest:
+  tests:
     runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
@@ -128,5 +128,32 @@ jobs:
 
       - name: test
         run: yarn test
-        env:
-          NPM_TOKEN: doesnt-matter
+
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
+      - name: e2e:eth-providers
+        run: |
+          docker compose down -v
+          yarn e2e:eth-providers
+
+      - name: e2e:eth-rpc-adapter
+        run: |
+          docker compose down -v
+          yarn e2e:eth-rpc-adapter
+      
+      - name: e2e:waffle
+        run: |
+          docker compose down -v
+          yarn e2e:waffle
+
+      - name: e2e:hardhat
+        run: |
+          docker compose down -v
+          yarn e2e:hardhat
+      
+      - name: e2e:truffle
+        run: |
+          docker compose down -v
+          yarn e2e:truffle
+
