@@ -23,8 +23,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
       - name: dump docker logs on failure
@@ -39,8 +39,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
       - name: dump docker logs on failure
@@ -55,6 +55,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
       - name: dump docker logs on failure
@@ -89,6 +91,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
       - name: dump docker logs on failure
@@ -103,6 +107,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
       - name: dump docker logs on failure
@@ -141,7 +147,7 @@ jobs:
         run: |
           docker compose down -v
           yarn e2e:eth-rpc-adapter
-      
+
       - name: e2e:waffle
         run: |
           docker compose down -v
@@ -151,9 +157,13 @@ jobs:
         run: |
           docker compose down -v
           yarn e2e:hardhat
-      
+
       - name: e2e:truffle
         run: |
           docker compose down -v
           yarn e2e:truffle
+
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
 
