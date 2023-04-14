@@ -174,29 +174,34 @@ jobs:
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
       - name: e2e:eth-providers
+        shell: bash
         run: |
           yarn e2e:clean
           yarn e2e:eth-providers
 
       - name: e2e:eth-rpc-adapter
+        shell: bash
         run: |
           yarn e2e:clean
           yarn e2e:eth-rpc-adapter
 
       - name: e2e:waffle
         if: always()
+        shell: bash
         run: |
           yarn e2e:clean
           yarn e2e:waffle
 
       - name: e2e:hardhat
         if: always()
+        shell: bash
         run: |
           yarn e2e:clean
           yarn e2e:hardhat
 
       - name: e2e:truffle
         if: always()
+        shell: bash
         run: |
           yarn e2e:clean
           yarn e2e:truffle
