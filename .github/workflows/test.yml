@@ -23,6 +23,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - run: yarn install --immutable
+      - run: yarn build:examples
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
@@ -39,6 +41,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - run: yarn install --immutable
+      - run: yarn build:examples
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
@@ -55,6 +59,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - run: yarn install --immutable
+      - run: yarn build:examples
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
