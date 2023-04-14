@@ -8066,8 +8066,8 @@ __metadata:
   resolution: "evm-waffle-example-scheduler@workspace:examples/waffle/scheduler"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": 4.3.4
-    "@openzeppelin/contracts": ~4.4.2
+    "@acala-network/contracts": ~2.3.4
+    "@openzeppelin/contracts": ~3.4.2
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22

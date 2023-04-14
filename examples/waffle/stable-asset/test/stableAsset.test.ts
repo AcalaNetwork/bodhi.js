@@ -40,10 +40,7 @@ describe('stable asset', () => {
     stableAssetPredeployed = new ethers.Contract(ADDRESS.STABLE_ASSET, StableAssetABI, wallet);
   });
 
-  after(async () => {
-    await wallet.provider.api.disconnect();
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  });
+  after(async () => wallet.provider.api.disconnect());
 
   it('stable asset get function works', async () => {
     expect(await stableAsset.getStableAssetPoolTokens(0)).to.deep.eq([false, []]);
@@ -93,7 +90,6 @@ describe('stable asset', () => {
       provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000).toBigInt())
     );
     await send(updateBalanceDOT, wallet.substrateAddress);
-
     const updateBalanceLDOT = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'LDOT' }, dollar.mul(1000).toBigInt())
     );
@@ -128,7 +124,5 @@ describe('stable asset', () => {
     await expect(stableAssetPredeployed.stableAssetRedeemMulti(0, [500000, 2], 1000000000))
       .to.emit(stableAssetPredeployed, 'StableAssetRedeemedMulti')
       .withArgs(await wallet.getAddress(), 0, [500000, 2], 1000000000);
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 });

@@ -226,6 +226,12 @@ services:
       mandala-node:
         condition: service_healthy
 
+  ready-for-waffle:
+    image: hello-world
+    depends_on:
+      mandala-node:
+        condition: service_healthy
+
   waffle-tutorials-test:
     build:
       context: .
