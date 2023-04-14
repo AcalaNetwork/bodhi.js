@@ -29,7 +29,7 @@
     "e2e:clean": "docker compose down -v",
     "e2e:eth-providers": "docker compose up --build -- eth-providers-test",
     "e2e:eth-rpc-adapter": "docker compose up --build -- eth-rpc-adapter-test",
-    "e2e:waffle": "docker compose up --build -- ready-for-waffle; yarn test:examples",
+    "e2e:waffle": "docker compose up --build -- ready-for-waffle; yarn run test:examples",
     "e2e:truffle": "docker compose up --build -- truffle-tutorials-test",
     "e2e:hardhat": "docker compose up --build -- hardhat-tutorials-test",
     "postinstall": "husky install"

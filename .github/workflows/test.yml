@@ -191,6 +191,7 @@ jobs:
 
       - name: e2e:waffle
         if: always()
+        shell: bash
         run: |
           yarn e2e:clean
           yarn e2e:waffle
