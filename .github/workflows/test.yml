@@ -143,27 +143,30 @@ jobs:
 
       - name: e2e:eth-providers
         run: |
-          docker compose down -v
+          yarn e2e:clean
           yarn e2e:eth-providers
 
       - name: e2e:eth-rpc-adapter
         run: |
-          docker compose down -v
+          yarn e2e:clean
           yarn e2e:eth-rpc-adapter
 
       - name: e2e:waffle
+        if: always()
         run: |
-          docker compose down -v
+          yarn e2e:clean
           yarn e2e:waffle
 
       - name: e2e:hardhat
+        if: always()
         run: |
-          docker compose down -v
+          yarn e2e:clean
           yarn e2e:hardhat
 
       - name: e2e:truffle
+        if: always()
         run: |
-          docker compose down -v
+          yarn e2e:clean
           yarn e2e:truffle
 
       - name: dump docker logs on failure
