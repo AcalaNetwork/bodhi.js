@@ -4,7 +4,10 @@ FROM bodhi-runner as eth-rpc-adapter
 VOLUME ["/app"]
 WORKDIR /app
 
-HEALTHCHECK --interval=20s --timeout=3s --retries=10 --start-period=10s \
-  CMD curl --fail http://localhost:8545 || exit 1
+ARG healthcheck_port=8545
+ENV HEALTHCHECK_PORT=$healthcheck_port
+
+HEALTHCHECK --interval=10s --timeout=3s --retries=60 --start-period=10s \
+  CMD curl --fail http://localhost:${HEALTHCHECK_PORT} || exit 1
 
 ENTRYPOINT yarn install --immutable; yarn workspace @acala-network/eth-rpc-adapter run start $0 $@

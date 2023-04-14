@@ -15,8 +15,10 @@ services:
       dockerfile: docker/subql-node.Dockerfile
       target: subql-node
     depends_on:
-      - postgres
-      - mandala-node
+      postgres:
+        condition: service_started
+      mandala-node:
+        condition: service_healthy
     ports:
       - 3000:3000
     restart: always
@@ -27,7 +29,6 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
     command:
-      - -f=./
       - --network-endpoint=ws://mandala-node:9944
       - --db-schema=acala_evm
       - --log-level=debug
@@ -63,10 +64,9 @@ services:
       - 8545:8545
     volumes:
       - ./:/app
-      - node_modules:/app/node_modules
+      - yarn_cache:/app/.yarn/cache
+      - eth_rpc_adapter_subql_node_modules:/app/node_modules
     depends_on:
-      feed-tx-step-2:
-        condition: service_started
       postgres:
         condition: service_started
       subquery-node:
@@ -87,14 +87,13 @@ services:
       target: eth-rpc-adapter-test
     volumes:
       - ./:/app
-      - node_modules:/app/node_modules
+      - yarn_cache:/app/.yarn/cache
+      - monorepo_node_modules:/app/node_modules
     depends_on:
-      feed-tx-step-2:
-        condition: service_completed_successfully
       eth-rpc-adapter-server-with-subql:
-        condition: service_started
+        condition: service_healthy
       eth-rpc-adapter-server-karura:
-        condition: service_started
+        condition: service_healthy
 
   # ------------------------------------ #
   # ---------- No Subql Realm ---------- #
@@ -123,30 +122,6 @@ services:
       - --instant-sealing
       - --tmp
 
-  feed-tx:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
-      target: feed-tx
-    volumes:
-      - ./:/app
-      - node_modules:/app/node_modules
-    depends_on:
-      mandala-node:
-        condition: service_healthy
-
-  feed-tx-step-2:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-test.Dockerfile
-      target: feed-tx-dex-erc20
-    volumes:
-      - ./:/app
-      - node_modules:/app/node_modules
-    depends_on:
-      feed-tx:
-        condition: service_completed_successfully
-
   eth-providers-test:
     build:
       context: .
@@ -154,10 +129,12 @@ services:
       target: eth-providers-test
     volumes:
       - ./:/app
-      - node_modules:/app/node_modules
+      - yarn_cache:/app/.yarn/cache
+      - monorepo_node_modules:/app/node_modules
     depends_on:
-      feed-tx:
-        condition: service_completed_successfully
+      mandala-node:
+        condition: service_healthy
+
       # mandala-node is the actual dependency, this is just a work around to delay start
       # so to make sure mandala node is up and *running* before tests start
       # - mandala-node
@@ -170,7 +147,8 @@ services:
       - 8545:8545
     volumes:
       - ./:/app
-      - node_modules:/app/node_modules
+      - yarn_cache:/app/.yarn/cache
+      - monorepo_node_modules:/app/node_modules
     depends_on:
       mandala-node:
         condition: service_healthy
@@ -188,7 +166,8 @@ services:
       - 8545:8545
     volumes:
       - ./:/app
-      - node_modules:/app/node_modules
+      - yarn_cache:/app/.yarn/cache
+      - eth_rpc_adapter_rich_node_modules:/app/node_modules
     depends_on:
       mandala-node:
         condition: service_healthy
@@ -205,9 +184,12 @@ services:
       target: eth-rpc-adapter
     ports:
       - 8546:8546
+    environment:
+      - HEALTHCHECK_PORT=8546
     volumes:
       - ./:/app
-      - node_modules:/app/node_modules
+      - yarn_cache:/app/.yarn/cache
+      - eth_rpc_adapter_karura_node_modules:/app/node_modules
     restart: always
     command:
       - --endpoint=wss://acala-karura-eu-1.bdnodes.net:8443/parachain?auth=4VFR_UEvc8mUAd58z11nSRqp-EBZcqPl14j_MgEm-4E
@@ -221,7 +203,8 @@ services:
       target: waffle-examples
     volumes:
       - ./:/app
-      - node_modules:/app/node_modules
+      - yarn_cache:/app/.yarn/cache
+      - monorepo_node_modules:/app/node_modules
     depends_on:
       mandala-node:
         condition: service_healthy
@@ -247,7 +230,8 @@ services:
       target: hardhat-tutorials
     volumes:
       - ./examples/hardhat-tutorials/:/app
-      - /app/node_modules
+      - hardhat_yarn_cache:/app/.yarn/cache
+      - hardhat_node_modules:/app/node_modules
     depends_on:
       eth-rpc-adapter-server-rich:
         condition: service_healthy
@@ -260,9 +244,19 @@ services:
       - ENDPOINT_URL=ws://mandala-node:9944
     volumes:
       - ./examples/truffle-tutorials:/app
+      - truffle_yarn_cache:/app/.yarn/cache
+      - truffle_node_modules:/app/node_modules
     depends_on:
       eth-rpc-adapter-server:
         condition: service_healthy
 
 volumes:
-  node_modules:
+  monorepo_node_modules:
+  eth_rpc_adapter_subql_node_modules:
+  eth_rpc_adapter_karura_node_modules:
+  eth_rpc_adapter_rich_node_modules:
+  yarn_cache:
+  hardhat_yarn_cache:
+  hardhat_node_modules:
+  truffle_yarn_cache:
+  truffle_node_modules:
