@@ -27,6 +27,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+      - name: Setup yarn
+        run: npm install -g yarn
       - run: yarn install --immutable
       - run: yarn build:examples
       - name: Build bodhi-runner
@@ -49,6 +51,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+      - name: Setup yarn
+        run: npm install -g yarn
       - run: yarn install --immutable
       - run: yarn build:examples
       - name: Build bodhi-runner
@@ -71,6 +75,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+      - name: Setup yarn
+        run: npm install -g yarn
       - run: yarn install --immutable
       - run: yarn build:examples
       - name: Build bodhi-runner
