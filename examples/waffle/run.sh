@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # Run all tests in order
 examples=(
     "arbitrager"
