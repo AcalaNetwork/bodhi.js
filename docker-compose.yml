@@ -64,7 +64,7 @@ services:
       - 8545:8545
     volumes:
       - ./:/app
-      - yarn_cache:/app/.yarn/cache
+      - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
       postgres:
@@ -73,6 +73,8 @@ services:
         condition: service_started
       graphql-engine:
         condition: service_started
+      eth-rpc-adapter-karura-ready:
+        condition: service_completed_successfully
     restart: always
     command:
       - --endpoint=ws://mandala-node:9944
@@ -87,13 +89,11 @@ services:
       target: eth-rpc-adapter-test
     volumes:
       - ./:/app
-      - yarn_cache:/app/.yarn/cache
+      - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
-      eth-rpc-adapter-server-with-subql:
-        condition: service_healthy
-      eth-rpc-adapter-server-karura:
-        condition: service_healthy
+      eth-rpc-adapter-with-subql-ready:
+        condition: service_completed_successfully
 
   # ------------------------------------ #
   # ---------- No Subql Realm ---------- #
@@ -129,7 +129,7 @@ services:
       target: eth-providers-test
     volumes:
       - ./:/app
-      - yarn_cache:/app/.yarn/cache
+      - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
       mandala-node:
@@ -144,7 +144,7 @@ services:
       - 8545:8545
     volumes:
       - ./:/app
-      - yarn_cache:/app/.yarn/cache
+      - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
       mandala-node:
@@ -163,7 +163,7 @@ services:
       - 8545:8545
     volumes:
       - ./:/app
-      - yarn_cache:/app/.yarn/cache
+      - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
       mandala-node:
@@ -185,7 +185,7 @@ services:
       - HEALTHCHECK_PORT=8546
     volumes:
       - ./:/app
-      - yarn_cache:/app/.yarn/cache
+      - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     restart: always
     command:
@@ -200,7 +200,7 @@ services:
       target: waffle-examples
     volumes:
       - ./:/app
-      - yarn_cache:/app/.yarn/cache
+      - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
       mandala-node:
@@ -216,6 +216,18 @@ services:
     image: hello-world
     depends_on:
       eth-rpc-adapter-server:
+        condition: service_healthy
+
+  eth-rpc-adapter-karura-ready:
+    image: hello-world
+    depends_on:
+      eth-rpc-adapter-server-karura:
+        condition: service_healthy
+
+  eth-rpc-adapter-with-subql-ready:
+    image: hello-world
+    depends_on:
+      eth-rpc-adapter-server-with-subql:
         condition: service_healthy
 
   waffle-tutorials-test:
@@ -255,10 +267,7 @@ services:
 
 volumes:
   monorepo_node_modules:
-  eth_rpc_adapter_subql_node_modules:
-  eth_rpc_adapter_karura_node_modules:
-  eth_rpc_adapter_rich_node_modules:
-  yarn_cache:
+  monorepo_yarn_cache:
   hardhat_yarn_cache:
   hardhat_node_modules:
   truffle_yarn_cache:

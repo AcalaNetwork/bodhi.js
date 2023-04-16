@@ -30,7 +30,7 @@ jobs:
       - name: Setup yarn
         run: npm install -g yarn
       - run: yarn install --immutable
-      - run: yarn build:examples
+      - run: yarn build:waffle
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
@@ -54,7 +54,7 @@ jobs:
       - name: Setup yarn
         run: npm install -g yarn
       - run: yarn install --immutable
-      - run: yarn build:examples
+      - run: yarn build:waffle
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
@@ -78,7 +78,7 @@ jobs:
       - name: Setup yarn
         run: npm install -g yarn
       - run: yarn install --immutable
-      - run: yarn build:examples
+      - run: yarn build:waffle
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
@@ -169,15 +169,15 @@ jobs:
       - name: test
         run: yarn test
 
-      - name: build examples
-        run: yarn build:examples
+      - name: build waffle tests
+        run: yarn build:waffle
 
-      - name: Build bodhi-runner
+      - name: build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
       - name: e2e:eth-providers
         run: |
-          yarn e2e:clean
+          docker compose down
           yarn e2e:eth-providers
       - name: dump docker logs on failure
         if: failure()
@@ -185,7 +185,7 @@ jobs:
 
       - name: e2e:eth-rpc-adapter
         run: |
-          yarn e2e:clean
+          docker compose down
           yarn e2e:eth-rpc-adapter
       - name: dump docker logs on failure
         if: failure()
@@ -195,7 +195,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          yarn e2e:clean
+          docker compose down
           yarn e2e:waffle
       - name: dump docker logs on failure
         if: failure()
@@ -204,7 +204,7 @@ jobs:
       - name: e2e:hardhat
         if: always()
         run: |
-          yarn e2e:clean
+          docker compose down
           yarn e2e:hardhat
       - name: dump docker logs on failure
         if: failure()
@@ -213,7 +213,7 @@ jobs:
       - name: e2e:truffle
         if: always()
         run: |
-          yarn e2e:clean
+          docker compose down
           yarn e2e:truffle
       - name: dump docker logs on failure
         if: failure()
