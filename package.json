@@ -32,7 +32,7 @@
     "e2e:eth-rpc-adapter": "docker compose up --build -- eth-rpc-adapter-with-subql-ready; yarn e2e:feed-tx; yarn e2e:feed-tx-2; yarn workspace @acala-network/eth-rpc-adapter run test:CI",
     "e2e:waffle": "yarn start:chain; yarn run test:waffle",
     "e2e:truffle": "yarn start:eth-rpc-adapter; cd examples/truffle-tutorials; yarn install --immutable; yarn test:mandala",
-    "e2e:hardhat": "yarn start:eth-rpc-adapter; cd examples/truffle-tutorials; yarn install --immutable; yarn test:mandala",
+    "e2e:hardhat": "yarn start:eth-rpc-adapter; cd examples/hardhat-tutorials; yarn install --immutable; yarn test:mandala",
     "postinstall": "husky install"
   },
   "devDependencies": {

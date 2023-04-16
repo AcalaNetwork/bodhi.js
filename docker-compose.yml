@@ -207,28 +207,32 @@ services:
         condition: service_healthy
 
   chain-ready:
-    image: hello-world
+    image: alpine:latest
     depends_on:
       mandala-node:
         condition: service_healthy
+    command: echo "⛓️  NODE IS READY 🚀"
 
   eth-rpc-adapter-ready:
-    image: hello-world
+    image: alpine:latest
     depends_on:
       eth-rpc-adapter-server:
         condition: service_healthy
+    command: echo "💈 ETH RPC ADAPTER IS READY 🚀"
 
   eth-rpc-adapter-karura-ready:
-    image: hello-world
+    image: alpine:latest
     depends_on:
       eth-rpc-adapter-server-karura:
         condition: service_healthy
+    command: echo "💈 KARURA ETH RPC ADAPTER IS READY 🚀"
 
   eth-rpc-adapter-with-subql-ready:
-    image: hello-world
+    image: alpine:latest
     depends_on:
       eth-rpc-adapter-server-with-subql:
         condition: service_healthy
+    command: echo "💈 + 🗂️  ETH RPC ADAPTER & SUBQL IS READY 🚀"
 
   waffle-tutorials-test:
     build:
