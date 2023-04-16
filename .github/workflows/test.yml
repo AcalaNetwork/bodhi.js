@@ -150,7 +150,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   tests:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -166,12 +166,15 @@ jobs:
       - name: install dependencies
         run: yarn install --immutable
 
+      - name: lint
+        run: yarn lint
+
       - name: test
         run: yarn test
 
   e2e-tests:
-    runs-on: ubuntu-latest
-    needs: [cancel-prev-runs, tests]
+    runs-on: self-hosted
+    needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3

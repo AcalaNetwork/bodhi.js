@@ -211,7 +211,7 @@ services:
     depends_on:
       mandala-node:
         condition: service_healthy
-    command: echo "⛓️  NODE IS READY 🚀"
+    command: echo "⛓️  MANDALA CHAIN IS READY 🚀"
 
   eth-rpc-adapter-ready:
     image: alpine:latest
