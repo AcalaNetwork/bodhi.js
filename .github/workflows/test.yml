@@ -167,10 +167,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
 
       - name: Setup yarn
         run: npm install -g yarn
+
+      - name: setup yarn cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
 
       - name: install dependencies
         run: yarn install --immutable
@@ -194,10 +199,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
 
       - name: Setup yarn
         run: npm install -g yarn
+
+      - name: setup yarn cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
 
       - name: install dependencies
         run: yarn install --immutable
