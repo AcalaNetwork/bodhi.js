@@ -163,14 +163,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Setup yarn
-        run: npm install -g yarn
-
       - name: setup yarn cache
         uses: actions/setup-node@v3
         with:
@@ -194,14 +186,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Setup yarn
-        run: npm install -g yarn
 
       - name: setup yarn cache
         uses: actions/setup-node@v3
