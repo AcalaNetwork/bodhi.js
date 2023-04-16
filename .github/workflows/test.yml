@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
       - name: Setup yarn
         run: npm install -g yarn
       - run: yarn install --immutable
@@ -51,6 +52,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
       - name: Setup yarn
         run: npm install -g yarn
       - run: yarn install --immutable
@@ -75,6 +77,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
       - name: Setup yarn
         run: npm install -g yarn
       - run: yarn install --immutable
@@ -119,6 +122,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
@@ -139,6 +143,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
       - name: install dependencies
         run: yarn install --immutable
       - name: Build bodhi-runner
@@ -162,6 +167,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
+
+      - name: Setup yarn
+        run: npm install -g yarn
 
       - name: install dependencies
         run: yarn install --immutable
@@ -185,6 +194,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
+          cache: 'yarn'
+
+      - name: Setup yarn
+        run: npm install -g yarn
 
       - name: install dependencies
         run: yarn install --immutable
