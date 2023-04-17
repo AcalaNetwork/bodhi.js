@@ -16,20 +16,28 @@ jobs:
           access_token: ${{ github.token }}
 
   eth-providers:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
       - name: setup node env
         uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'yarn'
-      - name: Setup yarn
-        run: npm install -g yarn
+
       - run: yarn install --immutable
       - run: yarn build:waffle
       - name: Build bodhi-runner
@@ -41,20 +49,28 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   eth-rpc-adaptor:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
       - name: setup node env
         uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'yarn'
-      - name: Setup yarn
-        run: npm install -g yarn
+
       - run: yarn install --immutable
       - run: yarn build:waffle
       - name: Build bodhi-runner
@@ -66,20 +82,28 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   waffle-examples:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
       - name: setup node env
         uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: 'yarn'
-      - name: Setup yarn
-        run: npm install -g yarn
+
       - run: yarn install --immutable
       - run: yarn build:waffle
       - name: Build bodhi-runner
@@ -111,13 +135,21 @@ jobs:
   #       uses: jwalton/gh-docker-logs@v2
 
   hardhat-tutorials:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
       - name: setup node env
         uses: actions/setup-node@v3
         with:
@@ -191,6 +223,9 @@ jobs:
       - name: test
         run: yarn test
 
+      - name: build
+        run: yarn build
+
   e2e-tests:
     runs-on: self-hosted
     needs: cancel-prev-runs
@@ -225,7 +260,6 @@ jobs:
 
       - name: e2e:eth-providers
         run: |
-          docker compose down
           yarn e2e:eth-providers
       - name: dump docker logs on failure
         if: failure()
@@ -240,12 +274,44 @@ jobs:
         if: failure()
         uses: jwalton/gh-docker-logs@v2
 
+
+  tutorials-tests:
+    runs-on: self-hosted
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup yarn cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: install dependencies
+        run: yarn install --immutable
+
+      - name: build waffle tests
+        run: yarn build:waffle
+
+      - name: build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
       - name: e2e:waffle
-        if: always()
         shell: bash
         run: |
-          docker compose down
           yarn e2e:waffle
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
@@ -255,6 +321,7 @@ jobs:
         run: |
           docker compose down
           yarn e2e:hardhat
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
@@ -264,6 +331,7 @@ jobs:
         run: |
           docker compose down
           yarn e2e:truffle
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
