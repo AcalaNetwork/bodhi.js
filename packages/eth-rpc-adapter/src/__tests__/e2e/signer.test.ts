@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+const endpoint = process.env.ENDPOINT_URL || 'ws://localhost:9944';
 
 describe('eth_accounts', () => {
   const signer = new Wallet('0x5a214c9bcb10dfe58af9b349cad6f4564cd6f10d880bdfcf780e5812c3cbc855');

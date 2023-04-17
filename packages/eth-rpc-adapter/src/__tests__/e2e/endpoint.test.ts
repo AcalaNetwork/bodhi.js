@@ -768,7 +768,7 @@ describe('eth_sendRawTransaction', () => {
     txGasLimit = BigNumber.from(34132001);
     txGasPrice = BigNumber.from(200786445289);
 
-    const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+    const endpoint = process.env.ENDPOINT_URL || 'ws://localhost:9944';
     const wsProvider = new WsProvider(endpoint);
     api = await ApiPromise.create({ provider: wsProvider });
 

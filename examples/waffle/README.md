@@ -28,7 +28,7 @@ docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:
 
 run all tests
 ```
-[ENDPOINT_URL=ws://127.0.0.1:9944] ./run.sh test
+[ENDPOINT_URL=ws://localhost:9944] ./run.sh test
 ```
 
 build and run together

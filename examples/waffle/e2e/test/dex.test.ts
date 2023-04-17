@@ -8,7 +8,7 @@ import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 
 use(evmChai);
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+const endpoint = process.env.ENDPOINT_URL || 'ws://localhost:9944';
 
 const evmProvider = EvmRpcProvider.from(endpoint, { localMode: true });
 

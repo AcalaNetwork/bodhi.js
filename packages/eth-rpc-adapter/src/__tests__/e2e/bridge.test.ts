@@ -7,7 +7,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+const endpoint = process.env.ENDPOINT_URL || 'ws://localhost:9944';
 
 chai.use(chaiAsPromised);
 
