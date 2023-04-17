@@ -11,7 +11,7 @@ import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import evmAccounts from '../evmAccounts';
 
 describe('TransactionReceipt', async () => {
-  const endpoint = process.env.ENDPOINT_URL || 'ws://localhost:9944';
+  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   const provider = EvmRpcProvider.from(endpoint);
   await provider.isReady();
 

@@ -23,7 +23,7 @@ chai.use(chaiAsPromised);
 const { expect } = chai;
 
 describe.only('transaction tests', () => {
-  const endpoint = process.env.ENDPOINT_URL || 'ws://localhost:9944';
+  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
   const provider = EvmRpcProvider.from(endpoint);
 
   const account1 = evmAccounts[0];

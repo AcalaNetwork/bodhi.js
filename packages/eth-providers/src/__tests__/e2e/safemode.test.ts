@@ -10,7 +10,7 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 const { expect } = chai;
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://localhost:9944';
+const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 const safeProvider = EvmRpcProvider.from(endpoint, { safeMode: true });
 const provider = EvmRpcProvider.from(endpoint, { safeMode: false });
 
