@@ -21,23 +21,24 @@ describe('connect random', () => {
   });
 });
 
-describe('initilization', () => {
-  it('should already has initial block number and hash', async () => {
-    const provider = EvmRpcProvider.from(ACALA_NODE_URL);
-    await provider.isReady();
+describe('initilization', async () => {
+  const provider = EvmRpcProvider.from(ACALA_NODE_URL);
+  await provider.isReady();
 
+  afterAll(async () => await provider.disconnect());
+
+  it('should already has initial block number and hash', async () => {
     expect(provider.latestBlockNumber).to.gt(-1);
     expect(provider.latestFinalizedBlockNumber).to.gt(-1);
     expect(await provider.getBlockNumber()).to.gt(-1);
     expect(provider.latestBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
     expect(provider.latestFinalizedBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
-
-    await provider.disconnect();
   });
 });
 
-describe('getReceiptAtBlock', () => {
+describe('getReceiptAtBlock', async () => {
   const provider = EvmRpcProvider.from(ACALA_NODE_URL, { subqlUrl: ACALA_SUBQL });
+  await provider.isReady();
 
   const blockHash = '0xf9655bfef23bf7dad14a037aa39758daccfd8dc99a7ce69525f81548068a5946';
   const txHash1 = '0xbb6644b3053d5213f544dc54efb4de0e81b6a88e863aa0cc22d14928b3601725';
@@ -46,7 +47,6 @@ describe('getReceiptAtBlock', () => {
   let receipt1;
   let receipt2;
 
-  beforeAll(async () => await provider.isReady());
   afterAll(async () => await provider.disconnect());
 
   it('should find tx using tx hash or index from subql', async () => {
@@ -74,10 +74,10 @@ describe('getReceiptAtBlock', () => {
 });
 
 // TODO: maybe setup a subway to test
-describe.skip('all cache', () => {
+describe.skip('all cache', async () => {
   const provider = EvmRpcProvider.from(ACALA_NODE_URL);
+  await provider.isReady();
 
-  beforeAll(async () => await provider.isReady());
   afterAll(async () => await provider.disconnect());
 
   it('getBlockHeader at latest block => header cache', async () => {

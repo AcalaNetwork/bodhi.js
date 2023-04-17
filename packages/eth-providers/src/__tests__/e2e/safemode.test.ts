@@ -31,8 +31,8 @@ describe('safe mode', () => {
   beforeEach(async () => await newBlock(true));
 
   it('isSafeMode', async () => {
-    expect(await provider.isSafeMode).to.equal(false);
-    expect(await safeProvider.isSafeMode).to.equal(true);
+    expect(provider.isSafeMode).to.equal(false);
+    expect(safeProvider.isSafeMode).to.equal(true);
   });
 
   it('getBlockNumber', async () => {

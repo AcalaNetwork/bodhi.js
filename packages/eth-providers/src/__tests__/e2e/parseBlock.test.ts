@@ -100,9 +100,9 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
     ]`);
   });
 
-  afterAll(() => {
-    apiK.disconnect();
-    apiA.disconnect();
+  afterAll(async () => {
+    await apiK.disconnect();
+    await apiA.disconnect();
   });
 
   describe.concurrent('transfer kar', async () => {
