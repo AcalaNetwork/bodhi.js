@@ -232,6 +232,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
       - name: e2e:eth-rpc-adapter
+        if: always()
         run: |
           docker compose down
           yarn e2e:eth-rpc-adapter

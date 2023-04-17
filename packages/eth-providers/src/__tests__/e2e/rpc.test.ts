@@ -6,18 +6,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
-
-const provider = EvmRpcProvider.from(endpoint);
-
 chai.use(chaiAsPromised);
 
 const { expect } = chai;
 
-describe('rpc test', () => {
-  beforeAll(async () => {
-    await provider.isReady();
-  });
+describe('rpc test', async () => {
+  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+  const provider = EvmRpcProvider.from(endpoint);
+  await provider.isReady();
 
   afterAll(async () => {
     await provider.disconnect();
