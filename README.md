@@ -2,9 +2,9 @@
 These are some tools and SDKs related to Acala EVM+. It also contains some examples about how to interact with EVM+ with these tools.
 
 Packages:
-- [bodhi.js](./bodhi)
-- [eth-providers](./eth-providers)
-- [eth-rpc-adapter](./eth-rpc-adapter)
+- [bodhi.js](./packages/bodhi)
+- [eth-providers](./packages/eth-providers)
+- [eth-rpc-adapter](./packages/eth-rpc-adapter)
 - [evm-subql](./evm-subql)
 - [examples](./examples)
 
@@ -17,31 +17,28 @@ git submodule update --init --recursive
 - install all dependencies
 ```
 python --version  # first make sure python is installed
-rush update
+yarn
 ```
 
 - build
 ```
-## build all projects
-rush build 
-
-## build all the projects that @acala-network/eth-rpc-adapter depends on, and itself
-rush build -t @acala-network/eth-rpc-adapter
+yarn build
 ```
 
-- run build when the file changes
+- run tests
 ```
-## build and watch all projects
-rush build:watch
-
-## build and watch all the projects that @acala-network/eth-rpc-adapter depends on, and itself
-rush build:watch -t @acala-network/eth-rpc-adapter
+yarn test
 ```
 
-- add pacakge
+## e2e-tests
 ```
-rush add -p <package> --all             # for all projects
-cd <project> && rush add -p <package>   # for this project only
+# build the bodhi-runner image
+docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+yarn e2e:eth-providers
+yarn e2e:eth-rpc-adapter
+yarn e2e:waffle
+yarn e2e:hardhat
+yarn e2e:truffle
 ```
 
 ## Run Tests
@@ -53,8 +50,8 @@ docker compose down -v
 
 - run tests
 ```
-## build the bodhi-base image
-docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+## build the bodhi-runner image
+docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
 ## run any test
 docker compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
@@ -80,27 +77,20 @@ docker logs -f <container_id>           # logs for specific container
 
 ## Docker Images
 - eth-rpc-adapoter
-  - build locally: `docker build . -t eth-rpc-local -f eth-rpc-adapter/Dockerfile`
+  - build locally: `docker build . -t eth-rpc-local -f packages/eth-rpc-adapter/Dockerfile`
   - [public docker images](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 - evm subquery
   - build locally: `docker build . -t evm-subql-local -f evm-subql/Dockerfile`
   - [public docker images](https://hub.docker.com/r/acala/evm-subql/tags)
 
 ## More References
-- This project is managed by [Rushstack](https://github.com/microsoft/rushstack).
-- Most of JSON-RPC methods provided by [eth-rpc-adapter](./eth-rpc-adapter/) are compatible with standard [ETH JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/), for more details please checkout [available RPCs](./eth-rpc-adapter/README.md#available-rpcs).
-- Most of the APIs of [eth-providers](./eth-providers/) is compatible with [ethers.js](https://docs.ethers.io/v5/single-page/) providers.
-
-## Release Workflow
-### manual
-```
-rush publish -p --set-access-level public -n <paste_npm_token_here>
-```
+- Most of JSON-RPC methods provided by [eth-rpc-adapter](./packages/eth-rpc-adapter/) are compatible with standard [ETH JSON-RPC](https://ethereum.org/en/developers/docs/apis/json-rpc/), for more details please checkout [available RPCs](./packages/eth-rpc-adapter/README.md#available-rpcs).
+- Most of the APIs of [eth-providers](./packages/eth-providers/) is compatible with [ethers.js](https://docs.ethers.io/v5/single-page/) providers.
 
 ### CI
 first bump versions and commit
 ```
-node scripts/bump-version.ts
+yarn workspaces foreach -vit --include "@acala-network/*" version <patch, minor, major>
 git add .
 git commit -m "bump v2.x.x"
 ```
