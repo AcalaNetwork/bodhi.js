@@ -1,11 +1,13 @@
 # =============== eth-rpc-adapter =============== #
-FROM node:16-alpine as eth-rpc-adapter
-COPY --from=bodhi-base /app /app
+FROM bodhi-runner as eth-rpc-adapter
 
+VOLUME ["/app"]
 WORKDIR /app
-COPY eth-rpc-adapter ./eth-rpc-adapter
 
-WORKDIR /app/eth-rpc-adapter
+ARG healthcheck_port=8545
+ENV HEALTHCHECK_PORT=$healthcheck_port
 
-# looks like CMD can't read commands from docker-compose.yml, so we use ENTRYPOINT
-ENTRYPOINT ["yarn", "start"]
+HEALTHCHECK --interval=10s --timeout=3s --retries=60 --start-period=10s \
+  CMD curl --fail http://localhost:${HEALTHCHECK_PORT} || exit 1
+
+ENTRYPOINT yarn install --immutable; yarn workspace @acala-network/eth-rpc-adapter run start $0 $@

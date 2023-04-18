@@ -40,9 +40,7 @@ describe('stable asset', () => {
     stableAssetPredeployed = new ethers.Contract(ADDRESS.STABLE_ASSET, StableAssetABI, wallet);
   });
 
-  after(async () => {
-    wallet.provider.api.disconnect();
-  });
+  after(async () => wallet.provider.api.disconnect());
 
   it('stable asset get function works', async () => {
     expect(await stableAsset.getStableAssetPoolTokens(0)).to.deep.eq([false, []]);
@@ -92,7 +90,6 @@ describe('stable asset', () => {
       provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'DOT' }, dollar.mul(1000).toBigInt())
     );
     await send(updateBalanceDOT, wallet.substrateAddress);
-
     const updateBalanceLDOT = provider.api.tx.sudo.sudo(
       provider.api.tx.currencies.updateBalance(wallet.substrateAddress, { Token: 'LDOT' }, dollar.mul(1000).toBigInt())
     );

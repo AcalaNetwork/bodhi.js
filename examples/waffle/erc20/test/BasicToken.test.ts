@@ -26,7 +26,7 @@ describe('BasicToken', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
   });
 
   it('Assigns initial balance', async () => {

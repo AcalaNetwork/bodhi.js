@@ -1,10 +1,8 @@
 # =============== eth-providers-test =============== #
-FROM node:16-alpine as eth-providers-test
-COPY --from=bodhi-base /app /app
+FROM bodhi-runner as eth-providers-test
 
+VOLUME ["/app"]
 WORKDIR /app
-COPY eth-providers ./eth-providers
 
-WORKDIR /app/eth-providers
 ENV ENDPOINT_URL=ws://mandala-node:9944
-CMD ["yarn", "test:CI"]
+CMD yarn install --immutable; yarn e2e:feed-tx; yarn workspace @acala-network/eth-providers run test:CI

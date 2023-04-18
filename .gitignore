@@ -38,7 +38,13 @@ jspm_packages/
 .npm
 
 # Optional yarn cache directory
-.yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # Optional eslint cache
 .eslintcache
@@ -61,20 +67,6 @@ jspm_packages/
 # OS X temporary files
 .DS_Store
 
-# Rush temporary files
-common/deploy/
-common/temp/
-common/autoinstallers/*/.npmrc
-**/.rush/temp/
-
-# Heft
-.heft
-
 dist
 lib
-**/temp
-
-# rush temp file
-common/changes
-**/cache/solcjs
-**/examples/**/build
+tsconfig.tsbuildinfo

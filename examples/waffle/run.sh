@@ -1,43 +1,6 @@
-#!/bin/bash
-
-failed=0
-
-build_all() {
-  sh -c 'rush build \
-    -t evm-waffle-example-arbitrager \
-    -t evm-waffle-example-dex \
-    -t evm-waffle-example-e2e \
-    -t evm-waffle-example-erc20 \
-    -t evm-waffle-example-evm \
-    -t evm-waffle-example-evm-accounts \
-    -t evm-waffle-example-hello-world \
-    -t evm-waffle-example-homa \
-    -t evm-waffle-example-honzon \
-    -t evm-waffle-example-incentives \
-    -t evm-waffle-example-oracle \
-    -t evm-waffle-example-scheduler \
-    -t evm-waffle-example-stable-asset'
-}
-
-rebuild_all() {
-  sh -c 'rush rebuild \
-    -t evm-waffle-example-arbitrager \
-    -t evm-waffle-example-dex \
-    -t evm-waffle-example-e2e \
-    -t evm-waffle-example-erc20 \
-    -t evm-waffle-example-evm \
-    -t evm-waffle-example-evm-accounts \
-    -t evm-waffle-example-hello-world \
-    -t evm-waffle-example-homa \
-    -t evm-waffle-example-honzon \
-    -t evm-waffle-example-incentives \
-    -t evm-waffle-example-oracle \
-    -t evm-waffle-example-scheduler \
-    -t evm-waffle-example-stable-asset'
-}
-
-test_all() {
-  examples=(
+#!/usr/bin/env bash
+# Run all tests in order
+examples=(
     "arbitrager"
     "dex"
     "e2e"
@@ -52,39 +15,19 @@ test_all() {
     "stable-asset"
     "homa"
     "uniswap"
-  )
+)
 
-  ROOT=$(pwd)
-
-  for e in "${examples[@]}"
+for e in "${examples[@]}"
   do
     echo "--------------- testing ${e} ---------------"
 
-    cd  "${ROOT}/${e}"
-
-    if ! yarn test; then
+    if ! yarn workspace evm-waffle-example-${e} run test; then
       ((failed=failed+1))
     fi
 
-    echo ""
+    echo "--------------- done testing ${e} ---------------"
   done
 
-  echo "+++++++++++++++++++++++"
-  echo "test failed: $failed"
-  echo "+++++++++++++++++++++++"
-}
-
-build_and_test() {
-  build_all
-  test_all
-
-  exit $failed
-}
-
-case "$1" in
-  "build") build_all ;;
-  "rebuild") rebuild_all ;;
-  "test") test_all ;;
-  "build_and_test") build_and_test ;;
-  *) build_and_test ;;
-esac
+echo "+++++++++++++++++++++++"
+echo "test failed: $failed"
+echo "+++++++++++++++++++++++"

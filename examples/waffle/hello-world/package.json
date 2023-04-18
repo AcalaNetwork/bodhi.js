@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "waffle",
-    "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.ts",
+    "test": "NODE_ENV=test mocha -r ts-node/register/transpile-only -r tsconfig-paths/register --timeout 50000 --no-warnings test/**/*.test.ts",
     "deploy": "ts-node --transpile-only src/deploy.ts"
   },
   "dependencies": {

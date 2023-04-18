@@ -16,85 +16,100 @@ jobs:
           access_token: ${{ github.token }}
 
   eth-providers:
-    runs-on: [self-hosted, linux]
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: prune outdated docker stuff
-        run: yes | docker system prune --filter 'until=240h'
-      - name: check docker info before cleaning
-        run: docker ps && docker volume ls
-      - name: clean up docker process and volumes
-        run: docker compose down -v
-      - name: check docker info after cleaning
-        run: docker ps && docker volume ls
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup node env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - run: yarn install --immutable
+      - run: yarn build:waffle
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
-      - name: clean up after tests finished
-        run: docker compose down -v
-      - name: check docker info after cleaning
-        run: docker ps && docker volume ls
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
 
   eth-rpc-adaptor:
-    runs-on: [self-hosted, linux]
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: prune outdated docker stuff
-        run: yes | docker system prune --filter 'until=240h'
-      - name: check docker info before cleaning
-        run: docker ps && docker volume ls
-      - name: clean up docker process and volumes
-        run: docker compose down -v
-      - name: check docker info after cleaning
-        run: docker ps && docker volume ls
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup node env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - run: yarn install --immutable
+      - run: yarn build:waffle
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
-      - name: clean up after tests finished
-        run: docker compose down -v
-      - name: check docker info after cleaning
-        run: docker ps && docker volume ls
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
 
   waffle-examples:
-    runs-on: [self-hosted, linux]
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: prune outdated docker stuff
-        run: yes | docker system prune --filter 'until=240h'
-      - name: check docker info before cleaning
-        run: docker ps && docker volume ls
-      - name: clean up docker process and volumes
-        run: docker compose down -v
-      - name: check docker info after cleaning
-        run: docker ps && docker volume ls
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup node env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - run: yarn install --immutable
+      - run: yarn build:waffle
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
-      - name: clean up after tests finished
-        run: docker compose down -v
-      - name: check docker info after cleaning
-        run: docker ps && docker volume ls
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
@@ -120,17 +135,28 @@ jobs:
   #       uses: jwalton/gh-docker-logs@v2
 
   hardhat-tutorials:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: check docker info before cleaning
-        run: docker ps && docker volume ls
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup node env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
       - name: dump docker logs on failure
@@ -138,24 +164,42 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   truffle-tutorials:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: check docker info before cleaning
-        run: docker ps && docker volume ls
-      - name: build bodhi base # if use self-hosted machine can utilize cache
-        run: docker build . -t bodhi-base -f docker/bodhi-base.Dockerfile
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup node env
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: install dependencies
+        run: yarn install --immutable
+
+      - name: Build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
       - name: test
-        run: docker compose up --abort-on-container-exit --exit-code-from=truffle-tutorials-test --build -- truffle-tutorials-test
+        run: yarn e2e:truffle
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
 
-  bodhi:
+  tests:
     runs-on: ubuntu-latest
     needs: cancel-prev-runs
     steps:
@@ -164,24 +208,26 @@ jobs:
         with:
           submodules: recursive
 
-      - name: setup node env
+      - name: setup yarn cache
         uses: actions/setup-node@v3
         with:
-          node-version: '16.13.1'
+          node-version: 16
+          cache: 'yarn'
 
       - name: install dependencies
-        run: node common/scripts/install-run-rush.js update
+        run: yarn install --immutable
 
-      - name: build
-        run: node common/scripts/install-run-rush.js build -t @acala-network/bodhi
+      - name: lint
+        run: yarn lint
 
       - name: test
-        run: cd bodhi && yarn test
-        env:
-          NPM_TOKEN: doesnt-matter
+        run: yarn test
 
-  eth-transactions:
-    runs-on: ubuntu-latest
+      - name: build
+        run: yarn build
+
+  e2e-tests:
+    runs-on: self-hosted
     needs: cancel-prev-runs
     steps:
       - name: checkout
@@ -189,15 +235,104 @@ jobs:
         with:
           submodules: recursive
 
-      - name: setup node env
+      - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: '16.13.1'
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup yarn cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
 
       - name: install dependencies
-        run: node common/scripts/install-run-rush.js update
+        run: yarn install --immutable
 
-      - name: build
-        run: node common/scripts/install-run-rush.js build -t @acala-network/eth-transactions
-      - name: test
-        run: cd eth-transactions && yarn test
+      - name: build waffle tests
+        run: yarn build:waffle
+
+      - name: build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
+      - name: e2e:eth-providers
+        run: |
+          yarn e2e:eth-providers
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+
+      - name: e2e:eth-rpc-adapter
+        if: always()
+        run: |
+          docker compose down
+          yarn e2e:eth-rpc-adapter
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+
+
+  tutorials-tests:
+    runs-on: self-hosted
+    needs: cancel-prev-runs
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Setup yarn
+        run: npm install -g yarn
+
+      - name: setup yarn cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: install dependencies
+        run: yarn install --immutable
+
+      - name: build waffle tests
+        run: yarn build:waffle
+
+      - name: build bodhi-runner
+        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
+      - name: e2e:waffle
+        shell: bash
+        run: |
+          yarn e2e:waffle
+
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+
+      - name: e2e:hardhat
+        if: always()
+        run: |
+          docker compose down
+          yarn e2e:hardhat
+
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+
+      - name: e2e:truffle
+        if: always()
+        run: |
+          docker compose down
+          yarn e2e:truffle
+
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+

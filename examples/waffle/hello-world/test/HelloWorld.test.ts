@@ -18,7 +18,7 @@ describe('HelloWorld', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
   });
 
   it('returns the right value after the contract is deployed', async () => {

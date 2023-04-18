@@ -11,16 +11,9 @@ RUN unlink /usr/bin/python && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     ln -s /usr/bin/pip3 /usr/bin/pip
 
-# install rush. should match version in rush.json
-RUN npm install -g @microsoft/rush@5.55.0
-
-COPY . .
-RUN rush update
-
-RUN rush build -t @acala-network/eth-providers
 
 WORKDIR /app/evm-subql
-
+COPY . .
 RUN yarn && yarn build
 
 # =============

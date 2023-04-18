@@ -1,14 +1,12 @@
 {
-  "compilerOptions": {
-    "declaration": true,
-    "esModuleInterop": true,
-    "lib": ["ES2018"],
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "outDir": "dist",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "target": "ES2018"
-  }
+  "extends": "../../../tsconfig.base.json",
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../../../packages/bodhi",
+    },
+    {
+      "path": "../../../packages/eth-providers",
+    }
+  ]
 }

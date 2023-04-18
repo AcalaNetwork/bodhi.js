@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
+    "test": "NODE_ENV=test mocha -r ts-node/register/transpile-only -r tsconfig-paths/register --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
     "build": "waffle waffle.json"
   },
   "devDependencies": {
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@acala-network/bodhi": "workspace:*",
-    "@acala-network/contracts": "~4.3.4",
+    "@acala-network/contracts": "4.3.4",
     "@polkadot/api": "9.10.3"
   }
 }

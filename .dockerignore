@@ -5,17 +5,10 @@
 bodhi.Dockerfile
 docker-compose.yml
 
-common/deploy/
-common/autoinstallers/*/.npmrc
-common/changes
-common/temp
-
 **/node_modules
-**/.rush/temp/
 **/dist
 **/lib
 **/cache/solcjs
 **/temp
-**/build
 **/Dockerfile
 **/*.log

@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: 'recursive'
 
@@ -20,18 +20,37 @@ jobs:
         run: git config --local user.name Bodhibot
 
       - name: setup node env
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '14.x'
+          node-version: 16
+          cache: 'yarn'
           registry-url: 'https://registry.npmjs.org'
 
       - name: install dependencies
-        run: node common/scripts/install-run-rush.js update
+        run: yarn install --immutable
 
       - name: build packages
-        run: node common/scripts/install-run-rush.js build --verbose --to @acala-network/bodhi --to @acala-network/eth-rpc-adapter
+        run: yarn build
 
-      - name: publish
-        run: node common/scripts/install-run-rush.js publish --apply --publish --include-all --target-branch master --add-commit-details --set-access-level public -n ${{ secrets.NPM_AUTH_TOKEN }}
+      - run: |
+          echo npmAuthToken: "\${NPM_AUTH_TOKEN}" >> ./.yarnrc.yml
+
+      - name: publish @acala-network/eth-transactions
+        run: yarn workspace @acala-network/eth-transactions npm publish --tolerate-republish --access public
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: publish @acala-network/eth-providers
+        run: yarn workspace @acala-network/eth-providers npm publish --tolerate-republish --access public
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: publish @acala-network/eth-rpc-adapter
+        run: yarn workspace @acala-network/eth-rpc-adapter npm publish --tolerate-republish --access public
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: publish @acala-network/bodhi
+        run: yarn workspace @acala-network/bodhi npm publish --tolerate-republish --access public
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}

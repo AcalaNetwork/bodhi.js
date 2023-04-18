@@ -33,8 +33,8 @@ describe('dex test', () => {
   });
 
   after(async () => {
-    provider.api.disconnect();
-    evmProvider.api.disconnect();
+    await provider.api.disconnect();
+    await evmProvider.api.disconnect();
   });
 
   it('dex e2e test', async () => {

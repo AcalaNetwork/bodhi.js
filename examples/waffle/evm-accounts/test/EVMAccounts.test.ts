@@ -28,7 +28,7 @@ describe('EVM Accounts', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
   });
 
   it('evm accounts works', async () => {

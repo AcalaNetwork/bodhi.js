@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "lib": ["es2020"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "target": "es2020",
+    "skipLibCheck": true,
+    "strict": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "declaration": true,
+    "resolveJsonModule": true,
+    "types": ["node", "@polkadot/types-known", "@polkadot/types-codec"],
+    "baseUrl": ".",
+    "composite": true,
+    "paths": {
+      "@acala-network/bodhi": ["packages/bodhi/src"],
+      "@acala-network/bodhi/*": ["packages/bodhi/src/*"],
+      "@acala-network/eth-providers": ["packages/eth-providers/src"],
+      "@acala-network/eth-providers/*": ["packages/eth-providers/src/*"],
+      "@acala-network/eth-rpc-adapter": ["packages/eth-rpc-adapter/src"],
+      "@acala-network/eth-rpc-adapter/*": ["packages/eth-rpc-adapter/src/*"],
+      "@acala-network/eth-transactions": ["packages/eth-transactions/src"],
+      "@acala-network/eth-transactions/*": ["packages/eth-transactions/src/*"]
+    }
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "projectReferences": true
+  }
+}

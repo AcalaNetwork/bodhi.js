@@ -4,8 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
-    "test-dex": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/dex.test.ts",
+    "test": "NODE_ENV=test mocha -r ts-node/register/transpile-only -r tsconfig-paths/register --timeout 50000 --no-warnings test/**/*.test.{js,ts}",
+    "test-dex": "NODE_ENV=test mocha -r ts-node/register/transpile-only -r tsconfig-paths/register --timeout 50000 --no-warnings test/dex.test.ts",
     "build": "waffle waffle.json"
   },
   "devDependencies": {
@@ -20,10 +20,10 @@
   },
   "dependencies": {
     "@acala-network/bodhi": "workspace:*",
+    "@acala-network/contracts": "4.3.4",
     "@acala-network/eth-providers": "workspace:*",
-    "@acala-network/contracts": "~4.3.4",
     "@openzeppelin/contracts": "^4.4.2",
-    "@polkadot/keyring": "^10.2.1",
-    "@polkadot/api": "9.10.3"
+    "@polkadot/api": "9.10.3",
+    "@polkadot/keyring": "^10.2.1"
   }
 }

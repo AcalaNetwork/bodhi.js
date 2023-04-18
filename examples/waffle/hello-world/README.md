@@ -261,7 +261,7 @@ To be able to run the tests, we will add an additional script to the `package.js
 to the `scripts` section of your `package.json`:
 
 ```
-    "test": "export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.ts"
+    "test": "NODE_ENV=test mocha -r ts-node/register/transpile-only -r tsconfig-paths/register --timeout 50000 --no-warnings test/**/*.test.ts"
 ```
 
 This script can be run using `yarn test` and pattern matches all the files in the `test` repository
@@ -276,7 +276,7 @@ yarn test
 
 yarn run v1.22.15
 warning ../../../../../package.json: No license field
-$ export NODE_ENV=test && mocha -r ts-node/register/transpile-only --timeout 50000 --no-warnings test/**/*.test.ts
+$ NODE_ENV=test mocha -r ts-node/register/transpile-only -r tsconfig-paths/register --timeout 50000 --no-warnings test/**/*.test.ts
 
 
   HelloWorld

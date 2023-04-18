@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "test": "ts-node --transpile-only src/deploy-and-trade.ts",
+    "test": "ts-node --transpile-only -r tsconfig-paths/register src/deploy-and-trade.ts",
     "build": ""
   },
   "devDependencies": {
@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@acala-network/bodhi": "workspace:*",
-    "@acala-network/contracts": "~4.3.4",
-    "@polkadot/keyring": "^10.2.1",
-    "@polkadot/api": "9.10.3"
+    "@acala-network/contracts": "4.3.4",
+    "@polkadot/api": "9.10.3",
+    "@polkadot/keyring": "^10.2.1"
   }
 }

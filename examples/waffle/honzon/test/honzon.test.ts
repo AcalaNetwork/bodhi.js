@@ -42,7 +42,8 @@ describe('honzon', () => {
   });
 
   after(async () => {
-    wallet.provider.api.disconnect();
+    await wallet.provider.api.disconnect();
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 
   it('honzon works', async () => {
@@ -114,5 +115,7 @@ describe('honzon', () => {
     await expect(honzonPredeployed.closeLoanByDex(ADDRESS.DOT, dollar.mul(100)))
       .to.emit(honzonPredeployed, 'ClosedLoanByDex')
       .withArgs(await wallet.getAddress(), ADDRESS.DOT);
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   });
 });
