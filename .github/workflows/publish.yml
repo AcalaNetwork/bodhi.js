@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - update_publish_ci
 
 jobs:
   publish:
@@ -31,9 +32,6 @@ jobs:
 
       - name: build packages
         run: yarn build
-
-      - run: |
-          echo npmAuthToken: "\${NPM_AUTH_TOKEN}" >> ./.yarnrc.yml
 
       - name: publish @acala-network/eth-transactions
         run: yarn workspace @acala-network/eth-transactions npm publish --tolerate-republish --access public
