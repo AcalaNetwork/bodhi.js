@@ -69,3 +69,7 @@ start().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+process.on('SIGINT', function() {
+  process.exit();
+});

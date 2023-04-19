@@ -13,7 +13,7 @@ RUN unlink /usr/bin/python && \
 
 COPY . .
 RUN yarn install --immutable
-RUN yarn workspace @acala-network/eth-rpc-adapter build
+RUN yarn workspace @acala-network/eth-rpc-adapter ncc:pack
 
 
 # =============
@@ -21,9 +21,9 @@ RUN yarn workspace @acala-network/eth-rpc-adapter build
 FROM node:16-alpine
 LABEL maintainer="hello@acala.network"
 
-COPY --from=builder /app /app
+COPY --from=builder /app/packages/eth-rpc-adapter/dist /app
 
-WORKDIR /app/packages/eth-rpc-adapter
+WORKDIR /app
 
 EXPOSE 8545
 
@@ -31,4 +31,4 @@ USER node
 
 ENV NODE_ENV=production
 
-CMD ["yarn", "start"]
+ENTRYPOINT ["node", "index.js" ]
