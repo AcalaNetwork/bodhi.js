@@ -1,10 +1,16 @@
-version: '3'
+version: '3.9'
 
 services:
   mandala-node:
     image: ghcr.io/acalanetwork/mandala-node:sha-104e277
     ports:
+      - 9933:9933
       - 9944:9944
+    healthcheck:
+      test: "curl --fail -X POST -H \"Content-Type: application/json\" http://localhost:9933 -d \"{\"jsonrpc\": \"2.0\" }\" || exit 1"
+      interval: 10s
+      retries: 10
+      start_period: 30s
     command:
       - --dev
       - -lruntime=debug
@@ -31,8 +37,10 @@ services:
   subquery-node:
     image: onfinality/subql-node:v1.17.0
     depends_on:
-      - postgres
-      - mandala-node
+      postgres: 
+        condition: service_started
+      mandala-node:
+        condition: service_healthy
     ports:
       - 3000:3000
     restart: always

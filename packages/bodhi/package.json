@@ -6,8 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "clean": "rm -rf lib tsconfig.tsbuildinfo",
-    "build": "tsc --build ./tsconfig.json",
-    "lint": "tsc --noEmit && eslint \"**/*.ts\""
+    "build": "tsc --build ./tsconfig.json"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
@@ -31,8 +30,6 @@
   "devDependencies": {
     "@types/chai": "~4.2.22",
     "chai": "~4.3.4",
-    "eslint": "~7.32.0",
-    "ts-node": "~10.7.0",
     "typescript": "~4.6.3"
   },
   "files": [

@@ -1,0 +1,31 @@
+{
+  "name": "@acala-network/evm-subql",
+  "author": "Acala Developers <hello@acala.network>",
+  "license": "Apache-2.0",
+  "private": true,
+  "homepage": "https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql",
+  "repository": "https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "codegen": "subql codegen",
+    "prepack": "yarn build",
+    "build": "yarn codegen; ncc build src/index.ts -o dist/ -t --target es2020; ncc build src/chain-types.ts -o dist/chain-types -t --target es2020",
+    "index": "subql-node -f ./project.yaml --batch-size 30 --db-schema acala_evm --log-level debug --port 3000 --unsafe --disable-historical",
+    "query": "PORT=3001 subql-query --name acala_evm --playground --indexer=http://localhost:3000 --debug"
+  },
+  "dependencies": {
+    "@acala-network/eth-providers": "workspace:*"
+  },
+  "devDependencies": {
+    "@subql/cli": "~1.10.0",
+    "@subql/types": "~1.7.0",
+    "@vercel/ncc": "^0.36.1",
+    "pino": "~7.0.0-rc.3",
+    "typescript": "~4.6.3"
+  },
+  "files": [
+    "dist",
+    "schema.graphql",
+    "./project*.yaml"
+  ]
+}

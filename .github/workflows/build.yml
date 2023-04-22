@@ -25,9 +25,8 @@ jobs:
         with:
           images: acala/eth-rpc-adapter
           tags: |
-            type=semver,pattern={{raw}}
+            type=semver,pattern={{version}}
             type=raw,value={{sha}}
-            type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
@@ -55,14 +54,13 @@ jobs:
         with:
           images: acala/evm-subql
           tags: |
-            type=semver,pattern={{raw}}
+            type=semver,pattern={{version}}
             type=raw,value={{sha}}
-            type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: evm-subql/Dockerfile
+          file: packages/evm-subql/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

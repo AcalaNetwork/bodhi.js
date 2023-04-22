@@ -5,7 +5,7 @@ Packages:
 - [bodhi.js](./packages/bodhi)
 - [eth-providers](./packages/eth-providers)
 - [eth-rpc-adapter](./packages/eth-rpc-adapter)
-- [evm-subql](./evm-subql)
+- [evm-subql](./packages/evm-subql)
 - [examples](./examples)
 
 ## Getting Started
@@ -60,7 +60,6 @@ where xxx ∈ {
   eth-providers-test,
   eth-rpc-adapter-test,
   waffle-examples-test,
-  waffle-tutorials-test,
   hardhat-tutorials-test,
   truffle-tutorials-test,
 }
@@ -80,7 +79,7 @@ docker logs -f <container_id>           # logs for specific container
   - build locally: `docker build . -t eth-rpc-local -f packages/eth-rpc-adapter/Dockerfile`
   - [public docker images](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 - evm subquery
-  - build locally: `docker build . -t evm-subql-local -f evm-subql/Dockerfile`
+  - build locally: `docker build . -t evm-subql-local -f packages/evm-subql/Dockerfile`
   - [public docker images](https://hub.docker.com/r/acala/evm-subql/tags)
 
 ## More References

@@ -8,19 +8,19 @@ runner:
   query:
     name: '@subql/query'
     version: 1.4.0
-description: 'subquery for Karura EVM+'
+description: 'subquery for Acala EVM+'
 repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:
   file: ./schema.graphql
 network:
-  # Karura
-  chainId: '0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b'
-  endpoint: wss://karura-rpc-0.aca-api.network
+  # Acala
+  chainId: '0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c'
+  endpoint: wss://acala-rpc-0.aca-api.network
   chaintypes:
-    file: ./dist/chain-types.js
+    file: ./dist/chain-types/index.js
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 1
+    startBlock: 840000
     mapping:
       file: ./dist/index.js
       handlers:

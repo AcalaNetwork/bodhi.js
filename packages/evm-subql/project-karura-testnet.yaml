@@ -8,17 +8,16 @@ runner:
   query:
     name: '@subql/query'
     version: 1.4.0
-description: 'subquery for Local Mandala EVM+'
+description: 'subquery for Karura testnet EVM+'
 repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:
   file: ./schema.graphql
 network:
-  # local mandala
-  chainId: '0x163c6b6cd64feeb077803605f3e20c45d8669fb59ff6698fb3f8c266125f922b'
-  endpoint: ws://localhost:9944
+  # Karura
+  chainId: '0xd5f7c90bd50e61d833e3f0836b0f3e1503054200ef5aa32856f8da5ce1213b01'
+  endpoint: wss://karura-dev.aca-dev.network/rpc/ws
   chaintypes:
-    # TODO: can generate this dynamically with `yarn build` using `@acala-network/types`
-    file: ./dist/chain-types.js
+    file: ./dist/chain-types/index.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1

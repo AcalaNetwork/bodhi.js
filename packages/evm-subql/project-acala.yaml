@@ -17,7 +17,7 @@ network:
   chainId: '0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c'
   endpoint: wss://acala-rpc-0.aca-api.network
   chaintypes:
-    file: ./dist/chain-types.js
+    file: ./dist/chain-types/index.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1

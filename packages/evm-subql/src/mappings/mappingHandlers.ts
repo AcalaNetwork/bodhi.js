@@ -1,5 +1,5 @@
 import '@polkadot/api-augment';
-import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/lib/utils';
+import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/utils';
 import { SubstrateBlock } from '@subql/types';
 
 export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void> => {
