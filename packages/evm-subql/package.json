@@ -9,7 +9,7 @@
     "clean": "rm -rf dist",
     "codegen": "subql codegen",
     "prepack": "yarn build",
-    "build": "yarn codegen; ncc build src/index.ts -o dist/ -t --target es2020; ncc build src/chain-types.ts -o dist/chain-types -t --target es2020",
+    "build": "yarn codegen; ncc build src/index.ts -o dist/ -t --target es2017; ncc build src/chain-types.ts -o dist/chain-types -t --target es2017",
     "index": "subql-node -f ./project.yaml --batch-size 30 --db-schema acala_evm --log-level debug --port 3000 --unsafe --disable-historical",
     "query": "PORT=3001 subql-query --name acala_evm --playground --indexer=http://localhost:3000 --debug"
   },

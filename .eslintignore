@@ -4,5 +4,4 @@ bin/
 lib/
 dist/
 examples/
-evm-subql/
 scripts/

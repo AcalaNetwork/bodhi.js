@@ -1,6 +1,7 @@
 import '@polkadot/api-augment';
-import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/utils';
+import '@subql/types/dist/global';
 import { SubstrateBlock } from '@subql/types';
+import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/utils';
 
 export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void> => {
   const receipts = await parseReceiptsFromBlockData(
