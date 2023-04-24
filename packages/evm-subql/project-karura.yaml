@@ -4,10 +4,10 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node'
-    version: 1.17.0
+    version: 1.21.2
   query:
     name: '@subql/query'
-    version: 1.4.0
+    version: 1.21.2
 description: 'subquery for Karura EVM+'
 repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:

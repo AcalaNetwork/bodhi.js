@@ -18,7 +18,7 @@ RUN yarn workspace @acala-network/evm-subql pack
 
 # =============
 
-FROM onfinality/subql-node:v1.17.0
+FROM onfinality/subql-node:v1.21.2
 LABEL maintainer="hello@acala.network"
 
 COPY --from=builder /app/packages/evm-subql/package.tgz /tmp

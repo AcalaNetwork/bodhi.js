@@ -35,7 +35,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: onfinality/subql-node:v1.17.0
+    image: onfinality/subql-node:v1.21.2
     depends_on:
       postgres: 
         condition: service_started

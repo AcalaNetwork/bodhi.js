@@ -17,7 +17,7 @@ services:
       target: subql-node
     depends_on:
       yarn-install:
-         condition: service_completed_successfully
+        condition: service_completed_successfully
       postgres:
         condition: service_started
       mandala-node:
