@@ -3,4 +3,3 @@ LABEL maintainer="hello@acala.network"
 
 VOLUME ["/app"]
 WORKDIR /app/packages/evm-subql
-CMD yarn build
