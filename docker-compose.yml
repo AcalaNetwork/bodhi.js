@@ -47,8 +47,10 @@ services:
     ports:
       - 3001:3001
     depends_on:
-      - postgres
-      - subquery-node
+      postgres:
+        condition: service_started
+      subquery-node:
+        condition: service_started
     restart: always
     environment:
       DB_USER: postgres
