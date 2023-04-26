@@ -1,6 +1,6 @@
 /* eslint-disable prefer-promise-reject-errors */
 import { BigNumber } from '@ethersproject/bignumber';
-import { BodhiProvider } from '@acala-network/eth-providers';
+import { BodhiProvider } from './BodhiProvider';
 import { BodhiSigner } from './BodhiSigner';
 import { BytesLike } from '@ethersproject/bytes';
 import { KeyringPair } from '@polkadot/keyring/types';

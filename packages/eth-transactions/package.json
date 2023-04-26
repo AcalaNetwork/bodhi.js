@@ -8,6 +8,9 @@
     "build": "tsc --build ./tsconfig.json",
     "lint": "tsc --noEmit && eslint \"**/*.ts\""
   },
+  "peerDependencies": {
+    "@polkadot/util-crypto": "~10.2"
+  },
   "devDependencies": {
     "@metamask/eth-sig-util": "~4.0.0",
     "eslint": "~7.32.0",
@@ -22,8 +25,7 @@
     "@ethersproject/logger": "~5.7.0",
     "@ethersproject/rlp": "~5.7.0",
     "@ethersproject/transactions": "~5.7.0",
-    "@ethersproject/wallet": "~5.7.0",
-    "@polkadot/util-crypto": "^10.2.1"
+    "@ethersproject/wallet": "~5.7.0"
   },
   "files": [
     "lib"

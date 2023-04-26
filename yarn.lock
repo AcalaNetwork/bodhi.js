@@ -5,24 +5,24 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@acala-network/api-derive@npm:4.1.8-13":
-  version: 4.1.8-13
-  resolution: "@acala-network/api-derive@npm:4.1.8-13"
+"@acala-network/api-derive@npm:4.1.8-14":
+  version: 4.1.8-14
+  resolution: "@acala-network/api-derive@npm:4.1.8-14"
   dependencies:
-    "@acala-network/types": 4.1.8-13
+    "@acala-network/types": 4.1.8-14
     "@babel/runtime": ^7.10.2
     "@open-web3/orml-types": ^1.1.4
     "@polkadot/api-derive": ^8.5.1
-  checksum: c2f02cb9784fce4994c6a26d135a9784fac293e46eafae2c267b6f6bbbd589341644fcd95ecb46ca6c5250a06c681b74ec50c48700f281762aa86ce35c639790
+  checksum: 78695ec25146f222fc26e4843b51a6eecab2723649ae36fdec139a68fc6dc9cf469a25ccb6586e400a22852c356e80973ceb7eea0716d4401c717ca2d2d9a98b
   languageName: node
   linkType: hard
 
-"@acala-network/api@npm:~4.1.8-9":
-  version: 4.1.8-13
-  resolution: "@acala-network/api@npm:4.1.8-13"
+"@acala-network/api@npm:~4.1.8-14":
+  version: 4.1.8-14
+  resolution: "@acala-network/api@npm:4.1.8-14"
   dependencies:
-    "@acala-network/api-derive": 4.1.8-13
-    "@acala-network/types": 4.1.8-13
+    "@acala-network/api-derive": 4.1.8-14
+    "@acala-network/types": 4.1.8-14
     "@babel/runtime": ^7.10.2
     "@open-web3/orml-api-derive": ^1.1.4
     "@polkadot/api": ^9.9.1
@@ -30,7 +30,7 @@ __metadata:
   peerDependencies:
     "@polkadot/api": ">=9"
     "@polkadot/types": ">=9"
-  checksum: d534043866ff69e56cf25eb8906317858c3c803e984ca8a24abfeac0b078d614795bfffc620ac51a92e37ec6f85b2ed33bbe6b8692c8d726629df844beda98b6
+  checksum: 7be85d72af0e8aab01fbb8dea9c5ec7a2b819310898fb5a1cec9b8a6ae76e3d162ace26ca0535f115c600db055977541177bb416bb58e1bf4f7370e862d9c0ee
   languageName: node
   linkType: hard
 
@@ -38,6 +38,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@acala-network/bodhi@workspace:packages/bodhi"
   dependencies:
+    "@acala-network/api": ~4.1.8-14
     "@acala-network/eth-providers": "workspace:*"
     "@ethersproject/abstract-provider": ~5.7.0
     "@ethersproject/abstract-signer": ~5.7.0
@@ -47,11 +48,6 @@ __metadata:
     "@ethersproject/logger": ~5.7.0
     "@ethersproject/properties": ~5.7.0
     "@ethersproject/strings": ~5.7.0
-    "@polkadot/api": 9.10.3
-    "@polkadot/keyring": ^10.2.1
-    "@polkadot/types": 9.10.3
-    "@polkadot/util": ^10.2.1
-    "@polkadot/util-crypto": ^10.2.1
     "@types/bn.js": ~5.1.0
     "@types/chai": ~4.2.22
     bn.js: ~5.2.0
@@ -60,6 +56,9 @@ __metadata:
     ethers: ~5.7.0
     ts-node: ~10.7.0
     typescript: ~4.6.3
+  peerDependencies:
+    "@acala-network/api": ^4.1.8
+    "@polkadot/api": ^9.10
   languageName: unknown
   linkType: soft
 
@@ -81,10 +80,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@acala-network/eth-providers@workspace:packages/eth-providers"
   dependencies:
-    "@acala-network/api": ~4.1.8-9
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-transactions": "workspace:*"
-    "@acala-network/types": ~4.1.8-9
     "@ethersproject/abstract-provider": ~5.7.0
     "@ethersproject/address": ~5.7.0
     "@ethersproject/bignumber": ~5.7.0
@@ -97,13 +94,6 @@ __metadata:
     "@ethersproject/providers": ~5.7.0
     "@ethersproject/transactions": ~5.7.0
     "@ethersproject/wallet": ~5.7.0
-    "@polkadot/api": 9.10.3
-    "@polkadot/api-augment": 9.10.3
-    "@polkadot/api-derive": 9.10.3
-    "@polkadot/keyring": ^10.2.1
-    "@polkadot/types": 9.10.3
-    "@polkadot/util": ^10.2.1
-    "@polkadot/util-crypto": ^10.2.1
     "@sinonjs/fake-timers": ~9.1.1
     "@types/bn.js": ~5.1.0
     "@types/chai": ~4.2.22
@@ -126,6 +116,9 @@ __metadata:
     ts-node: ~10.7.0
     typescript: ~4.6.3
     vitest: ^0.29.8
+  peerDependencies:
+    "@acala-network/types": ^4.1.8
+    "@polkadot/api": ^9.10
   languageName: unknown
   linkType: soft
 
@@ -191,32 +184,33 @@ __metadata:
     "@ethersproject/transactions": ~5.7.0
     "@ethersproject/wallet": ~5.7.0
     "@metamask/eth-sig-util": ~4.0.0
-    "@polkadot/util-crypto": ^10.2.1
     eslint: ~7.32.0
     typescript: ~4.6.3
+  peerDependencies:
+    "@polkadot/util-crypto": ~10.2
   languageName: unknown
   linkType: soft
 
-"@acala-network/type-definitions@npm:4.1.8-13":
-  version: 4.1.8-13
-  resolution: "@acala-network/type-definitions@npm:4.1.8-13"
+"@acala-network/type-definitions@npm:4.1.8-14":
+  version: 4.1.8-14
+  resolution: "@acala-network/type-definitions@npm:4.1.8-14"
   dependencies:
     "@open-web3/orml-type-definitions": ^1.1.4
-  checksum: 9da751fbe40f8672c307bf1e2fe961ac95ab87fbb2be87a62973cb90233858b09234188f039aab36539492f6cf1381d29c0f0146664fdab191677648f685745f
+  checksum: 14ca6123640e5357f0bbc31e24d89fd95a0180c31ebfb2d38517cca2abeee879e86488f90277986760648146bdd304f4b6b05082047f348e6690b24659923a08
   languageName: node
   linkType: hard
 
-"@acala-network/types@npm:4.1.8-13, @acala-network/types@npm:~4.1.8-9":
-  version: 4.1.8-13
-  resolution: "@acala-network/types@npm:4.1.8-13"
+"@acala-network/types@npm:4.1.8-14":
+  version: 4.1.8-14
+  resolution: "@acala-network/types@npm:4.1.8-14"
   dependencies:
-    "@acala-network/type-definitions": 4.1.8-13
+    "@acala-network/type-definitions": 4.1.8-14
     "@babel/runtime": ^7.10.2
     "@open-web3/api-mobx": ^1.1.4
     "@open-web3/orml-types": ^1.1.4
   peerDependencies:
     "@polkadot/api": ">=8"
-  checksum: a9696cf38295ae58997bf85c951ec7511d39b592ae3f39bb29a2b3e8a5f6a10984d24b0d650d3fb943239a71d5480eb5c7d68155a6ee0f8eb54c560acb1f7649
+  checksum: 9cc2bf143f0222b2f26ef66205b3bb987d2a47ade930efe3966b8a4f228f03bb38f220012f9b605f097e5948e9331ad1d293569332c8bfbb610a0ecb5331ddb6
   languageName: node
   linkType: hard
 

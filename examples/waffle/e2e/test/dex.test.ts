@@ -1,8 +1,8 @@
 import { expect, use } from 'chai';
 import { BigNumber } from 'ethers';
 import { deployContract } from 'ethereum-waffle';
-import { BodhiSigner, evmChai, getTestUtils } from '@acala-network/bodhi';
-import { EvmRpcProvider, hexlifyRpcResult, BodhiProvider } from '@acala-network/eth-providers';
+import { BodhiProvider, BodhiSigner, evmChai, getTestUtils } from '@acala-network/bodhi';
+import { EvmRpcProvider, hexlifyRpcResult } from '@acala-network/eth-providers';
 import TestToken from '../build/TestToken.json';
 import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
 

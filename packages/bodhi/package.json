@@ -9,6 +9,10 @@
     "build": "tsc --build ./tsconfig.json",
     "lint": "tsc --noEmit && eslint \"**/*.ts\""
   },
+  "peerDependencies": {
+    "@acala-network/api": "^4.1.8",
+    "@polkadot/api": "^9.10"
+  },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
     "@ethersproject/abstract-provider": "~5.7.0",
@@ -19,16 +23,12 @@
     "@ethersproject/logger": "~5.7.0",
     "@ethersproject/properties": "~5.7.0",
     "@ethersproject/strings": "~5.7.0",
-    "@polkadot/api": "9.10.3",
-    "@polkadot/keyring": "^10.2.1",
-    "@polkadot/types": "9.10.3",
-    "@polkadot/util": "^10.2.1",
-    "@polkadot/util-crypto": "^10.2.1",
     "@types/bn.js": "~5.1.0",
     "bn.js": "~5.2.0",
     "ethers": "~5.7.0"
   },
   "devDependencies": {
+    "@acala-network/api": "~4.1.8-14",
     "@types/chai": "~4.2.22",
     "chai": "~4.3.4",
     "eslint": "~7.32.0",

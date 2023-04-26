@@ -5,7 +5,7 @@ import {
   TypedDataSigner,
 } from '@ethersproject/abstract-signer';
 import { BigNumber } from '@ethersproject/bignumber';
-import { BodhiProvider, handleTxResponse, toBN } from '@acala-network/eth-providers';
+import { BodhiProvider } from './BodhiProvider';
 import { Bytes, concat, joinSignature } from '@ethersproject/bytes';
 import { Deferrable } from '@ethersproject/properties';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -18,6 +18,7 @@ import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract
 import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { dataToString } from './utils';
 import { getAddress } from '@ethersproject/address';
+import { handleTxResponse, toBN } from '@acala-network/eth-providers';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
 import { version } from './_version';
