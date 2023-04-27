@@ -3,25 +3,11 @@ import { Wallet } from '@ethersproject/wallet';
 import { describe, expect, it } from 'vitest';
 import { formatEther, hexZeroPad, parseEther } from 'ethers/lib/utils';
 
-import { BodhiJsonRpcProvider } from '../../json-rpc-provider';
+import { AcalaJsonRpcProvider } from '../../json-rpc-provider';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { sleep } from '../../utils';
 import echoJson from '../abis/Echo.json';
 import erc20Json from '../abis/IERC20.json';
-
-const erc20Abi = [
-  'function name() view returns (string)',
-  'function symbol() view returns (string)',
-  'function decimals() view returns (uint8)',
-  'function totalSupply() view returns (uint256)',
-  'function balanceOf(address account) view returns (uint256)',
-  'function transfer(address recipient, uint256 amount) returns (bool)',
-  'function allowance(address owner, address spender) view returns (uint256)',
-  'function approve(address spender, uint256 amount) returns (bool)',
-  'function transferFrom(address sender, address recipient, uint256 amount) returns (bool)',
-  'event Transfer(address indexed from, address indexed to, uint256 value)',
-  'event Approval(address indexed owner, address indexed spender, uint256 value)',
-];
 
 const gasOverride = {
   gasPrice: '0x616dc303ea',
@@ -32,13 +18,13 @@ describe('JsonRpcProvider', async () => {
   /* --------- karura --------- */
   const someOne = '0xf7ABcfa42bF7e7d43d3d53C665deD80fDAfB5244';
 
-  const provider = new BodhiJsonRpcProvider('https://eth-rpc-karura.aca-api.network');
+  const provider = new AcalaJsonRpcProvider('https://eth-rpc-karura.aca-api.network');
   const usdcAddr = '0x1F3a10587A20114EA25Ba1b388EE2dD4A337ce27';
-  const usdc = new Contract(usdcAddr, erc20Abi, provider);
+  const usdc = new Contract(usdcAddr, erc20Json.abi, provider);
 
   /* --------- local --------- */
   const testKey = 'a872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f';   // 0x75E480dB528101a381Ce68544611C169Ad7EB342
-  const providerLocal = new BodhiJsonRpcProvider('http://localhost:8545');
+  const providerLocal = new AcalaJsonRpcProvider('http://localhost:8545');
   const wallet = new Wallet(testKey, providerLocal);
 
   describe.concurrent('get chain data', () => {
@@ -67,16 +53,30 @@ describe('JsonRpcProvider', async () => {
       expect(transactionCount).to.be.gt(0);
     });
 
+    it('get contract code', async () => {
+      const bridgeImplAddress = '0xae9d7fe007b3327AA64A32824Aaac52C42a6E624';
+      const code = await provider.getCode(bridgeImplAddress);
+      expect(code.length).to.gt(100);
+    });
+
     it('get transaction by hash', async () => {
       const txHash = '0xbd273dc63f4e5e1998d0f1e191e7bc5e3a3067a4101771dfd7091a32a8784d95';
       const fetchedTransaction = await provider.getTransaction(txHash);
       expect(fetchedTransaction.hash).to.equal(txHash);
     });
 
-    it('get contract code', async () => {
-      const bridgeImplAddress = '0xae9d7fe007b3327AA64A32824Aaac52C42a6E624';
-      const code = await provider.getCode(bridgeImplAddress);
-      expect(code.length).to.gt(100);
+    it('get transaction receipt', async () => {
+      const txHash = '0xbd273dc63f4e5e1998d0f1e191e7bc5e3a3067a4101771dfd7091a32a8784d95';
+      const fetchedTransaction = await provider.getTransactionReceipt(txHash);
+      expect(fetchedTransaction.transactionHash).to.equal(txHash);
+    });
+
+    it('get block with transactions', async () => {
+      let data = await provider.getBlockWithTransactions(1818518);
+      expect(data.transactions.length).to.eq(1);
+
+      data = await provider.getBlockWithTransactions(2449983);
+      expect(data.transactions.length).to.eq(2);
     });
 
     it('get logs with filter', async () => {
@@ -95,15 +95,9 @@ describe('JsonRpcProvider', async () => {
         expect(log.topics[2]).to.eq(hexZeroPad(userAddr, 32).toLowerCase());
       }
     });
+  });
 
-    it('get block with transactions', async () => {
-      let data = await provider.getBlockWithTransactions(1818518);
-      expect(data.transactions.length).to.eq(1);
-
-      data = await provider.getBlockWithTransactions(2449983);
-      expect(data.transactions.length).to.eq(2);
-    });
-
+  describe('call', () => {
     it('estimate gas', async () => {
       const to = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
       const value = parseEther('0.1');
