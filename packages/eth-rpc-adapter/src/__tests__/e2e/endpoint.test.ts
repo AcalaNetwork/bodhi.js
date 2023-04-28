@@ -804,8 +804,8 @@ describe('eth_sendRawTransaction', () => {
         const rawTx = await wallet1.signTransaction(unsignedTx);
         const parsedTx = parseTransaction(rawTx);
 
-        expect(BigNumber.from(parsedTx.gasPrice).eq(txGasPrice)).equal(true);
-        expect(BigNumber.from(parsedTx.gasLimit).eq(txGasLimit)).equal(true);
+        expect(parsedTx.gasPrice.eq(txGasPrice)).equal(true);
+        expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
@@ -845,7 +845,7 @@ describe('eth_sendRawTransaction', () => {
 
         expect(BigNumber.from(parsedTx.maxFeePerGas).eq(txGasPrice)).equal(true);
         expect(BigNumber.from(parsedTx.maxPriorityFeePerGas).eq(priorityFee)).equal(true);
-        expect(BigNumber.from(parsedTx.gasLimit).eq(txGasLimit)).equal(true);
+        expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
@@ -887,7 +887,7 @@ describe('eth_sendRawTransaction', () => {
         const rawTx = serializeTransaction(unsignEip712Tx as UnsignedAcalaEvmTX, sig);
         const parsedTx = parseTransaction(rawTx);
 
-        expect(BigNumber.from(parsedTx.gasLimit).eq(gasLimit)).equal(true);
+        expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
         expect(BigNumber.from(parsedTx.validUntil).eq(validUntil)).equal(true);
         expect(BigNumber.from(parsedTx.storageLimit).eq(storageLimit)).equal(true);
 
@@ -972,7 +972,6 @@ describe('eth_sendRawTransaction', () => {
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
-        const parsedTx = parseTransaction(rawTx);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
@@ -1012,6 +1011,7 @@ describe('eth_sendRawTransaction', () => {
 
         const sig = signTransaction(account1.privateKey, transferTX as AcalaEvmTXPayload);
         const rawTx = serializeTransaction(transferTX as UnsignedAcalaEvmTX, sig);
+        const _ = parseTransaction(rawTx);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
@@ -1120,7 +1120,7 @@ describe('eth_sendRawTransaction', () => {
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
-        const parsedTx = parseTransaction(rawTx);
+        const _ = parseTransaction(rawTx);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
