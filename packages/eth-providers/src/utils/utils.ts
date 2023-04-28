@@ -278,7 +278,7 @@ export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): P
 
   if (!blockTag || typeof blockTag !== 'object') return blockTag as any;
 
-  return blockTag.blockHash || blockTag.blockNumber;
+  return blockTag['blockHash'] || blockTag['blockNumber'];
 };
 
 // https://github.com/AcalaNetwork/Acala/blob/067b65bc19ff525bdccae020ad2bd4bdf41f4300/modules/evm/rpc/src/lib.rs#L122

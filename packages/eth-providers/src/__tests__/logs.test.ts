@@ -1,3 +1,4 @@
+import { Log } from '@ethersproject/abstract-provider';
 import { describe, it } from 'vitest';
 import { expect } from 'chai';
 import { filterLog } from '../utils';
@@ -12,13 +13,14 @@ describe('filterLog', () => {
   const addr3 = '0xCccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc';
 
   const partialLog = {
-    logIndex: '0x0',
-    transactionIndex: '0x0',
+    logIndex: 0,
+    transactionIndex: 0,
     transactionHash: '0xfd4ab44cad28fb7902faf7db76a7f475c5d65c6758c8ed9907d7c8351d53bd98',
     blockHash: '0x2b77e91ddb94c8a37d21dd22c0fdf53481a97517de3146cd526868f106cf5e60',
-    blockNumber: '0x98765',
+    blockNumber: Number('0x98765'),
     data: '0x12345',
     type: 'mined',
+    removed: false,
   };
 
   const log1 = {

@@ -1,11 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
-  "references": [
-    { "path": "packages/bodhi" },
-    { "path": "packages/eth-providers" },
-    { "path": "packages/eth-rpc-adapter" },
-    { "path": "packages/eth-transactions" }
-  ],
-  "exclude": ["**/node_modules", "**/lib"],
-  "include": ["./packages/**/*.{ts,json}"]
+  "exclude": ["**/node_modules", "**/lib", "packages/evm-subql/src/types"],
+  "include": ["./packages/**/*"]
 }

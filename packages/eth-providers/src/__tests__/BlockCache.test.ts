@@ -18,7 +18,7 @@ describe('BlockCache', () => {
   const blocks = 30;
   const chain = mockChain(blocks);
   const TOTAL_BLOCKS = chain.length;
-  const allReceipts = chain.map((block) => block.receipts).flat(999);
+  const allReceipts = chain.map((block) => block.receipts).flat();
   const allBlockHashes = chain.map((block) => block.blockHash);
   const cache = new BlockCache(MAX_CACHED_BLOCK);
 

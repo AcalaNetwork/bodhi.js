@@ -84,8 +84,8 @@ describe('isEvmExtrinsic', () => {
       },
     };
 
-    expect(isEvmExtrinsic(fakeEVMExtrinsic)).to.equal(true);
-    expect(isEvmExtrinsic(fakeSUDOExtrinsic)).to.equal(false);
+    expect(isEvmExtrinsic(fakeEVMExtrinsic as any)).to.equal(true);
+    expect(isEvmExtrinsic(fakeSUDOExtrinsic as any)).to.equal(false);
 
     /* ---------- TODO:
        we have a lot of Extrinsics related helpers
@@ -160,9 +160,8 @@ describe('getHealthResult', () => {
   const cacheInfo: CacheInspect = {
     maxCachedBlocks,
     cachedBlocksCount,
-    cachedBlocks: [],
-    allBlockToHash: {},
-    allHashToBlock: {},
+    txHashToReceipt: {},
+    blockHashToReceipts: {},
   };
 
   const curFinalizedHeight = targetHeight;
@@ -205,6 +204,7 @@ describe('getHealthResult', () => {
       cacheInfo,
       curFinalizedHeight,
       ethCallTiming,
+      listenersCount: { newHead: 0, logs: 0 },
     });
 
     expect(res).containSubset(healthResult);
@@ -224,6 +224,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming,
+        listenersCount: { newHead: 0, logs: 0 },
       });
 
       expect(res).containSubset({
@@ -252,6 +253,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight: curFinalizedHeightBad,
         ethCallTiming,
+        listenersCount: { newHead: 0, logs: 0 },
       });
 
       expect(res).containSubset({
@@ -278,6 +280,7 @@ describe('getHealthResult', () => {
         },
         curFinalizedHeight,
         ethCallTiming,
+        listenersCount: { newHead: 0, logs: 0 },
       });
 
       expect(res).containSubset({
@@ -304,6 +307,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming: ethCallTimingBad,
+        listenersCount: { newHead: 0, logs: 0 },
       });
 
       expect(res).containSubset({
@@ -332,6 +336,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming: ethCallTimingBad,
+        listenersCount: { newHead: 0, logs: 0 },
       });
 
       expect(res).containSubset({
@@ -356,6 +361,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming: ethCallTimingBad,
+        listenersCount: { newHead: 0, logs: 0 },
       });
 
       expect(res).containSubset({

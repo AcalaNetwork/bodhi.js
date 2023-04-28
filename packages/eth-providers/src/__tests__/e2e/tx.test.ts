@@ -274,8 +274,8 @@ describe('transaction tests', () => {
         const parsedTx = parseTransaction(rawTx1);
 
         expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
-        expect(parsedTx.validUntil.eq(validUntil)).equal(true);
-        expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
+        expect(BigNumber.from(parsedTx.validUntil).eq(validUntil)).equal(true);
+        expect(BigNumber.from(parsedTx.storageLimit).eq(storageLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
@@ -306,10 +306,10 @@ describe('transaction tests', () => {
         const parsedTx = parseTransaction(rawTx2);
 
         expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
-        expect(parsedTx.validUntil.eq(validUntil)).equal(true);
-        expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
+        expect(BigNumber.from(parsedTx.validUntil).eq(validUntil)).equal(true);
+        expect(BigNumber.from(parsedTx.storageLimit).eq(storageLimit)).equal(true);
 
-        expect(parsedTx.tip.eq(2)).equal(true);
+        expect(BigNumber.from(parsedTx.tip).eq(2)).equal(true);
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
         expect(parsedTx.type).equal(96);
@@ -328,7 +328,7 @@ describe('transaction tests', () => {
     const ACADigits = provider.api.registry.chainDecimals[0];
     const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, wallet1);
     const iface = new Interface(ACAABI.abi);
-    const queryBalance = (addr) => acaContract.balanceOf(addr) as BigNumber;
+    const queryBalance = async (addr: string): Promise<BigNumber> => acaContract.balanceOf(addr);
     const transferAmount = parseUnits('100', ACADigits);
     let partialTransferTX: any;
 

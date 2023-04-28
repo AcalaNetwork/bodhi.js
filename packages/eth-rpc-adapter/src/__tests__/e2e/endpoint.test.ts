@@ -4,6 +4,7 @@ import {
   KARURA_CONTRACT_CALL_TX_HASH,
   KARURA_CONTRACT_DEPLOY_TX_HASH,
   KARURA_SEND_KAR_TX_HASH,
+  LogHexified,
   allLogs,
   deployHelloWorldData,
   evmAccounts,
@@ -19,12 +20,13 @@ import {
   log22_0,
   log22_1,
 } from './consts';
-import { AcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
+import { AcalaEvmTX, AcalaEvmTXPayload, UnsignedAcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { DUMMY_LOGS_BLOOM, EvmRpcProvider, sleep } from '@acala-network/eth-providers';
-import { Interface, parseUnits } from 'ethers/lib/utils';
+import { Interface, hexValue, hexlify, parseUnits } from 'ethers/lib/utils';
+import { JsonRpcError } from '@acala-network/eth-rpc-adapter/server';
 import { KARURA_ETH_RPC_URL, NODE_RPC_URL, SUBQL_URL, WS_URL, bigIntDiff, rpcGet } from './utils';
 import { Log } from '@ethersproject/abstract-provider';
 import { SubqlProvider } from '@acala-network/eth-providers/utils/subqlProvider';
@@ -42,13 +44,20 @@ const account1 = evmAccounts[0];
 const account2 = evmAccounts[1];
 const wallet1 = new Wallet(account1.privateKey);
 
+const hexilifyLog = (log: Log) => ({
+  ...log,
+  blockNumber: hexValue(parseInt(log.blockNumber as any)),
+  transactionIndex: hexValue(parseInt(log.transactionIndex as any)),
+  logIndex: hexValue(parseInt(log.logIndex as any)),
+});
+
 /* ---------- local rpc methods ---------- */
 // TODO: encapsulate to a big helper that contains these methods?
 const eth_call = rpcGet('eth_call');
 const eth_blockNumber = rpcGet('eth_blockNumber');
 const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
 const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
-const eth_getLogs = rpcGet('eth_getLogs');
+const eth_getLogs = rpcGet<{ data: { result?: LogHexified[], error?: JsonRpcError }}>('eth_getLogs');
 const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
 const eth_accounts = rpcGet('eth_accounts');
 const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction');
@@ -65,7 +74,7 @@ const eth_isBlockFinalized = rpcGet('eth_isBlockFinalized');
 const eth_newFilter = rpcGet('eth_newFilter');
 const eth_newBlockFilter = rpcGet('eth_newBlockFilter');
 const eth_getFilterChanges = rpcGet('eth_getFilterChanges');
-const eth_getFilterLogs = rpcGet('eth_getFilterLogs');
+const eth_getFilterLogs = rpcGet<{ data: { result?: LogHexified[], error?: JsonRpcError } }>('eth_getFilterLogs');
 const eth_uninstallFilter = rpcGet('eth_uninstallFilter');
 
 const getBlockHash = async (blockNum: number): Promise<string> =>
@@ -80,7 +89,7 @@ const eth_getTransactionByHash_karura = rpcGet('eth_getTransactionByHash', KARUR
 const eth_getBlockByNumber_karura = rpcGet('eth_getBlockByNumber', KARURA_ETH_RPC_URL);
 const eth_getStorageAt_karura = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
 
-const expectLogsEqual = (a: Log[], b: Log[]): void => {
+const expectLogsEqual = (a: LogHexified[], b: LogHexified[]): void => {
   expect(a.length).to.greaterThan(0);
   expect(a.length).to.equal(b.length);
   expect(
@@ -379,8 +388,8 @@ describe('eth_getLogs', () => {
       const BIG_NUMBER = 88888888;
       const BIG_NUMBER_HEX = '0x54C5638';
 
-      let res;
-      let expectedLogs;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ ...ALL_BLOCK_RANGE_FILTER }]);
@@ -424,8 +433,8 @@ describe('eth_getLogs', () => {
 
   describe('filter by block tag', () => {
     it('returns correct logs for valid tag', async () => {
-      let res;
-      let expectedLogs;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ fromBlock: 'earliest' }]);
@@ -475,8 +484,8 @@ describe('eth_getLogs', () => {
 
   describe('filter by topics', () => {
     it('returns correct logs', async () => {
-      let res;
-      let expectedLogs;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ topics: [], ...ALL_BLOCK_RANGE_FILTER }]);
@@ -521,11 +530,10 @@ describe('eth_getLogs', () => {
 
   describe('filter by blockhash', () => {
     it('returns correct logs', async () => {
-      const allLogsFromSubql = await subql.getAllLogs();
-
+      const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
       for (const log of allLogsFromSubql) {
         const res = await eth_getLogs([{ blockHash: log.blockHash }]);
-        const expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
+        const expectedLogs = allLogs.filter((l) => l.blockNumber === log.blockNumber);
         expectLogsEqual(res.data.result, expectedLogs);
       }
     });
@@ -533,10 +541,9 @@ describe('eth_getLogs', () => {
 
   describe('filter by multiple params', () => {
     it('returns correct logs', async () => {
-      let res;
-      let expectedLogs;
-      const allLogsFromSubql = await subql.getAllLogs();
-
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
+      const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
       /* -------------------- match block range -------------------- */
       expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
       res = await eth_getLogs([{ fromBlock: 8, toBlock: 11, topics: [[], null, []] }]);
@@ -578,7 +585,7 @@ describe('eth_getLogs', () => {
 
   describe('when error', () => {
     it('returns correct error code and messge', async () => {
-      let res;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
 
       /* ---------- invalid tag ---------- */
       res = await eth_getLogs([{ fromBlock: 'polkadot' }]);
@@ -843,8 +850,8 @@ describe('eth_sendRawTransaction', () => {
         const rawTx = await wallet1.signTransaction(unsignedTx);
         const parsedTx = parseTransaction(rawTx);
 
-        expect(parsedTx.maxFeePerGas.eq(txGasPrice)).equal(true);
-        expect(parsedTx.maxPriorityFeePerGas.eq(priorityFee)).equal(true);
+        expect(BigNumber.from(parsedTx.maxFeePerGas).eq(txGasPrice)).equal(true);
+        expect(BigNumber.from(parsedTx.maxPriorityFeePerGas).eq(priorityFee)).equal(true);
         expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
@@ -883,13 +890,13 @@ describe('eth_sendRawTransaction', () => {
           type: 0x60,
         };
 
-        const sig = signTransaction(account1.privateKey, unsignEip712Tx);
-        const rawTx = serializeTransaction(unsignEip712Tx, sig);
+        const sig = signTransaction(account1.privateKey, unsignEip712Tx as AcalaEvmTXPayload);
+        const rawTx = serializeTransaction(unsignEip712Tx as UnsignedAcalaEvmTX, sig);
         const parsedTx = parseTransaction(rawTx);
 
         expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
-        expect(parsedTx.validUntil.eq(validUntil)).equal(true);
-        expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
+        expect(BigNumber.from(parsedTx.validUntil).eq(validUntil)).equal(true);
+        expect(BigNumber.from(parsedTx.storageLimit).eq(storageLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
@@ -932,7 +939,7 @@ describe('eth_sendRawTransaction', () => {
         const balance1 = await queryNativeBalance(account1.evmAddress);
         const balance2 = await queryNativeBalance(account2.evmAddress);
 
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         };
@@ -962,7 +969,7 @@ describe('eth_sendRawTransaction', () => {
         const balance2 = await queryNativeBalance(account2.evmAddress);
 
         const priorityFee = BigNumber.from(0); // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           gasPrice: undefined,
@@ -972,7 +979,7 @@ describe('eth_sendRawTransaction', () => {
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
-        const parsedTx = parseTransaction(rawTx);
+        const _ = parseTransaction(rawTx);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
@@ -1000,7 +1007,7 @@ describe('eth_sendRawTransaction', () => {
         const validUntil = 10000;
         const storageLimit = 100000;
 
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           salt: genesisHash,
@@ -1010,9 +1017,9 @@ describe('eth_sendRawTransaction', () => {
           type: 0x60,
         };
 
-        const sig = signTransaction(account1.privateKey, transferTX);
-        const rawTx = serializeTransaction(transferTX, sig);
-        const parsedTx = parseTransaction(rawTx);
+        const sig = signTransaction(account1.privateKey, transferTX as AcalaEvmTXPayload);
+        const rawTx = serializeTransaction(transferTX as UnsignedAcalaEvmTX, sig);
+        const _ = parseTransaction(rawTx);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
@@ -1074,10 +1081,11 @@ describe('eth_sendRawTransaction', () => {
           queryEthBalance(account1.evmAddress),
           queryEthBalance(account2.evmAddress),
         ]);
-
-        const transferTX: AcalaEvmTX = {
+        const { gasPrice, gasLimit } = await estimateGas();
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialNativeTransferTX,
-          ...(await estimateGas()),
+          gasPrice: BigNumber.from(gasPrice),
+          gasLimit: BigNumber.from(gasLimit),
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         };
 
@@ -1109,18 +1117,18 @@ describe('eth_sendRawTransaction', () => {
 
         const priorityFee = BigNumber.from(0); // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
         const { gasPrice, gasLimit } = await estimateGas();
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialNativeTransferTX,
-          gasLimit,
+          gasLimit: BigNumber.from(gasLimit),
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
-          maxFeePerGas: gasPrice,
+          maxFeePerGas: BigNumber.from(gasPrice),
           type: 2,
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
-        const parsedTx = parseTransaction(rawTx);
+        const _ = parseTransaction(rawTx);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
