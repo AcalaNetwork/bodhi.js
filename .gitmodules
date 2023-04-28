@@ -4,6 +4,3 @@
 [submodule "truffle"]
 	path = examples/truffle-tutorials
 	url = https://github.com/AcalaNetwork/truffle-tutorials.git
-[submodule "waffle"]
-	path = examples/waffle-tutorials
-	url = https://github.com/AcalaNetwork/waffle-tutorials.git

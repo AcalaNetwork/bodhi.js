@@ -4,20 +4,20 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node'
-    version: 1.17.0
+    version: 1.21.2
   query:
     name: '@subql/query'
     version: 1.4.0
-description: 'subquery for Karura testnet EVM+'
+description: 'subquery for Karura EVM+'
 repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
 schema:
   file: ./schema.graphql
 network:
   # Karura
-  chainId: '0xd5f7c90bd50e61d833e3f0836b0f3e1503054200ef5aa32856f8da5ce1213b01'
-  endpoint: wss://karura-dev.aca-dev.network/rpc/ws
+  chainId: '0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b'
+  endpoint: wss://karura-rpc-0.aca-api.network
   chaintypes:
-    file: ./dist/chain-types.js
+    file: ./dist/chain-types/index.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1

@@ -16,10 +16,16 @@ services:
       dockerfile: docker/subql-node.Dockerfile
       target: subql-node
     depends_on:
+      yarn-install:
+        condition: service_completed_successfully
       postgres:
         condition: service_started
       mandala-node:
         condition: service_healthy
+    volumes:
+      - ./:/app
+      - monorepo_yarn_cache:/app/.yarn/cache
+      - monorepo_node_modules:/app/node_modules
     ports:
       - 3000:3000
     restart: always
@@ -41,8 +47,10 @@ services:
     ports:
       - 3001:3001
     depends_on:
-      - postgres
-      - subquery-node
+      postgres:
+        condition: service_started
+      subquery-node:
+        condition: service_started
     restart: always
     environment:
       DB_USER: postgres
@@ -68,6 +76,8 @@ services:
       - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
+      yarn-install:
+        condition: service_completed_successfully
       postgres:
         condition: service_started
       subquery-node:
@@ -94,6 +104,8 @@ services:
       - monorepo_node_modules:/app/node_modules
     depends_on:
       eth-rpc-adapter-with-subql-ready:
+        condition: service_completed_successfully
+      yarn-install:
         condition: service_completed_successfully
 
   # ------------------------------------ #
@@ -123,6 +135,16 @@ services:
       - --instant-sealing
       - --tmp
 
+  yarn-install:
+    build:
+      context: .
+      dockerfile: docker/yarn.Dockerfile
+      target: yarn-install
+    volumes:
+      - ./:/app
+      - monorepo_yarn_cache:/app/.yarn/cache
+      - monorepo_node_modules:/app/node_modules
+
   eth-providers-test:
     build:
       context: .
@@ -135,6 +157,8 @@ services:
     depends_on:
       mandala-node:
         condition: service_healthy
+      yarn-install:
+        condition: service_completed_successfully
 
   eth-rpc-adapter-server:
     build:
@@ -150,6 +174,8 @@ services:
     depends_on:
       mandala-node:
         condition: service_healthy
+      yarn-install:
+        condition: service_completed_successfully
     command:
       - --endpoint=ws://mandala-node:9944
       - --port=8545
@@ -169,6 +195,8 @@ services:
     depends_on:
       mandala-node:
         condition: service_healthy
+      yarn-install:
+        condition: service_completed_successfully
     command:
       - --endpoint=ws://mandala-node:9944
       - --port=8545
@@ -188,6 +216,9 @@ services:
       - ./:/app
       - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
+    depends_on:
+      yarn-install:
+        condition: service_completed_successfully
     restart: always
     command:
       - --endpoint=wss://acala-karura-eu-1.bdnodes.net:8443/parachain?auth=4VFR_UEvc8mUAd58z11nSRqp-EBZcqPl14j_MgEm-4E
@@ -206,6 +237,8 @@ services:
     depends_on:
       mandala-node:
         condition: service_healthy
+      yarn-install:
+        condition: service_completed_successfully
 
   chain-ready:
     image: alpine:latest
@@ -242,14 +275,6 @@ services:
         condition: service_healthy
     command: echo "💈 + 🗂️  ETH RPC ADAPTER & SUBQL IS READY 🚀"
 
-  waffle-tutorials-test:
-    build:
-      context: .
-      dockerfile: docker/waffle-tutorials-test.Dockerfile
-      target: waffle-tutorials
-    depends_on:
-      mandala-node:
-        condition: service_healthy
   hardhat-tutorials-test:
     build:
       context: .
@@ -262,6 +287,7 @@ services:
     depends_on:
       eth-rpc-adapter-server-rich:
         condition: service_healthy
+
   truffle-tutorials-test:
     build:
       context: .

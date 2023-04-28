@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "rootDir": "src",
+    "target": "es2017"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.(test|spec).ts"],
+  "references": [{ "path": "../eth-providers" }]
+}
