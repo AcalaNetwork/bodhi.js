@@ -13,6 +13,9 @@
     "test:CI": "mocha -r tsconfig-paths/register src/__tests__/e2e/* --timeout 300000",
     "ncc:pack": "ncc build src/index.ts -t --target es2020"
   },
+  "peerDependencies": {
+    "@polkadot/api": "~9.10.3"
+  },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
     "@acala-network/eth-transactions": "workspace:*",
@@ -23,7 +26,6 @@
     "@ethersproject/bytes": "~5.7.0",
     "@ethersproject/logger": "~5.7.0",
     "@ethersproject/wallet": "~5.7.0",
-    "@polkadot/api": "9.10.3",
     "axios": "~0.24.0",
     "body-parser": "~1.19.0",
     "connect": "~3.7.0",
@@ -38,7 +40,6 @@
     "@acala-network/contracts": "4.3.4",
     "@ethersproject/contracts": "~5.7.0",
     "@ethersproject/providers": "~5.7.0",
-    "@polkadot/types": "8.1.1",
     "@types/body-parser": "~1.19.1",
     "@types/connect": "~3.4.35",
     "@types/cors": "~2.8.12",

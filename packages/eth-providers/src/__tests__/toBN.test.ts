@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { describe, expect, it } from 'vitest';
-import { toBN } from '@acala-network/eth-providers';
+import { toBN } from '../utils';
 
 describe('utils', () => {
   it('works with positive numbers', () => {
