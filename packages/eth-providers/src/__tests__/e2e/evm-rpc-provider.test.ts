@@ -67,7 +67,6 @@ describe('getReceiptAtBlock', async () => {
     const res1 = await provider.getReceiptAtBlockFromChain(txHash1, blockHash);
     const res2 = await provider.getReceiptAtBlockFromChain(txHash2, blockHash);
 
-    delete res2.exitReason; // full receipt contains exitReason
     expect(res1).to.deep.equal(receipt1);
     expect(res2).to.deep.equal(receipt2);
   });
