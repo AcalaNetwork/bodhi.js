@@ -19,7 +19,7 @@ import {
   log22_0,
   log22_1,
 } from './consts';
-import { AcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
+import { AcalaEvmTX, AcalaEvmTXPayload, UnsignedAcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
@@ -85,7 +85,7 @@ const expectLogsEqual = (a: Log[], b: Log[]): void => {
   expect(a.length).to.equal(b.length);
   expect(
     a.every(({ transactionHash: t0, logIndex: l0 }) =>
-      b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
+      b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && l0 === l1)
     )
   );
 };
@@ -409,15 +409,15 @@ describe('eth_getLogs', () => {
       const from = 9;
       const to = 11;
       res = await eth_getLogs([{ fromBlock: from }]);
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
+      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
+      expectedLogs = allLogs.filter(( { blockNumber }) => blockNumber <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
+      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from && blockNumber <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
@@ -460,15 +460,15 @@ describe('eth_getLogs', () => {
       const from = 8;
       const to = 10;
       res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
+      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
+      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
+      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from && blockNumber <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
@@ -525,7 +525,7 @@ describe('eth_getLogs', () => {
 
       for (const log of allLogsFromSubql) {
         const res = await eth_getLogs([{ blockHash: log.blockHash }]);
-        const expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
+        const expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber === log.blockNumber);
         expectLogsEqual(res.data.result, expectedLogs);
       }
     });
@@ -538,30 +538,30 @@ describe('eth_getLogs', () => {
       const allLogsFromSubql = await subql.getAllLogs();
 
       /* -------------------- match block range -------------------- */
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
+      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= 8 && blockNumber <= 11);
       res = await eth_getLogs([{ fromBlock: 8, toBlock: 11, topics: [[], null, []] }]);
       expectLogsEqual(res.data.result, expectedLogs);
 
-      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= 15);
+      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber <= 15);
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 15, topics: [[], null, []] }]);
       expectLogsEqual(res.data.result, expectedLogs);
 
       for (const log of allLogsFromSubql) {
         /* -------------------- match blockhash -------------------- */
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
+        expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber === log.blockNumber);
         res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         /* -------------------- match first topic -------------------- */
         expectedLogs = allLogs.filter(
-          (l) => parseInt(l.blockNumber) === parseInt(log.blockNumber) && l.topics[0] === log.topics[0]
+          ({ blockNumber, topics }) => blockNumber === blockNumber && topics[0] === log.topics[0]
         );
         res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[log.topics[0], 'xxx'], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         /* -------------------- match range and topics -------------------- */
         expectedLogs = allLogs.filter(
-          (l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 15 && l.topics[0] === log.topics[0]
+          ({ blockNumber, topics }) => blockNumber >= 8 && blockNumber <= 15 && topics[0] === log.topics[0]
         );
         res = await eth_getLogs([{ fromBlock: 8, toBlock: 15, topics: [['xxx', log.topics[0]]] }]);
         expectLogsEqual(res.data.result, expectedLogs);
@@ -804,8 +804,8 @@ describe('eth_sendRawTransaction', () => {
         const rawTx = await wallet1.signTransaction(unsignedTx);
         const parsedTx = parseTransaction(rawTx);
 
-        expect(parsedTx.gasPrice.eq(txGasPrice)).equal(true);
-        expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
+        expect(BigNumber.from(parsedTx.gasPrice).eq(txGasPrice)).equal(true);
+        expect(BigNumber.from(parsedTx.gasLimit).eq(txGasLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
@@ -843,9 +843,9 @@ describe('eth_sendRawTransaction', () => {
         const rawTx = await wallet1.signTransaction(unsignedTx);
         const parsedTx = parseTransaction(rawTx);
 
-        expect(parsedTx.maxFeePerGas.eq(txGasPrice)).equal(true);
-        expect(parsedTx.maxPriorityFeePerGas.eq(priorityFee)).equal(true);
-        expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
+        expect(BigNumber.from(parsedTx.maxFeePerGas).eq(txGasPrice)).equal(true);
+        expect(BigNumber.from(parsedTx.maxPriorityFeePerGas).eq(priorityFee)).equal(true);
+        expect(BigNumber.from(parsedTx.gasLimit).eq(txGasLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
@@ -883,13 +883,13 @@ describe('eth_sendRawTransaction', () => {
           type: 0x60,
         };
 
-        const sig = signTransaction(account1.privateKey, unsignEip712Tx);
-        const rawTx = serializeTransaction(unsignEip712Tx, sig);
+        const sig = signTransaction(account1.privateKey, unsignEip712Tx as AcalaEvmTXPayload);
+        const rawTx = serializeTransaction(unsignEip712Tx as UnsignedAcalaEvmTX, sig);
         const parsedTx = parseTransaction(rawTx);
 
-        expect(parsedTx.gasLimit.eq(gasLimit)).equal(true);
-        expect(parsedTx.validUntil.eq(validUntil)).equal(true);
-        expect(parsedTx.storageLimit.eq(storageLimit)).equal(true);
+        expect(BigNumber.from(parsedTx.gasLimit).eq(gasLimit)).equal(true);
+        expect(BigNumber.from(parsedTx.validUntil).eq(validUntil)).equal(true);
+        expect(BigNumber.from(parsedTx.storageLimit).eq(storageLimit)).equal(true);
 
         expect(parsedTx.from).equal(wallet1.address);
         expect(parsedTx.data).equal(deployHelloWorldData);
@@ -932,7 +932,7 @@ describe('eth_sendRawTransaction', () => {
         const balance1 = await queryNativeBalance(account1.evmAddress);
         const balance2 = await queryNativeBalance(account2.evmAddress);
 
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         };
@@ -962,7 +962,7 @@ describe('eth_sendRawTransaction', () => {
         const balance2 = await queryNativeBalance(account2.evmAddress);
 
         const priorityFee = BigNumber.from(0); // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           gasPrice: undefined,
@@ -1000,7 +1000,7 @@ describe('eth_sendRawTransaction', () => {
         const validUntil = 10000;
         const storageLimit = 100000;
 
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialTransferTX,
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           salt: genesisHash,
@@ -1010,9 +1010,8 @@ describe('eth_sendRawTransaction', () => {
           type: 0x60,
         };
 
-        const sig = signTransaction(account1.privateKey, transferTX);
-        const rawTx = serializeTransaction(transferTX, sig);
-        const parsedTx = parseTransaction(rawTx);
+        const sig = signTransaction(account1.privateKey, transferTX as AcalaEvmTXPayload);
+        const rawTx = serializeTransaction(transferTX as UnsignedAcalaEvmTX, sig);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
@@ -1074,10 +1073,11 @@ describe('eth_sendRawTransaction', () => {
           queryEthBalance(account1.evmAddress),
           queryEthBalance(account2.evmAddress),
         ]);
-
-        const transferTX: AcalaEvmTX = {
+        const { gasPrice, gasLimit } = await estimateGas();
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialNativeTransferTX,
-          ...(await estimateGas()),
+          gasPrice: BigNumber.from(gasPrice),
+          gasLimit: BigNumber.from(gasLimit),
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
         };
 
@@ -1109,13 +1109,13 @@ describe('eth_sendRawTransaction', () => {
 
         const priorityFee = BigNumber.from(0); // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
         const { gasPrice, gasLimit } = await estimateGas();
-        const transferTX: AcalaEvmTX = {
+        const transferTX: Partial<AcalaEvmTX> = {
           ...partialNativeTransferTX,
-          gasLimit,
+          gasLimit: BigNumber.from(gasLimit),
           nonce: (await eth_getTransactionCount([wallet1.address, 'pending'])).data.result,
           gasPrice: undefined,
           maxPriorityFeePerGas: priorityFee,
-          maxFeePerGas: gasPrice,
+          maxFeePerGas: BigNumber.from(gasPrice),
           type: 2,
         };
 
