@@ -1,5 +1,16 @@
 import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers';
-import { Log } from '@ethersproject/abstract-provider';
+
+export interface LogHexified {
+  blockNumber: string;
+  blockHash: string;
+  transactionIndex: string;
+  removed: boolean;
+  address: string;
+  data: string;
+  topics: Array<string>;
+  transactionHash: string;
+  logIndex: string;
+}
 
 export const evmAccounts = [
   {
@@ -202,7 +213,7 @@ export const log22_1 = {
   logIndex: '0x1',
 };
 
-export const allLogs = [log6, log7, log8, log9, log10, log11, log12, log13, log14, log20_0, log20_1, log22_0, log22_1] as any as Log[];
+export const allLogs = [log6, log7, log8, log9, log10, log11, log12, log13, log14, log20_0, log20_1, log22_0, log22_1] as LogHexified[];
 
 export const karuraBlock2449983 = {
   hash: '0xbdae06c67294bca57bffd390c997d6730a837e1c11252d9bba00cac7384c1f16',

@@ -4,6 +4,7 @@ import {
   KARURA_CONTRACT_CALL_TX_HASH,
   KARURA_CONTRACT_DEPLOY_TX_HASH,
   KARURA_SEND_KAR_TX_HASH,
+  LogHexified,
   allLogs,
   deployHelloWorldData,
   evmAccounts,
@@ -24,7 +25,8 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { DUMMY_LOGS_BLOOM, EvmRpcProvider, sleep } from '@acala-network/eth-providers';
-import { Interface, parseUnits } from 'ethers/lib/utils';
+import { Interface, hexValue, hexlify, parseUnits } from 'ethers/lib/utils';
+import { JsonRpcError } from '@acala-network/eth-rpc-adapter/server';
 import { KARURA_ETH_RPC_URL, NODE_RPC_URL, SUBQL_URL, WS_URL, bigIntDiff, rpcGet } from './utils';
 import { Log } from '@ethersproject/abstract-provider';
 import { SubqlProvider } from '@acala-network/eth-providers/utils/subqlProvider';
@@ -42,13 +44,20 @@ const account1 = evmAccounts[0];
 const account2 = evmAccounts[1];
 const wallet1 = new Wallet(account1.privateKey);
 
+const hexilifyLog = (log: Log) => ({
+  ...log,
+  blockNumber: hexValue(parseInt(log.blockNumber as any)),
+  transactionIndex: hexValue(parseInt(log.transactionIndex as any)),
+  logIndex: hexValue(parseInt(log.logIndex as any)),
+});
+
 /* ---------- local rpc methods ---------- */
 // TODO: encapsulate to a big helper that contains these methods?
 const eth_call = rpcGet('eth_call');
 const eth_blockNumber = rpcGet('eth_blockNumber');
 const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
 const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
-const eth_getLogs = rpcGet<{ data: { result: Log[] } }>('eth_getLogs');
+const eth_getLogs = rpcGet<{ data: { result?: LogHexified[], error?: JsonRpcError }}>('eth_getLogs');
 const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
 const eth_accounts = rpcGet('eth_accounts');
 const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction');
@@ -65,7 +74,7 @@ const eth_isBlockFinalized = rpcGet('eth_isBlockFinalized');
 const eth_newFilter = rpcGet('eth_newFilter');
 const eth_newBlockFilter = rpcGet('eth_newBlockFilter');
 const eth_getFilterChanges = rpcGet('eth_getFilterChanges');
-const eth_getFilterLogs = rpcGet('eth_getFilterLogs');
+const eth_getFilterLogs = rpcGet<{ data: { result?: LogHexified[], error?: JsonRpcError } }>('eth_getFilterLogs');
 const eth_uninstallFilter = rpcGet('eth_uninstallFilter');
 
 const getBlockHash = async (blockNum: number): Promise<string> =>
@@ -80,12 +89,12 @@ const eth_getTransactionByHash_karura = rpcGet('eth_getTransactionByHash', KARUR
 const eth_getBlockByNumber_karura = rpcGet('eth_getBlockByNumber', KARURA_ETH_RPC_URL);
 const eth_getStorageAt_karura = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
 
-const expectLogsEqual = (a: Log[], b: Log[]): void => {
+const expectLogsEqual = (a: LogHexified[], b: LogHexified[]): void => {
   expect(a.length).to.greaterThan(0);
   expect(a.length).to.equal(b.length);
   expect(
     a.every(({ transactionHash: t0, logIndex: l0 }) =>
-      b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && l0 === l1)
+      b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
     )
   );
 };
@@ -379,8 +388,8 @@ describe('eth_getLogs', () => {
       const BIG_NUMBER = 88888888;
       const BIG_NUMBER_HEX = '0x54C5638';
 
-      let res;
-      let expectedLogs;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ ...ALL_BLOCK_RANGE_FILTER }]);
@@ -409,23 +418,23 @@ describe('eth_getLogs', () => {
       const from = 9;
       const to = 11;
       res = await eth_getLogs([{ fromBlock: from }]);
-      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter(( { blockNumber }) => blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from && blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
 
   describe('filter by block tag', () => {
     it('returns correct logs for valid tag', async () => {
-      let res;
-      let expectedLogs;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ fromBlock: 'earliest' }]);
@@ -460,23 +469,23 @@ describe('eth_getLogs', () => {
       const from = 8;
       const to = 10;
       res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
-      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
 
       res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= from && blockNumber <= to);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
       expectLogsEqual(res.data.result, expectedLogs);
     });
   });
 
   describe('filter by topics', () => {
     it('returns correct logs', async () => {
-      let res;
-      let expectedLogs;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
 
       /* ---------- should return all logs ---------- */
       res = await eth_getLogs([{ topics: [], ...ALL_BLOCK_RANGE_FILTER }]);
@@ -521,11 +530,10 @@ describe('eth_getLogs', () => {
 
   describe('filter by blockhash', () => {
     it('returns correct logs', async () => {
-      const allLogsFromSubql = await subql.getAllLogs();
-
+      const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
       for (const log of allLogsFromSubql) {
         const res = await eth_getLogs([{ blockHash: log.blockHash }]);
-        const expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber === log.blockNumber);
+        const expectedLogs = allLogs.filter((l) => l.blockNumber === log.blockNumber);
         expectLogsEqual(res.data.result, expectedLogs);
       }
     });
@@ -533,35 +541,34 @@ describe('eth_getLogs', () => {
 
   describe('filter by multiple params', () => {
     it('returns correct logs', async () => {
-      let res;
-      let expectedLogs;
-      const allLogsFromSubql = await subql.getAllLogs();
-
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
+      let expectedLogs: LogHexified[];
+      const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
       /* -------------------- match block range -------------------- */
-      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber >= 8 && blockNumber <= 11);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
       res = await eth_getLogs([{ fromBlock: 8, toBlock: 11, topics: [[], null, []] }]);
       expectLogsEqual(res.data.result, expectedLogs);
 
-      expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber <= 15);
+      expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= 15);
       res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 15, topics: [[], null, []] }]);
       expectLogsEqual(res.data.result, expectedLogs);
 
       for (const log of allLogsFromSubql) {
         /* -------------------- match blockhash -------------------- */
-        expectedLogs = allLogs.filter(({ blockNumber }) => blockNumber === log.blockNumber);
+        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
         res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         /* -------------------- match first topic -------------------- */
         expectedLogs = allLogs.filter(
-          ({ blockNumber, topics }) => blockNumber === blockNumber && topics[0] === log.topics[0]
+          (l) => parseInt(l.blockNumber) === parseInt(log.blockNumber) && l.topics[0] === log.topics[0]
         );
         res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[log.topics[0], 'xxx'], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         /* -------------------- match range and topics -------------------- */
         expectedLogs = allLogs.filter(
-          ({ blockNumber, topics }) => blockNumber >= 8 && blockNumber <= 15 && topics[0] === log.topics[0]
+          (l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 15 && l.topics[0] === log.topics[0]
         );
         res = await eth_getLogs([{ fromBlock: 8, toBlock: 15, topics: [['xxx', log.topics[0]]] }]);
         expectLogsEqual(res.data.result, expectedLogs);
@@ -578,7 +585,7 @@ describe('eth_getLogs', () => {
 
   describe('when error', () => {
     it('returns correct error code and messge', async () => {
-      let res;
+      let res: Awaited<ReturnType<typeof eth_getLogs>>;
 
       /* ---------- invalid tag ---------- */
       res = await eth_getLogs([{ fromBlock: 'polkadot' }]);
@@ -972,6 +979,7 @@ describe('eth_sendRawTransaction', () => {
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
+        const _ = parseTransaction(rawTx);
 
         const res = await eth_sendRawTransaction([rawTx]);
         expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
