@@ -14,6 +14,8 @@ const gasOverride = {
   gasLimit: '0x329b140',
 };
 
+const localEthRpc = process.env.ETH_RPC || 'http://localhost:8545';
+
 describe('JsonRpcProvider', async () => {
   /* --------- karura --------- */
   const someOne = '0xf7ABcfa42bF7e7d43d3d53C665deD80fDAfB5244';
@@ -24,7 +26,7 @@ describe('JsonRpcProvider', async () => {
 
   /* --------- local --------- */
   const testKey = 'a872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f';   // 0x75E480dB528101a381Ce68544611C169Ad7EB342
-  const providerLocal = new AcalaJsonRpcProvider('http://localhost:8545');
+  const providerLocal = new AcalaJsonRpcProvider(localEthRpc);
   const wallet = new Wallet(testKey, providerLocal);
 
   describe.concurrent('get chain data', () => {
