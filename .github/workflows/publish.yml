@@ -32,6 +32,10 @@ jobs:
       - name: build packages
         run: yarn build
 
+      # Writes token to .yarnrc.yml. If written directly in .yarnrc.yml, it will cause an error
+      - run: |
+          echo npmAuthToken: "\${NPM_AUTH_TOKEN}" >> ./.yarnrc.yml
+
       - name: publish @acala-network/eth-transactions
         run: yarn workspace @acala-network/eth-transactions npm publish --tolerate-republish --access public
         env:
@@ -51,3 +55,6 @@ jobs:
         run: yarn workspace @acala-network/bodhi npm publish --tolerate-republish --access public
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - run: |
+          git checkout ./.yarnrc.yml
