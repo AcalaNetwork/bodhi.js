@@ -157,6 +157,8 @@ services:
     depends_on:
       mandala-node:
         condition: service_healthy
+      eth-rpc-adapter-server:
+        condition: service_healthy
       yarn-install:
         condition: service_completed_successfully
 
