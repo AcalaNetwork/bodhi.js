@@ -69,4 +69,4 @@ jspm_packages/
 
 dist
 lib
-tsconfig.tsbuildinfo
+*.tsbuildinfo

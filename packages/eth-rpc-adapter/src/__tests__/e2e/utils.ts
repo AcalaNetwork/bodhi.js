@@ -7,9 +7,9 @@ export const WS_URL = process.env.WS_URL || 'ws://127.0.0.1:8545';
 export const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
 
 export const rpcGet =
-  (method: string, url: string = RPC_URL) =>
-    (params: any[] = []): any =>
-      axios.get(url, {
+  <R = any>(method: string, url: string = RPC_URL) =>
+    (params: any[] = []) =>
+      axios.get<any, R>(url, {
         data: {
           id: 0,
           jsonrpc: '2.0',

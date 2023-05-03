@@ -99,8 +99,9 @@ import { MaxSizeSet } from './utils/MaxSizeSet';
 import { SubqlProvider } from './utils/subqlProvider';
 import { _Metadata } from './utils/gqlTypes';
 
-export interface Eip1898BlockTag {
+export type Eip1898BlockTag = {
   blockNumber: string | number;
+} | {
   blockHash: string;
 }
 

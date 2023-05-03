@@ -4,7 +4,7 @@ version: 1.0.0
 runner:
   node:
     name: '@subql/node'
-    version: 1.17.0
+    version: 1.21.2
   query:
     name: '@subql/query'
     version: 1.4.0
@@ -17,10 +17,10 @@ network:
   chainId: '0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b'
   endpoint: wss://karura-rpc-0.aca-api.network
   chaintypes:
-    file: ./dist/chain-types.js
+    file: ./dist/chain-types/index.js
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 1
+    startBlock: 1780000
     mapping:
       file: ./dist/index.js
       handlers:
