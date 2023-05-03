@@ -1,5 +1,6 @@
 {
   "name": "@acala-network/evm-subql",
+  "version": "2.6.6",
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "private": true,
