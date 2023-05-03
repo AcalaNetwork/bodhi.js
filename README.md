@@ -89,7 +89,7 @@ docker logs -f <container_id>           # logs for specific container
 ### CI
 first bump versions and commit
 ```
-yarn workspaces foreach -vit --include "@acala-network/*" version <patch, minor, major>
+yarn workspaces foreach -vit --include "@acala-network/*" --exclude "@acala-network/evm-subql" version <patch, minor, major>
 git add .
 git commit -m "bump v2.x.x"
 ```
