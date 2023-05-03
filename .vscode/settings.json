@@ -1,5 +1,6 @@
 {
   "files.associations": {
     "*.json": "json"
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
