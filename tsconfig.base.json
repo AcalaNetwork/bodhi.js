@@ -12,6 +12,7 @@
     "target": "es2020",
     "skipLibCheck": true,
     "strict": true,
+    "allowJs": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,

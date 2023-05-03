@@ -44,7 +44,7 @@ jspm_packages/
 !.yarn/plugins
 !.yarn/releases
 !.yarn/sdks
-!.yarn/versions
+.yarn/versions
 
 # Optional eslint cache
 .eslintcache
