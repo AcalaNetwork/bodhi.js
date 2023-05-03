@@ -5,3 +5,4 @@ lib/
 dist/
 examples/
 scripts/
+packages/evm-subql/src/types
