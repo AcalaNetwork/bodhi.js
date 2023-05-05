@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/bodhi",
-  "version": "2.6.7",
+  "version": "2.6.8",
   "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
@@ -9,7 +9,7 @@
     "build": "tsc --build ./tsconfig.json"
   },
   "peerDependencies": {
-    "@polkadot/api": "~9.10.3"
+    "@polkadot/api": "^10.5.1"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
@@ -26,7 +26,6 @@
     "ethers": "~5.7.0"
   },
   "devDependencies": {
-    "@acala-network/api": "~5.0.2",
     "@types/chai": "~4.2.22",
     "chai": "~4.3.4",
     "typescript": "~4.6.3"

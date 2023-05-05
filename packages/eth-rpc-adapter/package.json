@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-rpc-adapter",
-  "version": "2.6.7",
+  "version": "2.6.8",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "bin": "./bin/eth-rpc-adapter.js",
@@ -9,12 +9,12 @@
     "build": "tsc --build tsconfig.json",
     "test:e2e": "SKIP_PUBLIC=true mocha -r tsconfig-paths/register src/__tests__/e2e/*",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "dev": "nodemon --watch \"*\" --ext \"js,ts,json\" --ignore \"src/**/*.{spec,test}.ts\" --exec \"ts-node src/index.ts -l\" | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc",
+    "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc",
     "test:CI": "mocha -r tsconfig-paths/register src/__tests__/e2e/* --timeout 300000",
     "ncc:pack": "ncc build src/index.ts -t --target es2020"
   },
   "peerDependencies": {
-    "@polkadot/api": "~9.10.3"
+    "@polkadot/api": "^10.5.1"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
@@ -33,6 +33,7 @@
     "dd-trace": "~2.6.0",
     "ethers": "~5.7.0",
     "pino": "~7.0.0-rc.3",
+    "ts-node-dev": "^2.0.0",
     "ws": "~8.2.2",
     "yargs": "16.2.0"
   },
