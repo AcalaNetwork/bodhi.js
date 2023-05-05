@@ -51,6 +51,7 @@ __metadata:
     ethers: ~5.7.0
     typescript: ~4.6.3
   peerDependencies:
+    "@acala-network/api": ~5.0.3-0
     "@polkadot/api": ^10.5.1
   languageName: unknown
   linkType: soft
@@ -109,6 +110,7 @@ __metadata:
     sinon-chai: ~3.7.0
     vitest: ^0.29.8
   peerDependencies:
+    "@acala-network/api": ~5.0.3-0
     "@polkadot/api": ^10.5.1
   languageName: unknown
   linkType: soft
