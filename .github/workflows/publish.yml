@@ -37,22 +37,30 @@ jobs:
           echo npmAuthToken: "\${NPM_AUTH_TOKEN}" >> ./.yarnrc.yml
 
       - name: publish @acala-network/eth-transactions
-        run: yarn workspace @acala-network/eth-transactions npm publish --tolerate-republish --access public
+        run: |
+          TAG=$(node -p -e "require('./packages/eth-transactions/package.json').version.includes('-') ? '--tag beta' : ''")
+          yarn workspace @acala-network/eth-transactions npm publish --tolerate-republish --access public $TAG
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       - name: publish @acala-network/eth-providers
-        run: yarn workspace @acala-network/eth-providers npm publish --tolerate-republish --access public
+        run: |
+          TAG=$(node -p -e "require('./packages/eth-providers/package.json').version.includes('-') ? '--tag beta' : ''")
+          yarn workspace @acala-network/eth-providers npm publish --tolerate-republish --access public $TAG
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       - name: publish @acala-network/eth-rpc-adapter
-        run: yarn workspace @acala-network/eth-rpc-adapter npm publish --tolerate-republish --access public
+        run: |
+          TAG=$(node -p -e "require('./packages/eth-rpc-adapter/package.json').version.includes('-') ? '--tag beta' : ''")
+          yarn workspace @acala-network/eth-rpc-adapter npm publish --tolerate-republish --access public $TAG
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 
       - name: publish @acala-network/bodhi
-        run: yarn workspace @acala-network/bodhi npm publish --tolerate-republish --access public
+        run: |
+          TAG=$(node -p -e "require('./packages/bodhi/package.json').version.includes('-') ? '--tag beta' : ''")
+          yarn workspace @acala-network/bodhi npm publish --tolerate-republish --access public $TAG
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
 

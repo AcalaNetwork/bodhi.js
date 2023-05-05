@@ -87,14 +87,16 @@ docker logs -f <container_id>           # logs for specific container
 - Most of the APIs of [eth-providers](./packages/eth-providers/) is compatible with [ethers.js](https://docs.ethers.io/v5/single-page/) providers.
 
 ### CI
-first bump versions and commit
+To release new NPN packages then first bump versions and commit.
+Use `prerelease` for beta releases
 ```
-yarn bump <patch, minor, major>
+yarn bump <patch, minor, major, prerelease>
 git add .
 git commit -m "bump v2.x.x"
 ```
 
-then tag the commit and push
+To release docker images then tag the commit and push.
+Use manual `workflow_dispatch` for beta releasees
 ```
 git tag v2.x.x
 git push --atomic origin master v2.x.x
