@@ -34,7 +34,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@acala-network/bodhi@workspace:packages/bodhi"
   dependencies:
-    "@acala-network/api": ~5.0.3-0
     "@acala-network/eth-providers": "workspace:*"
     "@ethersproject/abstract-provider": ~5.7.0
     "@ethersproject/abstract-signer": ~5.7.0
@@ -51,7 +50,6 @@ __metadata:
     ethers: ~5.7.0
     typescript: ~4.6.3
   peerDependencies:
-    "@acala-network/api": ~5.0.3-0
     "@polkadot/api": ^10.5.1
   languageName: unknown
   linkType: soft
