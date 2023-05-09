@@ -6,7 +6,6 @@ export default mergeConfig(
   defineProject({
     test: {
       environment: 'jsdom',
-      exclude: ['src/__tests__/e2e'],
     },
   })
 );

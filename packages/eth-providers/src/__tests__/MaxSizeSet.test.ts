@@ -1,6 +1,5 @@
 import { MaxSizeSet } from '../utils/MaxSizeSet';
-import { describe, it } from 'vitest';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { mockChain } from './testUtils';
 
 describe('MaxSizeSet', () => {

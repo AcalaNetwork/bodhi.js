@@ -1,6 +1,6 @@
 import { Contract, ContractFactory } from 'ethers';
 import { Wallet } from '@ethersproject/wallet';
-import { describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { formatEther, hexZeroPad, parseEther } from 'ethers/lib/utils';
 
 import { AcalaJsonRpcProvider } from '../../json-rpc-provider';
@@ -21,13 +21,22 @@ describe('JsonRpcProvider', async () => {
   const someOne = '0xf7ABcfa42bF7e7d43d3d53C665deD80fDAfB5244';
 
   const provider = new AcalaJsonRpcProvider('https://eth-rpc-karura.aca-api.network');
+  await provider.ready;
   const usdcAddr = '0x1F3a10587A20114EA25Ba1b388EE2dD4A337ce27';
   const usdc = new Contract(usdcAddr, erc20Json.abi, provider);
 
   /* --------- local --------- */
   const testKey = 'a872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f';   // 0x75E480dB528101a381Ce68544611C169Ad7EB342
   const providerLocal = new AcalaJsonRpcProvider(localEthRpc);
+  await providerLocal.ready;
   const wallet = new Wallet(testKey, providerLocal);
+
+  afterAll(async () => {
+    await sleep(1000);
+    provider.removeAllListeners();
+    providerLocal.removeAllListeners();
+    await sleep(5000);
+  });
 
   describe.concurrent('get chain data', () => {
     it('get chain id', async () => {

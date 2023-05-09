@@ -2,10 +2,9 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { Wallet } from '@ethersproject/wallet';
-import { afterAll, describe, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
-import { expect } from 'chai';
-import { sendTx } from '../../utils';
+import { sendTx, sleep } from '../../utils';
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import evmAccounts from '../evmAccounts';
@@ -16,9 +15,11 @@ describe('TransactionReceipt', async () => {
   await provider.isReady();
 
   afterAll(async () => {
+    await sleep(5000);
     await provider.disconnect();
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await sleep(1000);
   });
+
   it('getTransactionReceipt', async () => {
     const account1 = evmAccounts[0];
     const account2 = evmAccounts[1];
@@ -43,10 +44,10 @@ describe('TransactionReceipt', async () => {
     });
 
     const receipt = await provider.getReceiptAtBlock(result.hash, result.blockHash);
-
-    expect(receipt.blockHash).equal(result.blockHash);
-    expect(receipt.logs.length).equal(1);
-    expect(receipt.logs[0].blockNumber).equal(result.blockNumber);
-    expect(receipt.logs[0].topics.length).equal(3);
+    expect(receipt).toBeTruthy();
+    expect(receipt!.blockHash).equal(result.blockHash);
+    expect(receipt!.logs.length).equal(1);
+    expect(receipt!.logs[0].blockNumber).equal(result.blockNumber);
+    expect(receipt!.logs[0].topics.length).equal(3);
   });
 });

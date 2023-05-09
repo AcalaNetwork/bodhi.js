@@ -1,6 +1,5 @@
 import { ERROR_PATTERN } from '../consts';
-import { describe, it } from 'vitest';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 
 describe('filterLog', () => {
   const err0 =

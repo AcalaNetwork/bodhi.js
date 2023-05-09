@@ -19,10 +19,9 @@ import {
   karura3607973,
   mandala938075,
 } from './receipt-snapshots';
-import { afterAll, beforeAll, describe, it } from 'vitest';
-import { expect } from 'chai';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
-import { hexlifyRpcResult } from '../../utils';
+import { hexlifyRpcResult, sleep } from '../../utils';
 import { options } from '@acala-network/api';
 
 interface FormatedReceipt {
@@ -101,9 +100,11 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   afterAll(async () => {
+    await sleep(5000);
     await apiK.disconnect();
     await apiA.disconnect();
     await apiM.disconnect();
+    await sleep(5000);
   });
 
   describe.concurrent('transfer kar', async () => {

@@ -23,7 +23,7 @@
     "@ethersproject/strings": "~5.7.0",
     "@types/bn.js": "~5.1.0",
     "bn.js": "~5.2.0",
-    "ethers": "~5.7.0"
+    "ethers": "~5.7.2"
   },
   "devDependencies": {
     "@types/chai": "~4.2.22",

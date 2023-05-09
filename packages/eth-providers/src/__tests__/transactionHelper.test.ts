@@ -1,6 +1,5 @@
 import { calcEthereumTransactionParams, calcSubstrateTransactionParams } from '../utils';
-import { expect } from 'chai';
-import { it } from 'vitest';
+import { expect, it } from 'vitest';
 
 it('transactionHelper', async () => {
   const txFeePerGas = 199999946752n;

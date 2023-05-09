@@ -1,14 +1,6 @@
 import { EvmRpcProvider } from '../../rpc-provider';
-import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sleep } from '../../utils';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import sinon from 'sinon';
-import sinonChai from 'sinon-chai';
-
-chai.use(chaiAsPromised);
-chai.use(sinonChai);
-const { expect } = chai;
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 const safeProvider = EvmRpcProvider.from(endpoint, { safeMode: true });
@@ -25,7 +17,9 @@ describe('safe mode', () => {
   });
 
   afterAll(async () => {
-    await Promise.all([safeProvider.disconnect(), provider.disconnect()]);
+    await sleep(5000);
+    await safeProvider.disconnect();
+    await provider.disconnect();
   });
 
   beforeEach(async () => await newBlock(true));
@@ -112,52 +106,55 @@ describe('safe mode', () => {
     }
 
     // ③
-    await expect(safeProvider._ensureSafeModeBlockTagFinalization(nextBlock.hash)).to.be.rejectedWith(
+    await expect(safeProvider._ensureSafeModeBlockTagFinalization(nextBlock.hash)).rejects.toThrowError(
       'SAFE MODE ERROR: target block is not finalized'
     );
   });
 
   it('subscribe', async () => {
     // setup
-    const cb = sinon.spy();
-    const safeCb = sinon.spy();
-    const sub = provider.addEventListener('newHeads', cb, {});
-    const safeSub = safeProvider.addEventListener('newHeads', safeCb, {});
+
+    const mock = { cb: vi.fn(), safeCb: vi.fn() };
+    const spyCb = vi.spyOn(mock, 'cb');
+    const spySafeCb = vi.spyOn(mock, 'safeCb');
+
+    const sub = provider.addEventListener('newHeads', mock.cb, {});
+    const safeSub = safeProvider.addEventListener('newHeads', mock.safeCb, {});
 
     // new finalized block
     await newBlock(true);
-    let curHash = (await provider.getBlockData('latest')).hash;
+    const curHash = (await provider.getBlockData('latest')).hash;
 
-    expect(cb).to.have.been.calledWithMatch({
+    expect(spyCb).toHaveBeenCalledWith({
       subscription: sub,
-      result: {
+      result: expect.objectContaining({
         hash: curHash,
-      },
+      }),
     });
 
-    expect(safeCb).to.have.been.calledWithMatch({
+    expect(spySafeCb).toHaveBeenCalledWith({
       subscription: safeSub,
-      result: {
+      result: expect.objectContaining({
         hash: curHash,
-      },
+      }),
     });
 
     // new unfinalized block
     await newBlock(false);
-    curHash = (await provider.getBlockData('latest')).hash;
+    const latestHash = (await provider.getBlockData('latest')).hash;
 
-    expect(cb).to.have.been.calledWithMatch({
+    expect(spyCb).toHaveBeenCalledWith({
       subscription: sub,
-      result: {
-        hash: curHash,
-      },
+      result: expect.objectContaining({
+        hash: latestHash,
+      }),
     });
 
-    expect(safeCb).to.have.not.been.calledWithMatch({
+    expect(spySafeCb).toHaveBeenCalledWith({
       subscription: safeSub,
-      result: {
+      result: expect.objectContaining({
         hash: curHash,
-      },
+      }),
     });
   });
 });

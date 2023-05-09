@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
-  "exclude": ["**/node_modules", "**/lib", "packages/evm-subql/src/types"],
-  "include": ["packages/**/*", "packages/**/src/**/*.json"]
+  "exclude": ["node_modules", "packages/evm-subql/src/types", "packages/evm-subql/dist", "packages/eth-rpc-adapter/bin/**/*"],
+  "include": ["packages/**/*", "packages/**/src/**/*.json", "vitest.shared.ts"]
 }
