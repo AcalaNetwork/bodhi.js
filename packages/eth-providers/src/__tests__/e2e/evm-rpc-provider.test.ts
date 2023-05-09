@@ -28,7 +28,6 @@ describe('initilization', async () => {
   afterAll(async () => {
     await sleep(5000);
     await provider.disconnect();
-    await sleep(1000);
   });
 
   it('should already has initial block number and hash', async () => {
@@ -52,9 +51,8 @@ describe('getReceiptAtBlock', async () => {
   let receipt2;
 
   afterAll(async () => {
-    await sleep(1000);
+    await sleep(5000);
     await provider.disconnect();
-    await sleep(1000);
   });
 
   it('should find tx using tx hash or index from subql', async () => {
