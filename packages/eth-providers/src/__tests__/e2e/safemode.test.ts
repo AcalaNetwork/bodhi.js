@@ -123,7 +123,7 @@ describe('safe mode', () => {
 
     // new finalized block
     await newBlock(true);
-    const curHash = (await provider.getBlockData('latest')).hash;
+    let curHash = (await provider.getBlockData('latest')).hash;
 
     expect(spyCb).toHaveBeenCalledWith({
       subscription: sub,
@@ -141,16 +141,16 @@ describe('safe mode', () => {
 
     // new unfinalized block
     await newBlock(false);
-    const latestHash = (await provider.getBlockData('latest')).hash;
+    curHash = (await provider.getBlockData('latest')).hash;
 
     expect(spyCb).toHaveBeenCalledWith({
       subscription: sub,
       result: expect.objectContaining({
-        hash: latestHash,
+        hash: curHash,
       }),
     });
 
-    expect(spySafeCb).toHaveBeenCalledWith({
+    expect(spySafeCb).not.toHaveBeenCalledWith({
       subscription: safeSub,
       result: expect.objectContaining({
         hash: curHash,
