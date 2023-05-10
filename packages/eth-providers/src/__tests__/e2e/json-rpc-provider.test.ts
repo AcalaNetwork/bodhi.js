@@ -29,6 +29,10 @@ describe('JsonRpcProvider', async () => {
   const providerLocal = new AcalaJsonRpcProvider(localEthRpc);
   const wallet = new Wallet(testKey, providerLocal);
 
+  afterAll(async () => {
+    await sleep(5000);
+  });
+
   describe.concurrent('get chain data', () => {
     it('get chain id', async () => {
       const network = await provider.getNetwork();
