@@ -1,7 +1,7 @@
 import { DUMMY_BLOCK_HASH } from '../../consts';
 import { EvmRpcProvider } from '../../rpc-provider';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runWithTiming } from '../../utils';
+import { afterAll, describe, expect, it } from 'vitest';
+import { runWithTiming, sleep } from '../../utils';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -25,7 +25,10 @@ describe('initilization', async () => {
   const provider = EvmRpcProvider.from(ACALA_NODE_URL);
   await provider.isReady();
 
-  afterAll(async () => await provider.disconnect());
+  afterAll(async () => {
+    await sleep(5000);
+    await provider.disconnect();
+  });
 
   it('should already has initial block number and hash', async () => {
     expect(provider.latestBlockNumber).to.gt(-1);
@@ -47,7 +50,10 @@ describe('getReceiptAtBlock', async () => {
   let receipt1;
   let receipt2;
 
-  afterAll(async () => await provider.disconnect());
+  afterAll(async () => {
+    await sleep(5000);
+    await provider.disconnect();
+  });
 
   it('should find tx using tx hash or index from subql', async () => {
     receipt1 = await provider.getReceiptAtBlock(txHash1, blockHash);
@@ -67,7 +73,7 @@ describe('getReceiptAtBlock', async () => {
     const res1 = await provider.getReceiptAtBlockFromChain(txHash1, blockHash);
     const res2 = await provider.getReceiptAtBlockFromChain(txHash2, blockHash);
 
-    delete res2['exitReason']; // full receipt contains exitReason
+    delete res2?.['exitReason']; // full receipt contains exitReason
     expect(res1).to.deep.equal(receipt1);
     expect(res2).to.deep.equal(receipt2);
   });

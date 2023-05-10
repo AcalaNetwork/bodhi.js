@@ -1,16 +1,17 @@
 import { Eip1193Bridge } from '../../eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Wallet, verifyMessage } from '@ethersproject/wallet';
-import { expect } from 'chai';
+import { afterAll, describe, expect, it } from 'vitest';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
-describe('eth_accounts', () => {
+describe('eth_accounts', async () => {
   const signer = new Wallet('0x5a214c9bcb10dfe58af9b349cad6f4564cd6f10d880bdfcf780e5812c3cbc855');
   const provider = EvmRpcProvider.from(endpoint);
+  await provider.isReady();
 
   const bridge = new Eip1193Bridge(provider, signer as any);
 
@@ -34,7 +35,8 @@ describe('eth_accounts', () => {
     expect(verifyMessage('123', result)).equal('0x57a2423D1A30D90cECeC14c3844d88983F70659f');
   });
 
-  after(() => {
-    provider.disconnect();
+  afterAll(async () => {
+    await new Promise(r => setTimeout(r, 5_000));
+    await provider.disconnect();
   });
 });

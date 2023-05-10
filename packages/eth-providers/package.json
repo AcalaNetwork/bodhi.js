@@ -7,7 +7,7 @@
     "clean": "rm -rf lib tsconfig.tsbuildinfo",
     "build": "tsc --build ./tsconfig.json",
     "gql:typegen": "graphql-codegen --config codegen.yml",
-    "test:CI": "vitest --run --config vitest.config.ts"
+    "test:CI": "vitest --run --config vitest.config.e2e.ts"
   },
   "peerDependencies": {
     "@acala-network/api": "~5.0.3-0",
@@ -36,21 +36,11 @@
   },
   "devDependencies": {
     "@acala-network/api": "~5.0.3-0",
-    "@sinonjs/fake-timers": "~9.1.1",
     "@types/bn.js": "~5.1.0",
-    "@types/chai": "~4.2.22",
-    "@types/chai-as-promised": "~7.1.4",
     "@types/lru-cache": "~7.6.1",
-    "@types/sinon-chai": "^3.2.9",
-    "@types/sinonjs__fake-timers": "~8.1.2",
-    "@vitest/coverage-c8": "~0.28.5",
-    "chai": "~4.3.4",
-    "chai-as-promised": "~7.1.1",
-    "chai-subset": "~1.6.0",
     "dotenv": "~10.0.0",
-    "sinon": "~13.0.1",
-    "sinon-chai": "~3.7.0",
-    "vitest": "^0.29.8"
+    "jsdom": "^22.0.0",
+    "vitest": "^0.31.0"
   },
   "files": [
     "lib"

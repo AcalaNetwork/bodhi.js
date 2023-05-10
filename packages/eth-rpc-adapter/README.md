@@ -183,5 +183,5 @@ cd ../e2e/ && yarn test
 
 - run tests
 ```
-SKIP_PUBLIC=true yarn mocha **/*.test.ts
+yarn test:e2e
 ```

@@ -4,15 +4,12 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   test: {
-    testTimeout: 300000,
-    hookTimeout: 60000,
-    dangerouslyIgnoreUnhandledErrors: true,
-    threads: false,
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
     coverage: {
       provider: 'c8', // or 'istanbul'
       reporter: ['text', 'json', 'html'],
     },
-    include: ['packages/**/*.test.ts'],
     exclude: ['**/e2e/*'],
   },
   plugins: [swc.vite(), tsconfigPaths()],

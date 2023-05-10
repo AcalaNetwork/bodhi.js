@@ -1,14 +1,9 @@
 import { EvmRpcProvider } from '../../rpc-provider';
-import { afterAll, beforeAll, describe, it } from 'vitest';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import { afterAll, describe, expect, it } from 'vitest';
+import { sleep } from '../../utils';
 import dotenv from 'dotenv';
 
 dotenv.config();
-
-chai.use(chaiAsPromised);
-
-const { expect } = chai;
 
 describe('rpc test', async () => {
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
@@ -16,6 +11,7 @@ describe('rpc test', async () => {
   await provider.isReady();
 
   afterAll(async () => {
+    await sleep(5000);
     await provider.disconnect();
   });
 
@@ -26,7 +22,7 @@ describe('rpc test', async () => {
 
   it('getTransactionCount', async () => {
     const result = await provider.getTransactionCount('0x33f9440ff970496a09e391f3773a66f1e98eb13c', 'latest');
-    expect(result).to.not.be.undefined;
+    expect(result).not.toBeUndefined();
   });
 
   it('getCode', async () => {
@@ -46,7 +42,7 @@ describe('rpc test', async () => {
       to: '0xbffb25b73c6a0581a28988ce34c9f240d525b152',
     });
 
-    expect(result).to.not.be.undefined;
+    expect(result).not.toBeUndefined();
   });
 
   it('getBalance', async () => {
@@ -58,6 +54,6 @@ describe('rpc test', async () => {
   it('getBlockByNumber', async () => {
     await expect(
       provider._getBlockHeader('0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c')
-    ).to.be.rejectedWith('header not found');
+    ).rejects.toThrow('header not found');
   });
 });

@@ -4,23 +4,17 @@ import { Contract } from '@ethersproject/contracts';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { Interface, parseUnits } from 'ethers/lib/utils';
 import { Wallet } from '@ethersproject/wallet';
-import { afterAll, beforeAll, describe, it } from 'vitest';
-import { calcEthereumTransactionParams, sendTx } from '../../utils';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { calcEthereumTransactionParams, sendTx, sleep } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
 import dotenv from 'dotenv';
 import evmAccounts from '../evmAccounts';
 import type { UInt } from '@polkadot/types';
 
 dotenv.config();
-
-chai.use(chaiAsPromised);
-
-const { expect } = chai;
 
 describe('transaction tests', () => {
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
@@ -69,6 +63,7 @@ describe('transaction tests', () => {
 
   // clean up
   afterAll(async () => {
+    await sleep(5000);
     await provider.disconnect();
   });
 
@@ -130,7 +125,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice,
         })
-      ).to.be.rejectedWith('InvalidDecimals');
+      ).rejects.toThrowError('InvalidDecimals');
     });
 
     it('OutOfFund', async () => {
@@ -142,7 +137,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice,
         })
-      ).to.be.rejectedWith('outOfFund');
+      ).rejects.toThrowError('outOfFund');
     });
 
     it('ExistentialDeposit', async () => {
@@ -154,7 +149,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice,
         })
-      ).to.be.rejectedWith('ExistentialDeposit');
+      ).rejects.toThrowError('ExistentialDeposit');
     });
   });
 

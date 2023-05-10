@@ -1,7 +1,7 @@
 import { BigNumber, Wallet } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { RPC_URL, rpcGet } from './utils';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import axios from 'axios';
 
 const eth_getEthGas = rpcGet('eth_getEthGas', RPC_URL);

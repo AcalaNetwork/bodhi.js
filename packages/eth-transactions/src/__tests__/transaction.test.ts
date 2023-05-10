@@ -1,4 +1,3 @@
-import {} from 'chai';
 import { describe, expect, it } from 'vitest';
 import { joinSignature } from '@ethersproject/bytes';
 import { parseTransaction } from '../parseTransaction';

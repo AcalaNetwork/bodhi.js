@@ -11,14 +11,8 @@ import {
   sleep,
 } from '../utils';
 import { _Metadata } from '../utils/gqlTypes';
-import { describe, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
-import FakeTimer from '@sinonjs/fake-timers';
-import chai from 'chai';
-import chaiSubset from 'chai-subset';
-
-chai.use(chaiSubset);
-const { expect } = chai;
 
 describe('utils', () => {
   it('connect chain', async () => {
@@ -126,20 +120,20 @@ describe('runwithTiming', () => {
   });
 
   it('returns correct error for timeout', async () => {
-    const clock = FakeTimer.install();
+    vi.useFakeTimers();
 
     const f = async () => {
       await sleep(99999);
     };
 
     const resPromise = runWithTiming(f);
-    clock.tick(20000);
+    vi.advanceTimersByTime(20000);
     const { res, time } = await resPromise;
 
     expect(res).to.contain('error in runWithTiming: timeout after');
     expect(time).to.equal(-999);
 
-    clock.uninstall();
+    vi.useRealTimers();
   });
 });
 
@@ -207,7 +201,10 @@ describe('getHealthResult', () => {
       listenersCount: { newHead: 0, logs: 0 },
     });
 
-    expect(res).containSubset(healthResult);
+    expect(res).toEqual(expect.objectContaining({
+      ...healthResult,
+      moreInfo: expect.objectContaining(healthResult.moreInfo),
+    }));
   });
 
   describe('return correct error when unhealthy', () => {
@@ -227,18 +224,19 @@ describe('getHealthResult', () => {
         listenersCount: { newHead: 0, logs: 0 },
       });
 
-      expect(res).containSubset({
+      expect(res).toEqual(expect.objectContaining({
         ...healthResult,
         isHealthy: false,
         isSubqlOK: false,
-        moreInfo: {
+        msg: expect.any(Array),
+        moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
           maxCachedBlocksCount: maxCachedBlocks,
           lastProcessedHeight: lastProcessedHeightBad,
           lastProcessedTimestamp: lastProcessedTimestampBad,
           idleBlocks: curFinalizedHeight - lastProcessedHeightBad,
-        },
-      });
+        }),
+      }));
 
       expect(res.msg.length).to.equal(2);
     });
@@ -256,15 +254,16 @@ describe('getHealthResult', () => {
         listenersCount: { newHead: 0, logs: 0 },
       });
 
-      expect(res).containSubset({
+      expect(res).toEqual(expect.objectContaining({
         ...healthResult,
         isHealthy: false,
-        moreInfo: {
+        msg: expect.any(Array),
+        moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
           idleBlocks: idleBlocks,
           curFinalizedHeight: curFinalizedHeightBad,
-        },
-      });
+        }),
+      }));
 
       expect(res.msg.length).to.equal(1);
       expect(res.msg[0]).to.equal(`node production already idle for: ${-idleBlocks} blocks`);
@@ -283,18 +282,18 @@ describe('getHealthResult', () => {
         listenersCount: { newHead: 0, logs: 0 },
       });
 
-      expect(res).containSubset({
+      expect(res).toEqual(expect.objectContaining({
         ...healthResult,
         isHealthy: false,
         isCacheOK: false,
         msg: [
           `cached blocks size is bigger than expected: ${cachedBlocksCountBad}, expect at most ~${maxCachedBlocks}`,
         ],
-        moreInfo: {
+        moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
           cachedBlocksCount: cachedBlocksCountBad,
-        },
-      });
+        }),
+      }));
     });
 
     it('when RPC becomes slow', () => {
@@ -310,7 +309,7 @@ describe('getHealthResult', () => {
         listenersCount: { newHead: 0, logs: 0 },
       });
 
-      expect(res).containSubset({
+      expect(res).toEqual(expect.objectContaining({
         ...healthResult,
         isHealthy: false,
         isRPCOK: false,
@@ -319,11 +318,11 @@ describe('getHealthResult', () => {
             ethCallTimingBad
           )}`,
         ],
-        moreInfo: {
+        moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
           ethCallTiming: ethCallTimingBad,
-        },
-      });
+        }),
+      }));
     });
 
     it('when RPC has running error', () => {
@@ -339,16 +338,16 @@ describe('getHealthResult', () => {
         listenersCount: { newHead: 0, logs: 0 },
       });
 
-      expect(res).containSubset({
+      expect(res).toEqual(expect.objectContaining({
         ...healthResult,
         isHealthy: false,
         isRPCOK: false,
         msg: [`an RPC is getting running errors. All timings: ${JSON.stringify(ethCallTimingBad)}`],
-        moreInfo: {
+        moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
           ethCallTiming: ethCallTimingBad,
-        },
-      });
+        }),
+      }));
     });
 
     it('when RPC timeouts', () => {
@@ -364,16 +363,16 @@ describe('getHealthResult', () => {
         listenersCount: { newHead: 0, logs: 0 },
       });
 
-      expect(res).containSubset({
+      expect(res).toEqual(expect.objectContaining({
         ...healthResult,
         isHealthy: false,
         isRPCOK: false,
         msg: [`an RPC is getting timeouts. All timings: ${JSON.stringify(ethCallTimingBad)}`],
-        moreInfo: {
+        moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
           ethCallTiming: ethCallTimingBad,
-        },
-      });
+        }),
+      }));
     });
   });
 });
@@ -394,7 +393,7 @@ describe('parseBlockTag', () => {
     expect(await parseBlockTag(Promise.resolve(blockNumber))).to.equal(blockNumber);
     expect(await parseBlockTag(Promise.resolve(blockHash))).to.equal(blockHash);
     expect(await parseBlockTag(Promise.resolve('latest'))).to.equal('latest');
-    expect(await parseBlockTag(Promise.resolve(undefined))).to.equal(undefined);
+    expect(await parseBlockTag(undefined)).to.equal(undefined);
   });
 
   it('correctly parse EIP-1898 tags', async () => {

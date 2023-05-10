@@ -1,6 +1,4 @@
-import { Log } from '@ethersproject/abstract-provider';
-import { describe, it } from 'vitest';
-import { expect } from 'chai';
+import { describe, expect, it } from 'vitest';
 import { filterLog } from '../utils';
 
 describe('filterLog', () => {
