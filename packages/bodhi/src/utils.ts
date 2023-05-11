@@ -26,7 +26,8 @@ export const dataToString = (bytes: BytesLike): string => {
 };
 
 export const getTestUtils = async (
-  url = 'ws://localhost:9944'
+  url = 'ws://localhost:9944',
+  claimDefault = true,
 ): Promise<{
   wallets: BodhiSigner[];
   pairs: KeyringPair[];
@@ -45,7 +46,7 @@ export const getTestUtils = async (
     const wallet = BodhiSigner.fromPair(provider, pair);
 
     const isClaimed = await wallet.isClaimed();
-    if (!isClaimed) {
+    if (!isClaimed && claimDefault) {
       await wallet.claimDefaultAccount();
     }
 
