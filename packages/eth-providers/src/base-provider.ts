@@ -14,8 +14,10 @@ import {
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { AccessListish } from 'ethers/lib/utils';
-import { AccountId, H160, Header, RuntimeVersion } from '@polkadot/types/interfaces';
+import { AccountId, H160, Header } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
+import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
+import { AsyncScheduler } from 'rxjs/internal/scheduler/AsyncScheduler';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
@@ -23,11 +25,13 @@ import { Formatter } from '@ethersproject/providers';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
+import { Observable, firstValueFrom, throwError } from 'rxjs';
 import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { createHeaderExtended } from '@polkadot/api-derive';
+import { filter, first, map, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
 import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
@@ -39,7 +43,6 @@ import {
   BLOCK_GAS_LIMIT,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
-  DUMMY_BLOCK_HASH,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
   EMPTY_HEX_STRING,
@@ -288,12 +291,25 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly finalizedBlockHashes: MaxSizeSet;
 
   network?: Network | Promise<Network>;
-  latestBlockHash: string;
-  latestFinalizedBlockHash: string;
-  latestBlockNumber: number;
-  latestFinalizedBlockNumber: number;
-  runtimeVersion: number | undefined;
-  subscriptionStarted: boolean;
+
+  #subscription: Promise<() => void> | undefined;
+  head$: Observable<Header>;
+  finalizedHead$: Observable<Header>;
+
+  readonly queue = new AsyncScheduler(AsyncAction);
+
+  get latestBlockHash(): Promise<string> {
+    return firstValueFrom(this.head$.pipe(map(header => header.hash.toHex())));
+  }
+  get latestBlockNumber(): Promise<number> {
+    return firstValueFrom(this.head$.pipe(map(header => header.number.toNumber())));
+  }
+  get latestFinalizedBlockHash(): Promise<string> {
+    return firstValueFrom(this.finalizedHead$.pipe(map(header => header.hash.toHex())));
+  }
+  get latestFinalizedBlockNumber(): Promise<number> {
+    return firstValueFrom(this.finalizedHead$.pipe(map(header => header.number.toNumber())));
+  }
 
   constructor({
     safeMode = false,
@@ -316,15 +332,11 @@ export abstract class BaseProvider extends AbstractProvider {
     this.localMode = localMode;
     this.richMode = richMode;
     this.verbose = verbose;
-    this.latestBlockHash = DUMMY_BLOCK_HASH;
-    this.latestFinalizedBlockHash = DUMMY_BLOCK_HASH;
-    this.latestBlockNumber = -1;
-    this.latestFinalizedBlockNumber = -1;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.storageCache = new LRUCache({ max: storageCacheSize });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
     this.finalizedBlockHashes = new MaxSizeSet(this.maxBlockCacheSize);
-    this.subscriptionStarted = false;
+
     this.subql = subqlUrl ? new SubqlProvider(subqlUrl) : undefined;
 
     /* ---------- messages ---------- */
@@ -346,43 +358,54 @@ export abstract class BaseProvider extends AbstractProvider {
     return !!(value && value._isProvider);
   }
 
-  startSubscriptions = async (): Promise<void> => {
-    await Promise.all(
-      [this._subscribeEventListeners(), this._subscribeNewBlocks(), this._subscribeRuntimeVersion()].flat()
-    );
-  };
+  startSubscriptions = async () => {
+    this.head$ = this.api.rx.rpc.chain.subscribeNewHeads();
+    this.finalizedHead$ = this.api.rx.rpc.chain.subscribeFinalizedHeads();
 
-  _subscribeEventListeners = async () => {
-    const subscriptionMethod = this.safeMode
-      ? this.api.rpc.chain.subscribeFinalizedHeads.bind(this)
-      : this.api.rpc.chain.subscribeNewHeads.bind(this);
-
-    const headsUnsub = await subscriptionMethod(async (header: Header) => {
-      // update block cache
-      const blockNumber = header.number.toNumber();
-      const blockHash = header.hash.toHex();
-
-      if (blockNumber === 0) return; // getAllReceiptsAtBlock doesn't work for block 0
-      const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
-      this.blockCache.addReceipts(blockHash, receipts);
-
-      // eth_subscribe
-      await this._notifySubscribers(blockHash, receipts);
+    const finalizedSub = this.finalizedHead$.subscribe((header: Header) => {
+      this.finalizedBlockHashes.add(header.hash.toHex());
     });
 
-    const finalizedHeads = this.api.rpc.chain.subscribeFinalizedHeads.bind(this);
-    const finalizedUnsub = await finalizedHeads(async (header: Header) => {
-      if (header.number.toNumber() === 0) return;
+    await firstValueFrom(this.head$);
+    await firstValueFrom(this.finalizedHead$);
 
+    const safeHead$ = this.safeMode
+      ? this.finalizedHead$
+      : this.head$;
+
+    const notifySub = safeHead$.pipe(
+      // no reciepts for genesis block
+      filter(header => header.number.toNumber() > 0)
+    ).subscribe(header => {
+      const blockHash = header.hash.toHex();
+      // TODO: keep track of tasks
+      this.queue.schedule(async () => {
+        const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
+        // update block cache
+        this.blockCache.addReceipts(blockHash, receipts);
+
+        // eth_subscribe
+        await this._notifySubscribers(blockHash, receipts);
+      });
+    });
+
+    const notifyFinalizedSub = this.finalizedHead$.pipe(
+      filter(header => header.number.toNumber() > 0)
+    ).subscribe((header: Header) => {
       // notify subscribers
-      const block = await this.getBlockData(header.hash.toHex(), false);
-      const response = hexlifyRpcResult(block);
-      this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach((l) => l.cb(response));
+      const blockHash = header.hash.toHex();
+      // TODO: keep track of tasks
+      this.queue.schedule(async () => {
+        const block = await this.getBlockData(blockHash, false);
+        const response = hexlifyRpcResult(block);
+        this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach((l) => l.cb(response));
+      });
     });
 
     return () => {
-      headsUnsub();
-      finalizedUnsub();
+      finalizedSub.unsubscribe();
+      notifySub.unsubscribe();
+      notifyFinalizedSub.unsubscribe();
     };
   };
 
@@ -406,62 +429,6 @@ export abstract class BaseProvider extends AbstractProvider {
       }
     }
   };
-
-  // this will ensure after isReady, latest block info is ready
-  _subscribeNewBlocks = () => [this._subscribeFinalizedHeadsEnsureOnce(), this._subscribeHeadsEnsureOnce()];
-
-  _subscribeFinalizedHeadsEnsureOnce = () =>
-    new Promise<void>((resolve) => {
-      let resolved = false;
-      this.api.rpc.chain
-        .subscribeFinalizedHeads((header: Header) => {
-          this.latestFinalizedBlockNumber = header.number.toNumber();
-          this.latestFinalizedBlockHash = header.hash.toHex();
-
-          this.finalizedBlockHashes.add(this.latestFinalizedBlockHash);
-
-          if (!resolved) {
-            resolved = true;
-            resolve();
-          }
-        })
-        .catch((e) => {
-          throw e;
-        });
-    });
-
-  _subscribeHeadsEnsureOnce = () =>
-    new Promise<void>((resolve) => {
-      let resolved = false;
-      this.api.rpc.chain
-        .subscribeNewHeads((header: Header) => {
-          this.latestBlockNumber = header.number.toNumber();
-          this.latestBlockHash = header.hash.toHex();
-
-          if (!resolved) {
-            resolved = true;
-            resolve();
-          }
-        })
-        .catch((e) => {
-          throw e;
-        });
-    });
-
-  _subscribeRuntimeVersion = () =>
-    this.api.rpc.state.subscribeRuntimeVersion((runtime: RuntimeVersion) => {
-      const version = runtime.specVersion.toNumber();
-      this.verbose && logger.info(`runtime version: ${version}`);
-
-      if (!this.runtimeVersion || this.runtimeVersion === version) {
-        this.runtimeVersion = version;
-      } else {
-        logger.warn(
-          `runtime version changed: ${this.runtimeVersion} => ${version}, shutting down myself... good bye 👋`
-        );
-        process.exit(1);
-      }
-    });
 
   setApi = (api: ApiPromise): void => {
     defineReadOnly(this, '_api', api);
@@ -545,10 +512,11 @@ export abstract class BaseProvider extends AbstractProvider {
       await this.api.isReadyOrError;
       await this.getNetwork();
 
-      if (!this.subscriptionStarted) {
-        this.subscriptionStarted = true;
-        await this.startSubscriptions();
+      if (!this.#subscription) {
+        this.#subscription = this.startSubscriptions();
       }
+      // wait for subscription to happen
+      await this.#subscription;
     } catch (e) {
       await this.api.disconnect();
       throw e;
@@ -556,6 +524,10 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   disconnect = async (): Promise<void> => {
+    this.eventListeners[SubscriptionType.NewHeads] = [];
+    this.eventListeners[SubscriptionType.NewFinalizedHeads] = [];
+    this.eventListeners[SubscriptionType.Logs] = [];
+    this.#subscription && (await this.#subscription)();
     await this.api.disconnect();
   };
 
@@ -877,13 +849,13 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
     const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
-    return txFeePerGas.add(BigNumber.from(this.latestBlockNumber).div(30).add(5).shl(16)).add(10);
+    return txFeePerGas.add(BigNumber.from(await this.latestBlockNumber).div(30).add(5).shl(16)).add(10);
   };
 
   getGasPrice = async (validBlocks = 200): Promise<BigNumber> => {
     if (!process.env.V2) return this.getGasPriceV1();
 
-    return BigNumber.from(ONE_HUNDRED_GWEI).add(this.latestBlockNumber + validBlocks);
+    return BigNumber.from(ONE_HUNDRED_GWEI).add(await this.latestBlockNumber + validBlocks);
   };
 
   getFeeData = async (): Promise<FeeData> => {
@@ -952,7 +924,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
     const u8a = extrinsic.toU8a();
-    const apiAt = await this.api.at(this.latestBlockHash);
+    const apiAt = await this.api.at(await this.latestBlockHash);
     const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
     const nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + adjustedWeightFee.toBigInt());
@@ -1420,70 +1392,32 @@ export abstract class BaseProvider extends AbstractProvider {
 
     result.timestamp = Math.floor((await this.queryStorage('timestamp.now', [], result.blockHash)).toNumber() / 1000);
 
-    result.wait = async (confirms?: number, timeout?: number) => {
+    result.wait = async (confirms?: number, timeout_ms?: number) => {
       if (confirms === null || confirms === undefined) {
         confirms = 1;
+      } else if (confirms < 0) {
+        throw new Error('invalid confirms value');
       }
-      if (timeout === null || timeout === undefined) {
-        timeout = 0;
+      if (timeout_ms === null || timeout_ms === undefined) {
+        timeout_ms = 0;
+      } else if (timeout_ms < 0) {
+        throw new Error('invalid timeout value');
       }
 
-      return new Promise((resolve, reject) => {
-        const cancelFuncs: Array<() => void> = [];
+      let wait$ = timeout_ms ? this.head$.pipe(
+        timeout({
+          first: timeout_ms,
+          with: () => throwError(() => logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeout_ms })),
+        })) : this.head$;
 
-        let done = false;
+      wait$ = wait$.pipe(first((head) => head.number.toNumber() - startBlock === confirms));
 
-        const alreadyDone = function (): boolean {
-          if (done) {
-            return true;
-          }
-          done = true;
-          cancelFuncs.forEach((func) => {
-            func();
-          });
-          return false;
-        };
+      await firstValueFrom(wait$);
 
-        this.api.rpc.chain
-          .subscribeNewHeads((head) => {
-            const blockNumber = head.number.toNumber();
+      const receipt = await this.getReceiptAtBlockFromChain(hash, startBlockHash);
 
-            if ((confirms as number) <= blockNumber - startBlock + 1) {
-              const receipt = this.getReceiptAtBlockFromChain(hash, startBlockHash);
-              if (alreadyDone()) {
-                return;
-              }
-
-              // tx was just mined so won't be null
-              resolve(receipt as Promise<TransactionReceipt>);
-            }
-          })
-          .then((unsubscribe) => {
-            cancelFuncs.push(() => {
-              unsubscribe();
-            });
-          })
-          .catch((error) => {
-            reject(error);
-          });
-
-        if (typeof timeout === 'number' && timeout > 0) {
-          const timer = setTimeout(() => {
-            if (alreadyDone()) {
-              return;
-            }
-            reject(logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeout }));
-          }, timeout);
-
-          if (timer.unref) {
-            timer.unref();
-          }
-
-          cancelFuncs.push(() => {
-            clearTimeout(timer);
-          });
-        }
-      });
+      // tx was just mined so won't be null
+      return receipt;
     };
 
     return result;
@@ -1549,7 +1483,7 @@ export abstract class BaseProvider extends AbstractProvider {
             return logger.throwArgumentError('block number should be less than u32', 'blockNumber', blockNumber);
           }
 
-          const isFinalized = blockNumber.lte(this.latestFinalizedBlockNumber);
+          const isFinalized = blockNumber.lte(await this.latestFinalizedBlockNumber);
           const cacheKey = `blockHash-${blockNumber.toString()}`;
 
           if (isFinalized) {
@@ -1596,7 +1530,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
     const [blockHash, blockNumber] = await Promise.all([this._getBlockHash(blockTag), this._getBlockNumber(blockTag)]);
 
-    return this.latestFinalizedBlockNumber >= blockNumber && this._isBlockCanonical(blockHash, blockNumber);
+    return await this.latestFinalizedBlockNumber >= blockNumber && this._isBlockCanonical(blockHash, blockNumber);
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
@@ -1826,10 +1760,11 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     // ideally pastNblock should have EVM TX
+    const finalizedBlockNumber = await this.latestFinalizedBlockNumber;
     const pastNblock =
-      this.latestFinalizedBlockNumber > HEALTH_CHECK_BLOCK_DISTANCE
-        ? this.latestFinalizedBlockNumber - HEALTH_CHECK_BLOCK_DISTANCE
-        : this.latestFinalizedBlockNumber;
+    finalizedBlockNumber > HEALTH_CHECK_BLOCK_DISTANCE
+      ? finalizedBlockNumber - HEALTH_CHECK_BLOCK_DISTANCE
+      : finalizedBlockNumber;
     const getBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, false));
     const getFullBlockPromise = runWithTiming(async () => this.getBlockData(pastNblock, true));
 
@@ -1849,7 +1784,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
 
     const cacheInfo = this.getCachInfo();
-    const curFinalizedHeight = this.latestFinalizedBlockNumber;
+    const curFinalizedHeight = await this.latestFinalizedBlockNumber;
     const listenersCount = {
       newHead: this.eventListeners[SubscriptionType.NewHeads]?.length || 0,
       newFinalizedHead: this.eventListeners[SubscriptionType.NewFinalizedHeads]?.length || 0,

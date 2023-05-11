@@ -39,6 +39,7 @@ export interface HealthResult {
     // listeners
     listenersCount: {
       newHead: number;
+      newFinalizedHead: number,
       logs: number;
     };
   };
@@ -51,6 +52,7 @@ export interface HealthData {
   ethCallTiming: EthCallTimingResult;
   listenersCount: {
     newHead: number;
+    newFinalizedHead: number;
     logs: number;
   };
 }

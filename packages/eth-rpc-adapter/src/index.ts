@@ -2,6 +2,7 @@ import 'dd-trace/init';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Router } from './router';
+import { monitorRuntime } from './monitor-runtime';
 import { yargsOptions as opts } from './utils';
 import { version } from './_version';
 import EthRpcServer from './server';
@@ -33,6 +34,8 @@ export async function start(): Promise<void> {
   server.start();
 
   await provider.isReady();
+  await monitorRuntime(provider);
+
   if (provider.subql) {
     const genesisHash = await provider.subql.checkGraphql();
     if (genesisHash !== provider.genesisHash) {

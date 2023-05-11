@@ -4,6 +4,7 @@ import { options } from '@acala-network/api';
 import { runtimePatch } from './utils/temp-runtime-patch';
 
 export class EvmRpcProvider extends BaseProvider {
+
   constructor(endpoint: string | string[], opts?: BaseProviderOptions) {
     super(opts);
 

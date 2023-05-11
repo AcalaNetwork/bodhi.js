@@ -12,30 +12,8 @@ const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
 
 describe('connect random', () => {
   it('should throw error', async () => {
-    try {
-      const provider = EvmRpcProvider.from('ws://192.-');
-      await provider.isReady();
-    } catch (e) {
-      expect((e as any).type).to.equal('error');
-    }
-  });
-});
-
-describe('initilization', async () => {
-  const provider = EvmRpcProvider.from(ACALA_NODE_URL);
-  await provider.isReady();
-
-  afterAll(async () => {
-    await sleep(5000);
-    await provider.disconnect();
-  });
-
-  it('should already has initial block number and hash', async () => {
-    expect(provider.latestBlockNumber).to.gt(-1);
-    expect(provider.latestFinalizedBlockNumber).to.gt(-1);
-    expect(await provider.getBlockNumber()).to.gt(-1);
-    expect(provider.latestBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
-    expect(provider.latestFinalizedBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
+    const provider = EvmRpcProvider.from('ws://192.-');
+    await expect(provider.isReady()).rejects.toThrowError();
   });
 });
 
