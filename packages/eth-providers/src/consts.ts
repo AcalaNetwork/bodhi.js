@@ -87,7 +87,8 @@ export const ORPHAN_TX_DEFAULT_INFO = {
   ...DUMMY_V_R_S,
 };
 
-export const BLOCK_GAS_LIMIT = 29_990_102;
+export const BLOCK_GAS_LIMIT = 29_990_016;
+export const BLOCK_STORAGE_LIMIT = 3_670_016;
 
 export const ONE_GWEI = 1_000_000_000n;
 export const TEN_GWEI = ONE_GWEI * 10n;

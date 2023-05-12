@@ -37,6 +37,7 @@ import LRUCache from 'lru-cache';
 import {
   BIGNUMBER_ZERO,
   BLOCK_GAS_LIMIT,
+  BLOCK_STORAGE_LIMIT,
   CACHE_SIZE_WARNING,
   DUMMY_ADDRESS,
   DUMMY_BLOCK_HASH,
@@ -1080,16 +1081,16 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: BigNumber;
     usedStorage: BigNumber;
   }> => {
-    const MAX_GAS_LIMIT = BLOCK_GAS_LIMIT;
+    const MAX_GAS_LIMIT = BLOCK_GAS_LIMIT * 10; // capped at 10x (1000%) the current block gas limit
     const MIN_GAS_LIMIT = 21000;
-    const MAX_STORAGE_LIMIT = 640000;
+    const STORAGE_LIMIT = BLOCK_STORAGE_LIMIT;
 
     const _txRequest = await getTransactionRequest(transaction);
     const txRequest = {
       ..._txRequest,
       value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
       gasLimit: MAX_GAS_LIMIT,
-      storageLimit: MAX_STORAGE_LIMIT,
+      storageLimit: STORAGE_LIMIT,
     };
 
     const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
