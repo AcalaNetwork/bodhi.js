@@ -1089,7 +1089,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const txRequest = {
       ..._txRequest,
       value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
-      gasLimit: MAX_GAS_LIMIT,
+      gasLimit: _txRequest.gasLimit?.toBigInt() || MAX_GAS_LIMIT,
       storageLimit: STORAGE_LIMIT,
     };
 
