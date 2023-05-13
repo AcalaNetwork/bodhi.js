@@ -17,14 +17,13 @@ describe('TransactionReceipt', async () => {
   afterAll(async () => {
     await sleep(5000);
     await provider.disconnect();
-    await sleep(1000);
   });
 
   it('getTransactionReceipt', async () => {
     const account1 = evmAccounts[0];
     const account2 = evmAccounts[1];
 
-    const account1Wallet = new Wallet(account1.privateKey).connect(provider as any);
+    const account1Wallet = new Wallet(account1.privateKey).connect(provider);
     const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, account1Wallet);
 
     const pairs = createTestPairs();

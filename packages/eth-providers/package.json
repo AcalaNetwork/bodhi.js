@@ -7,7 +7,7 @@
     "clean": "rm -rf lib tsconfig.tsbuildinfo",
     "build": "tsc --build ./tsconfig.json",
     "gql:typegen": "graphql-codegen --config codegen.yml",
-    "test:CI": "vitest --run --config vitest.config.e2e.ts"
+    "test:e2e": "vitest --run --config vitest.config.e2e.ts"
   },
   "peerDependencies": {
     "@acala-network/api": "~5.0.3-0",

@@ -36,7 +36,6 @@ describe('eth_accounts', async () => {
   });
 
   afterAll(async () => {
-    await new Promise(r => setTimeout(r, 5_000));
     await provider.disconnect();
   });
 });

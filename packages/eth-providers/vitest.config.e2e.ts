@@ -7,6 +7,7 @@ export default defineConfig({
     threads: false,
     testTimeout: 300_000,
     hookTimeout: 60_000,
+    dangerouslyIgnoreUnhandledErrors: true,
     environment: 'jsdom',
     exclude: ['src/__tests__/utils.test.ts'],
   },

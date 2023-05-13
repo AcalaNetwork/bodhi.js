@@ -25,7 +25,7 @@ import { Formatter } from '@ethersproject/providers';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
-import { Observable, firstValueFrom, throwError } from 'rxjs';
+import { Observable, Subscription, firstValueFrom, throwError } from 'rxjs';
 import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
@@ -296,7 +296,10 @@ export abstract class BaseProvider extends AbstractProvider {
   head$: Observable<Header>;
   finalizedHead$: Observable<Header>;
 
-  readonly queue = new AsyncScheduler(AsyncAction);
+  readonly #async = new AsyncScheduler(AsyncAction);
+
+  readonly #headTasks: Map<string, Subscription> = new Map();
+  readonly #finalizedHeadTasks: Map<string, Subscription> = new Map();
 
   get latestBlockHash(): Promise<string> {
     return firstValueFrom(this.head$.pipe(map(header => header.hash.toHex())));
@@ -377,29 +380,16 @@ export abstract class BaseProvider extends AbstractProvider {
       // no reciepts for genesis block
       filter(header => header.number.toNumber() > 0)
     ).subscribe(header => {
-      const blockHash = header.hash.toHex();
-      // TODO: keep track of tasks
-      this.queue.schedule(async () => {
-        const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
-        // update block cache
-        this.blockCache.addReceipts(blockHash, receipts);
-
-        // eth_subscribe
-        await this._notifySubscribers(blockHash, receipts);
-      });
+      const task = this.#async.schedule(this._onNewHead, 0, [header, 5]);
+      this.#headTasks.set(header.hash.toHex(), task);
     });
 
     const notifyFinalizedSub = this.finalizedHead$.pipe(
       filter(header => header.number.toNumber() > 0)
     ).subscribe((header: Header) => {
       // notify subscribers
-      const blockHash = header.hash.toHex();
-      // TODO: keep track of tasks
-      this.queue.schedule(async () => {
-        const block = await this.getBlockData(blockHash, false);
-        const response = hexlifyRpcResult(block);
-        this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach((l) => l.cb(response));
-      });
+      const task = this.#async.schedule(this._onNewFinalizedHead, 0, [header, 5]);
+      this.#finalizedHeadTasks.set(header.hash.toHex(), task);
     });
 
     return () => {
@@ -409,12 +399,57 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  _notifySubscribers = async (blockHash: string, receipts: FullReceipt[]) => {
+  _onNewHead = async ([header, attempts]: [Header, number]) => {
+    attempts--;
+    const blockHash = header.hash.toHex();
+    try {
+      const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
+      // update block cache
+      this.blockCache.addReceipts(blockHash, receipts);
+
+      // eth_subscribe
+      await this._notifySubscribers(header, receipts);
+      this.#headTasks.get(blockHash)?.unsubscribe();
+      this.#headTasks.delete(blockHash);
+    } catch (e) {
+      if (attempts) {
+        // reschedule after 1s
+        const task = this.#async.schedule(this._onNewHead, 1_000, [header, attempts]);
+        this.#headTasks.get(blockHash)?.unsubscribe();
+        this.#headTasks.set(blockHash, task);
+      } else {
+        console.log('_onNewHead task failed, give up', blockHash, e.toString());
+      }
+    }
+  };
+
+  _onNewFinalizedHead = async ([header, attempts]: [Header, number]) => {
+    attempts--;
+    const blockHash = header.hash.toHex();
+    try {
+      const block = await this.getBlockDataForHeader(header, false);
+      const response = hexlifyRpcResult(block);
+      this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach((l) => l.cb(response));
+      this.#finalizedHeadTasks.get(blockHash)?.unsubscribe();
+      this.#finalizedHeadTasks.delete(blockHash);
+    } catch (e) {
+      if (attempts) {
+        // reschedule after 1s
+        const task = this.#async.schedule(this._onNewFinalizedHead, 1_000, [header, attempts]);
+        this.#finalizedHeadTasks.get(blockHash)?.unsubscribe();
+        this.#finalizedHeadTasks.set(blockHash, task);
+      } else {
+        console.log('_onNewFinalizedHead task failed, give up', blockHash, e.toString());
+      }
+    }
+  };
+
+  _notifySubscribers = async (header: Header, receipts: FullReceipt[]) => {
     const headSubscribers = this.eventListeners[SubscriptionType.NewHeads];
     const logSubscribers = this.eventListeners[SubscriptionType.Logs];
 
     if (headSubscribers.length > 0 || logSubscribers.length > 0) {
-      const block = await this.getBlockData(blockHash, false);
+      const block = await this.getBlockDataForHeader(header, false);
 
       const response = hexlifyRpcResult(block);
       headSubscribers.forEach((l) => l.cb(response));
@@ -528,6 +563,19 @@ export abstract class BaseProvider extends AbstractProvider {
     this.eventListeners[SubscriptionType.NewFinalizedHeads] = [];
     this.eventListeners[SubscriptionType.Logs] = [];
     this.#subscription && (await this.#subscription)();
+
+    let attempts = 5;
+    while(attempts) {
+      attempts--;
+
+      const pendingTasks = this.#headTasks.size + this.#finalizedHeadTasks.size;
+      if (pendingTasks === 0) break;
+
+      // wait 1 second for all tasks to complete, then try again
+      await new Promise(r => setTimeout(r, 1000));
+      console.log(`disconnecting, waiting for ${pendingTasks} tasks to complete`);
+    }
+
     await this.api.disconnect();
   };
 
@@ -557,6 +605,10 @@ export abstract class BaseProvider extends AbstractProvider {
   getBlockData = async (_blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const header = await this._getBlockHeader(blockTag);
+    return this.getBlockDataForHeader(header, full);
+  };
+
+  getBlockDataForHeader = async (header: Header, full?: boolean): Promise<BlockData> => {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
@@ -631,10 +683,10 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<BigNumber> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    const { address, blockHash } = await resolveProperties({
-      address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag),
-    });
+    const [address, blockHash] = await Promise.all([
+      this._getAddress(addressOrName),
+      this._getBlockHash(blockTag),
+    ]);
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
@@ -707,10 +759,10 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (blockTag === 'pending') return '0x';
 
-    const { address, blockHash } = await resolveProperties({
-      address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag),
-    });
+    const [address, blockHash] = await Promise.all([
+      this._getAddress(addressOrName),
+      this._getBlockHash(blockTag),
+    ]);
 
     const contractInfo = await this.queryContractInfo(address, blockHash);
 
@@ -720,7 +772,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const codeHash = contractInfo.unwrap().codeHash;
 
-    const api = await (blockHash ? this.api.at(blockHash) : this.api);
+    const api = blockHash ? await this.api.at(blockHash) : this.api;
 
     const code = await api.query.evm.codes(codeHash);
 
@@ -734,10 +786,10 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<string> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    const { txRequest, blockHash } = await resolveProperties({
-      txRequest: getTransactionRequest(_transaction),
-      blockHash: this._getBlockHash(blockTag),
-    });
+    const [txRequest, blockHash] = await Promise.all([
+      getTransactionRequest(_transaction),
+      this._getBlockHash(blockTag),
+    ]);
 
     const transaction =
       txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
@@ -803,11 +855,11 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<string> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    const { address, blockHash, resolvedPosition } = await resolveProperties({
-      address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag),
-      resolvedPosition: Promise.resolve(position).then((p) => hexValue(p)),
-    });
+    const [address, blockHash, resolvedPosition] = await Promise.all([
+      this._getAddress(addressOrName),
+      this._getBlockHash(blockTag),
+      Promise.resolve(position).then(hexValue),
+    ]);
 
     const code = await this.queryStorage('evm.accountStorages', [address, hexZeroPad(resolvedPosition, 32)], blockHash);
 
@@ -1100,10 +1152,10 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getSubstrateAddress = async (addressOrName: string, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
-    const { address, blockHash } = await resolveProperties({
-      address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag),
-    });
+    const [address, blockHash] = await Promise.all([
+      this._getAddress(addressOrName),
+      this._getBlockHash(blockTag),
+    ]);
 
     const substrateAccount = await this.queryStorage<Option<AccountId>>('evmAccounts.accounts', [address], blockHash);
 
@@ -1126,10 +1178,10 @@ export abstract class BaseProvider extends AbstractProvider {
       blockTag = 'latest';
     }
 
-    const { address, blockHash } = await resolveProperties({
-      address: this._getAddress(addressOrName),
-      blockHash: this._getBlockHash(blockTag),
-    });
+    const [address, blockHash] = await Promise.all([
+      this._getAddress(addressOrName),
+      this._getBlockHash(blockTag),
+    ]);
 
     const accountInfo = await this.queryStorage<Option<EvmAccountInfo>>('evm.accounts', [address], blockHash);
 
@@ -1392,22 +1444,22 @@ export abstract class BaseProvider extends AbstractProvider {
 
     result.timestamp = Math.floor((await this.queryStorage('timestamp.now', [], result.blockHash)).toNumber() / 1000);
 
-    result.wait = async (confirms?: number, timeout_ms?: number) => {
+    result.wait = async (confirms?: number, timeoutMs?: number) => {
       if (confirms === null || confirms === undefined) {
         confirms = 1;
       } else if (confirms < 0) {
         throw new Error('invalid confirms value');
       }
-      if (timeout_ms === null || timeout_ms === undefined) {
-        timeout_ms = 0;
-      } else if (timeout_ms < 0) {
+      if (timeoutMs === null || timeoutMs === undefined) {
+        timeoutMs = 0;
+      } else if (timeoutMs < 0) {
         throw new Error('invalid timeout value');
       }
 
-      let wait$ = timeout_ms ? this.head$.pipe(
+      let wait$ = timeoutMs ? this.head$.pipe(
         timeout({
-          first: timeout_ms,
-          with: () => throwError(() => logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeout_ms })),
+          first: timeoutMs,
+          with: () => throwError(() => logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeoutMs })),
         })) : this.head$;
 
       wait$ = wait$.pipe(first((head) => head.number.toNumber() - startBlock === confirms));

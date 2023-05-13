@@ -1,10 +1,9 @@
 import { Contract, ContractFactory } from 'ethers';
 import { Wallet } from '@ethersproject/wallet';
 import { afterAll, describe, expect, it } from 'vitest';
-import { formatEther, hexZeroPad, parseEther } from 'ethers/lib/utils';
+import { hexZeroPad, parseEther } from 'ethers/lib/utils';
 
 import { AcalaJsonRpcProvider } from '../../json-rpc-provider';
-import { JsonRpcProvider } from '@ethersproject/providers';
 import { sleep } from '../../utils';
 import echoJson from '../abis/Echo.json';
 import erc20Json from '../abis/IERC20.json';
@@ -127,7 +126,7 @@ describe('JsonRpcProvider', async () => {
       expect(name).to.eq('USD Coin');
       expect(symbol).to.eq('USDC');
       expect(decimals).to.eq(6);
-      expect(totalSupply.gt(0)).to.be.true;
+      expect(totalSupply.gt(0)).toBeTruthy();
     });
   });
 
@@ -149,10 +148,10 @@ describe('JsonRpcProvider', async () => {
 
       expect(await echo.echo()).to.equal('Deployed successfully!');
 
-      await (await echo.scream('hello Gogeta!')).wait();
+      await echo.scream('hello Gogeta!');
       expect(await echo.echo()).to.equal('hello Gogeta!');
 
-      await (await echo.scream('hello Vegito!')).wait();
+      await echo.scream('hello Vegito!');
       expect(await echo.echo()).to.equal('hello Vegito!');
     });
   });
@@ -175,7 +174,7 @@ describe('JsonRpcProvider', async () => {
         provider.on('block', onBlock);
       });
 
-      expect(blockNumber).to.be.greaterThan(0);
+      expect(blockNumber).to.be.eq(curBlockNumber + 1);
     });
 
     // TODO: need to setup whole stack
