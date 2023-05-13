@@ -1462,7 +1462,7 @@ export abstract class BaseProvider extends AbstractProvider {
           with: () => throwError(() => logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeoutMs })),
         })) : this.head$;
 
-      wait$ = wait$.pipe(first((head) => head.number.toNumber() - startBlock === confirms));
+      wait$ = wait$.pipe(first((head) => head.number.toNumber() - startBlock + 1 >= confirms));
 
       await firstValueFrom(wait$);
 
