@@ -25,7 +25,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
 import { DUMMY_LOGS_BLOOM, EvmRpcProvider, sleep } from '@acala-network/eth-providers';
-import { Interface, hexValue, hexlify, parseUnits } from 'ethers/lib/utils';
+import { Interface, hexValue, parseUnits } from 'ethers/lib/utils';
 import { JsonRpcError } from '@acala-network/eth-rpc-adapter/server';
 import { KARURA_ETH_RPC_URL, NODE_RPC_URL, SUBQL_URL, WS_URL, bigIntDiff, rpcGet } from './utils';
 import { Log } from '@ethersproject/abstract-provider';

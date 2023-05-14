@@ -1,7 +1,6 @@
 import { BigNumber, Transaction, logger } from 'ethers';
 import { ConnectionInfo, Logger, hexDataLength, hexlify } from 'ethers/lib/utils';
 import { JsonRpcProvider, Networkish, TransactionReceipt, TransactionResponse } from '@ethersproject/providers';
-import { sleep } from './utils';
 
 export class AcalaJsonRpcProvider extends JsonRpcProvider {
   constructor(url: ConnectionInfo | string, network?: Networkish) {

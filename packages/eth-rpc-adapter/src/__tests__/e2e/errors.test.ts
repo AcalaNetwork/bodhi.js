@@ -1,13 +1,13 @@
-import { BigNumber, Wallet } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { RPC_URL, rpcGet } from './utils';
+import { Wallet } from 'ethers';
 import { describe, expect, it } from 'vitest';
 import axios from 'axios';
 
 const eth_getEthGas = rpcGet('eth_getEthGas', RPC_URL);
-const eth_blockNumber = rpcGet('eth_blockNumber', RPC_URL);
+const _eth_blockNumber = rpcGet('eth_blockNumber', RPC_URL);
 const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction', RPC_URL);
-const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt', RPC_URL);
+const _eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt', RPC_URL);
 const eth_chainId = rpcGet('eth_chainId', RPC_URL);
 
 describe('errors', () => {

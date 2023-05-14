@@ -1,7 +1,7 @@
 import { Eip1193Bridge } from '../../eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Wallet } from '@ethersproject/wallet';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import dotenv from 'dotenv';
 
 dotenv.config();

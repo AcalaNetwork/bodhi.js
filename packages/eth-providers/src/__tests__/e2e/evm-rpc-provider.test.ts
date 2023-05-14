@@ -1,4 +1,3 @@
-import { DUMMY_BLOCK_HASH } from '../../consts';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { afterAll, describe, expect, it } from 'vitest';
 import { runWithTiming, sleep } from '../../utils';
@@ -6,7 +5,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 const ACALA_NODE_URL = 'wss://acala-rpc-0.aca-api.network';
 const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
 

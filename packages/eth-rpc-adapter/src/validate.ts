@@ -70,7 +70,7 @@ export const validateBlock = (data: any) => {
   }
 };
 
-export const validateTransaction = (data: any) => {
+export const validateTransaction = (_data: any) => {
   // @TODO
 };
 

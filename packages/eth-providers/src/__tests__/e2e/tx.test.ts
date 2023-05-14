@@ -23,11 +23,9 @@ describe('transaction tests', () => {
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];
   const account3 = evmAccounts[2];
-  const account4 = evmAccounts[3];
   const wallet1 = new Wallet(account1.privateKey).connect(provider as any);
   const wallet2 = new Wallet(account2.privateKey).connect(provider as any);
   const wallet3 = new Wallet(account3.privateKey).connect(provider as any);
-  const wallet4 = new Wallet(account4.privateKey).connect(provider as any);
 
   let chainId: number;
   let storageByteDeposit: bigint;
@@ -100,7 +98,7 @@ describe('transaction tests', () => {
         value: BigNumber.from(amount),
       });
 
-      const data = provider.validSubstrateResources({
+      const _data = provider.validSubstrateResources({
         gasLimit: params.gasLimit,
         gasPrice: params.gasPrice,
       });
@@ -363,7 +361,7 @@ describe('transaction tests', () => {
 
     describe('with legacy EIP-155 signature', () => {
       it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
+        const _balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
         const transferTX: AcalaEvmTX = {
@@ -372,12 +370,12 @@ describe('transaction tests', () => {
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
-        const parsedTx = parseTransaction(rawTx);
+        const _parsedTx = parseTransaction(rawTx);
 
         const response = await provider.sendTransaction(rawTx);
-        const receipt = await response.wait(0);
+        const _receipt = await response.wait(0);
 
-        const _balance1 = await queryBalance(account1.evmAddress);
+        const __balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
         // TODO: check sender's balance is correct
@@ -388,7 +386,7 @@ describe('transaction tests', () => {
 
     describe('with EIP-1559 signature', () => {
       it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
+        const _balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
         const priorityFee = BigNumber.from(2);
@@ -402,12 +400,12 @@ describe('transaction tests', () => {
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
-        const parsedTx = parseTransaction(rawTx);
+        const _parsedTx = parseTransaction(rawTx);
 
         const response = await provider.sendTransaction(rawTx);
-        const receipt = await response.wait(0);
+        const _receipt = await response.wait(0);
 
-        const _balance1 = await queryBalance(account1.evmAddress);
+        const __balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
         // TODO: check sender's balance is correct
@@ -418,7 +416,7 @@ describe('transaction tests', () => {
 
     describe('with EIP-712 signature', () => {
       it('has correct balance after transfer', async () => {
-        const balance1 = await queryBalance(account1.evmAddress);
+        const _balance1 = await queryBalance(account1.evmAddress);
         const balance2 = await queryBalance(account2.evmAddress);
 
         const gasLimit = BigNumber.from('210000');
@@ -438,11 +436,11 @@ describe('transaction tests', () => {
 
         const sig = signTransaction(account1.privateKey, transferTX);
         const rawTx = serializeTransaction(transferTX, sig);
-        const parsedTx = parseTransaction(rawTx);
+        const _parsedTx = parseTransaction(rawTx);
 
         await provider.sendTransaction(rawTx);
 
-        const _balance1 = await queryBalance(account1.evmAddress);
+        const __balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);
 
         // TODO: check sender's balance is correct

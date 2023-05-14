@@ -1,7 +1,7 @@
 import { ErrorHandleFunction } from 'connect';
 import { InternalError, InvalidRequest, JSONRPCError } from '../errors';
 
-export const errorHandler: ErrorHandleFunction = (err, req, res, next) => {
+export const errorHandler: ErrorHandleFunction = (err, _req, res, _next) => {
   if (err) {
     let error: JSONRPCError;
 

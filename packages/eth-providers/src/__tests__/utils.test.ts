@@ -107,8 +107,6 @@ describe('runwithTiming', () => {
   });
 
   it('returns correct error for running errors', async () => {
-    const runningTime = 1000;
-    const funcRes = 'vegeta';
     const ERR_MSG = 'goku';
     const f = async () => {
       throw new Error(ERR_MSG);
