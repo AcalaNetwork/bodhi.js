@@ -25,13 +25,13 @@ import { Formatter } from '@ethersproject/providers';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
-import { Observable, Subscription, firstValueFrom, throwError } from 'rxjs';
+import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
 import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { createHeaderExtended } from '@polkadot/api-derive';
-import { filter, first, map, timeout } from 'rxjs/operators';
+import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
 import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
@@ -295,23 +295,25 @@ export abstract class BaseProvider extends AbstractProvider {
   #subscription: Promise<() => void> | undefined;
   head$: Observable<Header>;
   finalizedHead$: Observable<Header>;
+  best$ = new ReplaySubject<{ hash: string, number: number }>(1);
+  finalized$ = new ReplaySubject<{ hash: string, number: number }>(1);
 
   readonly #async = new AsyncScheduler(AsyncAction);
 
   readonly #headTasks: Map<string, Subscription> = new Map();
   readonly #finalizedHeadTasks: Map<string, Subscription> = new Map();
 
-  get latestBlockHash(): Promise<string> {
-    return firstValueFrom(this.head$.pipe(map(header => header.hash.toHex())));
+  get bestBlockHash() {
+    return firstValueFrom(this.best$).then(({ hash }) => hash);
   }
-  get latestBlockNumber(): Promise<number> {
-    return firstValueFrom(this.head$.pipe(map(header => header.number.toNumber())));
+  get bestBlockNumber() {
+    return firstValueFrom(this.best$).then(({ number }) => number);
   }
-  get latestFinalizedBlockHash(): Promise<string> {
-    return firstValueFrom(this.finalizedHead$.pipe(map(header => header.hash.toHex())));
+  get finalizedBlockHash() {
+    return firstValueFrom(this.finalized$).then(({ hash }) => hash);
   }
-  get latestFinalizedBlockNumber(): Promise<number> {
-    return firstValueFrom(this.finalizedHead$.pipe(map(header => header.number.toNumber())));
+  get finalizedBlockNumber() {
+    return firstValueFrom(this.finalized$).then(({ number }) => number);
   }
 
   constructor({
@@ -362,12 +364,19 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startSubscriptions = async () => {
+    const subscriptions: Subscription[] = [];
+
     this.head$ = this.api.rx.rpc.chain.subscribeNewHeads();
     this.finalizedHead$ = this.api.rx.rpc.chain.subscribeFinalizedHeads();
 
-    const finalizedSub = this.finalizedHead$.subscribe((header: Header) => {
+    subscriptions.push(this.head$.subscribe(header => {
+      this.best$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
+    }));
+
+    subscriptions.push(this.finalizedHead$.subscribe(header => {
       this.finalizedBlockHashes.add(header.hash.toHex());
-    });
+      this.finalized$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
+    }));
 
     await firstValueFrom(this.head$);
     await firstValueFrom(this.finalizedHead$);
@@ -376,26 +385,24 @@ export abstract class BaseProvider extends AbstractProvider {
       ? this.finalizedHead$
       : this.head$;
 
-    const notifySub = safeHead$.pipe(
+    subscriptions.push(safeHead$.pipe(
       // no reciepts for genesis block
       filter(header => header.number.toNumber() > 0)
     ).subscribe(header => {
       const task = this.#async.schedule(this._onNewHead, 0, [header, 5]);
       this.#headTasks.set(header.hash.toHex(), task);
-    });
+    }));
 
-    const notifyFinalizedSub = this.finalizedHead$.pipe(
+    subscriptions.push(this.finalizedHead$.pipe(
       filter(header => header.number.toNumber() > 0)
     ).subscribe((header: Header) => {
       // notify subscribers
       const task = this.#async.schedule(this._onNewFinalizedHead, 0, [header, 5]);
       this.#finalizedHeadTasks.set(header.hash.toHex(), task);
-    });
+    }));
 
     return () => {
-      finalizedSub.unsubscribe();
-      notifySub.unsubscribe();
-      notifyFinalizedSub.unsubscribe();
+      subscriptions.forEach(({ unsubscribe }) => unsubscribe());
     };
   };
 
@@ -599,7 +606,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getBlockNumber = async (): Promise<number> => {
-    return this.safeMode ? this.latestFinalizedBlockNumber : this.latestBlockNumber;
+    return this.safeMode ? this.finalizedBlockNumber : this.bestBlockNumber;
   };
 
   getBlockData = async (_blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData> => {
@@ -669,11 +676,11 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getBlock = async (blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
+  getBlock = async (_blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
     throwNotImplemented('getBlock (please use `getBlockData` instead)');
 
   getBlockWithTransactions = async (
-    blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
+    _blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>
   ): Promise<BlockWithTransactions> =>
     throwNotImplemented('getBlockWithTransactions (please use `getBlockData` instead)');
 
@@ -901,13 +908,13 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
     const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
-    return txFeePerGas.add(BigNumber.from(await this.latestBlockNumber).div(30).add(5).shl(16)).add(10);
+    return txFeePerGas.add(BigNumber.from(await this.bestBlockNumber).div(30).add(5).shl(16)).add(10);
   };
 
   getGasPrice = async (validBlocks = 200): Promise<BigNumber> => {
     if (!process.env.V2) return this.getGasPriceV1();
 
-    return BigNumber.from(ONE_HUNDRED_GWEI).add(await this.latestBlockNumber + validBlocks);
+    return BigNumber.from(ONE_HUNDRED_GWEI).add(await this.bestBlockNumber + validBlocks);
   };
 
   getFeeData = async (): Promise<FeeData> => {
@@ -976,7 +983,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
     const u8a = extrinsic.toU8a();
-    const apiAt = await this.api.at(await this.latestBlockHash);
+    const apiAt = await this.api.at(await this.bestBlockHash);
     const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
     const nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + adjustedWeightFee.toBigInt());
@@ -1488,7 +1495,7 @@ export abstract class BaseProvider extends AbstractProvider {
       }
       case 'finalized':
       case 'safe': {
-        return this.latestFinalizedBlockNumber;
+        return this.finalizedBlockNumber;
       }
       default: {
         if (isHexString(blockTag, 32)) {
@@ -1514,7 +1521,7 @@ export abstract class BaseProvider extends AbstractProvider {
         return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
-        return this.safeMode ? this.latestFinalizedBlockHash : this.latestBlockHash;
+        return this.safeMode ? this.finalizedBlockHash : this.bestBlockHash;
       }
       case 'earliest': {
         const hash = this.api.genesisHash;
@@ -1522,7 +1529,7 @@ export abstract class BaseProvider extends AbstractProvider {
       }
       case 'finalized':
       case 'safe': {
-        return this.latestFinalizedBlockHash;
+        return this.finalizedBlockHash;
       }
       default: {
         if (isHexString(blockTag, 32)) {
@@ -1535,7 +1542,7 @@ export abstract class BaseProvider extends AbstractProvider {
             return logger.throwArgumentError('block number should be less than u32', 'blockNumber', blockNumber);
           }
 
-          const isFinalized = blockNumber.lte(await this.latestFinalizedBlockNumber);
+          const isFinalized = blockNumber.lte(await this.finalizedBlockNumber);
           const cacheKey = `blockHash-${blockNumber.toString()}`;
 
           if (isFinalized) {
@@ -1582,7 +1589,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
     const [blockHash, blockNumber] = await Promise.all([this._getBlockHash(blockTag), this._getBlockNumber(blockTag)]);
 
-    return await this.latestFinalizedBlockNumber >= blockNumber && this._isBlockCanonical(blockHash, blockNumber);
+    return await this.finalizedBlockNumber >= blockNumber && this._isBlockCanonical(blockHash, blockNumber);
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
@@ -1596,7 +1603,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (!this.safeMode || !_blockTag) return _blockTag;
 
     const blockTag = await _blockTag;
-    if (blockTag === 'latest') return this.latestFinalizedBlockHash;
+    if (blockTag === 'latest') return this.finalizedBlockHash;
 
     const isBlockFinalized = await this._isBlockFinalized(blockTag);
 
@@ -1706,7 +1713,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   // Queries
-  getTransaction = (txHash: string): Promise<TransactionResponse> =>
+  getTransaction = (_txHash: string): Promise<TransactionResponse> =>
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
 
   getTransactionByHash = async (txHash: string): Promise<TX | null> => {
@@ -1727,7 +1734,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return receiptToTransaction(receipt, block);
   };
 
-  getTransactionReceipt = async (txHash: string): Promise<TransactionReceipt> =>
+  getTransactionReceipt = async (_txHash: string): Promise<TransactionReceipt> =>
     throwNotImplemented('getTransactionReceipt (please use `getReceiptByHash` instead)');
 
   getReceiptByHash = async (txHash: string): Promise<TransactionReceipt | null> =>
@@ -1812,7 +1819,7 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     // ideally pastNblock should have EVM TX
-    const finalizedBlockNumber = await this.latestFinalizedBlockNumber;
+    const finalizedBlockNumber = await this.finalizedBlockNumber;
     const pastNblock =
     finalizedBlockNumber > HEALTH_CHECK_BLOCK_DISTANCE
       ? finalizedBlockNumber - HEALTH_CHECK_BLOCK_DISTANCE
@@ -1836,7 +1843,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
 
     const cacheInfo = this.getCachInfo();
-    const curFinalizedHeight = await this.latestFinalizedBlockNumber;
+    const curFinalizedHeight = await this.finalizedBlockNumber;
     const listenersCount = {
       newHead: this.eventListeners[SubscriptionType.NewHeads]?.length || 0,
       newFinalizedHead: this.eventListeners[SubscriptionType.NewFinalizedHeads]?.length || 0,
@@ -1853,12 +1860,12 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   // ENS
-  lookupAddress = (address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
+  lookupAddress = (_address: string | Promise<string>): Promise<string> => throwNotImplemented('lookupAddress');
 
   waitForTransaction = (
-    transactionHash: string,
-    confirmations?: number,
-    timeout?: number
+    _transactionHash: string,
+    _confirmations?: number,
+    _timeout?: number
   ): Promise<TransactionReceipt> => throwNotImplemented('waitForTransaction');
 
   // Event Emitter (ish)
@@ -2018,11 +2025,11 @@ export abstract class BaseProvider extends AbstractProvider {
     return found;
   };
 
-  on = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('on');
-  once = (eventName: EventType, listener: Listener): Provider => throwNotImplemented('once');
-  emit = (eventName: EventType, ...args: Array<any>): boolean => throwNotImplemented('emit');
-  listenerCount = (eventName?: EventType): number => throwNotImplemented('listenerCount');
-  listeners = (eventName?: EventType): Array<Listener> => throwNotImplemented('listeners');
-  off = (eventName: EventType, listener?: Listener): Provider => throwNotImplemented('off');
-  removeAllListeners = (eventName?: EventType): Provider => throwNotImplemented('removeAllListeners');
+  on = (_eventName: EventType, _listener: Listener): Provider => throwNotImplemented('on');
+  once = (_eventName: EventType, _listener: Listener): Provider => throwNotImplemented('once');
+  emit = (_eventName: EventType, ..._args: Array<any>): boolean => throwNotImplemented('emit');
+  listenerCount = (_eventName?: EventType): number => throwNotImplemented('listenerCount');
+  listeners = (_eventName?: EventType): Array<Listener> => throwNotImplemented('listeners');
+  off = (_eventName: EventType, _listener?: Listener): Provider => throwNotImplemented('off');
+  removeAllListeners = (_eventName?: EventType): Provider => throwNotImplemented('removeAllListeners');
 }
