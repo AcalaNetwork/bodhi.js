@@ -364,19 +364,17 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   startSubscriptions = async () => {
-    const subscriptions: Subscription[] = [];
-
     this.head$ = this.api.rx.rpc.chain.subscribeNewHeads();
     this.finalizedHead$ = this.api.rx.rpc.chain.subscribeFinalizedHeads();
 
-    subscriptions.push(this.head$.subscribe(header => {
+    const headSub = this.head$.subscribe(header => {
       this.best$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
-    }));
+    });
 
-    subscriptions.push(this.finalizedHead$.subscribe(header => {
+    const finalizedSub = this.finalizedHead$.subscribe(header => {
       this.finalizedBlockHashes.add(header.hash.toHex());
       this.finalized$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
-    }));
+    });
 
     await firstValueFrom(this.head$);
     await firstValueFrom(this.finalizedHead$);
@@ -385,24 +383,27 @@ export abstract class BaseProvider extends AbstractProvider {
       ? this.finalizedHead$
       : this.head$;
 
-    subscriptions.push(safeHead$.pipe(
+    const headTasksSub = safeHead$.pipe(
       // no reciepts for genesis block
       filter(header => header.number.toNumber() > 0)
     ).subscribe(header => {
       const task = this.#async.schedule(this._onNewHead, 0, [header, 5]);
       this.#headTasks.set(header.hash.toHex(), task);
-    }));
+    });
 
-    subscriptions.push(this.finalizedHead$.pipe(
+    const finalizedTasksSub = this.finalizedHead$.pipe(
       filter(header => header.number.toNumber() > 0)
-    ).subscribe((header: Header) => {
+    ).subscribe(header => {
       // notify subscribers
       const task = this.#async.schedule(this._onNewFinalizedHead, 0, [header, 5]);
       this.#finalizedHeadTasks.set(header.hash.toHex(), task);
-    }));
+    });
 
     return () => {
-      subscriptions.forEach(({ unsubscribe }) => unsubscribe());
+      headSub.unsubscribe();
+      finalizedSub.unsubscribe();
+      headTasksSub.unsubscribe();
+      finalizedTasksSub.unsubscribe();
     };
   };
 
