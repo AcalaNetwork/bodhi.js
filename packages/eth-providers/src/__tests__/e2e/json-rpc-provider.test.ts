@@ -148,10 +148,10 @@ describe('JsonRpcProvider', async () => {
 
       expect(await echo.echo()).to.equal('Deployed successfully!');
 
-      await echo.scream('hello Gogeta!');
+      await (await echo.scream('hello Gogeta!')).wait();
       expect(await echo.echo()).to.equal('hello Gogeta!');
 
-      await echo.scream('hello Vegito!');
+      await (await echo.scream('hello Vegito!')).wait();
       expect(await echo.echo()).to.equal('hello Vegito!');
     });
   });
