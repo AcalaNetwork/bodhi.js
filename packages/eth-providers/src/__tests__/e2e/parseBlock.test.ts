@@ -100,11 +100,10 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   afterAll(async () => {
-    await sleep(5000);
+    await sleep(10_000);
     await apiK.disconnect();
     await apiA.disconnect();
     await apiM.disconnect();
-    await sleep(5000);
   });
 
   describe.concurrent('transfer kar', async () => {

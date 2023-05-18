@@ -77,9 +77,9 @@ class Eip1193BridgeImpl {
   }
 
   // TODO: maybe can encapsulate all provider info into one call `net_Info` or something
-  async net_runtimeVersion(params: any[]): Promise<any> {
+  async net_runtimeVersion(params: any[]) {
     validate([], params);
-    return this.#provider.runtimeVersion;
+    return this.#provider.api.runtimeVersion.specVersion.toNumber();
   }
 
   /**

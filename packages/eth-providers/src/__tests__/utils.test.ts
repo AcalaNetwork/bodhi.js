@@ -107,8 +107,6 @@ describe('runwithTiming', () => {
   });
 
   it('returns correct error for running errors', async () => {
-    const runningTime = 1000;
-    const funcRes = 'vegeta';
     const ERR_MSG = 'goku';
     const f = async () => {
       throw new Error(ERR_MSG);
@@ -198,7 +196,7 @@ describe('getHealthResult', () => {
       cacheInfo,
       curFinalizedHeight,
       ethCallTiming,
-      listenersCount: { newHead: 0, logs: 0 },
+      listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
     });
 
     expect(res).toEqual(expect.objectContaining({
@@ -221,7 +219,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming,
-        listenersCount: { newHead: 0, logs: 0 },
+        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -251,7 +249,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight: curFinalizedHeightBad,
         ethCallTiming,
-        listenersCount: { newHead: 0, logs: 0 },
+        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -279,7 +277,7 @@ describe('getHealthResult', () => {
         },
         curFinalizedHeight,
         ethCallTiming,
-        listenersCount: { newHead: 0, logs: 0 },
+        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -306,7 +304,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming: ethCallTimingBad,
-        listenersCount: { newHead: 0, logs: 0 },
+        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -335,7 +333,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming: ethCallTimingBad,
-        listenersCount: { newHead: 0, logs: 0 },
+        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -360,7 +358,7 @@ describe('getHealthResult', () => {
         cacheInfo,
         curFinalizedHeight,
         ethCallTiming: ethCallTimingBad,
-        listenersCount: { newHead: 0, logs: 0 },
+        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({

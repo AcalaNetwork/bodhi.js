@@ -1,4 +1,3 @@
-import { DUMMY_BLOCK_HASH } from '../../consts';
 import { EvmRpcProvider } from '../../rpc-provider';
 import { afterAll, describe, expect, it } from 'vitest';
 import { runWithTiming, sleep } from '../../utils';
@@ -6,36 +5,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 const ACALA_NODE_URL = 'wss://acala-rpc-0.aca-api.network';
 const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
 
 describe('connect random', () => {
   it('should throw error', async () => {
-    try {
-      const provider = EvmRpcProvider.from('ws://192.-');
-      await provider.isReady();
-    } catch (e) {
-      expect((e as any).type).to.equal('error');
-    }
-  });
-});
-
-describe('initilization', async () => {
-  const provider = EvmRpcProvider.from(ACALA_NODE_URL);
-  await provider.isReady();
-
-  afterAll(async () => {
-    await sleep(5000);
-    await provider.disconnect();
-  });
-
-  it('should already has initial block number and hash', async () => {
-    expect(provider.latestBlockNumber).to.gt(-1);
-    expect(provider.latestFinalizedBlockNumber).to.gt(-1);
-    expect(await provider.getBlockNumber()).to.gt(-1);
-    expect(provider.latestBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
-    expect(provider.latestFinalizedBlockHash).not.to.equal(DUMMY_BLOCK_HASH);
+    const provider = EvmRpcProvider.from('ws://192.-');
+    await expect(provider.isReady()).rejects.toThrowError();
   });
 });
 

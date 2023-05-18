@@ -61,7 +61,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
     return new BodhiSigner(provider, pair.address, new SubstrateSigner(provider.api.registry, pair));
   }
 
-  connect(provider: BodhiProvider): BodhiSigner {
+  connect(_provider: BodhiProvider): BodhiSigner {
     return logger.throwError('cannot alter JSON-RPC Signer connection', Logger.errors.UNSUPPORTED_OPERATION, {
       operation: 'connect',
     });
@@ -185,7 +185,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
     });
   }
 
-  signTransaction(transaction: Deferrable<TransactionRequest>): Promise<string> {
+  signTransaction(_transaction: Deferrable<TransactionRequest>): Promise<string> {
     return logger.throwError('signing transactions is unsupported', Logger.errors.UNSUPPORTED_OPERATION, {
       operation: 'signTransaction',
     });
@@ -278,7 +278,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
                 data: dataToString(data),
                 value: BigNumber.from(tx.value || '0'),
                 chainId: +this.provider.api.consts.evmAccounts.chainId.toString(),
-                wait: (confirmations?: number): Promise<TransactionReceipt> => {
+                wait: (_confirmations?: number): Promise<TransactionReceipt> => {
                   const hex = result.status.isInBlock
                     ? result.status.asInBlock.toHex()
                     : result.status.asFinalized.toHex();
@@ -332,10 +332,9 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
   }
 
   async _signTypedData(
-    domain: TypedDataDomain,
-    types: Record<string, Array<TypedDataField>>,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: Record<string, any>
+    _domain: TypedDataDomain,
+    _types: Record<string, Array<TypedDataField>>,
+    _value: Record<string, any>
   ): Promise<string> {
     return logger.throwError('_signTypedData is unsupported', Logger.errors.UNSUPPORTED_OPERATION, {
       operation: '_signTypedData',

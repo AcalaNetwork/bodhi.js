@@ -1,25 +1,23 @@
 import { Eip1193Bridge } from '../../eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Wallet } from '@ethersproject/wallet';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
-describe('e2e test', () => {
+describe('e2e test', async () => {
   const signer = new Wallet('0x5a214c9bcb10dfe58af9b349cad6f4564cd6f10d880bdfcf780e5812c3cbc855');
   const provider = EvmRpcProvider.from(endpoint);
+  await provider.isReady();
 
-  beforeAll(async () => {
-    await provider.isReady();
-  });
   afterAll(async () => {
     await provider.disconnect();
   });
 
-  const bridge = new Eip1193Bridge(provider, signer as any);
+  const bridge = new Eip1193Bridge(provider, signer);
 
   it('eth_getBlockByNumber latest', async () => {
     const result = await bridge.send('eth_getBlockByNumber', ['latest', false]);
@@ -49,9 +47,5 @@ describe('e2e test', () => {
     await expect(
       bridge.send('eth_getBalance', ['0xb00cB924ae22b2BBb15E10c17258D6a2af980421', '0xffffffff'])
     ).rejects.toThrowError('header not found');
-  });
-
-  afterAll(async () => {
-    await provider.disconnect();
   });
 });

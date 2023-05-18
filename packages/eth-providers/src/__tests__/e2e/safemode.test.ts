@@ -47,7 +47,7 @@ describe('safe mode', () => {
       safeProvider.getBlockData('latest'),
     ]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
-    expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
+    expect(curBlock.hash).to.equal(await safeProvider.finalizedBlockHash);
 
     // real test
     await newBlock(false);
@@ -62,7 +62,7 @@ describe('safe mode', () => {
       safeProvider.getBlockData('latest'),
     ]);
     expect(curBlock.hash).to.equal(curFinalizedBlock.hash);
-    expect(curBlock.hash).to.equal(safeProvider.latestFinalizedBlockHash);
+    expect(curBlock.hash).to.equal(await safeProvider.finalizedBlockHash);
 
     // make sure next block is not finalized
     await newBlock(false);
@@ -89,7 +89,7 @@ describe('safe mode', () => {
                                                       -------------------------- */
     // ①
     expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(
-      safeProvider.latestFinalizedBlockHash
+      await safeProvider.finalizedBlockHash
     );
     expect(await safeProvider._ensureSafeModeBlockTagFinalization('latest')).to.equal(curFinalizedBlock.hash);
 

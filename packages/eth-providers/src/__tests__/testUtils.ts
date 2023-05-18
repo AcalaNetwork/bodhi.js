@@ -7,7 +7,10 @@ type MochBlock = {
 };
 type MochChain = MochBlock[];
 
-export const randHash = (): string => Math.floor(Math.random() * 66666666).toString(16);
+export const randHash = (): string => {
+  const hash = Math.floor(Math.random() * 66666666).toString(16);
+  return '0x' + hash.padStart(64, '0');
+};
 
 export const randReceipt = (blockNumber: number, blockHash: string): FullReceipt =>
   ({
