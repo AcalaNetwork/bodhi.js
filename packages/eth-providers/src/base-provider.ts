@@ -914,7 +914,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getGasPrice = async (validBlocks = 200): Promise<BigNumber> => {
-    if (!process.env.V2) return this.getGasPriceV1();
+    if (process.env.V1) return this.getGasPriceV1();
 
     return BigNumber.from(ONE_HUNDRED_GWEI).add(await this.bestBlockNumber + validBlocks);
   };
@@ -950,7 +950,7 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated gas used by this transaction
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    if (!process.env.V2) return this.estimateGasV1(transaction);
+    if (process.env.V1) return this.estimateGasV1(transaction);
 
     const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction);
 
