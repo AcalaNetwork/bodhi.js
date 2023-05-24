@@ -87,7 +87,7 @@ describe('transaction tests', () => {
       expect((await randomWallet.getBalance()).toString()).eq(amount);
     });
 
-    it('getPrice', async () => {
+    it('use v2 gas params', async () => {
       const randomWallet = Wallet.createRandom().connect(provider);
 
       const amount = '1000000000000000000';
@@ -98,10 +98,16 @@ describe('transaction tests', () => {
         value: BigNumber.from(amount),
       });
 
-      const _data = provider.validSubstrateResources({
-        gasLimit: params.gasLimit,
-        gasPrice: params.gasPrice,
-      });
+      const curBlockNum = await wallet3.provider.getBlockNumber();
+      const validUntil = curBlockNum + 199;
+
+      expect((params.gasPrice as BigNumber).toNumber()).eq(100000000000 + validUntil);
+      expect((params.gasLimit as BigNumber).toNumber()).eq(100100);
+
+      // const _data = provider.validSubstrateResources({
+      //   gasLimit: params.gasLimit,
+      //   gasPrice: params.gasPrice,
+      // });
 
       // console.log({
       //   gasLimit: data.gasLimit.toString(),
