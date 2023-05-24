@@ -1239,9 +1239,8 @@ export abstract class BaseProvider extends AbstractProvider {
       tip = BigInt(ethTx.tip.toString());
     } else if (
       ethTx.type === undefined || // legacy
-      ethTx.type === null || // legacy
-      ethTx.type === 0 || // EIP-155
-      ethTx.type === 2 // EIP-1559
+      ethTx.type === null      || // legacy
+      ethTx.type === 0            // EIP-155
     ) {
       try {
         const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
@@ -1290,8 +1289,9 @@ export abstract class BaseProvider extends AbstractProvider {
           .toBigInt();
       }
     } else if (ethTx.type === 1) {
-      // EIP-2930 transaction
       return throwNotImplemented('EIP-2930 transactions');
+    } else if (ethTx.type === 2) {
+      return logger.throwError('EIP-1559 not supported, please use legacy or EIP-712 instead.');
     }
 
     const accessList = ethTx.accessList?.map((set) => [set.address, set.storageKeys] as [string, string[]]);

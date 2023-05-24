@@ -1109,13 +1109,8 @@ describe('endpoint', () => {
       });
 
       describe('with EIP-1559 signature', () => {
-        it('has correct balance after transfer, and receipt\'s gas info is accurate', async () => {
-          const [balance1, balance2] = await Promise.all([
-            queryEthBalance(account1.evmAddress),
-            queryEthBalance(account2.evmAddress),
-          ]);
-
-          const priorityFee = BigNumber.from(0); // TODO: current gas calculation doesn't consider tip, if tip > 0 this test will fail
+        it('throw error', async () => {
+          const priorityFee = BigNumber.from(0);
           const { gasPrice, gasLimit } = await estimateGas();
           const transferTX: Partial<AcalaEvmTX> = {
             ...partialNativeTransferTX,
@@ -1131,19 +1126,7 @@ describe('endpoint', () => {
           const _ = parseTransaction(rawTx);
 
           const res = await eth_sendRawTransaction([rawTx]);
-          expect(res.data.error?.message).to.equal(undefined); // for TX error RPC will still return 200
-
-          const calculatedTxFee = await getCalculatedTxFee(res.data.result, false); // this has to come first
-          const [_balance1, _balance2] = await Promise.all([
-            queryEthBalance(account1.evmAddress),
-            queryEthBalance(account2.evmAddress),
-          ]);
-
-          const realTxFee = balance1.sub(_balance1).sub(transferAmount).toBigInt();
-          const diff = bigIntDiff(realTxFee, calculatedTxFee);
-
-          expect(_balance2.sub(balance2).toBigInt()).equal(transferAmount.toBigInt());
-          expect(Number(diff)).to.lessThan(TX_FEE_OFF_TOLERANCE);
+          expect(res.data.error?.message).to.contain('EIP-1559 not supported, please use legacy or EIP-712 instead');
         });
       });
 
