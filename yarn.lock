@@ -5,28 +5,27 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@acala-network/api-derive@npm:5.0.3-0":
-  version: 5.0.3-0
-  resolution: "@acala-network/api-derive@npm:5.0.3-0"
+"@acala-network/api-derive@npm:5.1.1-3":
+  version: 5.1.1-3
+  resolution: "@acala-network/api-derive@npm:5.1.1-3"
   dependencies:
-    "@acala-network/types": 5.0.3-0
-    "@open-web3/orml-types": ^2.0.1
+    "@acala-network/types": 5.1.1-3
   peerDependencies:
     "@polkadot/api": ^10.5.1
-  checksum: d20a7344dc2b4e737f80f455d02dc686b6d74cb7d76b7ce8bea88b703925e07b5716bb4a570eb89ed212c456153e2cb26820e4cf603cde37ce0d1b0a7eb735fa
+  checksum: 3003e452b37c0de24a84feacaf2f16aeb359b662ed0911825ed6ab60021b4aedbce0658955ef29ed05c0c16a59df0f4ca2657128163630cb5c171bc978612e46
   languageName: node
   linkType: hard
 
-"@acala-network/api@npm:~5.0.3-0":
-  version: 5.0.3-0
-  resolution: "@acala-network/api@npm:5.0.3-0"
+"@acala-network/api@npm:~5.1.1-3":
+  version: 5.1.1-3
+  resolution: "@acala-network/api@npm:5.1.1-3"
   dependencies:
-    "@acala-network/api-derive": 5.0.3-0
-    "@acala-network/types": 5.0.3-0
+    "@acala-network/api-derive": 5.1.1-3
+    "@acala-network/types": 5.1.1-3
     "@open-web3/orml-api-derive": ^2.0.1
   peerDependencies:
     "@polkadot/api": ^10.5.1
-  checksum: bc8faca70c1d6c898bcbf4d93b5312ae318c15a333acb3a3e3a49fe9d2633f5f674e5231e6323d16382d8796ea2372bed8d6a14a00f0930ed99d28bd3303ffd4
+  checksum: 7ee8d8a8efcc2459ace571065560aacaa31fd0acf705fa6a0d840bdba89e3baf48d481c1c19b65aa57145e710328af6b49c282d322af9192c50a3eac7baa1b69
   languageName: node
   linkType: hard
 
@@ -72,7 +71,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@acala-network/eth-providers@workspace:packages/eth-providers"
   dependencies:
-    "@acala-network/api": ~5.0.3-0
+    "@acala-network/api": ~5.1.1-3
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-transactions": "workspace:*"
     "@ethersproject/abstract-provider": ~5.7.0
@@ -98,7 +97,7 @@ __metadata:
     lru-cache: ~7.8.2
     vitest: ^0.31.0
   peerDependencies:
-    "@acala-network/api": ~5.0.3-0
+    "@acala-network/api": ~5.1.1-3
     "@polkadot/api": ^10.5.1
   languageName: unknown
   linkType: soft
@@ -180,26 +179,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@acala-network/type-definitions@npm:5.0.3-0":
-  version: 5.0.3-0
-  resolution: "@acala-network/type-definitions@npm:5.0.3-0"
-  dependencies:
-    "@open-web3/orml-type-definitions": ^2.0.1
+"@acala-network/type-definitions@npm:5.1.1-3":
+  version: 5.1.1-3
+  resolution: "@acala-network/type-definitions@npm:5.1.1-3"
   peerDependencies:
     "@polkadot/types": ^10.5.1
-  checksum: 0212e943e908ca58d400e60acb5450c83164452dd6c86539af8f7e2a3a2d80d9e3afb0673b965e1725728b77b21b58df4354adcb6c36b44aba3ac1db6a992112
+  checksum: 6dac5cf0f3bf525c7a23ca5736afeea0001024eaf046c86ea925729bb4bfc1af872573abb5a9b40f069e8898b4de8d06c2ad81b49d08bd80a96d4b8ff63a39e4
   languageName: node
   linkType: hard
 
-"@acala-network/types@npm:5.0.3-0":
-  version: 5.0.3-0
-  resolution: "@acala-network/types@npm:5.0.3-0"
+"@acala-network/types@npm:5.1.1-3":
+  version: 5.1.1-3
+  resolution: "@acala-network/types@npm:5.1.1-3"
   dependencies:
-    "@acala-network/type-definitions": 5.0.3-0
+    "@acala-network/type-definitions": 5.1.1-3
     "@open-web3/orml-types": ^2.0.1
   peerDependencies:
     "@polkadot/api": ^10.5.1
-  checksum: 43d6f52ade5114ea88c5cf12cdb64d6863cff409253ebea9b143ead2c8ca07c23fbed42cf7438103161bf0a56aeb4bdc2f72b5285d4f1ac8746548d8561b7728
+  checksum: cac52bdf1e75b71b820366d5b661a0c8bba7b4f144c83705e0ea147158d17e1b34148b97890f13618cb77e8a3cc47e372c96cb91b72195953fec5600a4770c62
   languageName: node
   linkType: hard
 
@@ -2385,7 +2382,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@open-web3/orml-type-definitions@npm:2.0.1, @open-web3/orml-type-definitions@npm:^2.0.1":
+"@open-web3/orml-type-definitions@npm:2.0.1":
   version: 2.0.1
   resolution: "@open-web3/orml-type-definitions@npm:2.0.1"
   dependencies:
