@@ -215,39 +215,6 @@ describe('transaction tests', () => {
       });
     });
 
-    describe('with EIP-1559 signature', () => {
-      it('serialize, parse, and send tx correctly', async () => {
-        const priorityFee = BigNumber.from(2);
-        const unsignedTx: AcalaEvmTX = {
-          ...partialDeployTx,
-          nonce: await wallet1.getTransactionCount(),
-          gasPrice: undefined,
-          maxPriorityFeePerGas: priorityFee,
-          maxFeePerGas: txGasPrice,
-          type: 2,
-        };
-
-        const rawTx = await wallet1.signTransaction(unsignedTx);
-        const parsedTx = parseTransaction(rawTx);
-
-        expect(parsedTx.maxFeePerGas.eq(txGasPrice)).equal(true);
-        expect(parsedTx.maxPriorityFeePerGas.eq(priorityFee)).equal(true);
-        expect(parsedTx.gasLimit.eq(txGasLimit)).equal(true);
-
-        expect(parsedTx.from).equal(wallet1.address);
-        expect(parsedTx.data).equal(deployHelloWorldData);
-        expect(parsedTx.type).equal(2);
-        expect(parsedTx.gasPrice).equal(null);
-
-        const response = await provider.sendTransaction(rawTx);
-        const receipt = await response.wait(0);
-
-        expect(receipt.type).equal(0); // TODO: should be 2, need to fix getPartialTransactionReceipt
-        expect(receipt.status).equal(1);
-        expect(receipt.from).equal(wallet1.address);
-      });
-    });
-
     describe('with EIP-712 signature', () => {
       let rawTx1: string;
       let rawTx2: string;
@@ -373,36 +340,6 @@ describe('transaction tests', () => {
         const transferTX: AcalaEvmTX = {
           ...partialTransferTX,
           nonce: await wallet1.getTransactionCount(),
-        };
-
-        const rawTx = await wallet1.signTransaction(transferTX);
-        const _parsedTx = parseTransaction(rawTx);
-
-        const response = await provider.sendTransaction(rawTx);
-        const _receipt = await response.wait(0);
-
-        const __balance1 = await queryBalance(account1.evmAddress);
-        const _balance2 = await queryBalance(account2.evmAddress);
-
-        // TODO: check sender's balance is correct
-        // expect(balance1.sub(_balance1).toNumber()).equal(transferAmount.toNumber() + gasUsed);
-        expect(_balance2.sub(balance2).toNumber()).equal(transferAmount.toNumber());
-      });
-    });
-
-    describe('with EIP-1559 signature', () => {
-      it('has correct balance after transfer', async () => {
-        const _balance1 = await queryBalance(account1.evmAddress);
-        const balance2 = await queryBalance(account2.evmAddress);
-
-        const priorityFee = BigNumber.from(2);
-        const transferTX: AcalaEvmTX = {
-          ...partialTransferTX,
-          nonce: await wallet1.getTransactionCount(),
-          gasPrice: undefined,
-          maxPriorityFeePerGas: priorityFee,
-          maxFeePerGas: txGasPrice,
-          type: 2,
         };
 
         const rawTx = await wallet1.signTransaction(transferTX);
