@@ -13,7 +13,7 @@ import {
   TransactionResponse,
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
-import { AccessListish, formatEther, parseEther } from 'ethers/lib/utils';
+import { AccessListish } from 'ethers/lib/utils';
 import { AccountId, H160, Header } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
