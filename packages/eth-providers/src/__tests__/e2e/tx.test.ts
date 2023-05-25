@@ -102,20 +102,7 @@ describe('transaction tests', () => {
       const validUntil = curBlockNum + 199;
 
       expect((params.gasPrice as BigNumber).toNumber()).eq(100000000000 + validUntil);
-      expect((params.gasLimit as BigNumber).toNumber()).eq(100100);
-
-      // const _data = provider.validSubstrateResources({
-      //   gasLimit: params.gasLimit,
-      //   gasPrice: params.gasPrice,
-      // });
-
-      // console.log({
-      //   gasLimit: data.gasLimit.toString(),
-      //   storageLimit: data.storageLimit.toString(),
-      //   validUntil: data.validUntil.toString()
-      // });
-
-      // expect((await randomWallet.getBalance()).toString()).eq(amount);
+      expect((params.gasLimit as BigNumber).toNumber()).eq(200100);
     });
   });
 
