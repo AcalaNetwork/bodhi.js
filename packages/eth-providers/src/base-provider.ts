@@ -13,7 +13,7 @@ import {
   TransactionResponse,
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
-import { AccessListish } from 'ethers/lib/utils';
+import { AccessListish, formatEther, parseEther } from 'ethers/lib/utils';
 import { AccountId, H160, Header } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
@@ -967,7 +967,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const callParams = [tx.to!, ...createParams] as const;
 
-    const extrinsic = tx.to ? this.api.tx.evm.call(...callParams) : this.api.tx.evm.create(...createParams);
+    const extrinsic = tx.to
+      ? this.api.tx.evm.call(...callParams)
+      : this.api.tx.evm.create(...createParams);
 
     let txFee = await this._estimateGasCost(extrinsic);
     txFee = txFee.mul(gasLimit).div(usedGas); // scale it to the same ratio when estimate passing gasLimit
@@ -977,8 +979,9 @@ export abstract class BaseProvider extends AbstractProvider {
       txFee = txFee.add(storageFee);
     }
 
-    const gasPrice =
-      tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0) ? BigNumber.from(tx.gasPrice) : await this.getGasPrice();
+    const gasPrice = tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0)
+      ? BigNumber.from(tx.gasPrice)
+      : await this.getGasPrice();
 
     return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage);
   };
@@ -986,9 +989,15 @@ export abstract class BaseProvider extends AbstractProvider {
   _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
     const u8a = extrinsic.toU8a();
     const apiAt = await this.api.at(await this.bestBlockHash);
-    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length);
+    const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
+    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length + lenIncreaseAfterSignature);
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
-    const nativeTxFee = BigNumber.from(baseFee.toBigInt() + lenFee.toBigInt() + adjustedWeightFee.toBigInt());
+
+    const nativeTxFee = BigNumber.from(
+      baseFee.toBigInt() +
+      lenFee.toBigInt() +
+      adjustedWeightFee.toBigInt()
+    );
 
     return nativeToEthDecimal(nativeTxFee);
   };
@@ -1288,10 +1297,15 @@ export abstract class BaseProvider extends AbstractProvider {
           .pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit)
           .toBigInt();
       }
-    } else if (ethTx.type === 1) {
-      return throwNotImplemented('EIP-2930 transactions');
-    } else if (ethTx.type === 2) {
-      return logger.throwError('EIP-1559 not supported, please use legacy or EIP-712 instead.');
+    } else if (ethTx.type === 1 || ethTx.type === 2) {
+      return logger.throwError(
+        `unsupported transaction type: ${ethTx.type}, please use legacy or EIP-712 instead. More info about EVM+ gas: <TODO: insert link here>`,
+        Logger.errors.UNSUPPORTED_OPERATION,
+        {
+          operation: '_getSubstrateGasParams',
+          transactionType: ethTx.type,
+        }
+      );
     }
 
     const accessList = ethTx.accessList?.map((set) => [set.address, set.storageKeys] as [string, string[]]);
