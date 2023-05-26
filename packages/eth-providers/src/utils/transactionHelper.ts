@@ -127,7 +127,9 @@ export const encodeGasLimit = (
   const encodedGasLimit = gasLimit.div(GAS_LIMIT_CHUNK).add(1);
   const encodedStorageLimit = usedStorage.gt(0) ? Math.ceil(Math.log2(usedStorage.toNumber())) : 0;
 
-  const aaaa00000 = rawEthGasLimit.div(GAS_MASK).mul(GAS_MASK);
+  const aaaa00000 = rawEthGasLimit.gt(GAS_MASK)
+    ? rawEthGasLimit.div(GAS_MASK).mul(GAS_MASK)
+    : BigNumber.from(GAS_MASK);
   const bbb00 = encodedGasLimit.mul(STORAGE_MASK);
   const cc = encodedStorageLimit;
   return aaaa00000.add(bbb00).add(cc); // aaaabbbcc
