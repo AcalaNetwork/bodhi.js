@@ -131,9 +131,8 @@ export const encodeGasLimit = (
 
   let encodedGasLimit = gasLimit.div(GAS_LIMIT_CHUNK).add(1);
   if (isTokenTransfer) {
-    // for token transfer, need to make sure bbb is even
-    // so when metamask 1.5X gasLimit, it won't affect cc
-    // bbb => bb0
+    // for token transfer, need to make sure when metamask 1.5X gasLimit, it won't affect cc
+    // bbb => b(b+1)0
     encodedGasLimit = encodedGasLimit.div(10).add(1).mul(10);
   }
 
