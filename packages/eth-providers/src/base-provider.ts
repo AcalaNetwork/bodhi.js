@@ -53,6 +53,7 @@ import {
   GAS_LIMIT_CHUNK,
   GAS_MASK,
   LOCAL_MODE_MSG,
+  MAX_GAS_LIMIT_CC,
   ONE_HUNDRED_GWEI,
   PROD_MODE_MSG,
   RICH_MODE_WARNING_MSG,
@@ -983,7 +984,9 @@ export abstract class BaseProvider extends AbstractProvider {
       ? BigNumber.from(tx.gasPrice)
       : await this.getGasPrice();
 
-    return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage);
+    const tokenTransferSelector = '0xa9059cbb';   // transfer(address,uint256)
+    const isTokenTransfer = hexlify(await transaction.data ?? '0x').startsWith(tokenTransferSelector);
+    return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage, isTokenTransfer);
   };
 
   _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
@@ -1294,7 +1297,7 @@ export abstract class BaseProvider extends AbstractProvider {
         }
         gasLimit = encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt();
         storageLimit = BigNumber.from(2)
-          .pow(encodedStorageLimit.gt(20) ? 20 : encodedStorageLimit)
+          .pow(encodedStorageLimit.gt(MAX_GAS_LIMIT_CC) ? MAX_GAS_LIMIT_CC : encodedStorageLimit)
           .toBigInt();
       }
     } else if (ethTx.type === 1 || ethTx.type === 2) {

@@ -121,16 +121,26 @@ export const encodeGasLimit = (
   txFee: BigNumber,
   gasPrice: BigNumber,
   gasLimit: BigNumber,
-  usedStorage: BigNumber
+  usedStorage: BigNumber,
+  isTokenTransfer = false,
 ): BigNumber => {
   const rawEthGasLimit = txFee.div(gasPrice);
-  const encodedGasLimit = gasLimit.div(GAS_LIMIT_CHUNK).add(1);
-  const encodedStorageLimit = usedStorage.gt(0) ? Math.ceil(Math.log2(usedStorage.toNumber())) : 0;
+  const encodedStorageLimit = usedStorage.gt(0)
+    ? Math.ceil(Math.log2(usedStorage.toNumber()))
+    : 0;
+
+  let encodedGasLimit = gasLimit.div(GAS_LIMIT_CHUNK).add(1);
+  if (isTokenTransfer) {
+    // for token transfer, need to make sure when metamask 1.5X gasLimit, it won't affect cc
+    // bbb => b(b+1)0
+    encodedGasLimit = encodedGasLimit.div(10).add(1).mul(10);
+  }
 
   const aaaa00000 = rawEthGasLimit.gt(GAS_MASK)
     ? rawEthGasLimit.div(GAS_MASK).mul(GAS_MASK)
     : BigNumber.from(GAS_MASK);
   const bbb00 = encodedGasLimit.mul(STORAGE_MASK);
   const cc = encodedStorageLimit;
+
   return aaaa00000.add(bbb00).add(cc); // aaaabbbcc
 };
