@@ -133,9 +133,8 @@ export const encodeGasLimit = (
   if (isTokenTransfer) {
     // for token transfer, need to make sure bbb is even
     // so when metamask 1.5X gasLimit, it won't affect cc
-    encodedGasLimit = encodedGasLimit.mod(2).eq(0)
-      ? encodedGasLimit
-      : encodedGasLimit.div(10).add(1).mul(10);
+    // bbb => bb0
+    encodedGasLimit = encodedGasLimit.div(10).add(1).mul(10);
   }
 
   const aaaa00000 = rawEthGasLimit.gt(GAS_MASK)
