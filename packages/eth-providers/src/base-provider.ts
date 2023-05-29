@@ -984,7 +984,8 @@ export abstract class BaseProvider extends AbstractProvider {
       ? BigNumber.from(tx.gasPrice)
       : await this.getGasPrice();
 
-    const isTokenTransfer = hexlify(await transaction.data ?? '').startsWith('0xa9059cbb');  // transfer(address,uint256)
+    const tokenTransferSelector = '0xa9059cbb';   // transfer(address,uint256)
+    const isTokenTransfer = hexlify(await transaction.data ?? '').startsWith(tokenTransferSelector);
     return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage, isTokenTransfer);
   };
 
