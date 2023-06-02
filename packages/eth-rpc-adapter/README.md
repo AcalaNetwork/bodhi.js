@@ -52,7 +52,6 @@ More details can also be found by `yarn start --help` or `npx @acala-network/eth
 | STORAGE_CACHE_SIZE | --max-storage-size     | 5000                | max storage cache size                                                                                  |
 | SAFE_MODE          | -s, --safe-mode        | 0                   | if enabled, TX and logs can only be found after they are finalized                                      |
 | LOCAL_MODE         | -l, --local-mode       | 0                   | enable this mode when testing with locally running instant-sealing mandala                              |
-| RICH_MODE          | -r, --rich-mode        | 0                   | if enabled, default gas params is big enough for most contract deployment and calls, so contract tests from traditional evm world can run unchanged. Note this mode is helpful for testing contracts, but is different than production envionment. [more info](https://evmdocs.acala.network/network/gas-parameters) |
 | HTTP_ONLY          | --http-only            | 0                   | only allow http requests, disable ws connections                  |
 | VERBOSE            | -v, --verbose          | 1                   | print some extra info                                                                                   |
 
