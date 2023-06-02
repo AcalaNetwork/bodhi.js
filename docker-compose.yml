@@ -183,28 +183,6 @@ services:
       - --port=8545
       - --localMode
 
-  eth-rpc-adapter-server-rich:
-    build:
-      context: .
-      dockerfile: docker/eth-rpc-adapter-server.Dockerfile
-      target: eth-rpc-adapter
-    ports:
-      - 8545:8545
-    volumes:
-      - ./:/app
-      - monorepo_yarn_cache:/app/.yarn/cache
-      - monorepo_node_modules:/app/node_modules
-    depends_on:
-      mandala-node:
-        condition: service_healthy
-      yarn-install:
-        condition: service_completed_successfully
-    command:
-      - --endpoint=ws://mandala-node:9944
-      - --port=8545
-      - --localMode
-      - --richMode
-
   eth-rpc-adapter-server-karura:
     build:
       context: .
@@ -256,13 +234,6 @@ services:
         condition: service_healthy
     command: echo "💈 ETH RPC ADAPTER IS READY 🚀"
 
-  eth-rpc-adapter-rich-ready:
-    image: alpine:latest
-    depends_on:
-      eth-rpc-adapter-server-rich:
-        condition: service_healthy
-    command: echo "💈 ETH RPC ADAPTER 🤑💰 IS READY 🚀"
-
   eth-rpc-adapter-karura-ready:
     image: alpine:latest
     depends_on:
@@ -287,7 +258,7 @@ services:
       - hardhat_yarn_cache:/app/.yarn/cache
       - hardhat_node_modules:/app/node_modules
     depends_on:
-      eth-rpc-adapter-server-rich:
+      eth-rpc-adapter-server:
         condition: service_healthy
 
   truffle-tutorials-test:
