@@ -1,6 +1,7 @@
 [submodule "hardhat"]
 	path = examples/hardhat-tutorials
 	url = https://github.com/AcalaNetwork/hardhat-tutorials.git
+	branch = tutorial-v2
 [submodule "truffle"]
 	path = examples/truffle-tutorials
 	url = https://github.com/AcalaNetwork/truffle-tutorials.git
