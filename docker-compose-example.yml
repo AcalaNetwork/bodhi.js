@@ -7,7 +7,7 @@ services:
     command:
       - --dev
       # - -lruntime=debug
-      # - -levm=debug
+      - -levm=debug
       - --ws-port=9944
       - --ws-external
       - --rpc-port=9933
@@ -15,7 +15,8 @@ services:
       - --rpc-cors=all
       - --rpc-methods=unsafe
       - --pruning=archive
-      #- --instant-sealing
+      - --instant-sealing
+
   postgres:
     image: postgres:12-alpine
     container_name: postgres
@@ -25,7 +26,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: acala/evm-subql:v2.5.22
+    image: acala/evm-subql:2.7.3
     container_name: subquery-node
     ports:
       - 3000:3000
@@ -41,7 +42,7 @@ services:
       DB_HOST: host.docker.internal
       DB_PORT: 5432
     command:
-      - -f=project.yaml
+      - -f=project.yaml   # local mandala
       - --network-endpoint=ws://mandala-node:9944
       - --db-schema=acala_evm
       - --log-level=debug
@@ -72,7 +73,7 @@ services:
       - --indexer=http://subquery-node:3000
 
   eth-rpc-adapter-server:
-    image: acala/eth-rpc-adapter:v2.5.22
+    image: acala/eth-rpc-adapter:2.7.3
     container_name: eth-rpc-adapter-server
     restart: always
     depends_on:
@@ -86,6 +87,5 @@ services:
     environment:
       - SUBQL_URL=http://graphql-engine:3001
       - ENDPOINT_URL=ws://mandala-node:9944
-      #- LOCAL_MODE=1
-      #- SAFE_MODE=1
+      - LOCAL_MODE=1
     command: yarn start
