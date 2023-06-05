@@ -56,7 +56,6 @@ import {
   MAX_GAS_LIMIT_CC,
   ONE_HUNDRED_GWEI,
   PROD_MODE_MSG,
-  RICH_MODE_WARNING_MSG,
   SAFE_MODE_WARNING_MSG,
   STORAGE_MASK,
   TEN_GWEI,
@@ -204,7 +203,6 @@ export interface EventData {
 export interface BaseProviderOptions {
   safeMode?: boolean;
   localMode?: boolean;
-  richMode?: boolean;
   verbose?: boolean;
   subqlUrl?: string;
   maxBlockCacheSize?: number;
@@ -284,7 +282,6 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly pollFilters: PollFilters;
   readonly safeMode: boolean;
   readonly localMode: boolean;
-  readonly richMode: boolean;
   readonly verbose: boolean;
   readonly maxBlockCacheSize: number;
   readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
@@ -321,7 +318,6 @@ export abstract class BaseProvider extends AbstractProvider {
   constructor({
     safeMode = false,
     localMode = false,
-    richMode = false,
     verbose = false,
     maxBlockCacheSize = 200,
     storageCacheSize = 5000,
@@ -337,7 +333,6 @@ export abstract class BaseProvider extends AbstractProvider {
     this.pollFilters = { [PollFilterType.NewBlocks]: [], [PollFilterType.Logs]: [] };
     this.safeMode = safeMode;
     this.localMode = localMode;
-    this.richMode = richMode;
     this.verbose = verbose;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.storageCache = new LRUCache({ max: storageCacheSize });
@@ -347,7 +342,6 @@ export abstract class BaseProvider extends AbstractProvider {
     this.subql = subqlUrl ? new SubqlProvider(subqlUrl) : undefined;
 
     /* ---------- messages ---------- */
-    richMode && logger.warn(RICH_MODE_WARNING_MSG);
     safeMode && logger.warn(SAFE_MODE_WARNING_MSG);
     this.verbose && logger.warn(localMode ? LOCAL_MODE_MSG : PROD_MODE_MSG);
 
@@ -905,10 +899,6 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getGasPriceV1 = async (): Promise<BigNumber> => {
-    if (this.richMode) {
-      return (await this._getEthGas()).gasPrice;
-    }
-
     // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
     const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
     return txFeePerGas.add(BigNumber.from(await this.bestBlockNumber).div(30).add(5).shl(16)).add(10);

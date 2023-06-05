@@ -12,7 +12,6 @@ const {
   STORAGE_CACHE_SIZE,
   SAFE_MODE,
   LOCAL_MODE,
-  RICH_MODE,
   HTTP_ONLY,
   VERBOSE,
 } = process.env;
@@ -81,14 +80,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       default: parseBooleanOption('LOCAL_MODE', false, LOCAL_MODE),
       describe: 'enable this mode when testing with locally running instant-sealing mandala',
-      type: 'boolean',
-    },
-    richMode: {
-      alias: 'r',
-      demandOption: false,
-      default: parseBooleanOption('RICH_MODE', false, RICH_MODE),
-      describe:
-        'if enabled, default gas params is big enough for most contract deployment and calls, so contract tests from traditional evm world can run unchanged. Note this mode is helpful for testing contracts, but is different than production envionment, please refer to https://evmdocs.acala.network/network/gas-parameters for more info',
       type: 'boolean',
     },
     httpOnly: {

@@ -30,7 +30,7 @@
     "e2e:eth-rpc-adapter": "docker compose up --build -- eth-rpc-adapter-with-subql-ready; yarn e2e:feed-tx; yarn e2e:feed-tx-2; yarn workspace @acala-network/eth-rpc-adapter run test:CI",
     "e2e:waffle": "yarn start:chain; yarn run test:waffle",
     "e2e:truffle": "yarn start:eth-rpc-adapter; cd examples/truffle-tutorials; yarn install --immutable; yarn test:mandala",
-    "e2e:hardhat": "docker compose up --build -- eth-rpc-adapter-rich-ready; cd examples/hardhat-tutorials; yarn install --immutable; yarn test:mandala",
+    "e2e:hardhat": "docker compose up --build -- eth-rpc-adapter-ready; cd examples/hardhat-tutorials; yarn install --immutable; yarn test:mandala",
     "bump": "yarn workspaces foreach -vit --include '@acala-network/*' --exclude '@acala-network/evm-subql' version",
     "postinstall": "husky install"
   },
