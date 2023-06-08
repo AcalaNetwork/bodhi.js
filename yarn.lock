@@ -2402,24 +2402,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openzeppelin/contracts@npm:^4.4.2":
-  version: 4.8.3
-  resolution: "@openzeppelin/contracts@npm:4.8.3"
-  checksum: aea130d38d46840c5cbe3adbaa9a7ac645e4bd66ad3f3baf2fa78588c408d1a686170b3408c9e2e5e05530fba22ecdc00d7efb6b27852a8b29f91accbc0af255
-  languageName: node
-  linkType: hard
-
-"@openzeppelin/contracts@npm:~3.4.2":
-  version: 3.4.2
-  resolution: "@openzeppelin/contracts@npm:3.4.2"
-  checksum: 0c90f029fe50a49643588e4c8670dae3bbf31795133a6ddce9bdcbc258486332700bb732287baabf7bf807f39182fe8ea2ffa19aa5caf359b1b9c0f083280748
-  languageName: node
-  linkType: hard
-
-"@openzeppelin/contracts@npm:~4.4.2":
-  version: 4.4.2
-  resolution: "@openzeppelin/contracts@npm:4.4.2"
-  checksum: 5c6be7bfe757c6a43eb5b24aa9c61a79deaed9de4bc5f59356b35f5519b0fb340f4da8b4df99588bded5e6b6a773fc54961917a1c657063247c1763f9752bd0e
+"@openzeppelin/contracts@npm:^4.9.1, @openzeppelin/contracts@npm:~4.9.1":
+  version: 4.9.1
+  resolution: "@openzeppelin/contracts@npm:4.9.1"
+  checksum: 9bb3cc6aecd6c56d5ece10d9820d43e6e9c460395b75cc4af9b4e776f1a9e56c9906bc03538b0707e617dc31f1abdfffcbeedfecc8884358d864198ed73f59c1
   languageName: node
   linkType: hard
 
@@ -9282,7 +9268,7 @@ __metadata:
   dependencies:
     "@acala-network/bodhi": "workspace:*"
     "@acala-network/contracts": ~2.3.4
-    "@openzeppelin/contracts": ~3.4.2
+    "@openzeppelin/contracts": ~4.9.1
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -9323,7 +9309,7 @@ __metadata:
     "@acala-network/bodhi": "workspace:*"
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-providers": "workspace:*"
-    "@openzeppelin/contracts": ^4.4.2
+    "@openzeppelin/contracts": ^4.9.1
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -9343,7 +9329,7 @@ __metadata:
   dependencies:
     "@acala-network/bodhi": "workspace:*"
     "@acala-network/contracts": 4.3.4
-    "@openzeppelin/contracts": ~4.4.2
+    "@openzeppelin/contracts": ~4.9.1
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -9490,7 +9476,7 @@ __metadata:
   dependencies:
     "@acala-network/bodhi": "workspace:*"
     "@acala-network/contracts": ~2.3.4
-    "@openzeppelin/contracts": ~3.4.2
+    "@openzeppelin/contracts": ~4.9.1
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
@@ -9529,7 +9515,7 @@ __metadata:
   dependencies:
     "@acala-network/bodhi": "workspace:*"
     "@acala-network/contracts": 4.3.4
-    "@openzeppelin/contracts": ~4.4.2
+    "@openzeppelin/contracts": ~4.9.1
     "@polkadot/api": 9.10.3
     "@polkadot/keyring": ^10.2.1
     "@types/chai": ~4.2.22
