@@ -2,7 +2,7 @@ import { AcalaJsonRpcProvider } from '@acala-network/eth-providers';
 import { Bridge__factory } from '@certusone/wormhole-sdk/lib/cjs/ethers-contracts';
 import { CHAINS, CONTRACTS, ChainId, attestFromEth, createWrappedOnEth, getEmitterAddressEth, getSignedVAAWithRetry, parseSequenceFromLogEth, tryNativeToHexString, uint8ArrayToHex } from '@certusone/wormhole-sdk';
 import { Contract, Wallet } from 'ethers';
-import { Interface } from 'ethers/lib/utils';
+import { Interface, formatEther } from 'ethers/lib/utils';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { NodeHttpTransport } from '@improbable-eng/grpc-web-node-http-transport';
 
@@ -129,6 +129,16 @@ export const attestToken = async (
   srcTokenAddr: string,
 ) => {
   console.log(`attesting token ${srcTokenAddr} from ${srcNetworkName} => ${dstNetworkName} ...`);
+
+  const [srcBal, dstBal] = await Promise.all([
+    srcSigner.getBalance(),
+    dstSigner.getBalance(),
+  ]);
+
+  console.log({
+    srcBal: formatEther(srcBal),
+    dstBal: formatEther(dstBal),
+  });
 
   let wrappedTokenAddress = await getWrappedAddr(srcNetworkName, dstNetworkName, srcTokenAddr);
   if (wrappedTokenAddress !== NULL_ADDRESS) {

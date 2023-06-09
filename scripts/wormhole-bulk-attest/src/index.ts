@@ -1,6 +1,5 @@
 
 import { Wallet } from 'ethers';
-import { formatEther } from 'ethers/lib/utils';
 
 import { ACALA, ARB, BSC, ETH, KARURA , POLYGON , attestToken , getProvider } from './utils';
 
@@ -25,7 +24,7 @@ const tokensKarura = [
 ] as const;
 
 const tokensAcala = [
-  // { srcAddr: '0x912CE59144191C1204E64559FE8253a0e49E6548', networkName: ARB },      // arb
+  { srcAddr: '0x912CE59144191C1204E64559FE8253a0e49E6548', networkName: ARB },      // arb
   { srcAddr: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', networkName: POLYGON },  // wmatic
   { srcAddr: '0xe9e7cea3dedca5984780bafc599bd69add087d56', networkName: BSC },      // busd
   { srcAddr: '0x5a98fcbea516cf06857215779fd812ca3bef1b32', networkName: ETH }, // ldo
@@ -58,16 +57,6 @@ const main = async () => {
 
     const srcSigner = new Wallet(key, srcProvider);
     const dstSigner = new Wallet(key, dstProvider);
-
-    const [srcBal, dstBal] = await Promise.all([
-      srcSigner.getBalance(),
-      dstSigner.getBalance(),
-    ]);
-
-    console.log({
-      srcBal: formatEther(srcBal),
-      dstBal: formatEther(dstBal),
-    });
 
     await attestToken(srcNetworkName, dstNetworkName, srcSigner, dstSigner, token.srcAddr);
     console.log('----------------------------------------------------------------------------------');
