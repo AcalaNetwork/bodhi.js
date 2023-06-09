@@ -128,13 +128,13 @@ export const attestToken = async (
   dstSigner: Wallet,
   srcTokenAddr: string,
 ) => {
-  console.log(`attesting token ${srcTokenAddr} from ${srcNetworkName} => ${dstNetworkName} ...`);
-
-  const [srcBal, dstBal] = await Promise.all([
+  const [srcBal, dstBal, tokenInfo] = await Promise.all([
     srcSigner.getBalance(),
     dstSigner.getBalance(),
+    getTokenInfo(srcTokenAddr, srcSigner.provider as JsonRpcProvider)
   ]);
 
+  console.log(`attesting token ${tokenInfo.symbol} from ${srcNetworkName} => ${dstNetworkName} ...`);
   console.log({
     srcBal: formatEther(srcBal),
     dstBal: formatEther(dstBal),
@@ -183,7 +183,7 @@ export const attestToken = async (
   console.log({
     srcTokenAddr,
     wrappedTokenAddress,
-    ...(await getTokenInfo(srcTokenAddr, srcSigner.provider as JsonRpcProvider)),
+    ...tokenInfo,
     wrappedToken: wrappedTokenAddress,
   });
 };
