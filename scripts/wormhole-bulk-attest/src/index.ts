@@ -1,110 +1,67 @@
-import { attestFromEth, ChainId, CHAINS, CHAIN_ID_TO_NAME, createWrappedOnEth, getEmitterAddressEth, getSignedVAAWithRetry, parseSequenceFromLogEth, tryNativeToHexString, CONTRACTS, uint8ArrayToHex } from '@certusone/wormhole-sdk';
-import { Signer, Wallet } from 'ethers';
-import { JsonRpcProvider } from '@ethersproject/providers';
-import { EvmRpcProvider } from '@acala-network/eth-providers';
-import { Bridge__factory } from '@certusone/wormhole-sdk/lib/cjs/ethers-contracts';
-import { NodeHttpTransport } from '@improbable-eng/grpc-web-node-http-transport';
 
-const privateKey = '';
+import { Wallet } from 'ethers';
 
-export const gasOverride = {
-  gasPrice: '0x33a70303ea',
-  gasLimit: '0x329b140',
+import { ACALA, ARB, BSC, ETH, KARURA , POLYGON , attestToken , getProvider } from './utils';
+
+const key = '';
+
+const tokensKarura = [
+  { srcAddr: '0x912CE59144191C1204E64559FE8253a0e49E6548', networkName: ARB },      // arb
+  { srcAddr: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', networkName: POLYGON },  // wmatic
+  { srcAddr: '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', networkName: BSC },      // wbnb
+  { srcAddr: '0xe9e7cea3dedca5984780bafc599bd69add087d56', networkName: BSC },      // busd
+  { srcAddr: '0x5a98fcbea516cf06857215779fd812ca3bef1b32', networkName: ETH },      // ldo
+  { srcAddr: '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce', networkName: ETH },      // shib
+  { srcAddr: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', networkName: ETH },      // uni
+  { srcAddr: '0x514910771af9ca656af840dff83e8264ecf986ca', networkName: ETH },      // link
+  { srcAddr: '0x4d224452801aced8b2f0aebe155379bb5d594381', networkName: ETH },      // ape
+  { srcAddr: '0x6b175474e89094c44da98b954eedeac495271d0f', networkName: ETH },      // dai
+  { srcAddr: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', networkName: ETH },      // wbtc
+  { srcAddr: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', networkName: ETH },      // weth
+  { srcAddr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', networkName: ETH },      // usdc
+  { srcAddr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', networkName: ETH },      // usdt
+  { srcAddr: '0x2620638EDA99F9e7E902Ea24a285456EE9438861', networkName: ETH },      // csm
+] as const;
+
+const tokensAcala = [
+  { srcAddr: '0x912CE59144191C1204E64559FE8253a0e49E6548', networkName: ARB },      // arb
+  { srcAddr: '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', networkName: POLYGON },  // wmatic
+  { srcAddr: '0xe9e7cea3dedca5984780bafc599bd69add087d56', networkName: BSC },      // busd
+  { srcAddr: '0x5a98fcbea516cf06857215779fd812ca3bef1b32', networkName: ETH }, // ldo
+  { srcAddr: '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce', networkName: ETH }, // shib
+  { srcAddr: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', networkName: ETH }, // uni
+  { srcAddr: '0x514910771af9ca656af840dff83e8264ecf986ca', networkName: ETH }, // link
+  { srcAddr: '0x4d224452801aced8b2f0aebe155379bb5d594381', networkName: ETH }, // ape
+  { srcAddr: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', networkName: ETH }, // wbtc
+  { srcAddr: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', networkName: ETH }, // weth
+  { srcAddr: '0x6b175474e89094c44da98b954eedeac495271d0f', networkName: ETH }, // dai
+  { srcAddr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', networkName: ETH }, // usdc
+  { srcAddr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', networkName: ETH }, // usdt
+  { srcAddr: '0x32a7C02e79c4ea1008dD6564b35F131428673c41', networkName: ETH }, // cru
+] as const;
+
+const tokensInfo = {
+  [ACALA]: tokensAcala,
+  [KARURA]: tokensKarura,
 };
-
-interface WormholeNetwork {
-  bridgeAddr: string;
-  tokenBridgeAddr: string;
-  wormholeChainId: ChainId;
-}
-
-const ethNetwork: WormholeNetwork = {
-  bridgeAddr: CONTRACTS.MAINNET.ethereum.core,
-  tokenBridgeAddr: CONTRACTS.MAINNET.ethereum.token_bridge,
-  wormholeChainId: CHAINS.ethereum,
-};
-
-const karuraTokenBridgeAddr = CONTRACTS.MAINNET.karura.token_bridge;
-
-const attestToken = async (
-  network: WormholeNetwork,
-  tokenAddr: string,
-  signerEth: Signer,
-  signerKarura: Signer,
-) => {
-  console.log(`attesting token ${tokenAddr} on ${CHAIN_ID_TO_NAME[network.wormholeChainId]}...`)
-  const networkTokenAttestation = await attestFromEth(network.tokenBridgeAddr, signerEth, tokenAddr);
-
-  const emitterAddr = getEmitterAddressEth(network.tokenBridgeAddr);
-  const sequence = parseSequenceFromLogEth(
-    networkTokenAttestation,
-    network.bridgeAddr
-  );
-  console.log(`waiting for vaa with sequence ${sequence}`);
-
-  const { vaaBytes } = await getSignedVAAWithRetry(
-    ['https://wormhole-v2-mainnet-api.certus.one'],
-    network.wormholeChainId,
-    emitterAddr,
-    sequence,
-    { transport: NodeHttpTransport() },
-  );
-
-  console.log(`creating wrapped token with vaa: [${uint8ArrayToHex(vaaBytes) }]`);
-  await createWrappedOnEth(karuraTokenBridgeAddr, signerKarura, vaaBytes, gasOverride);
-  const wrappedTokenAddress = await Bridge__factory.connect(karuraTokenBridgeAddr, signerKarura).wrappedAsset(
-    network.wormholeChainId,
-    Buffer.from(tryNativeToHexString(tokenAddr, network.wormholeChainId), 'hex'),
-  );
-
-  console.log('attest token finished!')
-  console.log({
-    sourceToken: tokenAddr,
-    wrappedToken: wrappedTokenAddress,
-  });
-}
-
-const getSigners = async (ethRpc: string, karuraNodeUrl: string) => {
-  const providerEth = new JsonRpcProvider(ethRpc);
-  const signerEth = new Wallet(privateKey, providerEth);
-
-  const providerKarura = new EvmRpcProvider(karuraNodeUrl);
-  await providerKarura.isReady();
-  const signerKarura = new Wallet(privateKey, providerKarura);   // TODO: ethers 6.2 not compatible anymore?
-
-  return {
-    signerEth,
-    signerKarura,
-    providerKarura,
-  }
-}
 
 const main = async () => {
-  const ETH_RPC = 'https://eth-mainnet.public.blastapi.io';
-  const KARURA_NODE_URL = 'wss://karura-rpc-0.aca-api.network';
+  const dstNetworkName = ACALA;
+  const tokens = tokensInfo[dstNetworkName];
 
-  // const ETH_RPC = 'https://rpc.ankr.com/eth_goerli';
-  // const KARURA_NODE_URL = 'wss://karura-dev.aca-dev.network/rpc/ws';
+  for (const token of tokens) {
+    const srcNetworkName = token.networkName;
 
-  const { signerEth, signerKarura, providerKarura } = await getSigners(ETH_RPC, KARURA_NODE_URL);
+    const srcProvider = getProvider(srcNetworkName);
+    const dstProvider = getProvider(dstNetworkName);
 
-  const addresses = [
-    '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
-    '0x5a98fcbea516cf06857215779fd812ca3bef1b32',
-    '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
-    '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
-    '0xB8c77482e45F1F44dE1745F52C74426C631bDD52',
-    '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
-    '0x4fabb145d64652a948d72533023f6e7a623c7c53',
-    '0x514910771af9ca656af840dff83e8264ecf986ca',
-    '0x4d224452801aced8b2f0aebe155379bb5d594381',
-  ]
+    const srcSigner = new Wallet(key, srcProvider);
+    const dstSigner = new Wallet(key, dstProvider);
 
-  for (const addr of addresses) {
-    await attestToken(ethNetwork, addr, signerEth, signerKarura)
+    await attestToken(srcNetworkName, dstNetworkName, srcSigner, dstSigner, token.srcAddr);
+    console.log('----------------------------------------------------------------------------------');
   }
 
-  await providerKarura.disconnect();
 };
 
 main();
