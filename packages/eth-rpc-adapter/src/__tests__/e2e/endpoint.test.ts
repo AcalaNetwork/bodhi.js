@@ -1183,10 +1183,6 @@ describe('endpoint', () => {
       await Promise.all(tests);
     });
 
-    it.skip('get correct custom token info', async () => {
-      // TODO: deploy custom erc20 and get correct info
-    });
-
     it('supports calling historical blocks', async () => {
       const dexAddr = '0x0230135fded668a3f7894966b14f42e65da322e4'; // created at block 5
       const before = await callDex(dexAddr, 'getLiquidityPool', [ADDRESS.ACA, ADDRESS.AUSD], { blockNumber: '0x5' });
@@ -1211,6 +1207,17 @@ describe('endpoint', () => {
         code: -32602,
         message: 'invalid argument 1: invalid block hash, expected type String',
       });
+    });
+
+    it('throws correct error for contract revert', async () => {
+      const { error } = (await eth_call([{
+        to: '0x0000000000000000000100000000000000000000',
+        data: '0x23b872dd0000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000003e8',
+      }, 'latest'])).data;
+
+      expect(error.code).to.equal(-32603);
+      expect(error.data).to.equal('0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001d45524332303a20696e73756666696369656e7420616c6c6f77616e6365000000');
+      expect(error.message).to.deep.contain('VM Exception while processing transaction: execution revert: ERC20: insufficient allowance');
     });
   });
 
