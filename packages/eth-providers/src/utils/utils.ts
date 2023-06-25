@@ -309,7 +309,7 @@ export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
     let err: any;
     if (exitReason.revert) {
       msg = decodeRevertMsg(returnData);
-      err = new Error(`VM Exception while processing transaction: execution revert: ${msg}`);
+      err = new Error(`execution reverted: ${msg}`);
       err.data = returnData;
     } else if (exitReason.fatal) {
       msg = JSON.stringify(exitReason.fatal);
