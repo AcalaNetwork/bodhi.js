@@ -795,8 +795,9 @@ export abstract class BaseProvider extends AbstractProvider {
       this._getBlockHash(blockTag),
     ]);
 
-    const transaction =
-      txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
+    const transaction = txRequest.gasLimit && txRequest.gasPrice
+      ? txRequest
+      : { ...txRequest, ...(await this._getEthGas()) };
 
     const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 

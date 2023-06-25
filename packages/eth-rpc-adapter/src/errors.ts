@@ -50,12 +50,7 @@ export class InvalidParams extends JSONRPCError {
 }
 
 export class InternalError extends JSONRPCError {
-  constructor(data?: any) {
-    super(
-      `internal JSON-RPC error ${
-        data && `[${data}]`
-      }. More info: https://evmdocs.acala.network/reference/common-errors`,
-      -32603
-    );
+  constructor(message?: string, data?: any) {
+    super(message, -32603, data);
   }
 }

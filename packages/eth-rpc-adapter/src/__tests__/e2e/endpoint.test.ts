@@ -1183,10 +1183,6 @@ describe('endpoint', () => {
       await Promise.all(tests);
     });
 
-    it.skip('get correct custom token info', async () => {
-      // TODO: deploy custom erc20 and get correct info
-    });
-
     it('supports calling historical blocks', async () => {
       const dexAddr = '0x0230135fded668a3f7894966b14f42e65da322e4'; // created at block 5
       const before = await callDex(dexAddr, 'getLiquidityPool', [ADDRESS.ACA, ADDRESS.AUSD], { blockNumber: '0x5' });

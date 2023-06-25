@@ -17,7 +17,6 @@ import {
   karura3524761,
   karura3597964,
   karura3607973,
-  mandala938075,
 } from './receipt-snapshots';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
@@ -63,13 +62,11 @@ const getAllReceiptsAtBlockNumber = async (api: ApiPromise, blockNumber: number)
 describe.concurrent('getAllReceiptsAtBlock', () => {
   let apiK: ApiPromise;
   let apiA: ApiPromise;
-  let apiM: ApiPromise;
 
   beforeAll(async () => {
     console.log('connecting to node...');
     const KARURA_NODE_URL = 'wss://karura-rpc-1.aca-api.network';
     const ACALA_NODE_URL = 'wss://acala-rpc-1.aca-api.network';
-    const MANDALA_NODE_URL = 'wss://mandala-rpc.aca-staging.network/ws';
 
     apiK = new ApiPromise(
       options({
@@ -83,19 +80,11 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       })
     );
 
-    apiM = new ApiPromise(
-      options({
-        provider: new WsProvider(MANDALA_NODE_URL),
-      })
-    );
-
     await apiK.isReady;
     await apiA.isReady;
-    await apiM.isReady;
     console.log(`connected to [
       ${KARURA_NODE_URL},
       ${ACALA_NODE_URL},
-      ${MANDALA_NODE_URL},
     ]`);
   });
 
@@ -103,7 +92,6 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
     await sleep(10_000);
     await apiK.disconnect();
     await apiA.disconnect();
-    await apiM.disconnect();
   });
 
   describe.concurrent('transfer kar', async () => {
@@ -223,13 +211,9 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
     });
   });
 
-  describe.concurrent('other types', () => {
+  describe.concurrent.skip('other types', () => {
     it('failed EVM extrinsic - 0 gasLimit', async () => {
-      const blockNumber = 938075;
-      const receipts = await getAllReceiptsAtBlockNumber(apiM, blockNumber);
-
-      expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(mandala938075);
+      // TODO: construct a similar one on karura
     });
   });
 });
