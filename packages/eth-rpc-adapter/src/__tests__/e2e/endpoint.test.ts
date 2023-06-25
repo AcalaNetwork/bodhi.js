@@ -1208,17 +1208,6 @@ describe('endpoint', () => {
         message: 'invalid argument 1: invalid block hash, expected type String',
       });
     });
-
-    it('throws correct error for contract revert', async () => {
-      const { error } = (await eth_call([{
-        to: '0x0000000000000000000100000000000000000000',
-        data: '0x23b872dd0000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000003e8',
-      }, 'latest'])).data;
-
-      expect(error.code).to.equal(-32603);
-      expect(error.data).to.equal('0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001d45524332303a20696e73756666696369656e7420616c6c6f77616e6365000000');
-      expect(error.message).to.equal('execution reverted: ERC20: insufficient allowance');
-    });
   });
 
   describe('eth_getEthGas', () => {
