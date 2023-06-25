@@ -1217,7 +1217,7 @@ describe('endpoint', () => {
 
       expect(error.code).to.equal(-32603);
       expect(error.data).to.equal('0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001d45524332303a20696e73756666696369656e7420616c6c6f77616e6365000000');
-      expect(error.message).to.deep.contain('VM Exception while processing transaction: execution revert: ERC20: insufficient allowance');
+      expect(error.message).to.equal('execution reverted: ERC20: insufficient allowance');
     });
   });
 
