@@ -36,7 +36,7 @@ docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:
 npx @acala-network/eth-rpc-adapter@latest --localMode
 ```
 
-1) deploy to local mandala with the fetched gas params 
+3) deploy to local mandala with the pre-funded account
 ```
 forge create src/Counter.sol:Counter \
   --private-key 0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f \
@@ -45,7 +45,7 @@ forge create src/Counter.sol:Counter \
 ```
 
 ### to public network
-in order to deploy to public network, we can skip step 1 and 2 in previous section, and switch to public eth rpc endpoint for step 3 and 4. For example, to deploy to public mandala, substitute `http://localhost:8545` with `https://eth-rpc-mandala.aca-staging.network`.
+in order to deploy to public network, we can skip step 1 and 2 in previous section, and switch to public eth rpc endpoint for step 3. For example, to deploy to public mandala, substitute `http://localhost:8545` with `https://eth-rpc-tc9.aca-staging.network`.
 
 ### use a deploy script
-For more complex deployments or tests (for example if your tests need to make axios call), you might need to write a script. In such case you can easily integrate foundry with hardhat by following the instructions [here](https://hardhat.org/hardhat-runner/docs/advanced/hardhat-and-foundry). You can still write, test, and build the contract in foundry.
+For more complex deployments or tests (for example if your tests need to make axios call), you might want to write a JS script. In such case you can easily integrate foundry with hardhat by following the instructions [here](https://hardhat.org/hardhat-runner/docs/advanced/hardhat-and-foundry). You can still write, test, and build contracts with foundry.
