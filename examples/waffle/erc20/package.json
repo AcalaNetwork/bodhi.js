@@ -8,7 +8,7 @@
     "build": "waffle waffle.json"
   },
   "devDependencies": {
-    "@openzeppelin/contracts": "~4.4.2",
+    "@openzeppelin/contracts": "~4.9.2",
     "@types/chai": "~4.2.22",
     "@types/mocha": "~9.0.0",
     "chai": "~4.3.4",
