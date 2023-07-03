@@ -95,6 +95,7 @@ __metadata:
     graphql-request: ~3.6.1
     jsdom: ^22.0.0
     lru-cache: ~7.8.2
+    typescript: ~4.6.3
     vitest: ^0.31.0
   peerDependencies:
     "@acala-network/api": ~5.1.1
