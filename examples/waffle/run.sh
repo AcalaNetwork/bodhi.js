@@ -31,3 +31,5 @@ for e in "${examples[@]}"
 echo "+++++++++++++++++++++++"
 echo "test failed: $failed"
 echo "+++++++++++++++++++++++"
+
+exit $failed
