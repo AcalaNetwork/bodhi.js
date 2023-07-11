@@ -77,7 +77,7 @@ const toWormholeChainName = (networkName: NETWORK_NAME_MAINNET) => {
 export const getProvider = (networkName: NETWORK_NAME_MAINNET) => {
   const ethRpc = ({
     [ACALA]: 'https://eth-rpc-acala.aca-api.network',
-    [KARURA]: 'https://eth-rpc-karura.aca-staging.network',
+    [KARURA]: 'https://eth-rpc-karura.aca-api.network',
     [ETH]: 'https://ethereum.publicnode.com',
     [ARB]: 'https://endpoints.omniatech.io/v1/arbitrum/one/public',
     [BSC]: 'https://bsc.publicnode.com',
@@ -109,15 +109,20 @@ const getTokenInfo = async (addr: string, provider: JsonRpcProvider) => {
   const erc20IFace = new Interface([
     'function symbol() view returns (string)',
     'function decimals() view returns (uint8)',
+    'function name() external view returns (string)',
   ]);
 
   const contract = new Contract(addr, erc20IFace, provider);
-  const symbol = await contract.symbol();
-  const decimals = await contract.decimals();
+  const [symbol, decimals, name] = await Promise.all([
+    contract.symbol(),
+    contract.decimals(),
+    contract.name(),
+  ]);
 
   return {
     symbol,
     decimals,
+    name,
   };
 };
 
@@ -143,47 +148,53 @@ export const attestToken = async (
   let wrappedTokenAddress = await getWrappedAddr(srcNetworkName, dstNetworkName, srcTokenAddr);
   if (wrappedTokenAddress !== NULL_ADDRESS) {
     console.log(`wrapped token already exist: ${wrappedTokenAddress}`);
-    return;
+  } else {
+    const srcNetwork = getWormholeNetwork(srcNetworkName);
+    const dstNetwork = getWormholeNetwork(dstNetworkName);
+
+    console.log({
+      srcNetwork,
+      dstNetwork,
+    });
+
+    const attestTx = await attestFromEth(srcNetwork.tokenBridgeAddr, srcSigner, srcTokenAddr);
+
+    const emitterAddr = getEmitterAddressEth(srcNetwork.tokenBridgeAddr);
+    const sequence = parseSequenceFromLogEth(
+      attestTx,
+      srcNetwork.bridgeAddr
+    );
+    console.log(`waiting for vaa with sequence ${sequence}`);
+
+    const { vaaBytes } = await getSignedVAAWithRetry(
+      ['https://wormhole-v2-mainnet-api.certus.one'],
+      srcNetwork.wormholeChainId,
+      emitterAddr,
+      sequence,
+      { transport: NodeHttpTransport() },
+    );
+
+    console.log(`creating wrapped token with vaa: [${uint8ArrayToHex(vaaBytes)}]`);
+
+    const override = dstNetworkName === ACALA
+      ? ACALA_GAS_OVERRIDE
+      : {};
+    await createWrappedOnEth(dstNetwork.tokenBridgeAddr, dstSigner, vaaBytes, override);
+    wrappedTokenAddress = await getWrappedAddr(srcNetworkName, dstNetworkName, srcTokenAddr);
+
+    console.log('attest token finished!');
   }
 
-  const srcNetwork = getWormholeNetwork(srcNetworkName);
-  const dstNetwork = getWormholeNetwork(dstNetworkName);
-
   console.log({
-    srcNetwork,
-    dstNetwork,
-  });
-
-  const attestTx = await attestFromEth(srcNetwork.tokenBridgeAddr, srcSigner, srcTokenAddr);
-
-  const emitterAddr = getEmitterAddressEth(srcNetwork.tokenBridgeAddr);
-  const sequence = parseSequenceFromLogEth(
-    attestTx,
-    srcNetwork.bridgeAddr
-  );
-  console.log(`waiting for vaa with sequence ${sequence}`);
-
-  const { vaaBytes } = await getSignedVAAWithRetry(
-    ['https://wormhole-v2-mainnet-api.certus.one'],
-    srcNetwork.wormholeChainId,
-    emitterAddr,
-    sequence,
-    { transport: NodeHttpTransport() },
-  );
-
-  console.log(`creating wrapped token with vaa: [${uint8ArrayToHex(vaaBytes)}]`);
-
-  const override = dstNetworkName === ACALA
-    ? ACALA_GAS_OVERRIDE
-    : {};
-  await createWrappedOnEth(dstNetwork.tokenBridgeAddr, dstSigner, vaaBytes, override);
-  wrappedTokenAddress = await getWrappedAddr(srcNetworkName, dstNetworkName, srcTokenAddr);
-
-  console.log('attest token finished!');
-  console.log({
-    srcTokenAddr,
-    wrappedTokenAddress,
-    ...tokenInfo,
-    wrappedToken: wrappedTokenAddress,
+    srcTokenInfo: {
+      ...tokenInfo,
+      chain: srcNetworkName,
+      addr: srcTokenAddr,
+    },
+    dstTokenInfo: {
+      ...(await getTokenInfo(wrappedTokenAddress, dstSigner.provider as JsonRpcProvider)),
+      chain: dstNetworkName,
+      addr: wrappedTokenAddress,
+    }
   });
 };
