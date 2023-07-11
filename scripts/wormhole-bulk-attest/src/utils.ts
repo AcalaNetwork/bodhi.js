@@ -8,11 +8,6 @@ import { NodeHttpTransport } from '@improbable-eng/grpc-web-node-http-transport'
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
-const ACALA_GAS_OVERRIDE = {
-  gasPrice: '0x616dc303ea',
-  gasLimit: '0x6fc3540',
-};
-
 export const ACALA = 'ACALA';
 export const KARURA = 'KARURA';
 export const ACALA_TESTNET = 'ACALA_TESTNET';
@@ -176,10 +171,7 @@ export const attestToken = async (
 
     console.log(`creating wrapped token with vaa: [${uint8ArrayToHex(vaaBytes)}]`);
 
-    const override = dstNetworkName === ACALA
-      ? ACALA_GAS_OVERRIDE
-      : {};
-    await createWrappedOnEth(dstNetwork.tokenBridgeAddr, dstSigner, vaaBytes, override);
+    await createWrappedOnEth(dstNetwork.tokenBridgeAddr, dstSigner, vaaBytes);
     wrappedTokenAddress = await getWrappedAddr(srcNetworkName, dstNetworkName, srcTokenAddr);
 
     console.log('attest token finished!');
