@@ -74,6 +74,7 @@ __metadata:
     "@acala-network/api": ~5.1.1
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-transactions": "workspace:*"
+    "@babel/runtime": ^7.22.6
     "@ethersproject/abstract-provider": ~5.7.0
     "@ethersproject/address": ~5.7.0
     "@ethersproject/bignumber": ~5.7.0
