@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.7.4",
+  "version": "2.7.5-0",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
@@ -57,5 +57,6 @@
       "default": "./lib/*.js"
     },
     "./package.json": "./package.json"
-  }
+  },
+  "stableVersion": "2.7.4"
 }
