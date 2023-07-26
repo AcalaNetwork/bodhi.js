@@ -73,6 +73,7 @@ __metadata:
     "@acala-network/api": 5.1.2-2
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-transactions": "workspace:*"
+    "@babel/runtime": ^7.22.6
     "@ethersproject/abstract-provider": ~5.7.0
     "@ethersproject/address": ~5.7.0
     "@ethersproject/bignumber": ~5.7.0
@@ -108,6 +109,7 @@ __metadata:
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-providers": "workspace:*"
     "@acala-network/eth-transactions": "workspace:*"
+    "@babel/runtime": ^7.22.6
     "@ethersproject/abstract-provider": ~5.7.0
     "@ethersproject/abstract-signer": ~5.7.0
     "@ethersproject/address": ~5.7.0
@@ -231,6 +233,15 @@ __metadata:
   dependencies:
     regenerator-runtime: ^0.13.11
   checksum: 358f2779d3187f5c67ad302e8f8d435412925d0b991d133c7d4a7b1ddd5a3fda1b6f34537cb64628dfd96a27ae46df105bed3895b8d754b88cacdded8d1129dd
+  languageName: node
+  linkType: hard
+
+"@babel/runtime@npm:^7.22.6":
+  version: 7.22.6
+  resolution: "@babel/runtime@npm:7.22.6"
+  dependencies:
+    regenerator-runtime: ^0.13.11
+  checksum: e585338287c4514a713babf4fdb8fc2a67adcebab3e7723a739fc62c79cfda875b314c90fd25f827afb150d781af97bc16c85bfdbfa2889f06053879a1ddb597
   languageName: node
   linkType: hard
 
