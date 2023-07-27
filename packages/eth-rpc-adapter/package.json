@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-rpc-adapter",
-  "version": "2.7.5-0",
+  "version": "2.7.5-1",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "bin": "./bin/eth-rpc-adapter.js",
@@ -19,7 +19,6 @@
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
     "@acala-network/eth-transactions": "workspace:*",
-    "@babel/runtime": "^7.22.6",
     "@ethersproject/abstract-provider": "~5.7.0",
     "@ethersproject/abstract-signer": "~5.7.0",
     "@ethersproject/address": "~5.7.0",
