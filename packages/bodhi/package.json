@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/bodhi",
-  "version": "2.7.5-1",
+  "version": "2.7.5",
   "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
@@ -45,6 +45,5 @@
       "default": "./lib/*.js"
     },
     "./package.json": "./package.json"
-  },
-  "stableVersion": "2.7.4"
+  }
 }

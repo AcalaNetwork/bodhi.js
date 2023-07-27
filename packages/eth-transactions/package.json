@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-transactions",
-  "version": "2.7.5-1",
+  "version": "2.7.5",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
@@ -40,6 +40,5 @@
       "default": "./lib/*.js"
     },
     "./package.json": "./package.json"
-  },
-  "stableVersion": "2.7.4"
+  }
 }
