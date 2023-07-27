@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.7.5-0",
+  "version": "2.7.5-1",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
@@ -10,13 +10,12 @@
     "test:e2e": "vitest --run --config vitest.config.e2e.ts"
   },
   "peerDependencies": {
-    "@acala-network/api": "5.1.2-5",
+    "@acala-network/api": "5.1.2-7",
     "@polkadot/api": "^10.5.1"
   },
   "dependencies": {
     "@acala-network/contracts": "4.3.4",
     "@acala-network/eth-transactions": "workspace:*",
-    "@babel/runtime": "^7.22.6",
     "@ethersproject/abstract-provider": "~5.7.0",
     "@ethersproject/address": "~5.7.0",
     "@ethersproject/bignumber": "~5.7.0",
@@ -36,7 +35,7 @@
     "lru-cache": "~7.8.2"
   },
   "devDependencies": {
-    "@acala-network/api": "5.1.2-5",
+    "@acala-network/api": "5.1.2-7",
     "@types/bn.js": "~5.1.0",
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
