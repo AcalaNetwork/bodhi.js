@@ -1,0 +1,26 @@
+{
+  "name": "vaa-trace",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "@certusone/wormhole-sdk": "^0.9.22",
+    "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
+    "@types/node": "^20.4.5",
+    "axios": "^1.4.0",
+    "ethers": "^5.7.0",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.2.0",
+    "@typescript-eslint/parser": "^6.2.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-sort-imports-es6-autofix": "^0.6.0"
+  }
+}
