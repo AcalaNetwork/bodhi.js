@@ -5,6 +5,6 @@
     "rootDir": "src"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib", "src/__tests__"],
+  "exclude": ["node_modules", "lib", "src/__tests__", "src/evmChai"],
   "references": [{ "path": "../eth-providers" }]
 }
