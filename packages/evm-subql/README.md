@@ -93,9 +93,8 @@ If the acala node is running with `--instant-sealing`, it won't start producing 
 For example we can run any of the [evm examples](https://github.com/AcalaNetwork/bodhi.js/tree/master/examples).
 
 ```shell
-cd ../examples/waffle/dex
-rush update
-rush build -t .
+cd ../../examples/waffle/dex
+yarn build 
 yarn test
 ```
 
@@ -179,8 +178,8 @@ In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, w
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.5.13`
-- `acala/evm-subql:v2.5.13`
+- `acala/eth-rpc-adapter:v2.7.4`
+- `acala/evm-subql:v2.6.5`
 - `onfinality/subql-query:v1.4.0`
 
 #### config
