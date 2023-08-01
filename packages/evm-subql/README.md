@@ -38,12 +38,12 @@ Please note that the indexer won't start until we [feed some transactions to the
 
 Optionally, if you don't want to use the Docker, you can also run each service separately in the CLI ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)). 
 
-NOTE: using CLI is usually for **local testing**. For production please use docker setup instead.
+NOTE: using CLI is for **local testing** only, so you can get familiar with each service. [For production](#for-production) please use docker setup instead.
 
 1. Install SubQl globally
 
 ```shell
-npm i -g @subql/node@1.17.0 @subql/query@1.4.0
+npm i -g @subql/node@1.21.2 @subql/query@1.4.0
 ```
 
 2. Run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port number `9944` (in the first terminal)
@@ -60,7 +60,7 @@ docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:
 docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
 ```
 
-4. [Feed some transactions to node](#feed-evm-transactions-to-node) if the node is running with `--instant-sealing`
+4. [Feed some transactions to node](#feeding-evm-transactions-to-the-node) if the node is running with `--instant-sealing`
 
 5. Run a subquery indexer (in the third terminal)
 
