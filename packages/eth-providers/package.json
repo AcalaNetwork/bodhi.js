@@ -11,7 +11,7 @@
   },
   "peerDependencies": {
     "@acala-network/api": "5.1.2",
-    "@polkadot/api": "^10.5.1"
+    "@polkadot/api": "^10.9.1"
   },
   "dependencies": {
     "@acala-network/contracts": "4.3.4",
