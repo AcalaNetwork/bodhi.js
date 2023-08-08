@@ -135,10 +135,13 @@ jobs:
         with:
           node-version: 16
           cache: 'yarn'
+
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
