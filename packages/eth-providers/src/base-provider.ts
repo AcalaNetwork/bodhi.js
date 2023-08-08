@@ -1692,7 +1692,7 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  _getMinedReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
+  _getMinedReceipt = async (txHash: string): Promise<FullReceipt | null> => {
     const txFromCache = this.blockCache.getReceiptByHash(txHash);
     if (txFromCache && (await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)))
       return txFromCache;
@@ -1726,7 +1726,7 @@ export abstract class BaseProvider extends AbstractProvider {
   getTransactionReceipt = async (_txHash: string): Promise<TransactionReceipt> =>
     throwNotImplemented('getTransactionReceipt (please use `getReceiptByHash` instead)');
 
-  getReceiptByHash = async (txHash: string): Promise<TransactionReceipt | null> =>
+  getReceiptByHash = async (txHash: string): Promise<FullReceipt | null> =>
     this.localMode
       ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
       : await this._getMinedReceipt(txHash);

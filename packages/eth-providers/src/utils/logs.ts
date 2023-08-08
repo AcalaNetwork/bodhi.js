@@ -140,5 +140,6 @@ export const TX_RECEIPT_NODES = `
     logs {
       ${LOGS_NODES}
     }
+    exitReason
   }
 `;
