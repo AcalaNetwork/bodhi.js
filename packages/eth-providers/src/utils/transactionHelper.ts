@@ -3,7 +3,7 @@ import { Deferrable, resolveProperties } from '@ethersproject/properties';
 import { GAS_LIMIT_CHUNK, GAS_MASK, STORAGE_MASK } from '../consts';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { accessListify } from '@ethersproject/transactions';
-import { formatter } from './transactionReceiptHelper';
+import { formatter } from './receiptHelper';
 import { hexlify } from '@ethersproject/bytes';
 
 type TxConsts = {

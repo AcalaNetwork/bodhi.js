@@ -1,6 +1,6 @@
 export * from './address';
 export * from './logger';
-export * from './transactionReceiptHelper';
+export * from './receiptHelper';
 export * from './handleTxResponse';
 export * from './sendTx';
 export * from './transactionHelper';
