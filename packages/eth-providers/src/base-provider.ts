@@ -1328,7 +1328,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ethTx.value.toString(),
         ethTx.gasPrice?.toBigInt(),
         ethTx.gasLimit.toBigInt(),
-        accessList || []
+        []
       )
       : this.api.tx.evm.ethCall(
         ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -1336,7 +1336,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ethTx.value.toString(),
         gasLimit,
         storageLimit,
-        accessList || [],
+        [],
         validUntil
       );
 
