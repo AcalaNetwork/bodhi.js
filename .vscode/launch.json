@@ -17,7 +17,7 @@
         "ts-node/register/transpile-only",
       ],
       "args": ["src/index"],
-      "cwd": "${workspaceRoot}/eth-rpc-adapter",
+      "cwd": "${workspaceRoot}/packages/eth-rpc-adapter",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**"]
     }

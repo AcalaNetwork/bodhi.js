@@ -1,7 +1,7 @@
+import { options } from '@acala-network/api';
+
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BaseProvider, BaseProviderOptions } from './base-provider';
-import { options } from '@acala-network/api';
-import { runtimePatch } from './utils/temp-runtime-patch';
 
 export class EvmRpcProvider extends BaseProvider {
 
@@ -9,14 +9,7 @@ export class EvmRpcProvider extends BaseProvider {
     super(opts);
 
     const provider = new WsProvider(endpoint);
-    // const api = new ApiPromise(options({ provider }));
-    const api = new ApiPromise({
-      ...options({ provider }),
-      runtime: {
-        ...options({ provider }).runtime,
-        ...(runtimePatch as any),
-      },
-    } );
+    const api = new ApiPromise(options({ provider }));
 
     this.setApi(api);
   }
