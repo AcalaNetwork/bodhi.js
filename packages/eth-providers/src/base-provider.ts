@@ -20,7 +20,7 @@ import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
 import { AsyncScheduler } from 'rxjs/internal/scheduler/AsyncScheduler';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
-import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/build/interfaces';    // TODO: use @acala-network/types/interfaces instead
+import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/dist/interfaces';    // TODO: use @acala-network/types/interfaces instead
 import { Formatter } from '@ethersproject/providers';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { Logger } from '@ethersproject/logger';
