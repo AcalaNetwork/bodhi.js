@@ -37,7 +37,7 @@ export const getAllReceiptsAtBlock = async (
 
   const [block, blockEvents] = await Promise.all([
     api.rpc.chain.getBlock(blockHash),
-    apiAtTargetBlock.query.system.events<FrameSystemEventRecord[]>(),
+    apiAtTargetBlock.query.system.events(),
   ]);
 
   return parseReceiptsFromBlockData(api, block, blockEvents, targetTxHash);
@@ -139,7 +139,8 @@ const getEffectiveGasPrice = async (
     const dispatchInfo = successEvent.event.data[0] as FrameSupportDispatchDispatchInfo | DispatchInfo;
 
     const actualWeight =
-      (dispatchInfo as FrameSupportDispatchDispatchInfo).weight.refTime ?? (dispatchInfo as DispatchInfo).weight;
+      (dispatchInfo as FrameSupportDispatchDispatchInfo).weight.refTime ??
+      (dispatchInfo as DispatchInfo).weight.refTime;
 
     const [paymentInfo, feeDetails] = await Promise.all([
       apiAtParentBlock.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(
