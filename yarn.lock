@@ -5,14 +5,14 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@acala-network/api@npm:6.0.0-21":
-  version: 6.0.0-21
-  resolution: "@acala-network/api@npm:6.0.0-21"
+"@acala-network/api@npm:6.0.0-22":
+  version: 6.0.0-22
+  resolution: "@acala-network/api@npm:6.0.0-22"
   dependencies:
-    "@acala-network/types": 6.0.0-21
+    "@acala-network/types": 6.0.0-22
   peerDependencies:
     "@polkadot/api": ^10.9.1
-  checksum: 0998a739ca992026e8934088b9fd30de1344b8beb8fffcd36a088bafeb32d3d5acce6d51bb9d4a6b87440e5261bd5aad83f5b715ea24db0696fa609a9e0f3d2c
+  checksum: 325901334105ca76ca7cc47e31aaa4972122ecfff738d2179ee9e9f866ce76b45e58c8a873ba7446f9abe640928d58774d171b91b2beccb0a834403a21947590
   languageName: node
   linkType: hard
 
@@ -58,7 +58,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@acala-network/eth-providers@workspace:packages/eth-providers"
   dependencies:
-    "@acala-network/api": 6.0.0-21
+    "@acala-network/api": 6.0.0-22
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-transactions": "workspace:*"
     "@ethersproject/abstract-provider": ~5.7.0
@@ -84,7 +84,7 @@ __metadata:
     lru-cache: ~7.8.2
     vitest: ^0.31.0
   peerDependencies:
-    "@acala-network/api": 6.0.0-21
+    "@acala-network/api": 6.0.0-22
     "@polkadot/api": ^10.9.1
   languageName: unknown
   linkType: soft
@@ -166,12 +166,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@acala-network/types@npm:6.0.0-21":
-  version: 6.0.0-21
-  resolution: "@acala-network/types@npm:6.0.0-21"
+"@acala-network/types@npm:6.0.0-22":
+  version: 6.0.0-22
+  resolution: "@acala-network/types@npm:6.0.0-22"
   peerDependencies:
     "@polkadot/api": ^10.9.1
-  checksum: ec69eeebd37eba3cbee929f5cf0f8a1649312fb83400cc24fd21909c734b986a978daf0eef0f47bc6e3d5fe58d0c5bc5d5551702bbe942c3227e0ba658344ccf
+  checksum: 55fa1c18b5dc2164dc95a1984dfd7c6bdf3b835a4c73e2b13304b243edd12f85be18937d4231590b77bac73d898e8113770ea3c95742d4ad365931cd6f0e3b07
   languageName: node
   linkType: hard
 
