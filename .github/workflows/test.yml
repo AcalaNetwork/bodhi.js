@@ -149,7 +149,7 @@ jobs:
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
       - name: test
-        run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+        run: yarn e2e:hardhat
 
       - name: dump docker logs on failure
         if: failure()
