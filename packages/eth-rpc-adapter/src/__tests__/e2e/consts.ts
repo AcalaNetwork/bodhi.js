@@ -337,7 +337,7 @@ export const karuraBlock1818518 = {
 
 export const karuraContractCallTxReceipt = {
   to: '0xff066331be693be721994cf19905b2dc7475c5c9',
-  from: '0x99537d82f6f4aad1419dd14952b512c7959a2904',
+  from: '0x99537d82f6f4aad1419dd14952b512c7959a2904000000000',
   contractAddress: null,
   transactionIndex: '0x0',
   gasUsed: '0x12a44',

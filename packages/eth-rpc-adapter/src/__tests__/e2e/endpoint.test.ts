@@ -1032,7 +1032,7 @@ describe('endpoint', () => {
 
           const unsignedTx = {
             ...partialNativeTransferTX,
-            nonce: await getNonce(wallet1.address),
+            nonce: await getNonce(wallet1.address) - 1,
           };
           const { gasPrice, gasLimit } = await estimateGas(unsignedTx);
 

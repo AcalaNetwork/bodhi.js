@@ -146,7 +146,7 @@ describe('JsonRpcProvider', async () => {
       const echo = await echoFactory.deploy(gasOverride);
       await echo.deployed();
 
-      expect(await echo.echo()).to.equal('Deployed successfully!');
+      expect(await echo.echo()).to.equal('Deployed successfullyyyyyy!');
 
       await (await echo.scream('hello Gogeta!')).wait();
       expect(await echo.echo()).to.equal('hello Gogeta!');
