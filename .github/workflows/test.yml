@@ -145,6 +145,9 @@ jobs:
           node-version: 16
           cache: 'yarn'
 
+      - name: install dependencies
+        run: yarn install --immutable
+
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
