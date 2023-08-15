@@ -1,4 +1,4 @@
-import { FullReceipt } from './transactionReceiptHelper';
+import { FullReceipt } from './receiptHelper';
 
 export type TxHashToReceipt = Record<string, FullReceipt>;
 export type BlockHashToReceipts = Record<string, FullReceipt[]>;
