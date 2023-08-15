@@ -126,8 +126,6 @@ services:
       # - -lruntime=debug
       # - -levm=debug
       - --ws-port=9944
-      - --ws-external
-      - --rpc-port=9933
       - --rpc-external
       - --rpc-cors=all
       - --rpc-methods=unsafe
