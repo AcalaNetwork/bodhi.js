@@ -40,10 +40,13 @@ jobs:
 
       - run: yarn install --immutable
       - run: yarn build:waffle
+
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
@@ -73,10 +76,13 @@ jobs:
 
       - run: yarn install --immutable
       - run: yarn build:waffle
+
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
@@ -106,10 +112,13 @@ jobs:
 
       - run: yarn install --immutable
       - run: yarn build:waffle
+
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
       - name: test
         run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
+
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
@@ -136,11 +145,14 @@ jobs:
           node-version: 16
           cache: 'yarn'
 
+      - name: install dependencies
+        run: yarn install --immutable
+
       - name: Build bodhi-runner
         run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
       - name: test
-        run: docker compose up --abort-on-container-exit --exit-code-from=hardhat-tutorials-test --build -- hardhat-tutorials-test
+        run: yarn e2e:hardhat
 
       - name: dump docker logs on failure
         if: failure()
