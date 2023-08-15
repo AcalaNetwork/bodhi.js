@@ -7,7 +7,6 @@ services:
     command:
       - --dev
       - -levm=debug
-      - --ws-port=9944
       - --rpc-external
       - --rpc-cors=all
       - --rpc-methods=unsafe
