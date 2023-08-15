@@ -9,6 +9,11 @@ services:
       - 5432:5432
     environment:
       POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   subquery-node:
     build:
@@ -19,7 +24,7 @@ services:
       yarn-install:
         condition: service_completed_successfully
       postgres:
-        condition: service_started
+        condition: service_healthy
       mandala-node:
         condition: service_healthy
     volumes:
@@ -47,8 +52,6 @@ services:
     ports:
       - 3001:3001
     depends_on:
-      postgres:
-        condition: service_started
       subquery-node:
         condition: service_started
     restart: always
@@ -76,16 +79,8 @@ services:
       - monorepo_yarn_cache:/app/.yarn/cache
       - monorepo_node_modules:/app/node_modules
     depends_on:
-      yarn-install:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_started
-      subquery-node:
-        condition: service_started
       graphql-engine:
         condition: service_started
-      eth-rpc-adapter-karura-ready:
-        condition: service_completed_successfully
     restart: always
     command:
       - --endpoint=ws://mandala-node:9944
@@ -197,7 +192,7 @@ services:
         condition: service_completed_successfully
     restart: always
     command:
-      - --endpoint=wss://acala-karura-eu-1.bdnodes.net:8443/parachain?auth=4VFR_UEvc8mUAd58z11nSRqp-EBZcqPl14j_MgEm-4E
+      - --endpoint=wss://karura-rpc.aca-api.network
       - --subql=https://subql-query-karura.aca-api.network
       - --port=8546
 
@@ -242,6 +237,8 @@ services:
     depends_on:
       eth-rpc-adapter-server-with-subql:
         condition: service_healthy
+      eth-rpc-adapter-server-karura:
+        condition: service_healthy
     command: echo "💈 + 🗂️  ETH RPC ADAPTER & SUBQL IS READY 🚀"
 
   hardhat-tutorials-test:
@@ -262,8 +259,6 @@ services:
       context: .
       dockerfile: docker/truffle-tutorials-test.Dockerfile
       target: truffle-tutorials
-    environment:
-      - ENDPOINT_URL=ws://mandala-node:9944
     volumes:
       - ./examples/truffle-tutorials:/app
       - truffle_yarn_cache:/app/.yarn/cache
