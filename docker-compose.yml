@@ -114,10 +114,9 @@ services:
   mandala-node:
     image: ghcr.io/acalanetwork/mandala-node:sha-3267408
     ports:
-      - 9933:9933
       - 9944:9944
     healthcheck:
-      test: "curl --fail -X POST -H \"Content-Type: application/json\" http://localhost:9933 -d \"{\"jsonrpc\": \"2.0\" }\" || exit 1"
+      test: "curl --fail -X POST -H \"Content-Type: application/json\" http://localhost:9944 -d \"{\"jsonrpc\": \"2.0\" }\" || exit 1"
       interval: 10s
       retries: 10
       start_period: 30s
