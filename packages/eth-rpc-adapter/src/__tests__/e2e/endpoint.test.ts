@@ -231,7 +231,7 @@ describe('endpoint', () => {
         from: ADDRESS_ALICE,
         contractAddress: null,
         transactionIndex: '0x0',
-        gasUsed: '0x1a919',
+        gasUsed: '0x1a8d3',
         logsBloom: DUMMY_LOGS_BLOOM,
         blockHash: txR.blockHash,
         transactionHash: txR.transactionHash,
