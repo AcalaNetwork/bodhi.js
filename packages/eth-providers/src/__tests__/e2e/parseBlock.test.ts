@@ -65,8 +65,8 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
 
   beforeAll(async () => {
     console.log('connecting to node...');
-    const KARURA_NODE_URL = 'wss://karura-rpc-1.aca-api.network';
-    const ACALA_NODE_URL = 'wss://acala-rpc-1.aca-api.network';
+    const KARURA_NODE_URL = 'wss://karura-rpc.aca-api.network';
+    const ACALA_NODE_URL = 'wss://acala-rpc.aca-api.network';
 
     apiK = new ApiPromise(
       options({
