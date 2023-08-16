@@ -165,7 +165,7 @@ describe('endpoint', () => {
         from: ADDRESS_ALICE,
         contractAddress: null,
         transactionIndex: '0x0',
-        gasUsed: '0x1a8ea',
+        gasUsed: '0x1a8a4',
         logsBloom: DUMMY_LOGS_BLOOM,
         blockHash: txR.blockHash,
         transactionHash: txR.transactionHash,
@@ -1381,7 +1381,7 @@ describe('endpoint', () => {
 
   describe('eth_getBalance', () => {
     it('get correct balance', async () => {
-      const block8Balance = 8999994511087564473000000n; // edit me for different mandala version
+      const block8Balance = 8999995192389995117000000n; // edit me for different mandala version
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x8'])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(block8Balance);
