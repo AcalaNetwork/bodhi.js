@@ -5,26 +5,26 @@ __metadata:
   version: 6
   cacheKey: 8
 
-"@acala-network/api-derive@npm:6.0.0-33":
-  version: 6.0.0-33
-  resolution: "@acala-network/api-derive@npm:6.0.0-33"
+"@acala-network/api-derive@npm:6.0.0-34":
+  version: 6.0.0-34
+  resolution: "@acala-network/api-derive@npm:6.0.0-34"
   dependencies:
-    "@acala-network/types": 6.0.0-33
+    "@acala-network/types": 6.0.0-34
   peerDependencies:
     "@polkadot/api": ^10.9.1
-  checksum: 2f16b9a35423df63bdd30a168f6632fb1c09339e1272cea24e2762c8acfb94ee56e55f9fa5360995fcf03ef128716ebde534ee45027dc5b42b15c962b0a88cde
+  checksum: a0a14c9ec111f1351886fafe7ca10c53c16b18a72e13ca0f34e896c6b77c4988e04508884f6599b1a834b7c91a14cc2d443e9d6999c539a4cf47a67723ea6c7c
   languageName: node
   linkType: hard
 
-"@acala-network/api@npm:6.0.0-33":
-  version: 6.0.0-33
-  resolution: "@acala-network/api@npm:6.0.0-33"
+"@acala-network/api@npm:6.0.0-34":
+  version: 6.0.0-34
+  resolution: "@acala-network/api@npm:6.0.0-34"
   dependencies:
-    "@acala-network/api-derive": 6.0.0-33
-    "@acala-network/types": 6.0.0-33
+    "@acala-network/api-derive": 6.0.0-34
+    "@acala-network/types": 6.0.0-34
   peerDependencies:
     "@polkadot/api": ^10.9.1
-  checksum: 6a968d7c8ad899d90231117b38a208d2be1ac82c6dd88a3bf65d9500d8a13f40850057daad46a45777f4e653dbac575e013c2a7653587542545e9c325fef286c
+  checksum: cae8b9a921382090e1e02c5064a2026ab264320e08741b0100f49802f8f9adbcff6d3bb06f46bf683bffce92d291af68064568ea5e31540ab5334eef5729602f
   languageName: node
   linkType: hard
 
@@ -70,7 +70,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@acala-network/eth-providers@workspace:packages/eth-providers"
   dependencies:
-    "@acala-network/api": 6.0.0-33
+    "@acala-network/api": 6.0.0-34
     "@acala-network/contracts": 4.3.4
     "@acala-network/eth-transactions": "workspace:*"
     "@ethersproject/abstract-provider": ~5.7.0
@@ -96,7 +96,7 @@ __metadata:
     lru-cache: ~7.8.2
     vitest: ^0.31.0
   peerDependencies:
-    "@acala-network/api": 6.0.0-33
+    "@acala-network/api": 6.0.0-34
     "@polkadot/api": ^10.9.1
   languageName: unknown
   linkType: soft
@@ -178,12 +178,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@acala-network/types@npm:6.0.0-33":
-  version: 6.0.0-33
-  resolution: "@acala-network/types@npm:6.0.0-33"
+"@acala-network/types@npm:6.0.0-34":
+  version: 6.0.0-34
+  resolution: "@acala-network/types@npm:6.0.0-34"
   peerDependencies:
     "@polkadot/api": ^10.9.1
-  checksum: 8500b0c12080b9988717ac1997080c9abae289c587679e031949ca8af47bed6f8da0ac3c372c151726bfe140a00a3f6170d70d822b5e403fe15aa9d9c0a4461d
+  checksum: 81ddd1a5ed760fc9a088e93293eeda477401e146bea2f3695bc9ecf4300c5b006a67fc7a695ba61fd2698d54df9fcec7e8e239c75d09aafe2296028ba0c7e626
   languageName: node
   linkType: hard
 
