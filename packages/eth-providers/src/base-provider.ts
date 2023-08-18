@@ -823,8 +823,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const estimate = true;
 
     const res = to
-      ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, [], estimate)
-      : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, [], estimate);
+      ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList as any, estimate)    // FIXME: fix and test accessList
+      : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList as any, estimate);
 
     const { ok, err } = res.toJSON() as CallInfo;
     if (!ok) {
@@ -1328,7 +1328,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ethTx.value.toString(),
         ethTx.gasPrice?.toBigInt(),
         ethTx.gasLimit.toBigInt(),
-        []
+        accessList as any || []     // FIXME: fix and test accessList
       )
       : this.api.tx.evm.ethCall(
         ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -1336,7 +1336,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ethTx.value.toString(),
         gasLimit,
         storageLimit,
-        [],
+        accessList as any || [],
         validUntil
       );
 
