@@ -15,15 +15,7 @@
     "@polkadot/util-crypto": "^12.1.2"
   },
   "dependencies": {
-    "@ethersproject/address": "~5.7.0",
-    "@ethersproject/bignumber": "~5.7.0",
-    "@ethersproject/bytes": "~5.7.0",
-    "@ethersproject/constants": "~5.7.0",
-    "@ethersproject/hash": "~5.7.0",
-    "@ethersproject/logger": "~5.7.0",
-    "@ethersproject/rlp": "~5.7.0",
-    "@ethersproject/transactions": "~5.7.0",
-    "@ethersproject/wallet": "~5.7.0"
+    "ethers": "~6.7.0"
   },
   "files": [
     "lib"

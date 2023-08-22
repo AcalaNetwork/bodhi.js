@@ -1,30 +1,35 @@
 import {
-  Provider as AbstractProvider,
-  Block,
-  BlockTag,
+  AbstractProvider, AccessListish, BigNumberish, Block, BlockTag,
   BlockWithTransactions,
-  EventType,
+  Deferrable,
+  ProviderEvent,
   FeeData,
+  Formatter,
   Listener,
   Log,
+  Logger,
+  Network,
   Provider,
   TransactionReceipt,
   TransactionRequest,
   TransactionResponse,
-} from '@ethersproject/abstract-provider';
+  Wallet,
+  defineReadOnly,
+  getAddress,
+  hexDataLength,
+  hexValue,
+  hexZeroPad,
+  hexlify,
+  isHexString,
+  joinSignature,
+  resolveProperties } from 'ethers';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
-import { AccessListish } from 'ethers/lib/utils';
 import { AccountId, H160, Header } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
 import { AsyncScheduler } from 'rxjs/internal/scheduler/AsyncScheduler';
-import { BigNumber, BigNumberish, Wallet } from 'ethers';
-import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
-import { Formatter } from '@ethersproject/providers';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
-import { Logger } from '@ethersproject/logger';
-import { Network } from '@ethersproject/networks';
 import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
 import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
@@ -32,8 +37,6 @@ import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { VersionedRegistry } from '@polkadot/api/base/types';
 import { createHeaderExtended } from '@polkadot/api-derive';
 import { filter, first, timeout } from 'rxjs/operators';
-import { getAddress } from '@ethersproject/address';
-import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
 import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
 import LRUCache from 'lru-cache';
@@ -122,8 +125,8 @@ export interface BlockData {
   mixHash: `0x${string}`;
   difficulty: number;
   totalDifficulty: number;
-  gasLimit: BigNumber; // 15m for now. TODO: query this from blockchain
-  gasUsed: BigNumber; // TODO: not full is 0
+  gasLimit: bigint; // 15m for now. TODO: query this from blockchain
+  gasUsed: bigint; // TODO: not full is 0
 
   miner: string;
   extraData: `0x${string}`;
@@ -175,12 +178,12 @@ export interface TX extends partialTX {
 export interface TXReceipt extends partialTX {
   contractAddress: string | null;
   root?: string;
-  gasUsed: BigNumber;
+  gasUsed: bigint;
   logsBloom: string;
   transactionHash: string;
   logs: Array<Log>;
-  cumulativeGasUsed: BigNumber;
-  effectiveGasPrice: BigNumber;
+  cumulativeGasUsed: bigint;
+  effectiveGasPrice: bigint;
   type: number;
   status?: number;
 }
@@ -658,7 +661,7 @@ export abstract class BaseProvider extends AbstractProvider {
       mixHash: ZERO_BLOCK_HASH,
       difficulty: ZERO,
       totalDifficulty: ZERO,
-      gasLimit: BigNumber.from(BLOCK_GAS_LIMIT),
+      gasLimit: BigInt(BLOCK_GAS_LIMIT),
       gasUsed,
 
       miner: author,
@@ -684,7 +687,7 @@ export abstract class BaseProvider extends AbstractProvider {
   getBalance = async (
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
-  ): Promise<BigNumber> => {
+  ): Promise<bigint> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [address, blockHash] = await Promise.all([
@@ -2013,12 +2016,4 @@ export abstract class BaseProvider extends AbstractProvider {
 
     return found;
   };
-
-  on = (_eventName: EventType, _listener: Listener): Provider => throwNotImplemented('on');
-  once = (_eventName: EventType, _listener: Listener): Provider => throwNotImplemented('once');
-  emit = (_eventName: EventType, ..._args: Array<any>): boolean => throwNotImplemented('emit');
-  listenerCount = (_eventName?: EventType): number => throwNotImplemented('listenerCount');
-  listeners = (_eventName?: EventType): Array<Listener> => throwNotImplemented('listeners');
-  off = (_eventName: EventType, _listener?: Listener): Provider => throwNotImplemented('off');
-  removeAllListeners = (_eventName?: EventType): Provider => throwNotImplemented('removeAllListeners');
 }
