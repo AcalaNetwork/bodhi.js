@@ -13,7 +13,7 @@ import {
   TransactionResponse,
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
-import { AccessListish } from 'ethers/lib/utils';
+import { AccessList, accessListify } from 'ethers/lib/utils';
 import { AccountId, H160, Header } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
@@ -149,7 +149,7 @@ export interface SubstrateEvmCallRequest {
   storageLimit?: Numberish;
   value?: Numberish;
   data?: string;
-  accessList?: AccessListish;
+  accessList?: AccessList;
 }
 
 export interface partialTX {
@@ -823,8 +823,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const estimate = true;
 
     const res = to
-      ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList as any, estimate)    // FIXME: fix and test accessList
-      : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList as any, estimate);
+      ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
+      : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList, estimate);
 
     const { ok, err } = res.toJSON() as CallInfo;
     if (!ok) {
@@ -933,7 +933,7 @@ export abstract class BaseProvider extends AbstractProvider {
       toBN(BigNumber.from(tx.value ?? 0)),
       toBN(gasLimit),
       toBN(usedStorage.isNegative() ? 0 : usedStorage),
-      (tx.accessList as any) || [],
+      accessListify(tx.accessList ?? []),
     ] as const;
 
     const callParams = [tx.to!, ...createParams] as const;
@@ -1199,7 +1199,7 @@ export abstract class BaseProvider extends AbstractProvider {
     storageLimit: bigint;
     validUntil: bigint;
     tip: bigint;
-    accessList?: [string, string[]][];
+    accessList: AccessList;
     v2: boolean;
   } => {
     let gasLimit = 0n;
@@ -1281,14 +1281,12 @@ export abstract class BaseProvider extends AbstractProvider {
       );
     }
 
-    const accessList = ethTx.accessList?.map((set) => [set.address, set.storageKeys] as [string, string[]]);
-
     return {
       gasLimit,
       storageLimit,
       validUntil,
       tip,
-      accessList,
+      accessList: ethTx.accessList ?? [],
       v2,
     };
   };
@@ -1328,7 +1326,7 @@ export abstract class BaseProvider extends AbstractProvider {
         ethTx.value.toString(),
         ethTx.gasPrice?.toBigInt(),
         ethTx.gasLimit.toBigInt(),
-        accessList as any || []     // FIXME: fix and test accessList
+        accessList,
       )
       : this.api.tx.evm.ethCall(
         ethTx.to ? { Call: ethTx.to } : { Create: null },
@@ -1336,8 +1334,8 @@ export abstract class BaseProvider extends AbstractProvider {
         ethTx.value.toString(),
         gasLimit,
         storageLimit,
-        accessList as any || [],
-        validUntil
+        accessList,
+        validUntil,
       );
 
     const subAddr = await this.getSubstrateAddress(ethTx.from);
@@ -1977,15 +1975,15 @@ export abstract class BaseProvider extends AbstractProvider {
   _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
     const curBlockNumber = await this.getBlockNumber();
 
-    const newBlockHashes = [];
+    const newBlockHashesPending: Promise<string>[] = [];
     for (let blockNum = filterInfo.lastPollBlockNumber + 1; blockNum <= curBlockNumber; blockNum++) {
-      newBlockHashes.push(this._getBlockHash(blockNum));
+      newBlockHashesPending.push(this._getBlockHash(blockNum));
     }
 
     filterInfo.lastPollBlockNumber = curBlockNumber;
     filterInfo.lastPollTimestamp = Date.now();
 
-    return Promise.all(newBlockHashes);
+    return Promise.all(newBlockHashesPending);
   };
 
   poll = async (id: string, logsOnly = false): Promise<string[] | Log[]> => {
