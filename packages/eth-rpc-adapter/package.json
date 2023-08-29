@@ -1,20 +1,20 @@
 {
   "name": "@acala-network/eth-rpc-adapter",
-  "version": "2.7.4",
+  "version": "2.7.7",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "bin": "./bin/eth-rpc-adapter.js",
   "scripts": {
     "clean": "rm -rf lib tsconfig.tsbuildinfo",
     "build": "tsc --build tsconfig.json",
-    "test:e2e": "SKIP_PUBLIC=true vitest --run --config vitest.config.e2e.ts",
+    "test:e2e": "vitest --run --config vitest.config.e2e.ts",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
     "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts -l | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc",
     "test:CI": "vitest --run --config vitest.config.e2e.ts",
     "ncc:pack": "ncc build src/index.ts -t --target es2020"
   },
   "peerDependencies": {
-    "@polkadot/api": "^10.5.1"
+    "@polkadot/api": "^10.9.1"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",

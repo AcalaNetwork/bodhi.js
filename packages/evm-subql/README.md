@@ -38,12 +38,12 @@ Please note that the indexer won't start until we [feed some transactions to the
 
 Optionally, if you don't want to use the Docker, you can also run each service separately in the CLI ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)). 
 
-NOTE: using CLI is usually for **local testing**. For production please use docker setup instead.
+NOTE: using CLI is for **local testing** only, so you can get familiar with each service. [For production](#for-production) please use docker setup instead.
 
 1. Install SubQl globally
 
 ```shell
-npm i -g @subql/node@1.17.0 @subql/query@1.4.0
+npm i -g @subql/node@1.21.2 @subql/query@1.4.0
 ```
 
 2. Run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port number `9944` (in the first terminal)
@@ -51,7 +51,7 @@ npm i -g @subql/node@1.17.0 @subql/query@1.4.0
 If you already have a node running elsewhere, you can skip this step.
 
 ```shell
-docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-a32c40b --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
+docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-3267408 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
 ```
 
 3. Run a Postgres service and listen to port number 5432 (in the second terminal)
@@ -60,7 +60,7 @@ docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:
 docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
 ```
 
-4. [Feed some transactions to node](#feed-evm-transactions-to-node) if the node is running with `--instant-sealing`
+4. [Feed some transactions to node](#feeding-evm-transactions-to-the-node) if the node is running with `--instant-sealing`
 
 5. Run a subquery indexer (in the third terminal)
 
@@ -93,9 +93,8 @@ If the acala node is running with `--instant-sealing`, it won't start producing 
 For example we can run any of the [evm examples](https://github.com/AcalaNetwork/bodhi.js/tree/master/examples).
 
 ```shell
-cd ../examples/waffle/dex
-rush update
-rush build -t .
+cd ../../examples/waffle/dex
+yarn build 
 yarn test
 ```
 
@@ -179,8 +178,8 @@ In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, w
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.5.13`
-- `acala/evm-subql:v2.5.13`
+- `acala/eth-rpc-adapter:v2.7.4`
+- `acala/evm-subql:v2.6.5`
 - `onfinality/subql-query:v1.4.0`
 
 #### config

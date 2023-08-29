@@ -18,7 +18,7 @@ import {
   fullReceiptFormatter,
   getOrphanTxReceiptsFromEvents,
   getPartialTransactionReceipt,
-} from './transactionReceiptHelper';
+} from './receiptHelper';
 import { GenericExtrinsic } from '@polkadot/types';
 import {
   isExtrinsicFailedEvent,
@@ -59,9 +59,10 @@ export const parseReceiptsFromBlockData = async (
       extrinsic,
       extrinsicEvents: extractTargetEvents(blockEvents, idx),
     }))
-    .filter(
-      ({ extrinsicEvents }) => extrinsicEvents.some(isNormalEvmEvent) && !extrinsicEvents.find(isExtrinsicFailedEvent)
-    );
+    .filter(({ extrinsicEvents }) => (
+      extrinsicEvents.some(isNormalEvmEvent) &&
+      !extrinsicEvents.find(isExtrinsicFailedEvent)
+    ));
 
   if (targetTxHash) {
     normalTxs = normalTxs.filter(({ extrinsic }) => extrinsic.hash.toHex() === targetTxHash);
@@ -100,11 +101,18 @@ export const parseReceiptsFromBlockData = async (
   const orphanReceipts = getOrphanTxReceiptsFromEvents(blockEvents, blockHash, blockNumber, normalReceipts.length);
   const allCandidateReceipts = [...normalReceipts, ...orphanReceipts];
 
-  return targetTxHash ? allCandidateReceipts.filter((r) => r.transactionHash === targetTxHash) : allCandidateReceipts;
+  return targetTxHash
+    ? allCandidateReceipts.filter((r) => r.transactionHash === targetTxHash)
+    : allCandidateReceipts;
 };
 
-const extractTargetEvents = (allEvents: FrameSystemEventRecord[], targetIdx: number): FrameSystemEventRecord[] =>
-  allEvents.filter((event) => event.phase.isApplyExtrinsic && event.phase.asApplyExtrinsic.toNumber() === targetIdx);
+const extractTargetEvents = (
+  allEvents: FrameSystemEventRecord[],
+  targetIdx: number,
+): FrameSystemEventRecord[] => allEvents.filter(event => (
+  event.phase.isApplyExtrinsic &&
+  event.phase.asApplyExtrinsic.toNumber() === targetIdx
+));
 
 const getEffectiveGasPrice = async (
   api: ApiPromise,

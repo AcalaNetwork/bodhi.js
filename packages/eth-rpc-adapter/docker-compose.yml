@@ -2,16 +2,13 @@ version: '3'
 
 services:
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-a32c40b
+    image: ghcr.io/acalanetwork/mandala-node:sha-3267408
     ports:
       - 9944:9944
     command:
       - --dev
       - -lruntime=debug
       - -levm=debug
-      - --ws-port=9944
-      - --ws-external
-      - --rpc-port=9933
       - --rpc-external
       - --rpc-cors=all
       - --rpc-methods=unsafe

@@ -75,10 +75,8 @@ const DUMMY_LOGS_BLOOM =
   '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000';
 
 export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): PartialTransactionReceipt => {
-  // @TODO
   const defaultValue = {
     logsBloom: DUMMY_LOGS_BLOOM,
-    // @TODO EIP712
     type: 0,
     cumulativeGasUsed: BIGNUMBER_ZERO,
   };
@@ -263,9 +261,8 @@ export const getOrphanTxReceiptsFromEvents = (
   return receipts.map((receipt) => Formatter.check(fullReceiptFormatter, receipt));
 };
 
-export const subqlReceiptAdapter = <T extends TransactionReceiptSubql | null>(
-  receipt: T
-): T extends null ? null : TransactionReceipt =>
+export const subqlReceiptAdapter = <T extends TransactionReceiptSubql | null>(receipt: T):
+  T extends null ? null : FullReceipt =>
     receipt
       ? Formatter.check(fullReceiptFormatter, {
         ...receipt,

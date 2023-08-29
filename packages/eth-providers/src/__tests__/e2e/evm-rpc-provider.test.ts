@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const ACALA_NODE_URL = 'wss://acala-rpc-1.aca-api.network';
+const ACALA_NODE_URL = 'wss://acala-rpc.aca-api.network';
 const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
 
 describe('connect random', () => {
