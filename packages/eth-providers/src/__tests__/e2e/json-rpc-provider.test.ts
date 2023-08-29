@@ -150,7 +150,7 @@ describe('JsonRpcProvider', async () => {
       expect(await echo.echo()).to.equal('hello Vegito!');
     });
 
-    // we don't support type 1 tx yet
+    // TODO: enable me when we support type 1 tx
     it.skip('call contract with access list', async () => {
       const echoFactory = new ContractFactory(echoJson.abi, echoJson.bytecode, wallet);
       const echo = await echoFactory.deploy();
