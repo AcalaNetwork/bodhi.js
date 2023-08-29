@@ -5,6 +5,7 @@ import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract, BigNumber } from 'ethers';
 import Prices from '../build/Prices.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
+import { parseEther } from 'ethers/lib/utils';
 
 use(solidity);
 use(evmChai);
@@ -37,23 +38,13 @@ describe('Prices', () => {
   after(() => provider.disconnect());
 
   it('getPrice works', async () => {
-    await feedValues(provider, 'RENBTC', BigNumber.from(34_500).mul(BigNumber.from(10).pow(18)).toString());
-    expect(await prices.getPrice(ADDRESS.RENBTC)).to.equal(
-      BigNumber.from(34_500).mul(BigNumber.from(10).pow(18)).toString()
-    );
+    await feedValues(provider, 'DOT', parseEther('15').toString());
+    expect(await prices.getPrice(ADDRESS.DOT)).to.equal(parseEther('15').toString());
 
-    await feedValues(provider, 'RENBTC', BigNumber.from(33_800).mul(BigNumber.from(10).pow(18)).toString());
-    expect(await prices.getPrice(ADDRESS.RENBTC)).to.equal(
-      BigNumber.from(33_800).mul(BigNumber.from(10).pow(18)).toString()
-    );
+    await feedValues(provider, 'DOT', parseEther('16').toString());
+    expect(await prices.getPrice(ADDRESS.DOT)).to.equal(parseEther('16').toString());
 
-    await feedValues(provider, 'DOT', BigNumber.from(15).mul(BigNumber.from(10).pow(18)).toString());
-    expect(await prices.getPrice(ADDRESS.DOT)).to.equal(BigNumber.from(15).mul(BigNumber.from(10).pow(18)).toString());
-
-    await feedValues(provider, 'DOT', BigNumber.from(16).mul(BigNumber.from(10).pow(18)).toString());
-    expect(await prices.getPrice(ADDRESS.DOT)).to.equal(BigNumber.from(16).mul(BigNumber.from(10).pow(18)).toString());
-
-    expect(await prices.getPrice(ADDRESS.AUSD)).to.equal(BigNumber.from(1).mul(BigNumber.from(10).pow(18)).toString());
+    expect(await prices.getPrice(ADDRESS.AUSD)).to.equal(parseEther('1').toString());
 
     expect(await prices.getPrice(ADDRESS.LP_ACA_AUSD)).to.equal(0);
   });

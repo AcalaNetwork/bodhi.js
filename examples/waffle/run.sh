@@ -17,6 +17,7 @@ examples=(
     "uniswap"
 )
 
+failed=0
 for e in "${examples[@]}"
   do
     echo "--------------- testing ${e} ---------------"
@@ -31,3 +32,5 @@ for e in "${examples[@]}"
 echo "+++++++++++++++++++++++"
 echo "test failed: $failed"
 echo "+++++++++++++++++++++++"
+
+exit $failed
