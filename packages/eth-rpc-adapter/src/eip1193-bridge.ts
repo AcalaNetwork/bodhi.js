@@ -5,6 +5,7 @@ import { Signer } from '@ethersproject/abstract-signer';
 import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
 import { validate } from './validate';
+import { version } from './_version';
 import EventEmitter from 'events';
 import WebSocket from 'ws';
 
@@ -51,7 +52,7 @@ class Eip1193BridgeImpl {
   }
 
   async web3_clientVersion(): Promise<string> {
-    return 'Acala/v0.0.1';
+    return version;
   }
 
   // Query the synchronization progress and version information of indexer
