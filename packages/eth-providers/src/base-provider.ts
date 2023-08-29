@@ -1272,7 +1272,7 @@ export abstract class BaseProvider extends AbstractProvider {
       }
     } else if (ethTx.type === 1 || ethTx.type === 2) {
       return logger.throwError(
-        `unsupported transaction type: ${ethTx.type}, please use legacy or EIP-712 instead. More info about EVM+ gas: <TODO: insert link here>`,
+        `unsupported transaction type: ${ethTx.type}, please use legacy or EIP-712 instead.`,
         Logger.errors.UNSUPPORTED_OPERATION,
         {
           operation: '_getSubstrateGasParams',
