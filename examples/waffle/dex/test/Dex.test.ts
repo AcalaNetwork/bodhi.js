@@ -47,12 +47,12 @@ describe('Dex', () => {
   it('getSwapTargetAmount should not works', async () => {
     expect(
       (
-        await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.RENBTC, ADDRESS.LDOT], 1000)
+        await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.BNC, ADDRESS.LDOT], 1000)
       ).toString()
     ).to.equal('0');
     expect(
       (
-        await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
+        await dex.getSwapTargetAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.BNC], 1000)
       ).toString()
     ).to.equal('0');
     await expect(
@@ -68,7 +68,7 @@ describe('Dex', () => {
   it('getSwapSupplyAmount should not works', async () => {
     expect(
       (
-        await dex.getSwapSupplyAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000)
+        await dex.getSwapSupplyAmount([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.BNC], 1000)
       ).toString()
     ).to.equal('0');
     await expect(
@@ -102,7 +102,7 @@ describe('Dex', () => {
   it('swapWithExactSupply should not works', async () => {
     await expect(dex.swapWithExactSupply([ADDRESS.ACA], 1000, 1)).to.be.revertedWith('InvalidTradingPathLength');
     await expect(
-      dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1000, 1)
+      dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.BNC], 1000, 1)
     ).to.be.revertedWith('InvalidTradingPathLength');
     await expect(
       dex.swapWithExactSupply([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1000, 1)
@@ -135,7 +135,7 @@ describe('Dex', () => {
   it('swapWithExactTarget should not works', async () => {
     await expect(dex.swapWithExactTarget([ADDRESS.ACA], 1, 1000)).to.be.revertedWith('InvalidTradingPathLength');
     await expect(
-      dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.RENBTC], 1, 1000)
+      dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT, ADDRESS.LDOT, ADDRESS.BNC], 1, 1000)
     ).to.be.revertedWith('InvalidTradingPathLength');
     await expect(
       dex.swapWithExactTarget([ADDRESS.ACA, '0x0000000000000000000001000000000000000000'], 1, 1000)

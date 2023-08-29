@@ -795,8 +795,9 @@ export abstract class BaseProvider extends AbstractProvider {
       this._getBlockHash(blockTag),
     ]);
 
-    const transaction =
-      txRequest.gasLimit && txRequest.gasPrice ? txRequest : { ...txRequest, ...(await this._getEthGas()) };
+    const transaction = txRequest.gasLimit && txRequest.gasPrice
+      ? txRequest
+      : { ...txRequest, ...(await this._getEthGas()) };
 
     const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
 
@@ -898,15 +899,7 @@ export abstract class BaseProvider extends AbstractProvider {
     // return resolver.getAddress();
   };
 
-  getGasPriceV1 = async (): Promise<BigNumber> => {
-    // tx_fee_per_gas + (current_block / 30 + 5) << 16 + 10
-    const txFeePerGas = BigNumber.from((this.api.consts.evm.txFeePerGas as UInt).toBigInt());
-    return txFeePerGas.add(BigNumber.from(await this.bestBlockNumber).div(30).add(5).shl(16)).add(10);
-  };
-
   getGasPrice = async (validBlocks = 200): Promise<BigNumber> => {
-    if (process.env.V1) return this.getGasPriceV1();
-
     return BigNumber.from(ONE_HUNDRED_GWEI).add(await this.bestBlockNumber + validBlocks);
   };
 
@@ -924,25 +917,12 @@ export abstract class BaseProvider extends AbstractProvider {
     txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt(),
   });
 
-  estimateGasV1 = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
-    const gasPrice = (await transaction.gasPrice) || (await this.getGasPrice());
-    const storageEntryLimit = BigNumber.from(gasPrice).and(0xffff);
-    const storageEntryDeposit = BigNumber.from(storageDepositPerByte).mul(64);
-    const storageGasLimit = storageEntryLimit.mul(storageEntryDeposit).div(txFeePerGas);
-
-    const resources = await this.estimateResources(transaction);
-    return resources.gasLimit.add(storageGasLimit);
-  };
-
   /**
    * Estimate gas for a transaction.
    * @param transaction The transaction to estimate the gas of
    * @returns The estimated gas used by this transaction
    */
   estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    if (process.env.V1) return this.estimateGasV1(transaction);
-
     const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction);
 
     const tx = await resolveProperties(transaction);

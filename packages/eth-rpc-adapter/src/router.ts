@@ -45,7 +45,7 @@ export class Router {
             case -32603:
             case 1012:
             case 1010:
-              error = new InternalError(message);
+              error = new InternalError(message, err.data);
               break;
 
             default:

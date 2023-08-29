@@ -165,7 +165,7 @@ describe('endpoint', () => {
         from: ADDRESS_ALICE,
         contractAddress: null,
         transactionIndex: '0x0',
-        gasUsed: '0x1a8ea',
+        gasUsed: '0x1a8a4',
         logsBloom: DUMMY_LOGS_BLOOM,
         blockHash: txR.blockHash,
         transactionHash: txR.transactionHash,
@@ -198,7 +198,7 @@ describe('endpoint', () => {
         from: ADDRESS_ALICE,
         contractAddress: null,
         transactionIndex: '0x0',
-        gasUsed: '0x1f66d',
+        gasUsed: '0x1f615',
         logsBloom: DUMMY_LOGS_BLOOM,
         blockHash: txR.blockHash,
         transactionHash: txR.transactionHash,
@@ -231,7 +231,7 @@ describe('endpoint', () => {
         from: ADDRESS_ALICE,
         contractAddress: null,
         transactionIndex: '0x0',
-        gasUsed: '0x1a919',
+        gasUsed: '0x1a8d3',
         logsBloom: DUMMY_LOGS_BLOOM,
         blockHash: txR.blockHash,
         transactionHash: txR.transactionHash,
@@ -1183,10 +1183,6 @@ describe('endpoint', () => {
       await Promise.all(tests);
     });
 
-    it.skip('get correct custom token info', async () => {
-      // TODO: deploy custom erc20 and get correct info
-    });
-
     it('supports calling historical blocks', async () => {
       const dexAddr = '0x0230135fded668a3f7894966b14f42e65da322e4'; // created at block 5
       const before = await callDex(dexAddr, 'getLiquidityPool', [ADDRESS.ACA, ADDRESS.AUSD], { blockNumber: '0x5' });
@@ -1385,7 +1381,7 @@ describe('endpoint', () => {
 
   describe('eth_getBalance', () => {
     it('get correct balance', async () => {
-      const block8Balance = 8999994511087564473000000n; // edit me for different mandala version
+      const block8Balance = 8999995192389995117000000n; // edit me for different mandala version
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x8'])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(block8Balance);

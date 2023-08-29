@@ -4,7 +4,7 @@ A node service that provides [JSON-RPC](https://eth.wiki/json-rpc/API) for [Acal
 ## Run
 First run a Mandala node locally
 ```
-docker run -it --rm -p 9944:9944 -p 9933:9933 ghcr.io/acalanetwork/mandala-node:sha-a32c40b --dev --ws-external --rpc-port=9933 --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
+docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-3267408 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
 ```
 
 Then there are 3 ways to run an RPC adapter:
@@ -14,7 +14,7 @@ Then there are 3 ways to run an RPC adapter:
 
 #### from docker
 ```
-docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:v2.5.3 yarn start
+docker run -it --rm -e LOCAL_MODE=1 -p 8545:8545 acala/eth-rpc-adapter:v2.7.6 yarn start
 ```
 latest image can be found [here](https://hub.docker.com/r/acala/eth-rpc-adapter/tags)
 
@@ -149,13 +149,6 @@ In this mode, Txs and logs can only be found after they are finalized. Now depre
 
 #### local mode
 For local testing, we usually turn this mode on, together with a local `--instant-sealing` mandala node. It has some optimization to run faster with local node, and some minor bug prevention.
-
-#### rich mode
-We usually need to specify [gas params](https://evmdocs.acala.network/network/gas-parameters) for some transactions, this is sometimes time-consuming for contract testing, especially with `hardhat` where we can't override gas params in config. 
-
-In rich mode, default gas params are much bigger than normal, so we don't need to worry about overriding gas params when running tests. As a result, all truffle/hardhat tests can be run **unchanged**. 
-
-We still recommend reading through the [gas params](https://evmdocs.acala.network/network/gas-parameters) and understand how gas works in EVM+, since in prod we might still need to override gas params.
 
 ## For Production
 For production deployment we can simply use [acala/eth-rpc-adapter](https://hub.docker.com/r/acala/eth-rpc-adapter/tags) directly. Remember **NOT** to turn on `local mode` or `rich mode`

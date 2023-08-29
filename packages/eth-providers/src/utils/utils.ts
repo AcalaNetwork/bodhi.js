@@ -305,10 +305,12 @@ export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
 
   const { exit_reason: exitReason, value: returnData } = data;
   if (!exitReason.succeed) {
-    let msg, err;
+    let msg: string;
+    let err: any;
     if (exitReason.revert) {
       msg = decodeRevertMsg(returnData);
-      err = new Error(`VM Exception while processing transaction: execution revert: ${msg} ${returnData}`);
+      err = new Error(`execution reverted: ${msg}`);
+      err.data = returnData;
     } else if (exitReason.fatal) {
       msg = JSON.stringify(exitReason.fatal);
       err = new Error(`execution fatal: ${msg}`);
@@ -320,7 +322,7 @@ export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
       err = new Error('unknown eth call error');
     }
 
-    (err as any).code = -32603;
+    err.code = -32603;
     throw err;
   }
 };

@@ -102,7 +102,7 @@ describe('transaction tests', () => {
       const validUntil = curBlockNum + 199;
 
       expect((params.gasPrice as BigNumber).toNumber()).eq(100000000000 + validUntil);
-      expect((params.gasLimit as BigNumber).toNumber()).eq(200100);
+      expect((params.gasLimit as BigNumber).toNumber()).eq(100100);
     });
   });
 
@@ -140,7 +140,7 @@ describe('transaction tests', () => {
           gasLimit: txGasLimit,
           gasPrice: txGasPrice,
         })
-      ).rejects.toThrowError('ExistentialDeposit');
+      ).rejects.toThrowError('execution error: Account cannot exist with the funds that would be given');
     });
   });
 

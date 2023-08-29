@@ -5,10 +5,9 @@ import { describe, expect, it } from 'vitest';
 import axios from 'axios';
 
 const eth_getEthGas = rpcGet('eth_getEthGas', RPC_URL);
-const _eth_blockNumber = rpcGet('eth_blockNumber', RPC_URL);
 const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction', RPC_URL);
-const _eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt', RPC_URL);
 const eth_chainId = rpcGet('eth_chainId', RPC_URL);
+const eth_call = rpcGet('eth_call', RPC_URL);
 
 describe('errors', () => {
   const POOR_ACCOUNT = '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd570';
@@ -62,8 +61,8 @@ describe('errors', () => {
       jsonrpc: '2.0',
       error: {
         code: -32603,
-        message:
-          'internal JSON-RPC error [1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low]. More info: https://evmdocs.acala.network/reference/common-errors',
+        data: 'Inability to pay some fees (e.g. account balance too low)',
+        message: '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low',
       },
     });
 
@@ -73,8 +72,7 @@ describe('errors', () => {
       jsonrpc: '2.0',
       error: {
         code: -32603,
-        message:
-          'internal JSON-RPC error [1012: Transaction is temporarily banned]. More info: https://evmdocs.acala.network/reference/common-errors',
+        message: '1012: Transaction is temporarily banned',
       },
     });
   });
@@ -101,5 +99,18 @@ describe('errors', () => {
     const res = await eth_sendRawTransaction([rawTx]);
 
     expect(res.data.error.message).to.contain('Invalid decimals');
+  });
+
+  it('correct error format for contract revert', async () => {
+    const { error } = (await eth_call([{
+      to: '0x0000000000000000000100000000000000000000',
+      data: '0x23b872dd0000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000003e8',
+    }, 'latest'])).data;
+
+    expect(error).to.deep.equal({
+      code: -32603,
+      data: '0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001d45524332303a20696e73756666696369656e7420616c6c6f77616e6365000000',
+      message: 'execution reverted: ERC20: insufficient allowance',
+    });
   });
 });
