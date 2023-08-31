@@ -1,6 +1,7 @@
 import { TokenImplementation__factory, Bridge__factory, createNonce, coalesceChainId } from '@certusone/wormhole-sdk';
-import { Keyring } from '@polkadot/api';
+import { Keyring, ApiPromise, WsProvider } from '@polkadot/api';
 import { hexToU8a, nToU8a } from '@polkadot/util';
+import { options } from '@acala-network/api'
 import '@polkadot/api-augment';
 import { arrayify, keccak256, zeroPad } from 'ethers/lib/utils';
 import { BigNumber } from 'ethers';
@@ -55,10 +56,9 @@ const main = async () => {
     createNonce()
   );
 
-  // console.log(tx);
-
-  const api = createApi(ACALA_TESTNET_NODE_RPC);
-  await api.isReady;
+  const api = await ApiPromise.create(options({
+    provider: new WsProvider(ACALA_TESTNET_NODE_RPC),
+  }));
 
   const keyring = new Keyring({ type: 'sr25519' });
   const sudoPair = keyring.addFromUri(sudoKey);

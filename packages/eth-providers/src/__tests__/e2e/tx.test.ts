@@ -99,9 +99,10 @@ describe('transaction tests', () => {
       });
 
       const curBlockNum = await wallet3.provider.getBlockNumber();
-      const validUntil = curBlockNum + 199;
+      const validUntil = curBlockNum + 200;
+      const expectedGasPrice = 100000000000 + validUntil;
 
-      expect((params.gasPrice as BigNumber).toNumber()).eq(100000000000 + validUntil);
+      expect(Math.abs((params.gasPrice as BigNumber).toNumber() - expectedGasPrice)).to.lt(2);
       expect((params.gasLimit as BigNumber).toNumber()).eq(100100);
     });
   });

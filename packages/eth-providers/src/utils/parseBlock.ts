@@ -4,11 +4,12 @@ import { ApiPromise } from '@polkadot/api';
 import { BIGNUMBER_ZERO, ONE_HUNDRED_GWEI } from '../consts';
 import { BigNumber } from 'ethers';
 import {
-  DispatchInfo,
   EventRecord,
   RuntimeDispatchInfoV1,
   RuntimeDispatchInfoV2,
   SignedBlock,
+  WeightV1,
+  WeightV2,
 } from '@polkadot/types/interfaces';
 import { Formatter } from '@ethersproject/providers';
 import { FrameSupportDispatchDispatchInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
@@ -37,7 +38,7 @@ export const getAllReceiptsAtBlock = async (
 
   const [block, blockEvents] = await Promise.all([
     api.rpc.chain.getBlock(blockHash),
-    apiAtTargetBlock.query.system.events<FrameSystemEventRecord[]>(),
+    apiAtTargetBlock.query.system.events(),
   ]);
 
   return parseReceiptsFromBlockData(api, block, blockEvents, targetTxHash);
@@ -136,21 +137,19 @@ const getEffectiveGasPrice = async (
       throw new Error(`cannot find extrinsic success event: ${JSON.stringify(extrinsicEvents)}`);
     }
 
-    const dispatchInfo = successEvent.event.data[0] as FrameSupportDispatchDispatchInfo | DispatchInfo;
-
+    const dispatchInfo = successEvent.event.data[0];
     const actualWeight =
-      (dispatchInfo as FrameSupportDispatchDispatchInfo).weight.refTime ?? (dispatchInfo as DispatchInfo).weight;
+      ((dispatchInfo as any).weight as WeightV2).refTime ??
+      (dispatchInfo as any).weight as WeightV1;
 
     const [paymentInfo, feeDetails] = await Promise.all([
-      apiAtParentBlock.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(
-        u8a,
-        u8a.length
-      ),
+      apiAtParentBlock.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(u8a,u8a.length),
       apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length),
     ]);
 
     const estimatedWeight =
-      (paymentInfo as RuntimeDispatchInfoV2).weight.refTime ?? (paymentInfo as RuntimeDispatchInfoV1).weight;
+      (paymentInfo as RuntimeDispatchInfoV2).weight?.refTime ??
+      (paymentInfo as RuntimeDispatchInfoV1).weight;
 
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
 
