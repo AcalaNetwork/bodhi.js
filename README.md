@@ -16,7 +16,6 @@ git submodule update --init --recursive
 
 - install all dependencies
 ```
-python --version  # first make sure python is installed
 yarn
 ```
 
