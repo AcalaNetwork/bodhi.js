@@ -12,7 +12,7 @@ import {
   WeightV2,
 } from '@polkadot/types/interfaces';
 import { Formatter } from '@ethersproject/providers';
-import { FrameSupportDispatchDispatchInfo, FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import {
   FullReceipt,
   findEvmEvent,

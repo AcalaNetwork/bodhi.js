@@ -8,11 +8,6 @@ import { sleep } from '../../utils';
 import echoJson from '../abis/Echo.json';
 import erc20Json from '../abis/IERC20.json';
 
-const gasOverride = {
-  gasPrice: '0x616dc303ea',
-  gasLimit: '0x329b140',
-};
-
 const localEthRpc = process.env.ETH_RPC || 'http://localhost:8545';
 
 describe('JsonRpcProvider', async () => {
@@ -143,7 +138,7 @@ describe('JsonRpcProvider', async () => {
 
     it('deploy and call contract', async () => {
       const echoFactory = new ContractFactory(echoJson.abi, echoJson.bytecode, wallet);
-      const echo = await echoFactory.deploy(gasOverride);
+      const echo = await echoFactory.deploy();
       await echo.deployed();
 
       expect(await echo.echo()).to.equal('Deployed successfully!');
@@ -153,6 +148,29 @@ describe('JsonRpcProvider', async () => {
 
       await (await echo.scream('hello Vegito!')).wait();
       expect(await echo.echo()).to.equal('hello Vegito!');
+    });
+
+    // TODO: enable me when we support type 1 tx
+    it.skip('call contract with access list', async () => {
+      const echoFactory = new ContractFactory(echoJson.abi, echoJson.bytecode, wallet);
+      const echo = await echoFactory.deploy();
+      await echo.deployed();
+
+      expect(await echo.echo()).to.equal('Deployed successfully!');
+
+      const receipt1 = await (await echo.scream('hello Gogeta!')).wait();
+      expect(await echo.echo()).to.equal('hello Gogeta!');
+
+      const accessList = [{
+        address: echo.address,
+        storageKeys: [
+          // ...
+        ],
+      }];
+      const receipt2 = await (await echo.scream('hello Vegito!', { accessList, type: 1 })).wait();
+      expect(await echo.echo()).to.equal('hello Vegito!');
+
+      expect(receipt1.gasUsed).to.be.gt(receipt2.gasUsed);
     });
   });
 
@@ -180,7 +198,7 @@ describe('JsonRpcProvider', async () => {
     // TODO: need to setup whole stack
     it.skip('subscribe to filter', async () => {
       // const tokenFactory = new ContractFactory(erc20Json.abi, erc20Json.bytecode, wallet);
-      // const token = await tokenFactory.deploy(gasOverride);
+      // const token = await tokenFactory.deploy();
       // await token.deployed();
 
       // const _data = new Promise(resolve => {
@@ -192,7 +210,7 @@ describe('JsonRpcProvider', async () => {
       //   providerLocal.on(filter, resolve);
       // });
 
-      // await token.transfer(someOne, parseEther('0.01'), gasOverride);
+      // await token.transfer(someOne, parseEther('0.01'));
 
       // const data = await _data;
 
