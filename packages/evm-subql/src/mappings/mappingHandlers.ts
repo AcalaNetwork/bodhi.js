@@ -4,7 +4,7 @@ import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/utils';
 
 export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void> => {
   const receipts = await parseReceiptsFromBlockData(
-    global.unsafeApi,
+    unsafeApi,
     substrateBlock,
     substrateBlock.events,
   );
