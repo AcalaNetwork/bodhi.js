@@ -7,7 +7,7 @@ export default defineConfig({
     testTimeout: 30_000,
     hookTimeout: 30_000,
     coverage: {
-      provider: 'c8', // or 'istanbul'
+      provider: 'v8', // or 'istanbul'
       reporter: ['text', 'json', 'html'],
     },
     exclude: ['**/e2e/*'],
