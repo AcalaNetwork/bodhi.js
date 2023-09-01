@@ -17,8 +17,8 @@
     "@acala-network/eth-providers": "workspace:*"
   },
   "devDependencies": {
-    "@subql/cli": "~1.10.0",
-    "@subql/types": "~1.7.0",
+    "@subql/cli": "~3.6.0",
+    "@subql/types": "~2.2.0",
     "@vercel/ncc": "^0.36.1",
     "pino": "~7.0.0-rc.3",
     "typescript": "~4.6.3"
