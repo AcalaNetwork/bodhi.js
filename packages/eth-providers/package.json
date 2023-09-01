@@ -39,8 +39,7 @@
     "@types/bn.js": "~5.1.0",
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
-    "jsdom": "^22.0.0",
-    "vitest": "^0.31.0"
+    "jsdom": "^22.0.0"
   },
   "files": [
     "lib"
