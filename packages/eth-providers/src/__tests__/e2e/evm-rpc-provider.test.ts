@@ -16,7 +16,7 @@ describe('connect random', () => {
   });
 });
 
-describe.concurrent('getReceiptAtBlock', async () => {
+describe('getReceiptAtBlock', async () => {
   const provider = EvmRpcProvider.from(ACALA_NODE_URL, { subqlUrl: ACALA_SUBQL });
   await provider.isReady();
 
