@@ -23,7 +23,7 @@ export const isEvmAddress = (address: string): boolean => {
 };
 
 export const computeDefaultEvmAddress = (substrateAddress: HexString | string | Uint8Array): string => {
-  if (!isSubstrateAddress) {
+  if (!isSubstrateAddress(substrateAddress)) {
     return logger.throwArgumentError('invalid substrate address', 'address', substrateAddress);
   }
 
