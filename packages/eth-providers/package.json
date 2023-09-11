@@ -28,7 +28,7 @@
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
     "jsdom": "^22.0.0",
-    "vitest": "~0.31.0"
+    "vitest": "0.34.2"
   },
   "files": [
     "lib"
