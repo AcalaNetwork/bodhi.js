@@ -16,18 +16,6 @@
   "dependencies": {
     "@acala-network/contracts": "4.3.4",
     "@acala-network/eth-transactions": "workspace:*",
-    "@ethersproject/abstract-provider": "~5.7.0",
-    "@ethersproject/address": "~5.7.0",
-    "@ethersproject/bignumber": "~5.7.0",
-    "@ethersproject/bytes": "~5.7.0",
-    "@ethersproject/contracts": "~5.7.0",
-    "@ethersproject/keccak256": "~5.7.0",
-    "@ethersproject/logger": "~5.7.0",
-    "@ethersproject/networks": "~5.7.0",
-    "@ethersproject/properties": "~5.7.0",
-    "@ethersproject/providers": "~5.7.0",
-    "@ethersproject/transactions": "~5.7.0",
-    "@ethersproject/wallet": "~5.7.0",
     "bn.js": "~5.2.0",
     "ethers": "~5.7.0",
     "graphql": "~16.0.1",
@@ -40,7 +28,7 @@
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
     "jsdom": "^22.0.0",
-    "vitest": "^0.34.3"
+    "vitest": "0.34.2"
   },
   "files": [
     "lib"
