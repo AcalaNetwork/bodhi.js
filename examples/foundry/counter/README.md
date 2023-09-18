@@ -28,7 +28,7 @@ forge test
 ### to local mandala
 1) first start a local mandala
 ```
-docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-3267408 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
+docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-fe67fd1 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
 ```
 
 2) then start an eth rpc adapter
