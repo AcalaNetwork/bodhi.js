@@ -7,6 +7,7 @@
       [
         ["23Z6s3egDsnShpy9jnTe8gGjnW5bm5iBKhrsGtZMjtSP79D6"],
         {
+          "providers": 1,
           "data": { "free": 1000000000000000 }
         }
       ]

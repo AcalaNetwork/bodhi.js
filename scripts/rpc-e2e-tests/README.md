@@ -2,11 +2,11 @@
 ## Setup
 - start a karura/acala fork
 ```
-npx @acala-network/chopsticks@latest dev \
+npx @acala-network/chopsticks@latest \
   --import-storage=configs/storage.json \
   --endpoint=wss://karura-rpc-3.aca-api.network/ws
 
-npx @acala-network/chopsticks@latest dev \
+npx @acala-network/chopsticks@latest \
   --import-storage=configs/storage.json \
   --endpoint=wss://acala-rpc-3.aca-api.network/ws
 ```
@@ -14,7 +14,7 @@ npx @acala-network/chopsticks@latest dev \
 - do a runtime upgrade to the desired version by `sudo.setCode(newRuntimeWasm)`
 - start a eth rpc adapter
 ```
-npx @acala-network/eth-rpc-adapter@2.5.9 -l -e ws://localhost:8000
+npx @acala-network/eth-rpc-adapter@2.7.7 -l -e ws://localhost:8000
 ```
 
 ## Run Tests
