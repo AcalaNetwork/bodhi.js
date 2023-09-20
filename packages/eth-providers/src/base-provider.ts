@@ -1776,11 +1776,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filter = await this._sanitizeRawFilter(rawFilter);
 
-    // make sure subql already indexed all target blocks
-    const bestBlock = await this.bestBlockNumber;
-    const targetBlock = filter.toBlock <= bestBlock
+    // make sure subql already indexed all target blocks, up until the latest finalized block
+    const upperBoundry = await this.finalizedBlockNumber;
+    const targetBlock = filter.toBlock <= upperBoundry
       ? filter.toBlock
-      : bestBlock;
+      : upperBoundry;
     let lastProcessedHeight = await this.subql.getLastProcessedHeight();
     while (lastProcessedHeight < targetBlock) {
       await sleep(1000);
