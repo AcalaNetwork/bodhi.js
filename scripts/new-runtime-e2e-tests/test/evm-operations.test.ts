@@ -1,34 +1,21 @@
-import chai, { expect } from 'chai';
-import { BigNumber, Signer } from 'ethers';
-import { ethers } from 'hardhat';
-import { solidity } from 'ethereum-waffle';
-import type { Token } from '../typechain-types';
+import { expect } from 'chai';
+import { ethers, network } from 'hardhat';
+import { ERC20__factory, type Token } from '../typechain-types';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { parseEther, parseUnits } from 'ethers/lib/utils';
 
-// hardhat's default chai matchers are hardhat-chai-matchers
-// whose `.to.be.revertedWith` doesn't work
-// so we overrides using ethereum-waffle's chai matcher
-chai.use(solidity);
-
-type EthGas = {
-  gasPrice: BigNumber;
-  gasLimit: BigNumber;
-};
+const one = parseEther('1');
 
 describe('New Runtime', function () {
-  let deployer: Signer;
-  let user: Signer;
+  let deployer: SignerWithAddress;
+  let user: SignerWithAddress;
   let deployerAddress: string;
   let userAddress: string;
-  let gas: EthGas;
-
-  const one = ethers.utils.parseEther('1');
 
   before('get user info', async () => {
     [deployer, user] = await ethers.getSigners();
-    deployerAddress = await deployer.getAddress();
-    userAddress = await user.getAddress();
-
-    gas = (await ethers.provider.send('eth_getEthGas', [])) as EthGas;
+    deployerAddress = deployer.address;
+    userAddress = user.address;
 
     console.log({
       deployerAddress,
@@ -40,20 +27,36 @@ describe('New Runtime', function () {
     it('works', async function () {
       const prevBalance = await user.getBalance();
       const sendValue = one.mul(10);
-      await deployer.sendTransaction({
+      await (await deployer.sendTransaction({
         to: userAddress,
         value: sendValue,
-      });
+      })).wait();
       const curBalance = await user.getBalance();
 
       expect(curBalance.sub(prevBalance)).to.equal(sendValue);
     });
   });
 
+  describe('Transfer predeployed Token', function () {
+    it('works', async function () {
+      const ACA_ADDR = '0x0000000000000000000100000000000000000000';
+      const KAR_ADDR = '0x0000000000000000000100000000000000000080';
+      const tokenAddr = network.name === 'karura' ? KAR_ADDR : ACA_ADDR
+      const aca = ERC20__factory.connect(tokenAddr, deployer);
+
+      const prevBalance = await user.getBalance();
+      const sendValue = '5.123';
+      await (await aca.transfer(userAddress, parseUnits(sendValue, 12))).wait();
+      const curBalance = await user.getBalance();
+
+      expect(curBalance.sub(prevBalance)).to.equal(parseEther(sendValue));
+    });
+  });
+
   describe('Hello World', function () {
     it('deploy', async function () {
       const HelloWorld = await ethers.getContractFactory('HelloWorld');
-      const instance = await HelloWorld.deploy(gas);
+      const instance = await HelloWorld.deploy();
       const value = await instance.helloWorld();
 
       expect(value).to.equal('Hello World!');
@@ -63,14 +66,14 @@ describe('New Runtime', function () {
   describe('Echo', function () {
     it('deploy and scream', async () => {
       const Echo = await ethers.getContractFactory('Echo');
-      const echo = await Echo.deploy(gas);
-      let value = await echo.callStatic.echo();
+      const echo = await Echo.deploy();
+      let value = await echo.echo();
 
       expect(value).to.equal('Deployed successfully!');
 
       let newMsg = 'Goku';
-      await echo.scream(newMsg);
-      value = await echo.callStatic.echo();
+      await (await echo.scream(newMsg)).wait();
+      value = await echo.echo();
       expect(value).to.equal(newMsg);
 
       newMsg = 'Vegeta';
@@ -87,7 +90,7 @@ describe('New Runtime', function () {
 
     before('deploy token', async () => {
       const Token = await ethers.getContractFactory('Token');
-      token = await Token.deploy(initSupply, gas);
+      token = await Token.deploy(initSupply);
     });
 
     it('initial state', async () => {
@@ -104,7 +107,7 @@ describe('New Runtime', function () {
       const initialUserBalance = await token.balanceOf(userAddress);
 
       const transferAmount = one.mul(15);
-      await token.transfer(userAddress, transferAmount);
+      await (await token.transfer(userAddress, transferAmount)).wait();
 
       const finalDeployerBalance = await token.balanceOf(deployerAddress);
       const finalUserBalance = await token.balanceOf(userAddress);
@@ -117,15 +120,15 @@ describe('New Runtime', function () {
       const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
       const transferAmount = one.mul(3);
 
-      await expect(token.transfer(userAddress, transferAmount, gas))
+      await expect(token.transfer(userAddress, transferAmount))
         .to.emit(token, 'Transfer')
         .withArgs(deployerAddress, userAddress, transferAmount);
 
-      await expect(token.transfer(NULL_ADDRESS, transferAmount, gas)).to.be.revertedWith(
+      await expect(token.transfer(NULL_ADDRESS, transferAmount)).to.be.revertedWith(
         'ERC20: transfer to the zero address',
       );
 
-      await expect(token.transfer(userAddress, initSupply.add(one.mul(100)), gas)).to.be.revertedWith(
+      await expect(token.transfer(userAddress, initSupply.add(one.mul(100)), )).to.be.revertedWith(
         'ERC20: transfer amount exceeds balance',
       );
     });
@@ -134,13 +137,13 @@ describe('New Runtime', function () {
       const getCurAllowance = () => token.allowance(deployerAddress, userAddress);
 
       /* ----- increase ----- */
-      await token.approve(userAddress, 100);
+      await (await token.approve(userAddress, 100)).wait();
       expect(await getCurAllowance()).to.equal(100);
 
-      await token.increaseAllowance(userAddress, 50);
+      await (await token.increaseAllowance(userAddress, 50)).wait();
       expect(await getCurAllowance()).to.equal(150);
 
-      await token.increaseAllowance(userAddress, 30);
+      await (await token.increaseAllowance(userAddress, 30)).wait();
       expect(await getCurAllowance()).to.equal(180);
 
       await expect(token.increaseAllowance(userAddress, 120))
@@ -148,7 +151,7 @@ describe('New Runtime', function () {
         .withArgs(deployerAddress, userAddress, 120 + 180);
 
       /* ----- decrease ----- */
-      await token.decreaseAllowance(userAddress, 140);
+      await (await token.decreaseAllowance(userAddress, 140)).wait();
       expect(await getCurAllowance()).to.equal(160);
 
       await expect(token.decreaseAllowance(userAddress, 100000)).to.be.revertedWith(
