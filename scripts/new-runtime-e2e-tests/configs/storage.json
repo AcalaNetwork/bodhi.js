@@ -1,0 +1,18 @@
+{
+  "System": {
+    "Account": [
+      [
+        ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"],
+        {
+          "data": { "free": 1000000000000000 }
+        }
+      ]
+    ]
+  },
+  "EvmAccounts": {
+    "EvmAddresses": [
+      [["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"], "0x75E480dB528101a381Ce68544611C169Ad7EB342"]
+    ],
+    "Accounts": [[["0x75E480dB528101a381Ce68544611C169Ad7EB342"], "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]]
+  }
+}

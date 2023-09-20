@@ -1,0 +1,22 @@
+endpoint: wss://karura-rpc.aca-api.network
+mock-signature-host: true
+# block: 3000000
+db: ./db.sqlite
+wasm-override: ./wasm/karura-2210.wasm
+
+import-storage:
+  Sudo:
+    Key: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY # Alice
+  System:
+    Account:
+    - - - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+      - providers: 1
+        data:
+          free: 1000000000000000
+  EvmAccounts:
+    EvmAddresses:
+    - - - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+      - '0x75E480dB528101a381Ce68544611C169Ad7EB342'
+    Accounts:
+    - - - '0x75E480dB528101a381Ce68544611C169Ad7EB342'
+      - 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
