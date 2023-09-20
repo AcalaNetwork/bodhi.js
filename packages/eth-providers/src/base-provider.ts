@@ -92,6 +92,7 @@ import {
   runWithRetries,
   runWithTiming,
   sendTx,
+  sleep,
   sortObjByKey,
   subqlReceiptAdapter,
   throwNotImplemented,
@@ -1774,10 +1775,22 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const filter = await this._sanitizeRawFilter(rawFilter);
-    const subqlLogs = await this.subql.getFilteredLogs(filter); // only filtered by blockNumber and address
-    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, filter.topics));
 
-    return filteredLogs.map((log) => this.formatter.filterLog(log));
+    // make sure subql already indexed all target blocks, up until the latest finalized block
+    const upperBoundry = await this.finalizedBlockNumber;
+    const targetBlock = filter.toBlock <= upperBoundry
+      ? filter.toBlock
+      : upperBoundry;
+    let lastProcessedHeight = await this.subql.getLastProcessedHeight();
+    while (lastProcessedHeight < targetBlock) {
+      await sleep(1000);
+      lastProcessedHeight = await this.subql.getLastProcessedHeight();
+    }
+
+    const subqlLogs = await this.subql.getFilteredLogs(filter);   // only filtered by blockNumber and address
+    return subqlLogs
+      .filter(log => filterLogByTopics(log, filter.topics))
+      .map(log => this.formatter.filterLog(log));
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {

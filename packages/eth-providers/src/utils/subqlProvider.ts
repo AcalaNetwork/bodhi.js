@@ -22,6 +22,11 @@ export class SubqlProvider {
     return metaData?.genesisHash as string;
   };
 
+  getLastProcessedHeight = async (): Promise<number> => {
+    const metaData = await this.getIndexerMetadata();
+    return metaData?.lastProcessedHeight ?? 0;
+  };
+
   queryGraphql = (query: string): Promise<Query> =>
     request(
       this.url,
