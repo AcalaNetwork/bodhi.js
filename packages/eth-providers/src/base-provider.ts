@@ -1785,8 +1785,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const subqlLogs = await this.subql.getFilteredLogs(filter);   // only filtered by blockNumber and address
     return subqlLogs
-      .filter((log) => filterLogByTopics(log, filter.topics))
-      .map(this.formatter.filterLog);
+      .filter(log => filterLogByTopics(log, filter.topics))
+      .map(log => this.formatter.filterLog(log));
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
