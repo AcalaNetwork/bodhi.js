@@ -582,7 +582,12 @@ describe('endpoint', () => {
     describe('get latest logs', async () => {
       const provider = new AcalaJsonRpcProvider(RPC_URL);
       const wallet = new Wallet(evmAccounts[0].privateKey, provider);
-      const token = await deployErc20(wallet);
+      let token: Contract;
+
+      beforeAll(async () => {
+        // need to put in here to prevent interrupte deterministic setup
+        token = await deployErc20(wallet);
+      });
 
       it('should return latest logs as soon as it\'s finalized, and should not hang if toBlock is large', async () => {
         const curblockNum = await provider.getBlockNumber();

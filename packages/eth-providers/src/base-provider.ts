@@ -1791,6 +1791,7 @@ export abstract class BaseProvider extends AbstractProvider {
       );
     }
 
+    // wait at most 3 * 12 = 36s
     while (lastProcessedHeight < targetBlock) {
       await sleep(1000);
       lastProcessedHeight = await this.subql.getLastProcessedHeight();
