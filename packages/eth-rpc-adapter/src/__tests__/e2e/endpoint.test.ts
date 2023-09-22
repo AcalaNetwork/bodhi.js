@@ -15,7 +15,7 @@ import { Interface, formatEther,  parseEther, parseUnits } from 'ethers/lib/util
 import { SubqlProvider } from '@acala-network/eth-providers/utils/subqlProvider';
 import { Wallet } from '@ethersproject/wallet';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import * as ADDRESS from '@acala-network/contracts/utils/MandalaTokens';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import DEXABI from '@acala-network/contracts/build/contracts/DEX.json';
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import WebSocket from 'ws';
