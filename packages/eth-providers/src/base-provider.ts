@@ -1782,6 +1782,15 @@ export abstract class BaseProvider extends AbstractProvider {
       ? filter.toBlock
       : upperBoundry;
     let lastProcessedHeight = await this.subql.getLastProcessedHeight();
+
+    if (targetBlock - lastProcessedHeight > 3) {
+      return logger.throwError(
+        'subql is not synced with the target block range, please wait for the indexer to catch up.',
+        Logger.errors.SERVER_ERROR,
+        { targetBlock, lastProcessedHeight }
+      );
+    }
+
     while (lastProcessedHeight < targetBlock) {
       await sleep(1000);
       lastProcessedHeight = await this.subql.getLastProcessedHeight();

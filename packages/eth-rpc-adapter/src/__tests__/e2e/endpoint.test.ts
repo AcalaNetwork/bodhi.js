@@ -10,39 +10,18 @@ import {
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
-import { DUMMY_LOGS_BLOOM, EvmRpcProvider, ONE_HUNDRED_GWEI, nativeToEthDecimal, sleep } from '@acala-network/eth-providers';
+import { AcalaJsonRpcProvider, DUMMY_LOGS_BLOOM, EvmRpcProvider, ONE_HUNDRED_GWEI, nativeToEthDecimal, sleep } from '@acala-network/eth-providers';
 import { Interface, formatEther,  parseEther, parseUnits } from 'ethers/lib/utils';
 import { SubqlProvider } from '@acala-network/eth-providers/utils/subqlProvider';
 import { Wallet } from '@ethersproject/wallet';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
+import * as ADDRESS from '@acala-network/contracts/utils/MandalaTokens';
 import DEXABI from '@acala-network/contracts/build/contracts/DEX.json';
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import WebSocket from 'ws';
 
 import {
-  ADDRESS_ALICE,
-  DETERMINISTIC_SETUP_DEX_ADDRESS,
-  KARURA_CONTRACT_CALL_TX_HASH,
-  KARURA_CONTRACT_DEPLOY_TX_HASH,
-  KARURA_SEND_KAR_TX_HASH,
-  LogHexified,
-  allLogs,
-  deployHelloWorldData,
-  evmAccounts,
-  karuraBlock1818188,
-  karuraBlock1818518,
-  karuraBlock2449983,
-  karuraContractCallTx,
-  karuraContractCallTxReceipt,
-  karuraContractDeployTx,
-  karuraContractDeployTxReceipt,
-  karuraSendKarTx,
-  karuraSendKarTxReceipt,
-  log22_0,
-  log22_1,
-} from './consts';
-import {
+  deployErc20,
   KARURA_ETH_RPC_URL,
   NODE_RPC_URL,
   SUBQL_URL,
@@ -83,7 +62,31 @@ import {
   estimateGas,
   getCurBlockHash,
   getNonce,
+  RPC_URL,
 } from './utils';
+
+import {
+  ADDRESS_ALICE,
+  DETERMINISTIC_SETUP_DEX_ADDRESS,
+  KARURA_CONTRACT_CALL_TX_HASH,
+  KARURA_CONTRACT_DEPLOY_TX_HASH,
+  KARURA_SEND_KAR_TX_HASH,
+  LogHexified,
+  allLogs,
+  deployHelloWorldData,
+  evmAccounts,
+  karuraBlock1818188,
+  karuraBlock1818518,
+  karuraBlock2449983,
+  karuraContractCallTx,
+  karuraContractCallTxReceipt,
+  karuraContractDeployTx,
+  karuraContractDeployTxReceipt,
+  karuraSendKarTx,
+  karuraSendKarTxReceipt,
+  log22_0,
+  log22_1,
+} from './consts';
 
 const subql = new SubqlProvider(SUBQL_URL);
 
@@ -576,31 +579,38 @@ describe('endpoint', () => {
       });
     });
 
-    describe('when error', () => {
-      it('returns correct error code and messge', async () => {
-        let res: Awaited<ReturnType<typeof eth_getLogs>>;
+    describe('get latest logs', () => {
+      it('should return latest logs as soon as it\'s finalized, and should not hang if toBlock is large', async () => {
+        const provider = new AcalaJsonRpcProvider(RPC_URL);
+        const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+        const token = await deployErc20(wallet);
 
-        /* ---------- invalid tag ---------- */
-        res = await eth_getLogs([{ fromBlock: 'polkadot' }]);
-        expect(res.data.error!.code).to.equal(-32602);
-        expect(res.data.error!.message).to.contain('blocktag should be number | hex string | \'latest\' | \'earliest\'');
+        const curblockNum = await provider.getBlockNumber();
+        await (await token.transfer(ADDRESS_ALICE, 1000)).wait();
 
-        /* ---------- invalid hex string ---------- */
-        res = await eth_getLogs([{ toBlock: '0xzzzz' }]);
-        expect(res.data.error!.code).to.equal(-32602);
-        expect(res.data.error!.message).to.contain('blocktag should be number | hex string | \'latest\' | \'earliest\'');
+        // should return latest logs as soon as it\'s finalized
+        const res = await eth_getLogs([{ fromBlock: curblockNum + 1, toBlock: curblockNum + 1 }]);
+        expect(res.data.result.length).to.eq(1);
 
-        /* ---------- invalid params combination ---------- */
-        res = await eth_getLogs([{ toBlock: 123, blockHash: '0x12345' }]);
-        expect(res.data.error!.code).to.equal(-32602);
-        expect(res.data.error!.message).to.contain(
-          '`fromBlock` and `toBlock` is not allowed in params when `blockHash` is present'
-        );
+        // should not hang if toBlock is large
+        const res2 = await eth_getLogs([{ fromBlock: curblockNum + 1, toBlock: 9999999999 }]);
+        expect(res2.data.result).to.deep.equal(res.data.result);
+      });
 
-        /* ---------- invalid blockhash ---------- */
-        res = await eth_getLogs([{ blockHash: '0x12345' }]);
-        expect(res.data.error!.code).to.equal(6969);
-        expect(res.data.error!.message).to.contain('header not found');
+      it('should throw correct error is subql is not synced', async () => {
+        const provider = new AcalaJsonRpcProvider(RPC_URL);
+        const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+        const token = await deployErc20(wallet);
+
+        const curblockNum = await provider.getBlockNumber();
+        const pendings = [] as any[];
+        for (let i = 0; i < 5; i++) {
+          pendings.push(await token.transfer(ADDRESS_ALICE, 1000));
+        }
+        await Promise.all(pendings.map(p => p.wait()));
+
+        const res = await eth_getLogs([{ fromBlock: curblockNum + 5, toBlock: curblockNum + 5 }]);
+        expect(res.data.error?.message).to.contain('Error: subql is not synced with the target block range, please wait for the indexer to catch up');
       });
     });
   });
