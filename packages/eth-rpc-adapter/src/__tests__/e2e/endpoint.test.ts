@@ -579,12 +579,12 @@ describe('endpoint', () => {
       });
     });
 
-    describe('get latest logs', () => {
-      it('should return latest logs as soon as it\'s finalized, and should not hang if toBlock is large', async () => {
-        const provider = new AcalaJsonRpcProvider(RPC_URL);
-        const wallet = new Wallet(evmAccounts[0].privateKey, provider);
-        const token = await deployErc20(wallet);
+    describe('get latest logs', async () => {
+      const provider = new AcalaJsonRpcProvider(RPC_URL);
+      const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+      const token = await deployErc20(wallet);
 
+      it('should return latest logs as soon as it\'s finalized, and should not hang if toBlock is large', async () => {
         const curblockNum = await provider.getBlockNumber();
         await (await token.transfer(ADDRESS_ALICE, 1000)).wait();
 
@@ -598,10 +598,6 @@ describe('endpoint', () => {
       });
 
       it('should throw correct error is subql is not synced', async () => {
-        const provider = new AcalaJsonRpcProvider(RPC_URL);
-        const wallet = new Wallet(evmAccounts[0].privateKey, provider);
-        const token = await deployErc20(wallet);
-
         const curblockNum = await provider.getBlockNumber();
         const pendings = [] as any[];
         for (let i = 0; i < 5; i++) {
