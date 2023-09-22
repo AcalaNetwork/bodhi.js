@@ -1,11 +1,12 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, ContractFactory, Signer } from 'ethers';
 import { Log, TransactionRequest } from '@ethersproject/abstract-provider';
+import { expect } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
+import { parseEther } from 'ethers/lib/utils';
 import axios from 'axios';
 
+import { ERC20_ABI, ERC20_BYTECODE, LogHexified } from './consts';
 import { JsonRpcError } from '../../server';
-import { LogHexified } from './consts';
-import { expect } from 'vitest';
 
 export const NODE_RPC_URL = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 export const KARURA_ETH_RPC_URL = process.env.KARURA_ETH_RPC_URL || 'http://127.0.0.1:8546';
@@ -103,4 +104,12 @@ export const expectLogsEqual = (a: LogHexified[], b: LogHexified[]): void => {
       b.find(({ transactionHash: t1, logIndex: l1 }) => t0 === t1 && parseInt(l0) === parseInt(l1))
     )
   );
+};
+
+export const deployErc20 = async (wallet: Signer) => {
+  const Token = new ContractFactory(ERC20_ABI, ERC20_BYTECODE, wallet);
+  const token = await Token.deploy(parseEther('1000000000'), 'TestToken', 18, 'TT');
+  await token.deployed();
+
+  return token;
 };
