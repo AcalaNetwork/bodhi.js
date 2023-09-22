@@ -593,7 +593,7 @@ describe('endpoint', () => {
         const curblockNum = await provider.getBlockNumber();
         await (await token.transfer(ADDRESS_ALICE, 1000)).wait();
 
-        // should return latest logs as soon as it\'s finalized
+        // should return latest logs as soon as it's finalized
         const res = await eth_getLogs([{ fromBlock: curblockNum + 1, toBlock: curblockNum + 1 }]);
         expect(res.data.result.length).to.eq(1);
 

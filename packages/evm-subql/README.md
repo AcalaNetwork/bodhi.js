@@ -32,7 +32,7 @@ docker-compose down -v      # clean docker volume (optional)
 docker-compose up
 ```
 
-Please note that the indexer won't start until we [feed some transactions to the node](#feed-evm-transactions-to-node) if the node is running with `--instant-sealing`
+Please note that the indexer won't start until we [feed some transactions to the node](#feed-evm-transactions-to-node) if the node is running with `--instant-sealing` 
 
 ### Run each service in the CLI seperately
 
