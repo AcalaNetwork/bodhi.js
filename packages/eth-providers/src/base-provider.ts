@@ -1804,6 +1804,8 @@ export abstract class BaseProvider extends AbstractProvider {
      so upper bound would be finalized block number
                                                  ---------- */
   _waitForSubql = async (_targetBlock: number) => {
+    if (!this.subql) return;
+
     const SUBQL_MAX_WAIT_BLOCKS = 3;
 
     const upperBound = await this.finalizedBlockNumber;
