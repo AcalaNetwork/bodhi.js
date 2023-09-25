@@ -1575,13 +1575,19 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _isBlockFinalized = async (blockTag: BlockTag): Promise<boolean> => {
-    const [blockHash, blockNumber] = await Promise.all([this._getBlockHash(blockTag), this._getBlockNumber(blockTag)]);
+    const [blockHash, blockNumber] = await Promise.all([
+      this._getBlockHash(blockTag),
+      this._getBlockNumber(blockTag),
+    ]);
 
-    return await this.finalizedBlockNumber >= blockNumber && this._isBlockCanonical(blockHash, blockNumber);
+    return (
+      await this.finalizedBlockNumber >= blockNumber &&
+      await this._isBlockCanonical(blockHash, blockNumber)
+    );
   };
 
   _isTransactionFinalized = async (txHash: string): Promise<boolean> => {
-    const tx = await this.getReceiptByHash(txHash);
+    const tx = await this.getReceipt(txHash);
     if (!tx) return false;
 
     return this._isBlockFinalized(tx.blockHash);
@@ -1655,7 +1661,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getReceiptAtBlockByHash = async (txHash: string, blockHash: string) => {
-    const receipt = await this.getReceiptByHash(txHash);
+    const receipt = await this.getReceipt(txHash);
     return receipt?.blockHash === blockHash ? receipt : null;
   };
 
@@ -1691,15 +1697,6 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  _getMinedReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
-    const txFromCache = this.blockCache.getReceiptByHash(txHash);
-    if (txFromCache && (await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)))
-      return txFromCache;
-
-    const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
-    return txFromSubql ? subqlReceiptAdapter(txFromSubql) : null;
-  };
-
   // Queries
   getTransaction = (_txHash: string): Promise<TransactionResponse> =>
     throwNotImplemented('getTransaction (deprecated: please use getTransactionByHash)');
@@ -1712,7 +1709,7 @@ export abstract class BaseProvider extends AbstractProvider {
       if (pendingTX) return pendingTX;
     }
 
-    const receipt = await this.getReceiptByHash(txHash);
+    const receipt = await this.getReceipt(txHash);
     if (!receipt) return null;
 
     // TODO: in the future can save parsed extraData in FullReceipt for ultimate performance
@@ -1723,12 +1720,29 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getTransactionReceipt = async (_txHash: string): Promise<TransactionReceipt> =>
-    throwNotImplemented('getTransactionReceipt (please use `getReceiptByHash` instead)');
+    throwNotImplemented('getTransactionReceipt (please use `getReceipt` instead)');
 
-  getReceiptByHash = async (txHash: string): Promise<TransactionReceipt | null> =>
+  getReceipt = async (txHash: string): Promise<TransactionReceipt | null> =>
     this.localMode
-      ? await runWithRetries(this._getMinedReceipt.bind(this), [txHash])
-      : await this._getMinedReceipt(txHash);
+      ? await runWithRetries(this._getReceipt.bind(this), [txHash])
+      : await this._getReceipt(txHash);
+
+  _getReceipt = async (txHash: string): Promise<TransactionReceipt | null> => {
+    const txFromCache = this.blockCache.getReceiptByHash(txHash);
+    if (
+      txFromCache &&
+      await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
+    ) return txFromCache;
+
+    // smallest block number to make sure there is no gap between subql and block cache
+    const subqlTargetBlock = await this.bestBlockNumber - this.blockCache.cachedBlockHashes.length + 1;
+    await this._waitForSubql(subqlTargetBlock);
+
+    const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
+    return txFromSubql
+      ? subqlReceiptAdapter(txFromSubql)
+      : null;
+  };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
     const { fromBlock, toBlock, blockHash, address, topics } = rawFilter;
@@ -1776,16 +1790,29 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filter = await this._sanitizeRawFilter(rawFilter);
 
-    // make sure subql already indexed all target blocks, up until the latest finalized block
-    const upperBoundry = await this.finalizedBlockNumber;
-    const targetBlock = filter.toBlock <= upperBoundry
-      ? filter.toBlock
-      : upperBoundry;
-    let lastProcessedHeight = await this.subql.getLastProcessedHeight();
+    await this._waitForSubql(filter.toBlock);
 
-    if (targetBlock - lastProcessedHeight > 3) {
+    const subqlLogs = await this.subql.getFilteredLogs(filter);   // only filtered by blockNumber and address
+    return subqlLogs
+      .filter(log => filterLogByTopics(log, filter.topics))
+      .map(log => this.formatter.filterLog(log));
+  };
+
+  /* ----------
+     make sure subql already indexed to target block number
+     currently unfinalized blocks indexing is NOT enabled
+     so upper bound would be finalized block number
+                                                 ---------- */
+  _waitForSubql = async (_targetBlock: number) => {
+    const SUBQL_MAX_WAIT_BLOCKS = 3;
+
+    const upperBound = await this.finalizedBlockNumber;
+    const targetBlock = Math.min(_targetBlock, upperBound);
+
+    let lastProcessedHeight = await this.subql.getLastProcessedHeight();
+    if (targetBlock - lastProcessedHeight > SUBQL_MAX_WAIT_BLOCKS) {
       return logger.throwError(
-        'subql is not synced with the target block range, please wait for the indexer to catch up.',
+        `subql indexer is not synced to target block, please wait for it to catch up. Estimated ${(targetBlock - lastProcessedHeight) * 12}s remaining ...`,
         Logger.errors.SERVER_ERROR,
         { targetBlock, lastProcessedHeight }
       );
@@ -1796,11 +1823,6 @@ export abstract class BaseProvider extends AbstractProvider {
       await sleep(1000);
       lastProcessedHeight = await this.subql.getLastProcessedHeight();
     }
-
-    const subqlLogs = await this.subql.getFilteredLogs(filter);   // only filtered by blockNumber and address
-    return subqlLogs
-      .filter(log => filterLogByTopics(log, filter.topics))
-      .map(log => this.formatter.filterLog(log));
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
@@ -1850,7 +1872,10 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   healthCheck = async (): Promise<HealthResult> => {
-    const [indexerMeta, ethCallTiming] = await Promise.all([this.getIndexerMetadata(), this._timeEthCalls()]);
+    const [indexerMeta, ethCallTiming] = await Promise.all([
+      this.getIndexerMetadata(),
+      this._timeEthCalls(),
+    ]);
 
     const cacheInfo = this.getCachInfo();
     const curFinalizedHeight = await this.finalizedBlockNumber;
