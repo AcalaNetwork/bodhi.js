@@ -42,13 +42,14 @@ export class BlockCache {
     }
   };
 
-  getReceiptByHash = (txHash: string): FullReceipt | null => this.txHashToReceipt[txHash] ?? null;
+  getReceiptByHash = (txHash: string): FullReceipt | null =>
+    this.txHashToReceipt[txHash] ?? null;
 
-  getAllReceiptsAtBlock = (blockHash: string): FullReceipt[] => this.blockHashToReceipts[blockHash] ?? [];
+  getAllReceiptsAtBlock = (blockHash: string): FullReceipt[] =>
+    this.blockHashToReceipts[blockHash] ?? [];
 
-  getReceiptAtBlock = (txHash: string, blockHash: string): FullReceipt | null => {
-    return this.getAllReceiptsAtBlock(blockHash).find((r) => r.transactionHash === txHash) ?? null;
-  };
+  getReceiptAtBlock = (txHash: string, blockHash: string): FullReceipt | null =>
+    this.getAllReceiptsAtBlock(blockHash).find((r) => r.transactionHash === txHash) ?? null;
 
   inspect = (): CacheInspect => ({
     maxCachedBlocks: this.maxCachedBlocks,

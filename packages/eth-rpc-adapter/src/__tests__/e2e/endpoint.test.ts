@@ -611,7 +611,7 @@ describe('endpoint', () => {
         await Promise.all(pendings.map(p => p.wait()));
 
         const res = await eth_getLogs([{ fromBlock: curblockNum + 5, toBlock: curblockNum + 5 }]);
-        expect(res.data.error?.message).to.contain('Error: subql is not synced with the target block range, please wait for the indexer to catch up');
+        expect(res.data.error?.message).to.contain('Error: subql indexer is not synced to target block');
       });
     });
   });

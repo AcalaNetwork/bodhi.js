@@ -86,7 +86,7 @@ describe('dex test', () => {
 
     const txHash = swapWithExactSupplyExtrinsic.hash.toHex();
     const tx = await evmProvider.getTransactionByHash(txHash);
-    const receipt = await evmProvider.getReceiptByHash(txHash);
+    const receipt = await evmProvider.getReceipt(txHash);
 
     const aliceEvmAddress = (await wallet.getAddress()).toLowerCase();
     expect(hexlifyRpcResult(tx)).to.contain({
