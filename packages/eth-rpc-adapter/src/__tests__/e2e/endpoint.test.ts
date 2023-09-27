@@ -63,6 +63,7 @@ import {
   getCurBlockHash,
   getNonce,
   RPC_URL,
+  net_listening,
 } from './utils';
 
 import {
@@ -2110,5 +2111,12 @@ describe('endpoint', () => {
     // too lazy to test these
     it.skip('eth_call', async () => {});
     it.skip('eth_getStorageAt', async () => {});
+  });
+
+  describe('net_listening', () => {
+    it('returns true', async () => {
+      const res = (await net_listening([])).data.result;
+      expect(res).to.deep.equal(true);
+    });
   });
 });
