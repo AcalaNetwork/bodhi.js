@@ -77,11 +77,6 @@ class Eip1193BridgeImpl {
     return this.#provider.healthCheck();
   }
 
-  async net_listening(params: any[]): Promise<boolean> {
-    validate([], params);
-    return true;
-  }
-
   // TODO: maybe can encapsulate all provider info into one call `net_Info` or something
   async net_runtimeVersion(params: any[]) {
     validate([], params);

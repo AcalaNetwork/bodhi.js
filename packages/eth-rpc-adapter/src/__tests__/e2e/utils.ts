@@ -62,7 +62,6 @@ export const eth_getFilterLogs = rpcGet<{
   }
 }>('eth_getFilterLogs');
 export const eth_uninstallFilter = rpcGet('eth_uninstallFilter');
-export const net_listening = rpcGet('net_listening');
 
 /* ---------- karura mainnet rpc methods ---------- */
 export const eth_blockNumber_karura = rpcGet('eth_blockNumber', KARURA_ETH_RPC_URL);
