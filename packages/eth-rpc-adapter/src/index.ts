@@ -1,8 +1,9 @@
-import 'dd-trace/init';
+import './utils/tracer';
+
 import { Eip1193Bridge } from './eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Router } from './router';
-import { monitorRuntime } from './monitor-runtime';
+import { monitorRuntime } from './utils/monitor-runtime';
 import { yargsOptions as opts } from './utils';
 import { version } from './_version';
 import EthRpcServer from './server';

@@ -1,2 +1,2 @@
 export * from './utils';
-export * from './datadog-util';
+export * from './datadog';
