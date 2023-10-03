@@ -8,7 +8,6 @@ import { BatchSizeError, InvalidRequest, MethodNotFound } from './errors';
 import { Router } from './router';
 import { errorHandler } from './middlewares';
 import { logger } from './utils/logger';
-import tracer from './utils/tracer';
 
 export interface EthRpcServerOptions extends ServerOptions {
   port: number;
@@ -139,9 +138,6 @@ export default class EthRpcServer {
       throw new Error('No router configured');
     }
 
-    // Initialize datadog span and get spanTags from the context
-    // const spanTags = DataDogUtil.buildTracerSpan();
-
     const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
 
     if (routerForMethod === undefined) {
@@ -150,28 +146,13 @@ export default class EthRpcServer {
         `The method ${method} does not exist / is not available.`
       ).json();
     } else {
-      const res = await tracer.trace(
-        'rpc_call',
-        { resource: 'base_hander' },
-        () => routerForMethod.call(method, params, ws)
-      );
+      const res = await routerForMethod.call(method, params, ws);
 
       response = {
         ...response,
         ...res,
       };
     }
-
-    // Add span tags to the datadog span
-    // DataDogUtil.assignTracerSpan(spanTags, {
-    //   id,
-    //   method,
-    //   ...(Array.isArray(params)
-    //     ? params.reduce((c, v, i) => {
-    //       return { ...c, [`param_${i}`]: v };
-    //     }, {})
-    //     : params),
-    // });
 
     return response;
   }
