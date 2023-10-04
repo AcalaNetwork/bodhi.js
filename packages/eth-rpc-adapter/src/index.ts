@@ -1,8 +1,9 @@
-import 'dd-trace/init';
+import './utils/tracer';
+
 import { Eip1193Bridge } from './eip1193-bridge';
-import { EvmRpcProvider } from '@acala-network/eth-providers';
+import { EvmRpcProviderWithTrace } from '@acala-network/eth-providers';
 import { Router } from './router';
-import { monitorRuntime } from './monitor-runtime';
+import { monitorRuntime } from './utils/monitor-runtime';
 import { yargsOptions as opts } from './utils';
 import { version } from './_version';
 import EthRpcServer from './server';
@@ -10,7 +11,7 @@ import EthRpcServer from './server';
 export async function start(): Promise<void> {
   console.log('starting server ...');
 
-  const provider = EvmRpcProvider.from(opts.endpoint.split(','), {
+  const provider = EvmRpcProviderWithTrace.from(opts.endpoint.split(','), {
     safeMode: opts.safeMode,
     localMode: opts.localMode,
     verbose: opts.verbose,

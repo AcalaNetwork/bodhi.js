@@ -1,13 +1,13 @@
-import { BatchSizeError, InvalidRequest, MethodNotFound } from './errors';
-import { DataDogUtil } from './utils';
-import { Router } from './router';
-import { errorHandler } from './middlewares';
 import { json as jsonParser } from 'body-parser';
-import { logger } from './logger';
 import WebSocket from 'ws';
 import connect, { HandleFunction } from 'connect';
 import cors from 'cors';
 import http, { ServerOptions } from 'http';
+
+import { BatchSizeError, InvalidRequest, MethodNotFound } from './errors';
+import { Router } from './router';
+import { errorHandler } from './middlewares';
+import { logger } from './utils/logger';
 
 export interface EthRpcServerOptions extends ServerOptions {
   port: number;
@@ -21,7 +21,7 @@ export interface JsonRpcRequest {
   jsonrpc: string;
   id: string;
   method: string;
-  params: any[] | Record<string, unknown>;
+  params: any[];
 }
 
 export interface JsonRpcError {
@@ -117,14 +117,14 @@ export default class EthRpcServer {
   }
 
   protected async baseHandler({ id, method, params }: JsonRpcRequest, ws?: WebSocket): Promise<JsonRpcResponse> {
-    let res: JsonRpcResponse = {
+    let response: JsonRpcResponse = {
       id: id ?? null,
       jsonrpc: '2.0',
     };
 
     if (id === null || id === undefined || !method) {
       return {
-        ...res,
+        ...response,
         error: new InvalidRequest({
           id: id || null,
           method: method || null,
@@ -138,35 +138,23 @@ export default class EthRpcServer {
       throw new Error('No router configured');
     }
 
-    // Initialize datadog span and get spanTags from the context
-    const spanTags = DataDogUtil.buildTracerSpan();
-
     const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
 
     if (routerForMethod === undefined) {
-      res.error = new MethodNotFound(
+      response.error = new MethodNotFound(
         'Method not found',
         `The method ${method} does not exist / is not available.`
       ).json();
     } else {
-      res = {
+      const res = await routerForMethod.call(method, params, ws);
+
+      response = {
+        ...response,
         ...res,
-        ...(await routerForMethod.call(method, params as any, ws)),
       };
     }
 
-    // Add span tags to the datadog span
-    DataDogUtil.assignTracerSpan(spanTags, {
-      id,
-      method,
-      ...(Array.isArray(params)
-        ? params.reduce((c, v, i) => {
-          return { ...c, [`param_${i}`]: v };
-        }, {})
-        : params),
-    });
-
-    return res;
+    return response;
   }
 
   private async httpHandler(req: any, res: http.ServerResponse, next: (err?: any) => void): Promise<void> {

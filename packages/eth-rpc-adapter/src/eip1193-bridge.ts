@@ -1,20 +1,28 @@
-import { EvmRpcProvider, PROVIDER_ERRORS, PollFilterType, TX, hexlifyRpcResult } from '@acala-network/eth-providers';
-import { InvalidParams, MethodNotFound } from './errors';
+import {
+  EvmRpcProvider,
+  EvmRpcProviderWithTrace,
+  PROVIDER_ERRORS,
+  PollFilterType,
+  TX,
+  hexlifyRpcResult,
+} from '@acala-network/eth-providers';
 import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { Signer } from '@ethersproject/abstract-signer';
 import { getAddress } from '@ethersproject/address';
 import { hexValue } from '@ethersproject/bytes';
-import { validate } from './validate';
-import { version } from './_version';
 import EventEmitter from 'events';
 import WebSocket from 'ws';
 
+import { InvalidParams, MethodNotFound } from './errors';
+import { validate } from './validate';
+import { version } from './_version';
+
 const HEX_ZERO = '0x0';
 export class Eip1193Bridge extends EventEmitter {
-  readonly provider: EvmRpcProvider;
+  readonly provider: EvmRpcProvider | EvmRpcProviderWithTrace;
   readonly #impl: Eip1193BridgeImpl;
 
-  constructor(provider: EvmRpcProvider, signer?: Signer) {
+  constructor(provider: EvmRpcProvider | EvmRpcProviderWithTrace, signer?: Signer) {
     super();
     this.provider = provider;
     this.#impl = new Eip1193BridgeImpl(provider, signer);
@@ -43,10 +51,10 @@ export class Eip1193Bridge extends EventEmitter {
 }
 
 class Eip1193BridgeImpl {
-  readonly #provider: EvmRpcProvider;
+  readonly #provider: EvmRpcProvider | EvmRpcProviderWithTrace;
   readonly #signer?: Signer;
 
-  constructor(provider: EvmRpcProvider, signer?: Signer) {
+  constructor(provider: EvmRpcProvider | EvmRpcProviderWithTrace, signer?: Signer) {
     this.#provider = provider;
     this.#signer = signer;
   }

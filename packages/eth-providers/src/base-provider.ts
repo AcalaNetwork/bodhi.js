@@ -303,19 +303,6 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly #headTasks: Map<string, Subscription> = new Map();
   readonly #finalizedHeadTasks: Map<string, Subscription> = new Map();
 
-  get bestBlockHash() {
-    return firstValueFrom(this.best$).then(({ hash }) => hash);
-  }
-  get bestBlockNumber() {
-    return firstValueFrom(this.best$).then(({ number }) => number);
-  }
-  get finalizedBlockHash() {
-    return firstValueFrom(this.finalized$).then(({ hash }) => hash);
-  }
-  get finalizedBlockNumber() {
-    return firstValueFrom(this.finalized$).then(({ number }) => number);
-  }
-
   constructor({
     safeMode = false,
     localMode = false,
@@ -354,6 +341,19 @@ export abstract class BaseProvider extends AbstractProvider {
     } else {
       this.maxBlockCacheSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
+  }
+
+  get bestBlockHash() {
+    return firstValueFrom(this.best$).then(({ hash }) => hash);
+  }
+  get bestBlockNumber() {
+    return firstValueFrom(this.best$).then(({ number }) => number);
+  }
+  get finalizedBlockHash() {
+    return firstValueFrom(this.finalized$).then(({ hash }) => hash);
+  }
+  get finalizedBlockNumber() {
+    return firstValueFrom(this.finalized$).then(({ number }) => number);
   }
 
   static isProvider(value: any): value is Provider {
