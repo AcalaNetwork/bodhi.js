@@ -9,7 +9,7 @@
     "build": "tsc --build tsconfig.json",
     "test:e2e": "vitest --run --config vitest.config.e2e.ts",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts -l | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc",
+    "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts -l | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc,dd",
     "test:CI": "vitest --run --config vitest.config.e2e.ts",
     "ncc:pack": "ncc build src/index.ts -t --target es2020"
   },
