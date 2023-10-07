@@ -17,7 +17,7 @@ export class Router {
     if (this.#bridge.isMethodImplemented(methodName)) {
       try {
         const result = await tracer.trace(
-          `router_call.<${methodName}>`,
+          'eth_rpc_call',
           { resource: methodName },
           () => this.#bridge.send(methodName, params, ws)
         );

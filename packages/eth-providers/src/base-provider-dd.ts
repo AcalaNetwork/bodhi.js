@@ -72,8 +72,8 @@ export class BaseProviderWithTrace extends BaseProvider {
       }
 
       this[methodName] = tracer.wrap(
-        `provider.${methodName}`,
-        { resource: methodName },
+        'provider_call',
+        { resource: `provider.${methodName}` },
         this[methodName].bind(this)
       );
     }
