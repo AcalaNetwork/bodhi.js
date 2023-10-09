@@ -6,7 +6,7 @@ import { parseEther, parseUnits } from 'ethers/lib/utils';
 
 const one = parseEther('1');
 
-describe('New Runtime', function () {
+describe('evm operations', function () {
   let deployer: SignerWithAddress;
   let user: SignerWithAddress;
   let deployerAddress: string;
@@ -43,6 +43,8 @@ describe('New Runtime', function () {
       const KAR_ADDR = '0x0000000000000000000100000000000000000080';
       const tokenAddr = network.name === 'karura' ? KAR_ADDR : ACA_ADDR
       const aca = ERC20__factory.connect(tokenAddr, deployer);
+
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
 
       const prevBalance = await user.getBalance();
       const sendValue = '5.123';
