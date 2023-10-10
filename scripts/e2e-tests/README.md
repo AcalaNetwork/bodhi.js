@@ -15,7 +15,7 @@ npx @acala-network/chopsticks@latest -c configs/acala.yml
 
 - start a eth rpc adapter
 ```
-npx @acala-network/eth-rpc-adapter@2.7.10 -e ws://localhost:8000
+npx @acala-network/eth-rpc-adapter@2.7.11 -e ws://localhost:8000
 ```
 
 - run tests
