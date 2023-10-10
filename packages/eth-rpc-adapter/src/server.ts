@@ -158,7 +158,7 @@ export default class EthRpcServer {
   }
 
   private async httpHandler(req: any, res: http.ServerResponse, next: (err?: any) => void): Promise<void> {
-    logger.debug(req.body, 'incoming request');
+    logger.debug(req.body, '⬇ request');
 
     let result = null;
     try {
@@ -175,7 +175,7 @@ export default class EthRpcServer {
       return next(e);
     }
 
-    logger.debug(result, 'request completed');
+    logger.debug(result, '✨ response');
 
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify(result));
@@ -197,7 +197,7 @@ export default class EthRpcServer {
       return;
     }
 
-    logger.debug(req, 'ws incoming request');
+    logger.debug(req, '⬇ ws request');
 
     let result = null;
 
@@ -214,7 +214,7 @@ export default class EthRpcServer {
       result = await this.baseHandler(req, ws);
     }
 
-    logger.debug(result, 'ws request completed');
+    logger.debug(result, '⭐ ws response');
 
     ws.send(JSON.stringify(result));
   }
