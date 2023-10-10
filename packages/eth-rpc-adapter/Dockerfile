@@ -34,7 +34,7 @@ COPY --from=builder /app/packages/eth-providers/lib /app/packages/eth-providers/
 
 COPY --from=builder /app/packages/eth-rpc-adapter/node_modules /app/packages/eth-rpc-adapter/node_modules
 COPY --from=builder /app/packages/eth-transactions/node_modules /app/packages/eth-transactions/node_modules
-# COPY --from=builder /app/packages/eth-providers/node_modules /app/packages/eth-providers/node_modules
+# COPY --from=builder /app/packages/eth-providers/node_modules /app/packages/eth-providers/node_modules     # don't exist
 
 WORKDIR /app/packages/eth-rpc-adapter
 
