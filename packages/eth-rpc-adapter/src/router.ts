@@ -6,7 +6,7 @@ import tracer from 'dd-trace';
 import { Eip1193Bridge } from './eip1193-bridge';
 import { InternalError, InvalidParams, JSONRPCError, MethodNotFound } from './errors';
 import { JsonRpcResponse } from './server';
-import { shouldTraceEthRpc } from './utils/datadog';
+import { shouldNotTrace } from './utils/datadog';
 export class Router {
   readonly #bridge: Eip1193Bridge;
 
@@ -17,7 +17,7 @@ export class Router {
   public async call(methodName: string, params: unknown[], ws?: WebSocket): Promise<Partial<JsonRpcResponse>> {
     if (this.#bridge.isMethodImplemented(methodName)) {
       try {
-        const result = !shouldTraceEthRpc(methodName)
+        const result = shouldNotTrace(methodName)
           ? await this.#bridge.send(methodName, params, ws)
           : await tracer.trace(
             'eth_rpc_call',
