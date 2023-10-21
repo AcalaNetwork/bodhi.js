@@ -1,5 +1,5 @@
 {
-  "name": "acala-dune-scrips",
+  "name": "acala-analytics-scrips",
   "version": "1.0.0",
   "main": "src/index.ts",
   "license": "MIT",
