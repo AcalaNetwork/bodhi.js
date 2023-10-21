@@ -31,7 +31,8 @@ const _truncate = async (csvData: any[], percent: number) => {
   return csvData.slice(-rowsToExtract);
 };
 
-// this shape is compatible with Footprint
+// this shape is compatible with Footprint and dune
+// TODO: there should be a lib that does this?
 const formatDate = (input: string): string => {
   const date = new Date(input);
 

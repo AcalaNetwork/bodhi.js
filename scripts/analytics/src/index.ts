@@ -45,19 +45,19 @@ const main = async () => {
     transformCSV(euphratesFile),
   ]);
 
-  // await uploadToFootprint({
-  //   type: FP_DATA_TYPE.AcalaLogs,
-  //   tableName: 'acala_logs',
-  //   filename: logFile,
-  //   apiKey: env.API_KEY,
-  // });
+  await uploadToFootprint({
+    type: FP_DATA_TYPE.AcalaLogs,
+    tableName: 'acala_logs',
+    filename: logFile,
+    apiKey: env.API_KEY,
+  });
 
-  // await uploadToFootprint({
-  //   type: FP_DATA_TYPE.AcalaReceipts,
-  //   tableName: 'acala_receipts',
-  //   filename: receiptFile,
-  //   apiKey: env.API_KEY,
-  // });
+  await uploadToFootprint({
+    type: FP_DATA_TYPE.AcalaReceipts,
+    tableName: 'acala_receipts',
+    filename: receiptFile,
+    apiKey: env.API_KEY,
+  });
 
   await uploadToFootprint({
     type: FP_DATA_TYPE.EuphratesStake,
@@ -66,12 +66,12 @@ const main = async () => {
     apiKey: env.API_KEY,
   });
 
-  // await uploadToDune({
-  //   filename: euphratesFile,
-  //   apiKey: env.API_KEY,
-  //   tableName: 'euphrates_stake',
-  //   description: 'euphrates_stake',
-  // });
+  await uploadToDune({
+    filename: euphratesFile,
+    apiKey: env.API_KEY,
+    tableName: 'euphrates_stake',
+    description: 'euphrates_stake',
+  });
 };
 
 main();
