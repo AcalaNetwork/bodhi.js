@@ -1,4 +1,4 @@
-import * as fastcsv from 'fast-csv';
+import Papa from 'papaparse';
 import { Client, ClientConfig } from 'pg';
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -57,8 +57,9 @@ export const pullDataFromDb = async ({
     for (const [i, table] of tableNames.entries()) {
       const targetFile = filenames[i] ?? `${table}.csv`;
       const dataRes = await client.query(`SELECT * FROM "${schema}"."${table}"`);
-      const ws = fs.createWriteStream(targetFile);
-      fastcsv.write(dataRes.rows, { headers: true }).pipe(ws);
+
+      const csv = Papa.unparse(dataRes.rows);
+      fs.writeFileSync(targetFile, csv);
 
       savedFiles.push(targetFile);
       console.log(`saved [${schema}.${table}] data to [${targetFile}]`);

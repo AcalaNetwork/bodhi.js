@@ -31,6 +31,10 @@ const _truncate = async (csvData: any[], percent: number) => {
   return csvData.slice(-rowsToExtract);
 };
 
+const pickColumns = (csvData: any[], columns: string[]) => csvData.map(d => 
+  columns.reduce((acc, col) => ({ ...acc, [col]: d[col] }), {}),
+);
+
 // this shape is compatible with Footprint and dune
 // TODO: there should be a lib that does this?
 const formatDate = (input: string): string => {
@@ -54,7 +58,7 @@ const toSimpleTimestamp = (csvData: any[]) => csvData.map(rowData => ({
 export async function transformCSV(filename: string): Promise<void> {
   console.log(`transforming ${filename} ...`);
   const rawData = await readCSV(filename);
-  const data = toSimpleTimestamp(rawData);
+  const data = toSimpleTimestamp(pickColumns(rawData, ['timestamp', 'pool_id', 'amount', 'from', 'type']));
 
   await writeCSV(filename, data);
   console.log('transformation finished!');

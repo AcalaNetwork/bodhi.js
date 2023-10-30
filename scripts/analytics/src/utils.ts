@@ -1,24 +1,23 @@
-import * as fastcsv from 'fast-csv';
+import Papa from 'papaparse';
 import fs from 'fs';
 
-export const readCSV = async (filename: string) => {
-  const data: any[] = [];
+export const readCSV = async (filename: string): Promise<any[]> => {
+  const fileContent = fs.readFileSync(filename, 'utf8');
 
-  await new Promise<void>((resolve, reject) => {
-    fs.createReadStream(filename)
-      .pipe(fastcsv.parse({ headers: true }))
-      .on('data', (row) => data.push(row))
-      .on('end', resolve)
-      .on('error', reject);
+  const result = Papa.parse(fileContent, {
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true
   });
 
-  return data;
+  if (result.errors.length > 0) {
+    throw new Error(`Error parsing CSV: ${result.errors[0].message}`);
+  }
+
+  return result.data;
 };
 
-export const writeCSV = async (filename: string, data: any[]) => new Promise<void>((resolve, reject) => {
-  const writeStream = fs.createWriteStream(filename);
-  fastcsv.write(data, { headers: true })
-    .pipe(writeStream)
-    .on('finish', resolve)
-    .on('error', reject);
-});
+export const writeCSV = (filename: string, data: any[]) => {
+  const csv = Papa.unparse(data);
+  fs.writeFileSync(filename, csv);
+};
