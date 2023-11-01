@@ -1340,7 +1340,7 @@ describe('endpoint', () => {
         ])
       ).data.result;
       expect(rawRes.gasPrice).to.equal('0x2e90f20000');
-      expect(rawRes.gasLimit).to.equal('0x5728');
+      expect(rawRes.gasLimit).to.equal('0x6270');
     });
   });
 
