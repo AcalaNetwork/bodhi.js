@@ -11,7 +11,7 @@ import { Deferrable } from '@ethersproject/properties';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { Logger } from '@ethersproject/logger';
 import { MultiSigner } from './MultiSigner';
-import { Signer, SubmittableExtrinsic } from '@polkadot/api/types';
+import { Signer } from '@polkadot/api/types';
 import { SubmittableResult } from '@polkadot/api';
 import { SubstrateSigner } from './SubstrateSigner';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
