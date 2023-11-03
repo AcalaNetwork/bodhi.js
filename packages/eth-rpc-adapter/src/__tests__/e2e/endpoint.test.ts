@@ -64,11 +64,13 @@ import {
   getNonce,
   RPC_URL,
   net_listening,
+  deployGasMonster,
 } from './utils';
 
 import {
   ADDRESS_ALICE,
   DETERMINISTIC_SETUP_DEX_ADDRESS,
+  GAS_MONSTER_GAS_REQUIRED,
   KARURA_CONTRACT_CALL_TX_HASH,
   KARURA_CONTRACT_DEPLOY_TX_HASH,
   KARURA_SEND_KAR_TX_HASH,
@@ -2117,6 +2119,24 @@ describe('endpoint', () => {
     it('returns true', async () => {
       const res = (await net_listening([])).data.result;
       expect(res).to.deep.equal(true);
+    });
+  });
+
+  describe('eth_estimateGas', () => {
+    const provider = new AcalaJsonRpcProvider(RPC_URL);
+    const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+
+    it('can deal with weird gas contract', async () => {
+      const gm = await deployGasMonster(wallet);
+      const tx = await gm.populateTransaction.run();
+
+      const { gasLimit } = await estimateGas(tx);
+      const bbb = (gasLimit.toNumber() % 100000) / 100;
+
+      // should be passing gasLimit instead of usedGas
+      expect(bbb).to.gt(GAS_MONSTER_GAS_REQUIRED / 30000);
+
+      await (await gm.run()).wait();    // make sure running has no error
     });
   });
 });
