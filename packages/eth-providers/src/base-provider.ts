@@ -263,7 +263,7 @@ export interface CallInfo {
       fatal?: any;
     };
     value: string;
-    used_gas: number;
+    used_gas: string;
     used_storage: number;
     logs: Log[];
   };
@@ -1108,10 +1108,9 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit: STORAGE_LIMIT,
     };
 
-    const {
-      used_gas: usedGas,
-      used_storage: usedStorage,
-    } = await this._ethCall(txRequest);
+    const gasInfo = await this._ethCall(txRequest);
+    const usedGas = BigNumber.from(gasInfo.used_gas).toNumber();
+    const usedStorage =gasInfo.used_storage;
 
     /* ----------
        try using a gasLimit slightly more than actual used gas
