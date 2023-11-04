@@ -1,5 +1,3 @@
-import { DUMMY_LOGS_BLOOM } from '@acala-network/eth-providers';
-
 export interface LogHexified {
   blockNumber: string;
   blockHash: string;

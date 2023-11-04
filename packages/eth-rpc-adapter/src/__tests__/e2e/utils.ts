@@ -122,3 +122,27 @@ export const deployGasMonster = async (wallet: Signer) => {
 
   return gm;
 };
+
+interface IndeterministicObj {
+  blockHash?: string;
+  transactionHash?: string;
+  hash?: string;
+}
+
+const toDeterministicObj = <T extends IndeterministicObj>(obj: T) => {
+  const res = { ...obj };
+  delete res.blockHash;
+  delete res.transactionHash;
+  delete res.hash;
+
+  return res;
+};
+
+export const toDeterministic = (data: any) => {
+  const res = toDeterministicObj(data);
+  if (res.logs) {
+    res.logs = res.logs.map(toDeterministicObj);
+  }
+
+  return res;
+};

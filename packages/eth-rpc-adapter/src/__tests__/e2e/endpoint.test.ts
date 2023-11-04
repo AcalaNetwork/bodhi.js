@@ -65,6 +65,7 @@ import {
   RPC_URL,
   net_listening,
   deployGasMonster,
+  toDeterministic,
 } from './utils';
 
 import {
@@ -171,10 +172,10 @@ describe('endpoint', () => {
         eth_getTransactionReceipt([tx4.transactionHash]),
       ]);
 
-      expect(res1.data.result).toMatchSnapshot();
-      expect(res2.data.result).toMatchSnapshot();
-      expect(res3.data.result).toMatchSnapshot();
-      expect(res4.data.result).toMatchSnapshot();
+      expect(toDeterministic(res1.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res2.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res3.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res4.data.result)).toMatchSnapshot();
     });
 
     it('returns correct result for public karura transactions', async () => {
@@ -197,9 +198,9 @@ describe('endpoint', () => {
       expect(contractDeployRes.status).to.equal(200);
       expect(sendKarRes.status).to.equal(200);
 
-      expect(contractCallRes.data.result).toMatchSnapshot();
-      expect(contractDeployRes.data.result).toMatchSnapshot();
-      expect(sendKarRes.data.result).toMatchSnapshot();
+      expect(toDeterministic(contractCallRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(contractDeployRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(sendKarRes.data.result)).toMatchSnapshot();
     });
 
     it('return correct error or null', async () => {
@@ -507,10 +508,10 @@ describe('endpoint', () => {
         eth_getTransactionByHash([tx4.transactionHash]),
       ]);
 
-      expect(res1.data.result).toMatchSnapshot();
-      expect(res2.data.result).toMatchSnapshot();
-      expect(res3.data.result).toMatchSnapshot();
-      expect(res4.data.result).toMatchSnapshot();
+      expect(toDeterministic(res1.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res2.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res3.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res4.data.result)).toMatchSnapshot();
     });
 
     it('returns correct result for public karura transactions', async () => {
@@ -533,9 +534,9 @@ describe('endpoint', () => {
       expect(contractDeployRes.status).to.equal(200);
       expect(sendKarRes.status).to.equal(200);
 
-      expect(contractCallRes.data.result).toMatchSnapshot();
-      expect(contractDeployRes.data.result).toMatchSnapshot();
-      expect(sendKarRes.data.result).toMatchSnapshot();
+      expect(toDeterministic(contractCallRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(contractDeployRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(sendKarRes.data.result)).toMatchSnapshot();
     });
 
     it.skip('returns correct result when tx is pending', async () => {
