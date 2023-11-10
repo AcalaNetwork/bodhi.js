@@ -10,7 +10,7 @@
     "@certusone/wormhole-sdk": "^0.9.22",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@types/node": "^20.4.5",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "ethers": "^5.7.0",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
