@@ -155,10 +155,10 @@ describe('endpoint', () => {
       const allTxReceipts = await subql.getAllTxReceipts();
       expect(allTxReceipts.length).to.greaterThan(0);
 
-      const tx1 = allTxReceipts.find((r) => r.blockNumber === '10');
-      const tx2 = allTxReceipts.find((r) => r.blockNumber === '9');
-      const tx3 = allTxReceipts.find((r) => r.blockNumber === '6');
-      const tx4 = allTxReceipts.find((r) => r.blockNumber === '20');
+      const tx1 = allTxReceipts.find(r => r.blockNumber === '10');
+      const tx2 = allTxReceipts.find(r => r.blockNumber === '9');
+      const tx3 = allTxReceipts.find(r => r.blockNumber === '6');
+      const tx4 = allTxReceipts.find(r => r.blockNumber === '20');
 
       const [
         res1,
@@ -236,7 +236,7 @@ describe('endpoint', () => {
         /* ---------- single address ---------- */
         for (const log of allLogs) {
           const res = await eth_getLogs([{ address: log.address, ...ALL_BLOCK_RANGE_FILTER }]);
-          const expectedLogs = allLogs.filter((l) => l.address === log.address);
+          const expectedLogs = allLogs.filter(l => l.address === log.address);
           expectLogsEqual(res.data.result, expectedLogs);
         }
 
@@ -245,7 +245,7 @@ describe('endpoint', () => {
           const res = await eth_getLogs([
             { address: [log.address.toLocaleUpperCase(), '0x13579'], ...ALL_BLOCK_RANGE_FILTER },
           ]);
-          const expectedLogs = allLogs.filter((l) => l.address === log.address);
+          const expectedLogs = allLogs.filter(l => l.address === log.address);
           expectLogsEqual(res.data.result, expectedLogs);
         }
       });
@@ -286,15 +286,15 @@ describe('endpoint', () => {
         const from = 9;
         const to = 11;
         res = await eth_getLogs([{ fromBlock: from }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
       });
     });
@@ -337,15 +337,15 @@ describe('endpoint', () => {
         const from = 8;
         const to = 10;
         res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
       });
     });
@@ -373,24 +373,24 @@ describe('endpoint', () => {
         for (const log of allLogs) {
           res = await eth_getLogs([{ topics: log.topics, ...ALL_BLOCK_RANGE_FILTER }]);
           expectedLogs = allLogs.filter(
-            (l) => log.topics.length === l.topics.length && log.topics.every((t, i) => l.topics[i] === t)
+            l => log.topics.length === l.topics.length && log.topics.every((t, i) => l.topics[i] === t)
           );
           expectLogsEqual(res.data.result, expectedLogs);
 
           res = await eth_getLogs([{ topics: [log.topics[0]], ...ALL_BLOCK_RANGE_FILTER }]);
-          expectedLogs = allLogs.filter((l) => l.topics[0] === log.topics[0]);
+          expectedLogs = allLogs.filter(l => l.topics[0] === log.topics[0]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           res = await eth_getLogs([
             { topics: [['ooo', log.topics[0], 'xxx', 'yyy'], null, []], ...ALL_BLOCK_RANGE_FILTER },
           ]);
-          expectedLogs = allLogs.filter((l) => l.topics[0] === log.topics[0]);
+          expectedLogs = allLogs.filter(l => l.topics[0] === log.topics[0]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           res = await eth_getLogs([
             { topics: [...new Array(log.topics.length - 1).fill(null), log.topics.at(-1)], ...ALL_BLOCK_RANGE_FILTER },
           ]);
-          expectedLogs = allLogs.filter((l) => l.topics[log.topics.length - 1] === log.topics.at(-1));
+          expectedLogs = allLogs.filter(l => l.topics[log.topics.length - 1] === log.topics.at(-1));
           expectLogsEqual(res.data.result, expectedLogs);
         }
       });
@@ -398,10 +398,10 @@ describe('endpoint', () => {
 
     describe('filter by blockhash', () => {
       it('returns correct logs', async () => {
-        const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
+        const allLogsFromSubql = await subql.getAllLogs().then(logs => logs.map(hexilifyLog));
         for (const log of allLogsFromSubql) {
           const res = await eth_getLogs([{ blockHash: log.blockHash }]);
-          const expectedLogs = allLogs.filter((l) => l.blockNumber === log.blockNumber);
+          const expectedLogs = allLogs.filter(l => l.blockNumber === log.blockNumber);
           expectLogsEqual(res.data.result, expectedLogs);
         }
       });
@@ -411,32 +411,32 @@ describe('endpoint', () => {
       it('returns correct logs', async () => {
         let res: Awaited<ReturnType<typeof eth_getLogs>>;
         let expectedLogs: LogHexified[];
-        const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
+        const allLogsFromSubql = await subql.getAllLogs().then(logs => logs.map(hexilifyLog));
         /* -------------------- match block range -------------------- */
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
         res = await eth_getLogs([{ fromBlock: 8, toBlock: 11, topics: [[], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= 15);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) <= 15);
         res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 15, topics: [[], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         for (const log of allLogsFromSubql) {
           /* -------------------- match blockhash -------------------- */
-          expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
+          expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) === parseInt(log.blockNumber));
           res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[], null, []] }]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           /* -------------------- match first topic -------------------- */
           expectedLogs = allLogs.filter(
-            (l) => parseInt(l.blockNumber) === parseInt(log.blockNumber) && l.topics[0] === log.topics[0]
+            l => parseInt(l.blockNumber) === parseInt(log.blockNumber) && l.topics[0] === log.topics[0]
           );
           res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[log.topics[0], 'xxx'], null, []] }]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           /* -------------------- match range and topics -------------------- */
           expectedLogs = allLogs.filter(
-            (l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 15 && l.topics[0] === log.topics[0]
+            l => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 15 && l.topics[0] === log.topics[0]
           );
           res = await eth_getLogs([{ fromBlock: 8, toBlock: 15, topics: [['xxx', log.topics[0]]] }]);
           expectLogsEqual(res.data.result, expectedLogs);
@@ -491,10 +491,10 @@ describe('endpoint', () => {
   describe('eth_getTransactionByHash', () => {
     it('finds correct tx when hash exist for local transactions', async () => {
       const allTxReceipts = await subql.getAllTxReceipts();
-      const tx1 = allTxReceipts.find((r) => r.blockNumber === '10');
-      const tx2 = allTxReceipts.find((r) => r.blockNumber === '9');
-      const tx3 = allTxReceipts.find((r) => r.blockNumber === '6');
-      const tx4 = allTxReceipts.find((r) => r.blockNumber === '20');
+      const tx1 = allTxReceipts.find(r => r.blockNumber === '10');
+      const tx2 = allTxReceipts.find(r => r.blockNumber === '9');
+      const tx3 = allTxReceipts.find(r => r.blockNumber === '6');
+      const tx4 = allTxReceipts.find(r => r.blockNumber === '20');
 
       const [
         res1,
@@ -1270,7 +1270,7 @@ describe('endpoint', () => {
       // also, instantiating ws (next line) has to be inside <before block>, otherwise there will be mysterious failure...
       ws = new WebSocket(WS_URL);
       ws.on('open', () => {
-        ws.on('message', (data) => {
+        ws.on('message', data => {
           const parsedData = JSON.parse(data.toString());
           notifications.push(parsedData);
         });
@@ -1340,15 +1340,15 @@ describe('endpoint', () => {
 
       await sleep(3000); // give ws some time to notify
 
-      subId0 = notifications.find((n) => n.id === 0).result;
-      subId1 = notifications.find((n) => n.id === 1).result;
-      subId2 = notifications.find((n) => n.id === 2).result;
-      subId3 = notifications.find((n) => n.id === 3).result;
+      subId0 = notifications.find(n => n.id === 0).result;
+      subId1 = notifications.find(n => n.id === 1).result;
+      subId2 = notifications.find(n => n.id === 2).result;
+      subId3 = notifications.find(n => n.id === 3).result;
 
-      const notification0 = notifications.find((n) => n.params?.subscription === subId0); // new block
-      const notification1 = notifications.find((n) => n.params?.subscription === subId1); // ACA transfer
-      const notification2 = notifications.find((n) => n.params?.subscription === subId2); // ACA transfer
-      const notification3 = notifications.find((n) => n.params?.subscription === subId3); // no match
+      const notification0 = notifications.find(n => n.params?.subscription === subId0); // new block
+      const notification1 = notifications.find(n => n.params?.subscription === subId1); // ACA transfer
+      const notification2 = notifications.find(n => n.params?.subscription === subId2); // ACA transfer
+      const notification3 = notifications.find(n => n.params?.subscription === subId3); // no match
 
       const curBlock = (await eth_blockNumber()).data.result;
       const curBlockInfo = (await eth_getBlockByNumber([curBlock, false])).data.result;
@@ -1432,10 +1432,10 @@ describe('endpoint', () => {
 
       await sleep(10000); // give ws some time to notify
 
-      const notification0 = notifications.find((n) => n.params?.subscription === subId0); // no match
-      const notification1 = notifications.find((n) => n.params?.subscription === subId1); // no match
-      const notification2 = notifications.find((n) => n.params?.subscription === subId2); // ACA transfer
-      const notification3 = notifications.find((n) => n.params?.subscription === subId3); // no match
+      const notification0 = notifications.find(n => n.params?.subscription === subId0); // no match
+      const notification1 = notifications.find(n => n.params?.subscription === subId1); // no match
+      const notification2 = notifications.find(n => n.params?.subscription === subId2); // ACA transfer
+      const notification3 = notifications.find(n => n.params?.subscription === subId3); // no match
 
       // after unsubscribe they should not be notified anymore
       expect(notification0).to.equal(undefined);

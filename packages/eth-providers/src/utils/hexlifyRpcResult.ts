@@ -10,7 +10,7 @@ export const hexlifyRpcResult = (data: unknown): any => {
   }
 
   if (Array.isArray(data)) {
-    return data.map((item) => {
+    return data.map(item => {
       return hexlifyRpcResult(item);
     });
   }

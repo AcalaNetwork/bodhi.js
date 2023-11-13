@@ -58,20 +58,20 @@ export interface HealthData {
 }
 
 export const sleep = (interval = 1000): Promise<null> =>
-  new Promise((resolve) => setTimeout(() => resolve(null), interval));
+  new Promise(resolve => setTimeout(() => resolve(null), interval));
 
 export const promiseWithTimeout = <T = any>(value: any, interval = 1000): Promise<T> => {
   let timeoutHandle: any;
-  const timeoutPromise = new Promise((resolve) => {
+  const timeoutPromise = new Promise(resolve => {
     timeoutHandle = setTimeout(() => resolve(null), interval);
   });
 
   return Promise.race([value, timeoutPromise])
-    .then((result) => {
+    .then(result => {
       clearTimeout(timeoutHandle);
       return result;
     })
-    .catch((error) => {
+    .catch(error => {
       clearTimeout(timeoutHandle);
       return Promise.reject(error);
     });
@@ -177,7 +177,7 @@ export const getHealthResult = ({
   }
 
   /* --------------- RPC --------------- */
-  Object.values(ethCallTiming).forEach((t) => {
+  Object.values(ethCallTiming).forEach(t => {
     if (t > ETH_CALL_MAX_TIME) {
       msg.push(
         `an RPC is getting slow, takes more than ${

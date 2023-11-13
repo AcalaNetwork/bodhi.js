@@ -159,7 +159,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
 export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
   return events
     .filter(
-      (event) =>
+      event =>
         event.event.section.toUpperCase() === 'EVM' &&
         ['Created', 'CreatedFailed', 'Executed', 'ExecutedFailed'].includes(event.event.method)
     )
@@ -245,7 +245,7 @@ export const getOrphanTxReceiptsFromEvents = (
         blockNumber,
       };
 
-      const logs = partialReceipt.logs.map((log) => ({
+      const logs = partialReceipt.logs.map(log => ({
         ...log,
         ...txInfo,
       }));
@@ -258,7 +258,7 @@ export const getOrphanTxReceiptsFromEvents = (
       };
     });
 
-  return receipts.map((receipt) => Formatter.check(fullReceiptFormatter, receipt));
+  return receipts.map(receipt => Formatter.check(fullReceiptFormatter, receipt));
 };
 
 export const subqlReceiptAdapter = <T extends TransactionReceiptSubql | null>(receipt: T):
@@ -271,7 +271,7 @@ export const subqlReceiptAdapter = <T extends TransactionReceiptSubql | null>(re
       : null;
 
 export const receiptToTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
-  const extrinsic = block.block.extrinsics.find((ex) => ex.hash.toHex() === tx.transactionHash);
+  const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
 
   const extraData = extrinsic ? parseExtrinsic(extrinsic) : ORPHAN_TX_DEFAULT_INFO;
 

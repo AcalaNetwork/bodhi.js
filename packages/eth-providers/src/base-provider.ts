@@ -434,7 +434,7 @@ export abstract class BaseProvider extends AbstractProvider {
     try {
       const block = await this.getBlockDataForHeader(header, false);
       const response = hexlifyRpcResult(block);
-      this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach((l) => l.cb(response));
+      this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach(l => l.cb(response));
       this.#finalizedHeadTasks.get(blockHash)?.unsubscribe();
       this.#finalizedHeadTasks.delete(blockHash);
     } catch (e) {
@@ -457,13 +457,13 @@ export abstract class BaseProvider extends AbstractProvider {
       const block = await this.getBlockDataForHeader(header, false);
 
       const response = hexlifyRpcResult(block);
-      headSubscribers.forEach((l) => l.cb(response));
+      headSubscribers.forEach(l => l.cb(response));
 
       if (logSubscribers.length > 0) {
-        const logs = receipts.map((r) => r.logs).flat();
+        const logs = receipts.map(r => r.logs).flat();
 
         logSubscribers.forEach(({ cb, filter }) => {
-          const filteredLogs = logs.filter((log) => filterLog(log, filter));
+          const filteredLogs = logs.filter(log => filterLog(log, filter));
           hexlifyRpcResult(filteredLogs).forEach(cb);
         });
       }
@@ -643,8 +643,8 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const transactions = full
-      ? receipts.map((tx) => receiptToTransaction(tx, block))
-      : receipts.map((tx) => tx.transactionHash as `0x${string}`);
+      ? receipts.map(tx => receiptToTransaction(tx, block))
+      : receipts.map(tx => tx.transactionHash as `0x${string}`);
 
     const gasUsed = receipts.reduce((totalGas, tx) => totalGas.add(tx.gasUsed), BIGNUMBER_ZERO);
 
@@ -724,12 +724,15 @@ export abstract class BaseProvider extends AbstractProvider {
       ]);
 
       pendingNonce = pendingExtrinsics.filter(
-        (e) => isEvmExtrinsic(e) && e.signer.toString() === substrateAddress
+        e => isEvmExtrinsic(e) &&
+        e.signer.toString() === substrateAddress
       ).length;
     }
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
-    const minedNonce = accountInfo.isNone ? 0 : accountInfo.unwrap().nonce.toNumber();
+    const minedNonce = accountInfo.isNone
+      ? 0
+      : accountInfo.unwrap().nonce.toNumber();
 
     return minedNonce + pendingNonce;
   };
@@ -1391,7 +1394,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
-    const hexTx = await Promise.resolve(signedTransaction).then((t) => hexlify(t));
+    const hexTx = await Promise.resolve(signedTransaction).then(t => hexlify(t));
     const tx = parseTransaction(await signedTransaction);
 
     if ((tx as any).confirmations === null || (tx as any).confirmations === undefined) {
@@ -1479,7 +1482,7 @@ export abstract class BaseProvider extends AbstractProvider {
           with: () => throwError(() => logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeoutMs })),
         })) : this.head$;
 
-      wait$ = wait$.pipe(first((head) => head.number.toNumber() - startBlock + 1 >= confirms));
+      wait$ = wait$.pipe(first(head => head.number.toNumber() - startBlock + 1 >= confirms));
 
       await firstValueFrom(wait$);
 
@@ -1699,7 +1702,7 @@ export abstract class BaseProvider extends AbstractProvider {
   // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
-    const targetExtrinsic = pendingExtrinsics.find((ex) => ex.hash.toHex() === txHash);
+    const targetExtrinsic = pendingExtrinsics.find(ex => ex.hash.toHex() === txHash);
 
     if (!(targetExtrinsic && isEvmExtrinsic(targetExtrinsic))) return null;
 
@@ -1880,7 +1883,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
       await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])
-    ).map((res) => Math.floor(res.time));
+    ).map(res => Math.floor(res.time));
 
     return {
       gasPriceTime,
@@ -1949,8 +1952,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   removeEventListener = (id: string): boolean => {
     let found = false;
-    Object.values(SubscriptionType).forEach((e) => {
-      const targetIdx = this.eventListeners[e].findIndex((l) => l.id === id);
+    Object.values(SubscriptionType).forEach(e => {
+      const targetIdx = this.eventListeners[e].findIndex(l => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this.eventListeners[e].splice(targetIdx, 1);
         found = true;
@@ -2034,9 +2037,9 @@ export abstract class BaseProvider extends AbstractProvider {
     filterInfo.lastPollTimestamp = Date.now();
 
     const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
-    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, sanitizedFilter.topics));
+    const filteredLogs = subqlLogs.filter(log => filterLogByTopics(log, sanitizedFilter.topics));
 
-    return hexlifyRpcResult(filteredLogs.map((log) => this.formatter.filterLog(log)));
+    return hexlifyRpcResult(filteredLogs.map(log => this.formatter.filterLog(log)));
   };
 
   _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
@@ -2054,8 +2057,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   poll = async (id: string, logsOnly = false): Promise<string[] | Log[]> => {
-    const logFilterInfo = this.pollFilters[PollFilterType.Logs].find((f) => f.id === id);
-    const blockFilterInfo = !logsOnly && this.pollFilters[PollFilterType.NewBlocks].find((f) => f.id === id);
+    const logFilterInfo = this.pollFilters[PollFilterType.Logs].find(f => f.id === id);
+    const blockFilterInfo = !logsOnly && this.pollFilters[PollFilterType.NewBlocks].find(f => f.id === id);
     const filterInfo = logFilterInfo ?? blockFilterInfo;
 
     if (!filterInfo) {
@@ -2068,8 +2071,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   removePollFilter = (id: string): boolean => {
     let found = false;
-    Object.values(PollFilterType).forEach((f) => {
-      const targetIdx = this.pollFilters[f].findIndex((f) => f.id === id);
+    Object.values(PollFilterType).forEach(f => {
+      const targetIdx = this.pollFilters[f].findIndex(f => f.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this.pollFilters[f].splice(targetIdx, 1);
         found = true;

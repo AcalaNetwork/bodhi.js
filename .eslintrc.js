@@ -14,6 +14,7 @@ module.exports = {
     semi: [1, 'always'],
     'no-trailing-spaces': [2],
     'quote-props': [2, 'as-needed'],
+    "arrow-parens": [2, "as-needed"],
     'eol-last': [2, 'always'],
     'object-curly-spacing': [2, 'always'],
     'comma-dangle': [2, {

@@ -67,7 +67,7 @@ export async function start(): Promise<void> {
   `);
 }
 
-start().catch((e) => {
+start().catch(e => {
   console.error(e);
   process.exit(1);
 });

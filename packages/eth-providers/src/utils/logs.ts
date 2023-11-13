@@ -36,7 +36,7 @@ export const filterLogByTopics = (log: Log, topics: TopicsFilter): boolean => {
     if (typeof targetTopic === 'string') {
       if (curTopic !== targetTopic.toLowerCase()) return false;
     } else if (Array.isArray(targetTopic) && targetTopic.length > 0) {
-      if (!targetTopic.map((x) => x.toLowerCase()).includes(curTopic)) return false;
+      if (!targetTopic.map(x => x.toLowerCase()).includes(curTopic)) return false;
     }
   }
 
@@ -50,7 +50,7 @@ export const filterLogByAddress = (log: Log, targetAddr: AddressFilter): boolean
   if (typeof targetAddr === 'string') {
     if (logAddr !== targetAddr.toLowerCase()) return false;
   } else if (Array.isArray(targetAddr)) {
-    if (!targetAddr.map((x) => x.toLowerCase()).includes(logAddr)) return false;
+    if (!targetAddr.map(x => x.toLowerCase()).includes(logAddr)) return false;
   }
 
   return true;
@@ -64,7 +64,7 @@ export const filterLog = (log: Log, filter: BaseLogFilter): boolean =>
 /* --------------- log utils for Subql --------------- */
 /* --------------------------------------------------- */
 const _isEffectiveFilter = (x: any): boolean => x !== undefined && x !== null && !(Array.isArray(x) && x.length === 0);
-const _isAnyFilterEffective = (arr: any[]): boolean => arr.some((a) => _isEffectiveFilter(a));
+const _isAnyFilterEffective = (arr: any[]): boolean => arr.some(a => _isEffectiveFilter(a));
 
 const _buildBlockNumberGqlFilter = (fromBlock: BlockTag | undefined, toBlock: BlockTag | undefined): string => {
   const fromBlockFilter = _isEffectiveFilter(fromBlock) ? `greaterThanOrEqualTo: "${fromBlock}"` : '';
@@ -102,7 +102,7 @@ export const buildLogsGqlFilter = (filter: SanitizedLogFilter): string => {
 
 // adapt logs from graphql to provider compatible types
 export const adaptLogs = (logs: LogGQL[]): Log[] =>
-  logs.map((log) => ({
+  logs.map(log => ({
     ...log,
     data: log.data || '',
   }));
