@@ -18,8 +18,8 @@ describe('BlockCache', () => {
   const blocks = 30;
   const chain = mockChain(blocks);
   const TOTAL_BLOCKS = chain.length;
-  const allReceipts = chain.map((block) => block.receipts).flat();
-  const allBlockHashes = chain.map((block) => block.blockHash);
+  const allReceipts = chain.map(block => block.receipts).flat();
+  const allBlockHashes = chain.map(block => block.blockHash);
   const cache = new BlockCache(MAX_CACHED_BLOCK);
 
   describe('add block', () => {
@@ -30,7 +30,7 @@ describe('BlockCache', () => {
         const firstCacheBlockIdx = Math.max(0, lastCacheBlockIdx - MAX_CACHED_BLOCK + 1);
         const allExpectedReceiptsInCache = chain
           .slice(firstCacheBlockIdx, lastCacheBlockIdx + 1)
-          .map((block) => block.receipts)
+          .map(block => block.receipts)
           .flat()
           .sort(sortReceipt);
 
@@ -40,14 +40,14 @@ describe('BlockCache', () => {
         );
 
         /* --------------- test getReceiptByHash & getReceiptAtBlock --------------- */
-        allReceipts.forEach((receipt) => {
+        allReceipts.forEach(receipt => {
           const isReceiptInCache = allExpectedReceiptsInCache.find(
-            (r) => r.transactionHash === receipt.transactionHash
+            r => r.transactionHash === receipt.transactionHash
           );
           const expectedReceipt = isReceiptInCache ? receipt : null;
           expect(cache.getReceiptByHash(receipt.transactionHash)).to.deep.equal(expectedReceipt);
 
-          allBlockHashes.forEach((blockHash) => {
+          allBlockHashes.forEach(blockHash => {
             const isCorrectBlockHash = blockHash === receipt.blockHash;
             const expectedReceipt = isReceiptInCache && isCorrectBlockHash ? receipt : null;
             expect(cache.getReceiptAtBlock(receipt.transactionHash, blockHash)).to.deep.equal(expectedReceipt);

@@ -49,7 +49,7 @@ export default class EthRpcServer {
 
     const app = connect();
 
-    options.middleware?.forEach((mw) => app.use(mw));
+    options.middleware?.forEach(mw => app.use(mw));
     const corsOptions = options.cors ?? EthRpcServer.defaultCorsOptions;
     app.use(cors(corsOptions));
     app.use(jsonParser({ limit: '1mb' }));
@@ -74,7 +74,7 @@ export default class EthRpcServer {
         ws.isAlive = true;
       });
 
-      ws.on('message', (message) => this.wsHandler(message.toString(), ws));
+      ws.on('message', message => this.wsHandler(message.toString(), ws));
 
       ws.on('close', () => {
         ws.removeAllListeners();
@@ -113,7 +113,7 @@ export default class EthRpcServer {
   }
 
   removeRouter(router: Router): void {
-    this.routers = this.routers.filter((r) => r !== router);
+    this.routers = this.routers.filter(r => r !== router);
   }
 
   protected async baseHandler({ id, method, params }: JsonRpcRequest, ws?: WebSocket): Promise<JsonRpcResponse> {
@@ -138,7 +138,7 @@ export default class EthRpcServer {
       throw new Error('No router configured');
     }
 
-    const routerForMethod = this.routers.find((r) => r.isMethodImplemented(method));
+    const routerForMethod = this.routers.find(r => r.isMethodImplemented(method));
 
     if (routerForMethod === undefined) {
       response.error = new MethodNotFound(

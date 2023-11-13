@@ -6,7 +6,7 @@ describe('MaxSizeSet', () => {
   const MAX_CACHED_BLOCK = 5;
   const blocks = 20;
   const chain = mockChain(blocks, false);
-  const allBlockHashes = chain.map((block) => block.blockHash);
+  const allBlockHashes = chain.map(block => block.blockHash);
   const finalizedBlocks = new MaxSizeSet(MAX_CACHED_BLOCK);
 
   describe('add blockhash', () => {

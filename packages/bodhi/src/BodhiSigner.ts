@@ -146,7 +146,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
             .then(() => {
               resolve();
             })
-            .catch((err) => {
+            .catch(err => {
               if (err.message === 'evmAccounts.AccountIdHasMapped') {
                 resolve();
               }
@@ -172,14 +172,14 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
             .then(() => {
               resolve();
             })
-            .catch((err) => {
+            .catch(err => {
               if (err.message === 'evmAccounts.AccountIdHasMapped') {
                 resolve();
               }
               reject(err);
             });
         })
-        .catch((error) => {
+        .catch(error => {
           reject(error);
         });
     });

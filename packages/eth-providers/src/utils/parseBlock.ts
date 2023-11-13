@@ -84,7 +84,7 @@ export const parseReceiptsFromBlockData = async (
       const transactionHash = extrinsic.hash.toHex();
       const txInfo = { transactionIndex, blockHash, transactionHash, blockNumber };
       const partialReceipt = getPartialTransactionReceipt(evmEvent);
-      const logs = partialReceipt.logs.map((log) => ({
+      const logs = partialReceipt.logs.map(log => ({
         ...txInfo,
         ...log,
       }));
@@ -103,7 +103,7 @@ export const parseReceiptsFromBlockData = async (
   const allCandidateReceipts = [...normalReceipts, ...orphanReceipts];
 
   return targetTxHash
-    ? allCandidateReceipts.filter((r) => r.transactionHash === targetTxHash)
+    ? allCandidateReceipts.filter(r => r.transactionHash === targetTxHash)
     : allCandidateReceipts;
 };
 
