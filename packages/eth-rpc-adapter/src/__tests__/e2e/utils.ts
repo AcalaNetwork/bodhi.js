@@ -5,7 +5,7 @@ import { hexValue } from '@ethersproject/bytes';
 import { parseEther } from 'ethers/lib/utils';
 import axios from 'axios';
 
-import { ERC20_ABI, ERC20_BYTECODE, LogHexified } from './consts';
+import { ERC20_ABI, ERC20_BYTECODE, GASMONSTER_ABI, GASMONSTER_BYTECODE, LogHexified } from './consts';
 import { JsonRpcError } from '../../server';
 
 export const NODE_RPC_URL = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
@@ -113,4 +113,36 @@ export const deployErc20 = async (wallet: Signer) => {
   await token.deployed();
 
   return token;
+};
+
+export const deployGasMonster = async (wallet: Signer) => {
+  const GM = new ContractFactory(GASMONSTER_ABI, GASMONSTER_BYTECODE, wallet);
+  const gm = await GM.deploy();
+  await gm.deployed();
+
+  return gm;
+};
+
+interface IndeterministicObj {
+  blockHash?: string;
+  transactionHash?: string;
+  hash?: string;
+}
+
+const toDeterministicObj = <T extends IndeterministicObj>(obj: T) => {
+  const res = { ...obj };
+  delete res.blockHash;
+  delete res.transactionHash;
+  delete res.hash;
+
+  return res;
+};
+
+export const toDeterministic = (data: any) => {
+  const res = toDeterministicObj(data);
+  if (res.logs) {
+    res.logs = res.logs.map(toDeterministicObj);
+  }
+
+  return res;
 };

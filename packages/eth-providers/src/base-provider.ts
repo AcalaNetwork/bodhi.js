@@ -263,7 +263,7 @@ export interface CallInfo {
       fatal?: any;
     };
     value: string;
-    used_gas: number;
+    used_gas: string;
     used_storage: number;
     logs: Log[];
   };
@@ -689,7 +689,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -740,7 +740,7 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<number> => {
     const resolvedBlockTag = await blockTag;
 
-    const address = await this._getAddress(addressOrName);
+    const address = await addressOrName;
     const [substrateAddress, blockHash] = await Promise.all([
       this.getSubstrateAddress(address),
       this._getBlockHash(blockTag),
@@ -765,7 +765,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (blockTag === 'pending') return '0x';
 
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -862,7 +862,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [address, blockHash, resolvedPosition] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
       Promise.resolve(position).then(hexValue),
     ]);
@@ -1108,44 +1108,66 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit: STORAGE_LIMIT,
     };
 
-    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
+    const gasInfo = await this._ethCall(txRequest);
+    const usedGas = BigNumber.from(gasInfo.used_gas).toNumber();
+    const usedStorage = gasInfo.used_storage;
 
-    // binary search the best passing gasLimit
-    let lowest = MIN_GAS_LIMIT;
-    let highest = MAX_GAS_LIMIT;
-    let mid = Math.min(usedGas * 3, Math.floor((lowest + highest) / 2));
-    let prevHighest = highest;
-    while (highest - lowest > 1) {
-      try {
-        await this._ethCall({
-          ...txRequest,
-          gasLimit: mid,
-        });
-        highest = mid;
+    /* ----------
+       try using a gasLimit slightly more than actual used gas
+       if it already works, which should be the usual case
+       we don't need to waste time doing binary search
+                                                    ---------- */
+    let gasLimit = Math.floor(usedGas * 1.2);
+    let gasAlreadyWorks = true;
+    try {
+      await this._ethCall({
+        ...txRequest,
+        gasLimit,
+      });
+    } catch {
+      gasAlreadyWorks = false;
+    }
 
-        if ((prevHighest - highest) / prevHighest < 0.1) break;
-        prevHighest = highest;
-      } catch (e: any) {
-        if ((e.message as string).includes('revert') || (e.message as string).includes('outOfGas')) {
-          lowest = mid;
-        } else {
-          throw e;
+    if (!gasAlreadyWorks) {
+      // need to binary search the best passing gasLimit
+      let lowest = MIN_GAS_LIMIT;
+      let highest = MAX_GAS_LIMIT;
+      let mid = Math.min(usedGas * 3, Math.floor((lowest + highest) / 2));
+      let prevHighest = highest;
+      while (highest - lowest > 1) {
+        try {
+          await this._ethCall({
+            ...txRequest,
+            gasLimit: mid,
+          });
+          highest = mid;
+
+          if ((prevHighest - highest) / prevHighest < 0.1) break;
+          prevHighest = highest;
+        } catch (e: any) {
+          if ((e.message as string).includes('revert') || (e.message as string).includes('outOfGas')) {
+            lowest = mid;
+          } else {
+            throw e;
+          }
         }
+
+        mid = Math.floor((highest + lowest) / 2);
       }
 
-      mid = Math.floor((highest + lowest) / 2);
+      gasLimit = highest;
     }
 
     return {
-      usedGas: BigNumber.from(usedGas), // actual used gas
-      gasLimit: BigNumber.from(highest), // gasLimit to pass execution
+      usedGas: BigNumber.from(usedGas),   // actual used gas
+      gasLimit: BigNumber.from(gasLimit), // gasLimit to pass execution
       usedStorage: BigNumber.from(usedStorage),
     };
   };
 
   getSubstrateAddress = async (addressOrName: string, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -1171,7 +1193,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -1626,11 +1648,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
       throw error;
     }
-  };
-
-  _getAddress = async (addressOrName: string | Promise<string>): Promise<string> => {
-    addressOrName = await addressOrName;
-    return addressOrName;
   };
 
   // from chain only
