@@ -724,12 +724,15 @@ export abstract class BaseProvider extends AbstractProvider {
       ]);
 
       pendingNonce = pendingExtrinsics.filter(
-        e => isEvmExtrinsic(e) && e.signer.toString() === substrateAddress
+        e => isEvmExtrinsic(e) &&
+        e.signer.toString() === substrateAddress
       ).length;
     }
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
-    const minedNonce = accountInfo.isNone ? 0 : accountInfo.unwrap().nonce.toNumber();
+    const minedNonce = accountInfo.isNone
+      ? 0
+      : accountInfo.unwrap().nonce.toNumber();
 
     return minedNonce + pendingNonce;
   };
