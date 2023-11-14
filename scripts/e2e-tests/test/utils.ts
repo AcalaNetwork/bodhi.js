@@ -2,10 +2,10 @@ import { hexZeroPad } from 'ethers/lib/utils';
 import WebSocket from 'ws';
 
 export class SubsManager {
+  curReqId = 0;
   msgs: any[] = [];
   ws: WebSocket;
   isReady: Promise<void>;
-  id = 0;
 
   constructor(url: string) {
     this.ws = new WebSocket(url);
@@ -25,11 +25,11 @@ export class SubsManager {
     this.msgs.length = 0;
   }
 
-  buildRequest(id: number, params: any[]) {
+  buildRequest(params: any[], method = 'eth_subscribe') {
     return JSON.stringify({
       jsonrpc: '2.0',
-      method: 'eth_subscribe',
-      id,
+      id: ++this.curReqId,
+      method,
       params,
     })
   }
@@ -72,40 +72,29 @@ export class SubsManager {
   }
 
   async subscribeNewHeads() {
-    const reqId = this.id++;
-
     this.ws.send(
-      this.buildRequest(reqId, ['newHeads'])
+      this.buildRequest(['newHeads'])
     );
 
-    const resp = await this.waitForSubs(reqId);
+    const resp = await this.waitForSubs(this.curReqId);
     return resp.result as string;
   }
 
   async subscribeLogs(params: any) {
-    const reqId = this.id++;
-
     this.ws.send(
-      this.buildRequest(reqId, ['logs', params])
+      this.buildRequest(['logs', params])
     );
 
-    const resp = await this.waitForSubs(reqId);
+    const resp = await this.waitForSubs(this.curReqId);
     return resp.result as string;
   }
 
   async unSubscribe(subId: string) {
-    const reqId = this.id++;
-
     this.ws.send(
-      JSON.stringify({
-        jsonrpc: '2.0',
-        id: reqId,
-        method: 'eth_unsubscribe',
-        params: [subId],
-      })
+      this.buildRequest([subId], 'eth_unsubscribe')
     );
 
-    const resp = await this.waitForSubs(reqId);
+    const resp = await this.waitForSubs(this.curReqId);
     return resp.result as string;
   }
 
