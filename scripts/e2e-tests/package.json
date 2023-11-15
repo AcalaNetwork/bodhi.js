@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "hardhat compile",
+    "test:mandalaPub": "hardhat test --network mandalaPub",
     "test:mandala": "hardhat test --network mandala",
     "test:karura": "hardhat test --network karura",
     "test:acala": "hardhat test --network acala",
@@ -29,8 +30,8 @@
     "dlx": "^0.2.1",
     "eslint": "^8.31.0",
     "ethereum-waffle": "^3.4.4",
-    "ethers": "^5.4.7",
-    "hardhat": "^2.11.1",
+    "ethers": "~5.7.0",
+    "hardhat": "~2.13.1",
     "hardhat-gas-reporter": "^1.0.8",
     "mocha": "^10.2.0",
     "solidity-coverage": "^0.8.0",

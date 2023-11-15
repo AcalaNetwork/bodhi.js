@@ -82,36 +82,36 @@ export const getTransactionRequest = async (
 
   const tx: any = {};
 
-  ['from', 'to'].forEach((key) => {
+  ['from', 'to'].forEach(key => {
     if (values[key] === null || values[key] === undefined) {
       return;
     }
-    tx[key] = Promise.resolve(values[key]).then((v) => (v ? v : null));
+    tx[key] = Promise.resolve(values[key]).then(v => (v ? v : null));
   });
 
-  ['gasLimit', 'gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas', 'value'].forEach((key) => {
+  ['gasLimit', 'gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas', 'value'].forEach(key => {
     if (values[key] === null || values[key] === undefined) {
       return;
     }
-    tx[key] = Promise.resolve(values[key]).then((v) => (v ? BigNumber.from(v) : null));
+    tx[key] = Promise.resolve(values[key]).then(v => (v ? BigNumber.from(v) : null));
   });
 
-  ['type'].forEach((key) => {
+  ['type'].forEach(key => {
     if (values[key] === null || values[key] === undefined) {
       return;
     }
-    tx[key] = Promise.resolve(values[key]).then((v) => (v !== null || v !== undefined ? v : null));
+    tx[key] = Promise.resolve(values[key]).then(v => (v !== null || v !== undefined ? v : null));
   });
 
   if (values.accessList) {
     tx.accessList = accessListify(values.accessList);
   }
 
-  ['data'].forEach((key) => {
+  ['data'].forEach(key => {
     if (values[key] === null || values[key] === undefined) {
       return;
     }
-    tx[key] = Promise.resolve(values[key]).then((v) => (v ? hexlify(v) : null));
+    tx[key] = Promise.resolve(values[key]).then(v => (v ? hexlify(v) : null));
   });
 
   return formatter.transactionRequest(await resolveProperties(tx));

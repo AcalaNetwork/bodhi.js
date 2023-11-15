@@ -1,6 +1,6 @@
 services:
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-3267408
+    image: ghcr.io/acalanetwork/mandala-node:sha-37d9e36
     container_name: mandala-node
     ports:
       - 9944:9944
@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: acala/evm-subql:2.7.7
+    image: acala/evm-subql:2.7.13
     container_name: subquery-node
     ports:
       - 3000:3000
@@ -69,7 +69,7 @@ services:
       - --indexer=http://subquery-node:3000
 
   eth-rpc-adapter-server:
-    image: acala/eth-rpc-adapter:2.7.7
+    image: acala/eth-rpc-adapter:2.7.13
     container_name: eth-rpc-adapter-server
     restart: always
     depends_on:

@@ -1,9 +1,12 @@
 import { ERROR_PATTERN } from '@acala-network/eth-providers';
-import { Eip1193Bridge } from './eip1193-bridge';
 import { Logger as EthLogger } from '@ethersproject/logger';
+import WebSocket from 'ws';
+import tracer from 'dd-trace';
+
+import { Eip1193Bridge } from './eip1193-bridge';
 import { InternalError, InvalidParams, JSONRPCError, MethodNotFound } from './errors';
 import { JsonRpcResponse } from './server';
-import WebSocket from 'ws';
+import { shouldNotTrace } from './utils/datadog';
 export class Router {
   readonly #bridge: Eip1193Bridge;
 
@@ -14,7 +17,15 @@ export class Router {
   public async call(methodName: string, params: unknown[], ws?: WebSocket): Promise<Partial<JsonRpcResponse>> {
     if (this.#bridge.isMethodImplemented(methodName)) {
       try {
-        return { result: await this.#bridge.send(methodName, params, ws) };
+        const result = shouldNotTrace(methodName)
+          ? await this.#bridge.send(methodName, params, ws)
+          : await tracer.trace(
+            'eth_rpc_call',
+            { resource: methodName },
+            () => this.#bridge.send(methodName, params, ws)
+          );
+
+        return { result };
       } catch (err: any) {
         if (JSONRPCError.isJSONRPCError(err)) {
           return { error: err.json() };

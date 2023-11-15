@@ -6,16 +6,16 @@ import type { SubmittableExtrinsic } from '@polkadot/api/types';
 export const sendTx = (api: ApiPromise, extrinsic: SubmittableExtrinsic<'promise'>): Promise<SubmittableResult> => {
   return new Promise((resolve, reject) => {
     extrinsic
-      .send((result) => {
+      .send(result => {
         handleTxResponse(result, api)
           .then(({ result }) => {
             resolve(result);
           })
-          .catch((err) => {
+          .catch(err => {
             reject(err);
           });
       })
-      .catch((error) => {
+      .catch(error => {
         reject(error);
       });
   });

@@ -263,7 +263,7 @@ export interface CallInfo {
       fatal?: any;
     };
     value: string;
-    used_gas: number;
+    used_gas: string;
     used_storage: number;
     logs: Log[];
   };
@@ -303,19 +303,6 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly #headTasks: Map<string, Subscription> = new Map();
   readonly #finalizedHeadTasks: Map<string, Subscription> = new Map();
 
-  get bestBlockHash() {
-    return firstValueFrom(this.best$).then(({ hash }) => hash);
-  }
-  get bestBlockNumber() {
-    return firstValueFrom(this.best$).then(({ number }) => number);
-  }
-  get finalizedBlockHash() {
-    return firstValueFrom(this.finalized$).then(({ hash }) => hash);
-  }
-  get finalizedBlockNumber() {
-    return firstValueFrom(this.finalized$).then(({ number }) => number);
-  }
-
   constructor({
     safeMode = false,
     localMode = false,
@@ -354,6 +341,19 @@ export abstract class BaseProvider extends AbstractProvider {
     } else {
       this.maxBlockCacheSize > 9999 && logger.warn(CACHE_SIZE_WARNING);
     }
+  }
+
+  get bestBlockHash() {
+    return firstValueFrom(this.best$).then(({ hash }) => hash);
+  }
+  get bestBlockNumber() {
+    return firstValueFrom(this.best$).then(({ number }) => number);
+  }
+  get finalizedBlockHash() {
+    return firstValueFrom(this.finalized$).then(({ hash }) => hash);
+  }
+  get finalizedBlockNumber() {
+    return firstValueFrom(this.finalized$).then(({ number }) => number);
   }
 
   static isProvider(value: any): value is Provider {
@@ -434,7 +434,7 @@ export abstract class BaseProvider extends AbstractProvider {
     try {
       const block = await this.getBlockDataForHeader(header, false);
       const response = hexlifyRpcResult(block);
-      this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach((l) => l.cb(response));
+      this.eventListeners[SubscriptionType.NewFinalizedHeads].forEach(l => l.cb(response));
       this.#finalizedHeadTasks.get(blockHash)?.unsubscribe();
       this.#finalizedHeadTasks.delete(blockHash);
     } catch (e) {
@@ -457,13 +457,13 @@ export abstract class BaseProvider extends AbstractProvider {
       const block = await this.getBlockDataForHeader(header, false);
 
       const response = hexlifyRpcResult(block);
-      headSubscribers.forEach((l) => l.cb(response));
+      headSubscribers.forEach(l => l.cb(response));
 
       if (logSubscribers.length > 0) {
-        const logs = receipts.map((r) => r.logs).flat();
+        const logs = receipts.map(r => r.logs).flat();
 
         logSubscribers.forEach(({ cb, filter }) => {
-          const filteredLogs = logs.filter((log) => filterLog(log, filter));
+          const filteredLogs = logs.filter(log => filterLog(log, filter));
           hexlifyRpcResult(filteredLogs).forEach(cb);
         });
       }
@@ -643,8 +643,8 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const transactions = full
-      ? receipts.map((tx) => receiptToTransaction(tx, block))
-      : receipts.map((tx) => tx.transactionHash as `0x${string}`);
+      ? receipts.map(tx => receiptToTransaction(tx, block))
+      : receipts.map(tx => tx.transactionHash as `0x${string}`);
 
     const gasUsed = receipts.reduce((totalGas, tx) => totalGas.add(tx.gasUsed), BIGNUMBER_ZERO);
 
@@ -689,7 +689,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -724,12 +724,15 @@ export abstract class BaseProvider extends AbstractProvider {
       ]);
 
       pendingNonce = pendingExtrinsics.filter(
-        (e) => isEvmExtrinsic(e) && e.signer.toString() === substrateAddress
+        e => isEvmExtrinsic(e) &&
+        e.signer.toString() === substrateAddress
       ).length;
     }
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
-    const minedNonce = accountInfo.isNone ? 0 : accountInfo.unwrap().nonce.toNumber();
+    const minedNonce = accountInfo.isNone
+      ? 0
+      : accountInfo.unwrap().nonce.toNumber();
 
     return minedNonce + pendingNonce;
   };
@@ -740,7 +743,7 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<number> => {
     const resolvedBlockTag = await blockTag;
 
-    const address = await this._getAddress(addressOrName);
+    const address = await addressOrName;
     const [substrateAddress, blockHash] = await Promise.all([
       this.getSubstrateAddress(address),
       this._getBlockHash(blockTag),
@@ -765,7 +768,7 @@ export abstract class BaseProvider extends AbstractProvider {
     if (blockTag === 'pending') return '0x';
 
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -862,7 +865,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [address, blockHash, resolvedPosition] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
       Promise.resolve(position).then(hexValue),
     ]);
@@ -1108,44 +1111,66 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit: STORAGE_LIMIT,
     };
 
-    const { used_gas: usedGas, used_storage: usedStorage } = await this._ethCall(txRequest);
+    const gasInfo = await this._ethCall(txRequest);
+    const usedGas = BigNumber.from(gasInfo.used_gas).toNumber();
+    const usedStorage = gasInfo.used_storage;
 
-    // binary search the best passing gasLimit
-    let lowest = MIN_GAS_LIMIT;
-    let highest = MAX_GAS_LIMIT;
-    let mid = Math.min(usedGas * 3, Math.floor((lowest + highest) / 2));
-    let prevHighest = highest;
-    while (highest - lowest > 1) {
-      try {
-        await this._ethCall({
-          ...txRequest,
-          gasLimit: mid,
-        });
-        highest = mid;
+    /* ----------
+       try using a gasLimit slightly more than actual used gas
+       if it already works, which should be the usual case
+       we don't need to waste time doing binary search
+                                                    ---------- */
+    let gasLimit = Math.floor(usedGas * 1.2);
+    let gasAlreadyWorks = true;
+    try {
+      await this._ethCall({
+        ...txRequest,
+        gasLimit,
+      });
+    } catch {
+      gasAlreadyWorks = false;
+    }
 
-        if ((prevHighest - highest) / prevHighest < 0.1) break;
-        prevHighest = highest;
-      } catch (e: any) {
-        if ((e.message as string).includes('revert') || (e.message as string).includes('outOfGas')) {
-          lowest = mid;
-        } else {
-          throw e;
+    if (!gasAlreadyWorks) {
+      // need to binary search the best passing gasLimit
+      let lowest = MIN_GAS_LIMIT;
+      let highest = MAX_GAS_LIMIT;
+      let mid = Math.min(usedGas * 3, Math.floor((lowest + highest) / 2));
+      let prevHighest = highest;
+      while (highest - lowest > 1) {
+        try {
+          await this._ethCall({
+            ...txRequest,
+            gasLimit: mid,
+          });
+          highest = mid;
+
+          if ((prevHighest - highest) / prevHighest < 0.1) break;
+          prevHighest = highest;
+        } catch (e: any) {
+          if ((e.message as string).includes('revert') || (e.message as string).includes('outOfGas')) {
+            lowest = mid;
+          } else {
+            throw e;
+          }
         }
+
+        mid = Math.floor((highest + lowest) / 2);
       }
 
-      mid = Math.floor((highest + lowest) / 2);
+      gasLimit = highest;
     }
 
     return {
-      usedGas: BigNumber.from(usedGas), // actual used gas
-      gasLimit: BigNumber.from(highest), // gasLimit to pass execution
+      usedGas: BigNumber.from(usedGas),   // actual used gas
+      gasLimit: BigNumber.from(gasLimit), // gasLimit to pass execution
       usedStorage: BigNumber.from(usedStorage),
     };
   };
 
   getSubstrateAddress = async (addressOrName: string, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -1171,7 +1196,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const [address, blockHash] = await Promise.all([
-      this._getAddress(addressOrName),
+      addressOrName,
       this._getBlockHash(blockTag),
     ]);
 
@@ -1369,7 +1394,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   sendTransaction = async (signedTransaction: string | Promise<string>): Promise<TransactionResponse> => {
-    const hexTx = await Promise.resolve(signedTransaction).then((t) => hexlify(t));
+    const hexTx = await Promise.resolve(signedTransaction).then(t => hexlify(t));
     const tx = parseTransaction(await signedTransaction);
 
     if ((tx as any).confirmations === null || (tx as any).confirmations === undefined) {
@@ -1457,7 +1482,7 @@ export abstract class BaseProvider extends AbstractProvider {
           with: () => throwError(() => logger.makeError('timeout exceeded', Logger.errors.TIMEOUT, { timeout: timeoutMs })),
         })) : this.head$;
 
-      wait$ = wait$.pipe(first((head) => head.number.toNumber() - startBlock + 1 >= confirms));
+      wait$ = wait$.pipe(first(head => head.number.toNumber() - startBlock + 1 >= confirms));
 
       await firstValueFrom(wait$);
 
@@ -1628,11 +1653,6 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  _getAddress = async (addressOrName: string | Promise<string>): Promise<string> => {
-    addressOrName = await addressOrName;
-    return addressOrName;
-  };
-
   // from chain only
   getReceiptAtBlockFromChain = async (
     txHash: string | Promise<string>,
@@ -1682,7 +1702,7 @@ export abstract class BaseProvider extends AbstractProvider {
   // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
-    const targetExtrinsic = pendingExtrinsics.find((ex) => ex.hash.toHex() === txHash);
+    const targetExtrinsic = pendingExtrinsics.find(ex => ex.hash.toHex() === txHash);
 
     if (!(targetExtrinsic && isEvmExtrinsic(targetExtrinsic))) return null;
 
@@ -1863,7 +1883,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const [gasPriceTime, estimateGasTime, getBlockTime, getFullBlockTime] = (
       await Promise.all([gasPricePromise, estimateGasPromise, getBlockPromise, getFullBlockPromise])
-    ).map((res) => Math.floor(res.time));
+    ).map(res => Math.floor(res.time));
 
     return {
       gasPriceTime,
@@ -1932,8 +1952,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   removeEventListener = (id: string): boolean => {
     let found = false;
-    Object.values(SubscriptionType).forEach((e) => {
-      const targetIdx = this.eventListeners[e].findIndex((l) => l.id === id);
+    Object.values(SubscriptionType).forEach(e => {
+      const targetIdx = this.eventListeners[e].findIndex(l => l.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this.eventListeners[e].splice(targetIdx, 1);
         found = true;
@@ -2017,9 +2037,9 @@ export abstract class BaseProvider extends AbstractProvider {
     filterInfo.lastPollTimestamp = Date.now();
 
     const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
-    const filteredLogs = subqlLogs.filter((log) => filterLogByTopics(log, sanitizedFilter.topics));
+    const filteredLogs = subqlLogs.filter(log => filterLogByTopics(log, sanitizedFilter.topics));
 
-    return hexlifyRpcResult(filteredLogs.map((log) => this.formatter.filterLog(log)));
+    return hexlifyRpcResult(filteredLogs.map(log => this.formatter.filterLog(log)));
   };
 
   _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
@@ -2037,8 +2057,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   poll = async (id: string, logsOnly = false): Promise<string[] | Log[]> => {
-    const logFilterInfo = this.pollFilters[PollFilterType.Logs].find((f) => f.id === id);
-    const blockFilterInfo = !logsOnly && this.pollFilters[PollFilterType.NewBlocks].find((f) => f.id === id);
+    const logFilterInfo = this.pollFilters[PollFilterType.Logs].find(f => f.id === id);
+    const blockFilterInfo = !logsOnly && this.pollFilters[PollFilterType.NewBlocks].find(f => f.id === id);
     const filterInfo = logFilterInfo ?? blockFilterInfo;
 
     if (!filterInfo) {
@@ -2051,8 +2071,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
   removePollFilter = (id: string): boolean => {
     let found = false;
-    Object.values(PollFilterType).forEach((f) => {
-      const targetIdx = this.pollFilters[f].findIndex((f) => f.id === id);
+    Object.values(PollFilterType).forEach(f => {
+      const targetIdx = this.pollFilters[f].findIndex(f => f.id === id);
       if (targetIdx !== undefined && targetIdx !== -1) {
         this.pollFilters[f].splice(targetIdx, 1);
         found = true;

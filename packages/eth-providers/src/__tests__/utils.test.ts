@@ -413,7 +413,7 @@ describe('eth call error handling', () => {
 
   describe('checkEvmExecutionError', () => {
     const commonData = {
-      used_gas: 0,
+      used_gas: '0x0',
       used_storage: 0,
       logs: [],
     };

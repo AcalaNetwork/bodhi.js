@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-providers",
-  "version": "2.7.8",
+  "version": "2.7.13",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
@@ -17,14 +17,16 @@
     "@acala-network/contracts": "4.3.4",
     "@acala-network/eth-transactions": "workspace:*",
     "bn.js": "~5.2.0",
+    "dd-trace": "~4.16.0",
     "ethers": "~5.7.0",
     "graphql": "~16.0.1",
     "graphql-request": "~3.6.1",
     "lru-cache": "~7.8.2"
   },
   "devDependencies": {
-    "@acala-network/api": "~6.0.0",
+    "@acala-network/api": "^6.0.3",
     "@types/bn.js": "~5.1.0",
+    "@types/dd-trace": "^0.9.0",
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
     "jsdom": "^22.0.0",

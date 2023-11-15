@@ -137,7 +137,7 @@ export function checkSignatureType(rawTransaction: BytesLike): SignatureType {
   if (payload[0] > 0x7f || payload[0] === 1) return 'Ethereum'; // Legacy and EIP-155
   if (payload[0] === 96) return 'AcalaEip712'; // Acala EIP-712
 
-  return logger.throwError(`unsupported transaction type: ${payload[0]}, please use legacy or EIP-712 instead. More info about EVM+ gas: <TODO: insert link here>`, Logger.errors.UNSUPPORTED_OPERATION, {
+  return logger.throwError(`unsupported transaction type: ${payload[0]}, please use legacy or EIP-712 instead. More info about EVM+ gas: https://evmdocs.acala.network/network/gas-parameters`, Logger.errors.UNSUPPORTED_OPERATION, {
     operation: 'checkSignatureType',
     transactionType: payload[0],
   });
