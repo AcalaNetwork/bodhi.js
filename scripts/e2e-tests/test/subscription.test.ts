@@ -1,20 +1,21 @@
 import { expect } from 'chai';
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import { before, after } from 'mocha';
-import { hexZeroPad, parseEther } from 'ethers/lib/utils';
+import { parseUnits } from 'ethers/lib/utils';
 import { AcalaJsonRpcProvider, sleep } from '@acala-network/eth-providers';
-import WebSocket from 'ws';
-
-import { ERC20, ERC20__factory } from '../typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Contract, Wallet } from 'ethers';
+import { Wallet } from 'ethers';
 
-const one = parseEther('1');
+import { ERC20, ERC20__factory } from '../typechain-types';
+import { SubsManager, getAddrSelector } from './utils';
+
+const oneAcaErc20 = parseUnits('1', 12);
 const ACA_ADDR = '0x0000000000000000000100000000000000000000';
+const TRANSFER_SELECTOR = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
-const ETH_RPC_URL = 'http://localhost:8545';
-const ETH_RPC_URL_WS = 'ws://localhost:8545';
+const ETH_RPC_URL = network.config.url;
+const ETH_RPC_URL_WS = ETH_RPC_URL.replace('http', 'ws');
 
 describe('eth subscription', () => {
   let deployer: SignerWithAddress;
@@ -22,125 +23,82 @@ describe('eth subscription', () => {
   let provider: JsonRpcProvider;
   let aca: ERC20;
 
-  const notifications: any[] = [];
   let subId0: string;
   let subId1: string;
   let subId2: string;
   let subId3: string;
-  let ws: WebSocket;
+  let sm: SubsManager;
 
   before('setup subscription', async () => {
-    [deployer, user] = await ethers.getSigners();
+    console.log('setting up subscription ...');
 
-    provider = new AcalaJsonRpcProvider(ETH_RPC_URL);
+    [deployer, user] = await ethers.getSigners();
     aca = ERC20__factory.connect(ACA_ADDR, deployer);
 
-    ws = new WebSocket(ETH_RPC_URL_WS);
-    ws.on('open', () => {
-      ws.on('message', (data) => {
-        const parsedData = JSON.parse(data.toString());
-        notifications.push(parsedData);
-      });
+    provider = new AcalaJsonRpcProvider(ETH_RPC_URL);
+    sm = new SubsManager(ETH_RPC_URL_WS);
+    await sm.isReady;
 
-      ws.send(
-        JSON.stringify({
-          jsonrpc: '2.0',
-          id: 0,
-          method: 'eth_subscribe',
-          params: ['newHeads'],
-        })
-      );
+    const userAddrSelector = getAddrSelector(user.address);
 
-      ws.send(
-        JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'eth_subscribe',
-          params: ['logs', {}],
-        })
-      );
-
-      const TRANSFER_SELECTOR = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-      const USER_ADDR_SELECTOR = hexZeroPad(user.address, 32);
-
-      ws.send(
-        JSON.stringify({
-          jsonrpc: '2.0',
-          id: 2,
-          method: 'eth_subscribe',
-          params: [
-            'logs',
-            {
-              topics: [
-                TRANSFER_SELECTOR,
-                null,
-                [USER_ADDR_SELECTOR],
-              ],
-            },
-          ],
-        })
-      );
-
-      ws.send(
-        JSON.stringify({
-          jsonrpc: '2.0',
-          id: 3,
-          method: 'eth_subscribe',
-          params: [
-            'logs',
-            {
-              topics: [
-                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aaaaaaaaaaa', // shouldn't match
-              ],
-            },
-          ],
-        })
-      );
+    const sub0 = sm.subscribeNewHeads();
+    const sub1 = sm.subscribeLogs({});
+    const sub2 = sm.subscribeLogs({
+      topics: [
+        TRANSFER_SELECTOR,
+        null,
+        [userAddrSelector],
+      ],
     });
+    const sub3 = sm.subscribeLogs({
+      topics: [
+        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55aaaaaaaaaaa', // shouldn't match
+      ],
+    });
+
+    ([subId0, subId1, subId2, subId3] = await Promise.all([sub0, sub1, sub2, sub3]))
+
+    console.log('subscription finished!')
   });
 
+  beforeEach(() => {
+    sm.clear();
+  })
+
   after(() => {
-    ws.close();
+    sm.close();
   });
 
   it('get correct subscrption notification', async () => {
-    const receipt = await (await aca.transfer(user.address, 111222333444555)).wait();
+    const receipt = await (await aca.transfer(user.address, oneAcaErc20.mul(8))).wait();
+    const txBlockInfo = await provider.send('eth_getBlockByNumber', [receipt.blockNumber, false]);
 
-    await sleep(3000); // give ws some time to notify
+    const msg0 = await sm.waitForMsg(subId0, data => data.hash === receipt.blockHash); // new block
+    const msg1 = await sm.waitForMsg(subId1); // ACA transfer
+    const msg2 = await sm.waitForMsg(subId2); // ACA transfer
+    const msg3 = await sm.waitForMsg(subId3); // no match
 
-    subId0 = notifications.find((n) => n.id === 0).result;
-    subId1 = notifications.find((n) => n.id === 1).result;
-    subId2 = notifications.find((n) => n.id === 2).result;
-    subId3 = notifications.find((n) => n.id === 3).result;
+    expect(msg0).to.not.be.undefined;
+    expect(msg1).to.not.be.undefined;
+    expect(msg2).to.not.be.undefined;
+    expect(msg3).to.be.null;
 
-    const notification0 = notifications.find((n) => n.params?.subscription === subId0); // new block
-    const notification1 = notifications.find((n) => n.params?.subscription === subId1); // ACA transfer
-    const notification2 = notifications.find((n) => n.params?.subscription === subId2); // ACA transfer
-    const notification3 = notifications.find((n) => n.params?.subscription === subId3); // no match
-
-    const curBlockInfo = await provider.send('eth_getBlockByNumber', [receipt.blockNumber, false]);
-
-    expect(notification0).to.deep.contains({
+    expect(msg0).to.deep.contains({
       jsonrpc: '2.0',
       method: 'eth_subscription',
       params: {
         subscription: subId0,
-        result: curBlockInfo,
+        result: txBlockInfo,
       },
     });
 
     await sleep(10000); // give subql some time to index
-    const expectedLog = await provider.send('eth_getLogs', [{ blockHash: curBlockInfo.hash }]);
+    const expectedLog = await provider.send('eth_getLogs', [{ blockHash: receipt.blockHash }]);
 
     expect(expectedLog.length).to.equal(1);
     delete (expectedLog[0] as any).removed;
 
-    expect(notification0).to.not.be.undefined;
-    expect(notification1).to.not.be.undefined;
-    expect(notification2).to.not.be.undefined;
-    expect(notification3).to.be.undefined;
-
-    expect(notification1).to.deep.contains({
+    expect(msg1).to.deep.contains({
       jsonrpc: '2.0',
       method: 'eth_subscription',
       params: {
@@ -149,7 +107,7 @@ describe('eth subscription', () => {
       },
     });
     
-    expect(notification2).to.deep.contains({
+    expect(msg2).to.deep.contains({
       jsonrpc: '2.0',
       method: 'eth_subscription',
       params: {
@@ -157,63 +115,45 @@ describe('eth subscription', () => {
         result: expectedLog[0],
       },
     });
+
   });
 
   it('unsubscribe works', async () => {
-    notifications.length = 0;
+    const unsubRes = await Promise.all([
+      sm.unSubscribe(subId0),
+      sm.unSubscribe(subId1),
+      sm.unSubscribe(subId3),
+      sm.unSubscribe(Wallet.createRandom().address),
+    ])
 
-    let reqId = 10;
-    const unsubscribe = async (id: string) => {
-      ws.send(
-        JSON.stringify({
-          jsonrpc: '2.0',
-          id: reqId++,
-          method: 'eth_unsubscribe',
-          params: [id],
-        })
-      );
-
-      await sleep(300); // delay each msg to make sure result order is correct
-    };
-
-    await unsubscribe(subId0);
-    await unsubscribe(subId1);
-    await unsubscribe(subId3);
-    await unsubscribe(Wallet.createRandom().address);
-
-    await sleep(3000); // give ws some time to notify
-
-    expect(notifications).to.deep.equal([
-      { id: 10, jsonrpc: '2.0', result: true },
-      { id: 11, jsonrpc: '2.0', result: true },
-      { id: 12, jsonrpc: '2.0', result: true },
-      { id: 13, jsonrpc: '2.0', result: false },
+    expect(unsubRes).to.deep.equal([
+      true,
+      true,
+      true,
+      false,
     ]);
 
     // only sub2 is left
-    notifications.length = 0;
-    const receipt = await (await aca.transfer(user.address, 1234567654321)).wait();
+    const receipt = await (await aca.transfer(user.address, oneAcaErc20.mul(3))).wait();
+    const txBlockInfo = await provider.send('eth_getBlockByNumber', [receipt.blockNumber, false]);
 
-    await sleep(10000); // give ws some time to notify
-
-    const notification0 = notifications.find((n) => n.params?.subscription === subId0); // no match
-    const notification1 = notifications.find((n) => n.params?.subscription === subId1); // no match
-    const notification2 = notifications.find((n) => n.params?.subscription === subId2); // ACA transfer
-    const notification3 = notifications.find((n) => n.params?.subscription === subId3); // no match
+    const msg0 = await sm.waitForMsg(subId0, data => data.hash === receipt.blockHash); // new block
+    const msg1 = await sm.waitForMsg(subId1); // ACA transfer
+    const msg2 = await sm.waitForMsg(subId2); // ACA transfer
+    const msg3 = await sm.waitForMsg(subId3); // no match
 
     // after unsubscribe they should not be notified anymore
-    expect(notification0).to.equal(undefined);
-    expect(notification1).to.equal(undefined);
-    expect(notification3).to.equal(undefined);
+    expect(msg0).to.be.null;
+    expect(msg1).to.be.null;
+    expect(msg3).to.be.null;
 
     await sleep(10000); // give subql some time to index
-    const curBlockInfo = await provider.send('eth_getBlockByNumber', [receipt.blockNumber, false]);
-    const expectedLog = await provider.send('eth_getLogs', [{ blockHash: curBlockInfo.hash }]);
+    const expectedLog = await provider.send('eth_getLogs', [{ blockHash: txBlockInfo.hash }]);
 
     expect(expectedLog.length).to.equal(1);
     delete (expectedLog[0] as any).removed;
 
-    expect(notification2).to.deep.contains({
+    expect(msg2).to.deep.contains({
       jsonrpc: '2.0',
       method: 'eth_subscription',
       params: {

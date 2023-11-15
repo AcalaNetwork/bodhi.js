@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "hardhat compile",
+    "test:mandalaPub": "hardhat test --network mandalaPub",
     "test:mandala": "hardhat test --network mandala",
     "test:karura": "hardhat test --network karura",
     "test:acala": "hardhat test --network acala",

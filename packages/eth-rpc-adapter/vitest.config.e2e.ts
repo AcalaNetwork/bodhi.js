@@ -9,6 +9,7 @@ export default defineConfig({
     hookTimeout: 60_000,
     environment: 'node',
     exclude: ['src/__tests__/utils.test.ts'],
+    bail: 999,
   },
   plugins: [swc.vite(), tsconfigPaths()],
 });

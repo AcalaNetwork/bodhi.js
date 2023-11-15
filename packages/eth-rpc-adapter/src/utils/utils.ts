@@ -1,7 +1,7 @@
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs';
 
-export const sleep = async (time = 1000): Promise<void> => new Promise((resolve) => setTimeout(resolve, time));
+export const sleep = async (time = 1000): Promise<void> => new Promise(resolve => setTimeout(resolve, time));
 
 const {
   ENDPOINT_URL,
