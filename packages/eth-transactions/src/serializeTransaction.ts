@@ -9,7 +9,7 @@ import { getAddress } from '@ethersproject/address';
 import { logger } from './logger';
 
 function formatAccessList(value: AccessListish): Array<[string, Array<string>]> {
-  return accessListify(value).map((set) => [set.address, set.storageKeys]);
+  return accessListify(value).map(set => [set.address, set.storageKeys]);
 }
 
 function formatNumber(value: BigNumberish, name: string): Uint8Array {

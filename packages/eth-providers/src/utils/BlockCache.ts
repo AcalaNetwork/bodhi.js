@@ -26,7 +26,7 @@ export class BlockCache {
   // automatically preserve a sliding window of ${maxCachedBlocks} blocks
   addReceipts = (blockHash: string, receipts: FullReceipt[]): void => {
     this.blockHashToReceipts[blockHash] = receipts;
-    receipts.forEach((r) => {
+    receipts.forEach(r => {
       this.txHashToReceipt[r.transactionHash] = r;
     });
     this.cachedBlockHashes.push(blockHash);
@@ -35,7 +35,7 @@ export class BlockCache {
       const removingBlockHash = this.cachedBlockHashes.shift()!;
       const removingTxs = this.blockHashToReceipts[removingBlockHash];
 
-      removingTxs?.forEach((tx) => {
+      removingTxs?.forEach(tx => {
         delete this.txHashToReceipt[tx.transactionHash];
       });
       delete this.blockHashToReceipts[removingBlockHash];
@@ -49,7 +49,7 @@ export class BlockCache {
     this.blockHashToReceipts[blockHash] ?? [];
 
   getReceiptAtBlock = (txHash: string, blockHash: string): FullReceipt | null =>
-    this.getAllReceiptsAtBlock(blockHash).find((r) => r.transactionHash === txHash) ?? null;
+    this.getAllReceiptsAtBlock(blockHash).find(r => r.transactionHash === txHash) ?? null;
 
   inspect = (): CacheInspect => ({
     maxCachedBlocks: this.maxCachedBlocks,

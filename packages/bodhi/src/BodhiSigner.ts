@@ -11,7 +11,7 @@ import { Deferrable } from '@ethersproject/properties';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { Logger } from '@ethersproject/logger';
 import { MultiSigner } from './MultiSigner';
-import { Signer, SubmittableExtrinsic } from '@polkadot/api/types';
+import { Signer } from '@polkadot/api/types';
 import { SubmittableResult } from '@polkadot/api';
 import { SubstrateSigner } from './SubstrateSigner';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
@@ -146,7 +146,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
             .then(() => {
               resolve();
             })
-            .catch((err) => {
+            .catch(err => {
               if (err.message === 'evmAccounts.AccountIdHasMapped') {
                 resolve();
               }
@@ -172,14 +172,14 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
             .then(() => {
               resolve();
             })
-            .catch((err) => {
+            .catch(err => {
               if (err.message === 'evmAccounts.AccountIdHasMapped') {
                 resolve();
               }
               reject(err);
             });
         })
-        .catch((error) => {
+        .catch(error => {
           reject(error);
         });
     });
@@ -208,58 +208,27 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
       ..._transaction,
     };
 
-    const resources = await this.provider.estimateResources(transaction);
-
-    let gasLimit: BigNumber;
-    let storageLimit: BigNumber;
-
-    let totalLimit = await transaction.gasLimit;
-
-    if (totalLimit === null || totalLimit === undefined) {
-      gasLimit = resources.gasLimit;
-      storageLimit = resources.usedStorage;
-      totalLimit = resources.gasLimit.add(resources.usedStorage);
-    } else {
-      const estimateTotalLimit = resources.gasLimit.add(resources.usedStorage);
-      gasLimit = BigNumber.from(totalLimit).mul(resources.gasLimit).div(estimateTotalLimit).add(1);
-      storageLimit = BigNumber.from(totalLimit).mul(resources.usedStorage).div(estimateTotalLimit).add(1);
-    }
-
-    transaction.gasLimit = totalLimit;
+    const { gasLimit, usedStorage: storageLimit } = await this.provider.estimateResources(transaction);
 
     const tx = await this.populateTransaction(transaction);
-
     const data = tx.data?.toString() ?? '0x';
-    const from = tx.from;
 
-    if (!data) {
-      return logger.throwError('Request data not found');
-    }
+    const createParams = [
+      data,
+      toBN(tx.value),
+      toBN(gasLimit),
+      toBN(storageLimit.isNegative() ? 0 : storageLimit),
+      (tx.accessList as any) || [],
+    ] as const;
 
-    if (!from) {
-      return logger.throwError('Request from not found');
-    }
+    const callParams = [
+      tx.to,
+      ...createParams,
+    ] as const;
 
-    let extrinsic: SubmittableExtrinsic<'promise'>;
-
-    if (!tx.to) {
-      extrinsic = this.provider.api.tx.evm.create(
-        data,
-        toBN(tx.value),
-        toBN(gasLimit),
-        toBN(storageLimit.isNegative() ? 0 : storageLimit),
-        (tx.accessList as any) || []
-      );
-    } else {
-      extrinsic = this.provider.api.tx.evm.call(
-        tx.to,
-        data,
-        toBN(tx.value),
-        toBN(gasLimit),
-        toBN(storageLimit.isNegative() ? 0 : storageLimit),
-        (tx.accessList as any) || []
-      );
-    }
+    const extrinsic = tx.to
+      ? this.provider.api.tx.evm.call(...callParams)
+      : this.provider.api.tx.evm.create(...createParams);
 
     await extrinsic.signAsync(this.substrateAddress);
 
@@ -270,7 +239,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
             .then(() => {
               resolve({
                 hash: extrinsic.hash.toHex(),
-                from: from || '',
+                from: tx.from || '',
                 confirmations: 0,
                 nonce: toBN(tx.nonce).toNumber(),
                 gasLimit: BigNumber.from(tx.gasLimit || '0'),
