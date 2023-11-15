@@ -19,7 +19,7 @@
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
     "@acala-network/eth-transactions": "workspace:*",
-    "axios": "~0.24.0",
+    "axios": "~1.6.0",
     "body-parser": "~1.19.0",
     "connect": "~3.7.0",
     "cors": "~2.8.5",
