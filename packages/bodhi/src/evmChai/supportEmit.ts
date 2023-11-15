@@ -3,8 +3,8 @@ import type { providers } from 'ethers';
 export function supportEmit(Assertion: Chai.AssertionStatic): void {
   const filterLogsWithTopics = (logs: providers.Log[], topic: any, contractAddress: string) =>
     logs
-      .filter((log) => log.topics.includes(topic))
-      .filter((log) => log.address && log.address.toLowerCase() === contractAddress.toLowerCase());
+      .filter(log => log.topics.includes(topic))
+      .filter(log => log.address && log.address.toLowerCase() === contractAddress.toLowerCase());
 
   Assertion.addMethod('emit', function (contract, eventName) {
     const promise = this._obj;

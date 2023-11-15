@@ -16,6 +16,11 @@ const config: HardhatUserConfig = {
       ...networkCommon,
       chainId: 595,
     },
+    mandalaPub: {
+      ...networkCommon,
+      url: 'https://eth-mandala.aca-staging.network',
+      chainId: 595,
+    },
     karura: {
       ...networkCommon,
       chainId: 686,

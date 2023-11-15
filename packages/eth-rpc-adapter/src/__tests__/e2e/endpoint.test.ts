@@ -10,7 +10,7 @@ import {
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
-import { AcalaJsonRpcProvider, DUMMY_LOGS_BLOOM, EvmRpcProvider, ONE_HUNDRED_GWEI, nativeToEthDecimal, sleep } from '@acala-network/eth-providers';
+import { AcalaJsonRpcProvider, EvmRpcProvider, ONE_HUNDRED_GWEI, nativeToEthDecimal, sleep } from '@acala-network/eth-providers';
 import { Interface, formatEther,  parseEther, parseUnits } from 'ethers/lib/utils';
 import { SubqlProvider } from '@acala-network/eth-providers/utils/subqlProvider';
 import { Wallet } from '@ethersproject/wallet';
@@ -64,11 +64,14 @@ import {
   getNonce,
   RPC_URL,
   net_listening,
+  deployGasMonster,
+  toDeterministic,
 } from './utils';
 
 import {
   ADDRESS_ALICE,
   DETERMINISTIC_SETUP_DEX_ADDRESS,
+  GAS_MONSTER_GAS_REQUIRED,
   KARURA_CONTRACT_CALL_TX_HASH,
   KARURA_CONTRACT_DEPLOY_TX_HASH,
   KARURA_SEND_KAR_TX_HASH,
@@ -76,15 +79,6 @@ import {
   allLogs,
   deployHelloWorldData,
   evmAccounts,
-  karuraBlock1818188,
-  karuraBlock1818518,
-  karuraBlock2449983,
-  karuraContractCallTx,
-  karuraContractCallTxReceipt,
-  karuraContractDeployTx,
-  karuraContractDeployTxReceipt,
-  karuraSendKarTx,
-  karuraSendKarTxReceipt,
   log22_0,
   log22_1,
 } from './consts';
@@ -159,156 +153,29 @@ describe('endpoint', () => {
   describe('eth_getTransactionReceipt', () => {
     it('returns correct result when hash exist for local transactions', async () => {
       const allTxReceipts = await subql.getAllTxReceipts();
-
       expect(allTxReceipts.length).to.greaterThan(0);
 
-      let txR = allTxReceipts.find((r) => r.blockNumber === '10');
-      let res = await eth_getTransactionReceipt([txR.transactionHash]);
-      expect(res.data.result).to.deep.contains({
-        to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-        from: ADDRESS_ALICE,
-        contractAddress: null,
-        transactionIndex: '0x0',
-        gasUsed: '0x1a8a4',
-        logsBloom: DUMMY_LOGS_BLOOM,
-        blockHash: txR.blockHash,
-        transactionHash: txR.transactionHash,
-        logs: [
-          {
-            transactionIndex: '0x0',
-            blockNumber: '0xa',
-            transactionHash: txR.transactionHash,
-            address: '0x0000000000000000000000000000000000000803',
-            topics: [
-              '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-              '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
-            ],
-            data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000748849ea0c000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
-            logIndex: '0x0',
-            blockHash: txR.blockHash,
-          },
-        ],
-        blockNumber: '0xa',
-        cumulativeGasUsed: '0x0', // FIXME:
-        // effectiveGasPrice: '0x7b501b0da7',
-        status: '0x1',
-        type: '0x0',
-      });
+      const tx1 = allTxReceipts.find(r => r.blockNumber === '10');
+      const tx2 = allTxReceipts.find(r => r.blockNumber === '9');
+      const tx3 = allTxReceipts.find(r => r.blockNumber === '6');
+      const tx4 = allTxReceipts.find(r => r.blockNumber === '20');
 
-      txR = allTxReceipts.find((r) => r.blockNumber === '9');
-      res = await eth_getTransactionReceipt([txR.transactionHash]);
-      expect(res.data.result).to.deep.contain({
-        to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-        from: ADDRESS_ALICE,
-        contractAddress: null,
-        transactionIndex: '0x0',
-        gasUsed: '0x1f615',
-        logsBloom: DUMMY_LOGS_BLOOM,
-        blockHash: txR.blockHash,
-        transactionHash: txR.transactionHash,
-        logs: [
-          {
-            transactionIndex: '0x0',
-            blockNumber: '0x9',
-            transactionHash: txR.transactionHash,
-            address: '0x0000000000000000000000000000000000000803',
-            topics: [
-              '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-              '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
-            ],
-            data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
-            logIndex: '0x0',
-            blockHash: txR.blockHash,
-          },
-        ],
-        blockNumber: '0x9',
-        cumulativeGasUsed: '0x0', // FIXME:
-        // effectiveGasPrice: '0x71ca23a4e3',
-        status: '0x1',
-        type: '0x0',
-      });
+      const [
+        res1,
+        res2,
+        res3,
+        res4,   // dex.swap with erc20 tokens
+      ] = await Promise.all([
+        eth_getTransactionReceipt([tx1.transactionHash]),
+        eth_getTransactionReceipt([tx2.transactionHash]),
+        eth_getTransactionReceipt([tx3.transactionHash]),
+        eth_getTransactionReceipt([tx4.transactionHash]),
+      ]);
 
-      txR = allTxReceipts.find((r) => r.blockNumber === '6');
-      res = await eth_getTransactionReceipt([txR.transactionHash]);
-      expect(res.data.result).to.deep.contain({
-        to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-        from: ADDRESS_ALICE,
-        contractAddress: null,
-        transactionIndex: '0x0',
-        gasUsed: '0x1a8d3',
-        logsBloom: DUMMY_LOGS_BLOOM,
-        blockHash: txR.blockHash,
-        transactionHash: txR.transactionHash,
-        logs: [
-          {
-            transactionIndex: '0x0',
-            blockNumber: '0x6',
-            transactionHash: txR.transactionHash,
-            address: '0x0000000000000000000000000000000000000803',
-            topics: [
-              '0x7b1ccce9b5299ff0ae3d9adc0855268a4ad3527b2bcde01ccadde2fb878ecb8a',
-              '0x0000000000000000000000000230135fded668a3f7894966b14f42e65da322e4',
-            ],
-            data: '0x0000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000001d131f6171f000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
-            logIndex: '0x0',
-            blockHash: txR.blockHash,
-          },
-        ],
-        blockNumber: '0x6',
-        cumulativeGasUsed: '0x0', // FIXME:
-        // effectiveGasPrice: '0x7b3ad33de2',
-        status: '0x1',
-        type: '0x0',
-      });
-
-      // dex.swap with erc20
-      txR = allTxReceipts.find((r) => r.blockNumber === '20');
-      res = await eth_getTransactionReceipt([txR.transactionHash]);
-      expect(res.data.result).to.deep.contain({
-        to: DETERMINISTIC_SETUP_DEX_ADDRESS,
-        from: ADDRESS_ALICE,
-        contractAddress: null,
-        transactionIndex: '0x0',
-        gasUsed: '0xcbbd',
-        logsBloom: DUMMY_LOGS_BLOOM,
-        blockHash: txR.blockHash,
-        transactionHash: txR.transactionHash,
-        logs: [
-          {
-            transactionIndex: '0x0',
-            blockNumber: '0x14',
-            transactionHash: txR.transactionHash,
-            address: DETERMINISTIC_SETUP_DEX_ADDRESS,
-            topics: [
-              '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-              '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
-              '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
-            ],
-            data: '0x0000000000000000000000000000000000000000000000000000000000002710',
-            logIndex: '0x0',
-            blockHash: txR.blockHash,
-          },
-          {
-            transactionIndex: '0x0',
-            blockNumber: '0x14',
-            transactionHash: txR.transactionHash,
-            address: '0xe85ef9063dd28f157eb97ca03f50f4a3bdecd37e',
-            topics: [
-              '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-              '0x00000000000000000000000082a258cb20e2adb4788153cd5eb5839615ece9a0',
-              '0x000000000000000000000000905c015e38c24ed973fd6075541a124c621fa743',
-            ],
-            data: '0x00000000000000000000000000000000000000000000000000000000000003e8',
-            logIndex: '0x1',
-            blockHash: txR.blockHash,
-          },
-        ],
-        blockNumber: '0x14',
-        cumulativeGasUsed: '0x0',
-        // effectiveGasPrice: '0x8885941ca0',
-        status: '0x1',
-        type: '0x0',
-      });
+      expect(toDeterministic(res1.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res2.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res3.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res4.data.result)).toMatchSnapshot();
     });
 
     it('returns correct result for public karura transactions', async () => {
@@ -317,7 +184,11 @@ describe('endpoint', () => {
         return;
       }
 
-      const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
+      const [
+        contractCallRes,
+        contractDeployRes,
+        sendKarRes,
+      ] = await Promise.all([
         eth_getTransactionReceipt_karura([KARURA_CONTRACT_CALL_TX_HASH]),
         eth_getTransactionReceipt_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
         eth_getTransactionReceipt_karura([KARURA_SEND_KAR_TX_HASH]),
@@ -327,9 +198,9 @@ describe('endpoint', () => {
       expect(contractDeployRes.status).to.equal(200);
       expect(sendKarRes.status).to.equal(200);
 
-      expect(contractCallRes.data.result).to.deep.equal(karuraContractCallTxReceipt);
-      expect(contractDeployRes.data.result).to.deep.equal(karuraContractDeployTxReceipt);
-      expect(sendKarRes.data.result).to.deep.equal(karuraSendKarTxReceipt);
+      expect(toDeterministic(contractCallRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(contractDeployRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(sendKarRes.data.result)).toMatchSnapshot();
     });
 
     it('return correct error or null', async () => {
@@ -365,7 +236,7 @@ describe('endpoint', () => {
         /* ---------- single address ---------- */
         for (const log of allLogs) {
           const res = await eth_getLogs([{ address: log.address, ...ALL_BLOCK_RANGE_FILTER }]);
-          const expectedLogs = allLogs.filter((l) => l.address === log.address);
+          const expectedLogs = allLogs.filter(l => l.address === log.address);
           expectLogsEqual(res.data.result, expectedLogs);
         }
 
@@ -374,7 +245,7 @@ describe('endpoint', () => {
           const res = await eth_getLogs([
             { address: [log.address.toLocaleUpperCase(), '0x13579'], ...ALL_BLOCK_RANGE_FILTER },
           ]);
-          const expectedLogs = allLogs.filter((l) => l.address === log.address);
+          const expectedLogs = allLogs.filter(l => l.address === log.address);
           expectLogsEqual(res.data.result, expectedLogs);
         }
       });
@@ -415,15 +286,15 @@ describe('endpoint', () => {
         const from = 9;
         const to = 11;
         res = await eth_getLogs([{ fromBlock: from }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
       });
     });
@@ -466,15 +337,15 @@ describe('endpoint', () => {
         const from = 8;
         const to = 10;
         res = await eth_getLogs([{ fromBlock: from, toBlock: 'latest' }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
 
         res = await eth_getLogs([{ fromBlock: from, toBlock: to }]);
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= from && parseInt(l.blockNumber) <= to);
         expectLogsEqual(res.data.result, expectedLogs);
       });
     });
@@ -502,24 +373,24 @@ describe('endpoint', () => {
         for (const log of allLogs) {
           res = await eth_getLogs([{ topics: log.topics, ...ALL_BLOCK_RANGE_FILTER }]);
           expectedLogs = allLogs.filter(
-            (l) => log.topics.length === l.topics.length && log.topics.every((t, i) => l.topics[i] === t)
+            l => log.topics.length === l.topics.length && log.topics.every((t, i) => l.topics[i] === t)
           );
           expectLogsEqual(res.data.result, expectedLogs);
 
           res = await eth_getLogs([{ topics: [log.topics[0]], ...ALL_BLOCK_RANGE_FILTER }]);
-          expectedLogs = allLogs.filter((l) => l.topics[0] === log.topics[0]);
+          expectedLogs = allLogs.filter(l => l.topics[0] === log.topics[0]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           res = await eth_getLogs([
             { topics: [['ooo', log.topics[0], 'xxx', 'yyy'], null, []], ...ALL_BLOCK_RANGE_FILTER },
           ]);
-          expectedLogs = allLogs.filter((l) => l.topics[0] === log.topics[0]);
+          expectedLogs = allLogs.filter(l => l.topics[0] === log.topics[0]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           res = await eth_getLogs([
             { topics: [...new Array(log.topics.length - 1).fill(null), log.topics.at(-1)], ...ALL_BLOCK_RANGE_FILTER },
           ]);
-          expectedLogs = allLogs.filter((l) => l.topics[log.topics.length - 1] === log.topics.at(-1));
+          expectedLogs = allLogs.filter(l => l.topics[log.topics.length - 1] === log.topics.at(-1));
           expectLogsEqual(res.data.result, expectedLogs);
         }
       });
@@ -527,10 +398,10 @@ describe('endpoint', () => {
 
     describe('filter by blockhash', () => {
       it('returns correct logs', async () => {
-        const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
+        const allLogsFromSubql = await subql.getAllLogs().then(logs => logs.map(hexilifyLog));
         for (const log of allLogsFromSubql) {
           const res = await eth_getLogs([{ blockHash: log.blockHash }]);
-          const expectedLogs = allLogs.filter((l) => l.blockNumber === log.blockNumber);
+          const expectedLogs = allLogs.filter(l => l.blockNumber === log.blockNumber);
           expectLogsEqual(res.data.result, expectedLogs);
         }
       });
@@ -540,32 +411,32 @@ describe('endpoint', () => {
       it('returns correct logs', async () => {
         let res: Awaited<ReturnType<typeof eth_getLogs>>;
         let expectedLogs: LogHexified[];
-        const allLogsFromSubql = await subql.getAllLogs().then((logs) => logs.map(hexilifyLog));
+        const allLogsFromSubql = await subql.getAllLogs().then(logs => logs.map(hexilifyLog));
         /* -------------------- match block range -------------------- */
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 11);
         res = await eth_getLogs([{ fromBlock: 8, toBlock: 11, topics: [[], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
-        expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) <= 15);
+        expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) <= 15);
         res = await eth_getLogs([{ fromBlock: 'earliest', toBlock: 15, topics: [[], null, []] }]);
         expectLogsEqual(res.data.result, expectedLogs);
 
         for (const log of allLogsFromSubql) {
           /* -------------------- match blockhash -------------------- */
-          expectedLogs = allLogs.filter((l) => parseInt(l.blockNumber) === parseInt(log.blockNumber));
+          expectedLogs = allLogs.filter(l => parseInt(l.blockNumber) === parseInt(log.blockNumber));
           res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[], null, []] }]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           /* -------------------- match first topic -------------------- */
           expectedLogs = allLogs.filter(
-            (l) => parseInt(l.blockNumber) === parseInt(log.blockNumber) && l.topics[0] === log.topics[0]
+            l => parseInt(l.blockNumber) === parseInt(log.blockNumber) && l.topics[0] === log.topics[0]
           );
           res = await eth_getLogs([{ blockHash: log.blockHash, topics: [[log.topics[0], 'xxx'], null, []] }]);
           expectLogsEqual(res.data.result, expectedLogs);
 
           /* -------------------- match range and topics -------------------- */
           expectedLogs = allLogs.filter(
-            (l) => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 15 && l.topics[0] === log.topics[0]
+            l => parseInt(l.blockNumber) >= 8 && parseInt(l.blockNumber) <= 15 && l.topics[0] === log.topics[0]
           );
           res = await eth_getLogs([{ fromBlock: 8, toBlock: 15, topics: [['xxx', log.topics[0]]] }]);
           expectLogsEqual(res.data.result, expectedLogs);
@@ -620,86 +491,27 @@ describe('endpoint', () => {
   describe('eth_getTransactionByHash', () => {
     it('finds correct tx when hash exist for local transactions', async () => {
       const allTxReceipts = await subql.getAllTxReceipts();
-      const tx1 = allTxReceipts.find((r) => r.blockNumber === '10');
-      const tx2 = allTxReceipts.find((r) => r.blockNumber === '9');
-      const tx3 = allTxReceipts.find((r) => r.blockNumber === '6');
-      const tx4 = allTxReceipts.find((r) => r.blockNumber === '20');
+      const tx1 = allTxReceipts.find(r => r.blockNumber === '10');
+      const tx2 = allTxReceipts.find(r => r.blockNumber === '9');
+      const tx3 = allTxReceipts.find(r => r.blockNumber === '6');
+      const tx4 = allTxReceipts.find(r => r.blockNumber === '20');
 
-      let res = await eth_getTransactionByHash([tx1.transactionHash]);
-      expect(res.data.result).to.deep.contain({
-        blockHash: tx1.blockHash,
-        blockNumber: '0xa',
-        transactionIndex: '0x0',
-        // gasPrice: '0x7b501b0da7',
-        gas: '0x1e8481',
-        input:
-          '0x3d8d96200000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000e8d4a51000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
-        v: '0x25',
-        r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-        s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
-        hash: tx1.transactionHash,
-        nonce: '0x6',
-        from: ADDRESS_ALICE,
-        to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-        value: '0xde0b6b3a7640000',
-      });
+      const [
+        res1,
+        res2,
+        res3,
+        res4,   // dex.swap with erc20 tokens
+      ] = await Promise.all([
+        eth_getTransactionByHash([tx1.transactionHash]),
+        eth_getTransactionByHash([tx2.transactionHash]),
+        eth_getTransactionByHash([tx3.transactionHash]),
+        eth_getTransactionByHash([tx4.transactionHash]),
+      ]);
 
-      res = await eth_getTransactionByHash([tx2.transactionHash]);
-      expect(res.data.result).to.deep.contain({
-        blockHash: tx2.blockHash,
-        blockNumber: '0x9',
-        transactionIndex: '0x0',
-        // gasPrice: '0x71ca23a4e3',
-        gas: '0x1e8481',
-        input:
-          '0x3d8d962000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000010000000000000000000000000000000000000000000100000000000000000002',
-        v: '0x25',
-        r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-        s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
-        hash: tx2.transactionHash,
-        nonce: '0x5',
-        from: ADDRESS_ALICE,
-        to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-        value: '0xde0b6b3a7640000',
-      });
-
-      res = await eth_getTransactionByHash([tx3.transactionHash]);
-      expect(res.data.result).to.deep.contain({
-        blockHash: tx3.blockHash,
-        blockNumber: '0x6',
-        transactionIndex: '0x0',
-        // gasPrice: '0x7b3ad33de2',
-        gas: '0x1e8481',
-        input:
-          '0x6fc4b4e50000000000000000000000000000000000000000000000000000000000000060000000000000000000000000000000000000000000000000000000e8d4a510000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000100000000000000000001',
-        v: '0x25',
-        r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-        s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
-        hash: tx3.transactionHash,
-        nonce: '0x2',
-        from: ADDRESS_ALICE,
-        to: '0x0230135fded668a3f7894966b14f42e65da322e4',
-        value: '0xde0b6b3a7640000',
-      });
-
-      // dex.swap with erc20 tokens
-      res = await eth_getTransactionByHash([tx4.transactionHash]);
-      expect(res.data.result).to.deep.contain({
-        blockHash: tx4.blockHash,
-        blockNumber: '0x14',
-        transactionIndex: '0x0',
-        hash: tx4.transactionHash,
-        from: ADDRESS_ALICE,
-        // gasPrice: '0x8885941ca0',
-        value: '0x0',
-        gas: '0x200b20',
-        input: '0x',
-        to: DETERMINISTIC_SETUP_DEX_ADDRESS,
-        nonce: '0x10',
-        v: '0x25',
-        r: '0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea',
-        s: '0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c',
-      });
+      expect(toDeterministic(res1.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res2.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res3.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res4.data.result)).toMatchSnapshot();
     });
 
     it('returns correct result for public karura transactions', async () => {
@@ -708,7 +520,11 @@ describe('endpoint', () => {
         return;
       }
 
-      const [contractCallRes, contractDeployRes, sendKarRes] = await Promise.all([
+      const [
+        contractCallRes,
+        contractDeployRes,
+        sendKarRes,
+      ] = await Promise.all([
         eth_getTransactionByHash_karura([KARURA_CONTRACT_CALL_TX_HASH]),
         eth_getTransactionByHash_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
         eth_getTransactionByHash_karura([KARURA_SEND_KAR_TX_HASH]),
@@ -718,9 +534,9 @@ describe('endpoint', () => {
       expect(contractDeployRes.status).to.equal(200);
       expect(sendKarRes.status).to.equal(200);
 
-      expect(contractCallRes.data.result).to.deep.equal(karuraContractCallTx);
-      expect(contractDeployRes.data.result).to.deep.equal(karuraContractDeployTx);
-      expect(sendKarRes.data.result).to.deep.equal(karuraSendKarTx);
+      expect(toDeterministic(contractCallRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(contractDeployRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(sendKarRes.data.result)).toMatchSnapshot();
     });
 
     it.skip('returns correct result when tx is pending', async () => {
@@ -1340,7 +1156,7 @@ describe('endpoint', () => {
         ])
       ).data.result;
       expect(rawRes.gasPrice).to.equal('0x2e90f20000');
-      expect(rawRes.gasLimit).to.equal('0x5728');
+      expect(rawRes.gasLimit).to.equal('0x6270');
     });
   });
 
@@ -1362,32 +1178,24 @@ describe('endpoint', () => {
       const resFull = (await eth_getBlockByNumber_karura([1818188, true])).data.result;
       const res = (await eth_getBlockByNumber_karura([1818188, false])).data.result;
 
-      const block1818188NotFull = karuraBlock1818188;
-
-      expect(resFull).to.deep.equal(karuraBlock1818188);
-      expect(res).to.deep.equal(block1818188NotFull);
+      expect(resFull).toMatchSnapshot();
+      expect(res).toMatchSnapshot();
     });
 
     it('when there are 1 EVM transactions', async () => {
       const resFull = (await eth_getBlockByNumber_karura([1818518, true])).data.result;
       const res = (await eth_getBlockByNumber_karura([1818518, false])).data.result;
 
-      const block1818518NotFull = { ...karuraBlock1818518 };
-      block1818518NotFull.transactions = karuraBlock1818518.transactions.map((t) => t.hash) as any;
-
-      expect(resFull).to.deep.equal(karuraBlock1818518);
-      expect(res).to.deep.equal(block1818518NotFull);
+      expect(resFull).toMatchSnapshot();
+      expect(res).toMatchSnapshot();
     });
 
     it('when there are >= 2 EVM transactions', async () => {
       const resFull = (await eth_getBlockByNumber_karura([2449983, true])).data.result;
       const res = (await eth_getBlockByNumber_karura([2449983, false])).data.result;
 
-      const block2449983NotFull = { ...karuraBlock2449983 };
-      block2449983NotFull.transactions = karuraBlock2449983.transactions.map((t) => t.hash) as any;
-
-      expect(resFull).to.deep.equal(karuraBlock2449983);
-      expect(res).to.deep.equal(block2449983NotFull);
+      expect(resFull).toMatchSnapshot();
+      expect(res).toMatchSnapshot();
     });
   });
 
@@ -1462,7 +1270,7 @@ describe('endpoint', () => {
       // also, instantiating ws (next line) has to be inside <before block>, otherwise there will be mysterious failure...
       ws = new WebSocket(WS_URL);
       ws.on('open', () => {
-        ws.on('message', (data) => {
+        ws.on('message', data => {
           const parsedData = JSON.parse(data.toString());
           notifications.push(parsedData);
         });
@@ -1532,15 +1340,15 @@ describe('endpoint', () => {
 
       await sleep(3000); // give ws some time to notify
 
-      subId0 = notifications.find((n) => n.id === 0).result;
-      subId1 = notifications.find((n) => n.id === 1).result;
-      subId2 = notifications.find((n) => n.id === 2).result;
-      subId3 = notifications.find((n) => n.id === 3).result;
+      subId0 = notifications.find(n => n.id === 0).result;
+      subId1 = notifications.find(n => n.id === 1).result;
+      subId2 = notifications.find(n => n.id === 2).result;
+      subId3 = notifications.find(n => n.id === 3).result;
 
-      const notification0 = notifications.find((n) => n.params?.subscription === subId0); // new block
-      const notification1 = notifications.find((n) => n.params?.subscription === subId1); // ACA transfer
-      const notification2 = notifications.find((n) => n.params?.subscription === subId2); // ACA transfer
-      const notification3 = notifications.find((n) => n.params?.subscription === subId3); // no match
+      const notification0 = notifications.find(n => n.params?.subscription === subId0); // new block
+      const notification1 = notifications.find(n => n.params?.subscription === subId1); // ACA transfer
+      const notification2 = notifications.find(n => n.params?.subscription === subId2); // ACA transfer
+      const notification3 = notifications.find(n => n.params?.subscription === subId3); // no match
 
       const curBlock = (await eth_blockNumber()).data.result;
       const curBlockInfo = (await eth_getBlockByNumber([curBlock, false])).data.result;
@@ -1624,10 +1432,10 @@ describe('endpoint', () => {
 
       await sleep(10000); // give ws some time to notify
 
-      const notification0 = notifications.find((n) => n.params?.subscription === subId0); // no match
-      const notification1 = notifications.find((n) => n.params?.subscription === subId1); // no match
-      const notification2 = notifications.find((n) => n.params?.subscription === subId2); // ACA transfer
-      const notification3 = notifications.find((n) => n.params?.subscription === subId3); // no match
+      const notification0 = notifications.find(n => n.params?.subscription === subId0); // no match
+      const notification1 = notifications.find(n => n.params?.subscription === subId1); // no match
+      const notification2 = notifications.find(n => n.params?.subscription === subId2); // ACA transfer
+      const notification3 = notifications.find(n => n.params?.subscription === subId3); // no match
 
       // after unsubscribe they should not be notified anymore
       expect(notification0).to.equal(undefined);
@@ -2117,6 +1925,24 @@ describe('endpoint', () => {
     it('returns true', async () => {
       const res = (await net_listening([])).data.result;
       expect(res).to.deep.equal(true);
+    });
+  });
+
+  describe('eth_estimateGas', () => {
+    const provider = new AcalaJsonRpcProvider(RPC_URL);
+    const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+
+    it('can deal with weird gas contract', async () => {
+      const gm = await deployGasMonster(wallet);
+      const tx = await gm.populateTransaction.run();
+
+      const { gasLimit } = await estimateGas(tx);
+      const bbb = (gasLimit.toNumber() % 100000) / 100;
+
+      // should be passing gasLimit instead of usedGas
+      expect(bbb).to.gt(GAS_MONSTER_GAS_REQUIRED / 30000);
+
+      await (await gm.run()).wait();    // make sure running has no error
     });
   });
 });

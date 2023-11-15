@@ -72,7 +72,7 @@ export class AcalaJsonRpcProvider extends JsonRpcProvider {
       const alreadyDone = function () {
         if (done) { return true; }
         done = true;
-        cancelFuncs.forEach((func) => { func(); });
+        cancelFuncs.forEach(func => { func(); });
         return false;
       };
 
