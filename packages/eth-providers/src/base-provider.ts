@@ -50,16 +50,10 @@ import {
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
   ERROR_PATTERN,
-  GAS_LIMIT_CHUNK,
-  GAS_MASK,
   LOCAL_MODE_MSG,
-  MAX_GAS_LIMIT_CC,
   ONE_HUNDRED_GWEI,
   PROD_MODE_MSG,
   SAFE_MODE_WARNING_MSG,
-  STORAGE_MASK,
-  TEN_GWEI,
-  U32_MAX,
   ZERO,
   ZERO_BLOCK_HASH,
 } from './consts';
@@ -75,8 +69,8 @@ import {
   checkEvmExecutionError,
   computeDefaultEvmAddress,
   computeDefaultSubstrateAddress,
+  decodeEthGas,
   encodeGasLimit,
-  ethToNativeDecimal,
   filterLog,
   filterLogByTopics,
   getAllReceiptsAtBlock,
@@ -1228,10 +1222,12 @@ export abstract class BaseProvider extends AbstractProvider {
     accessList: AccessList;
     v2: boolean;
   } => {
-    let gasLimit = 0n;
-    let storageLimit = 0n;
-    let validUntil = 0n;
-    let tip = 0n;
+    let substrateParams: {
+      gasLimit: bigint,
+      storageLimit: bigint,
+      validUntil: bigint,
+      tip: bigint,
+    };
     let v2 = false;
 
     if (ethTx.type === 96) {
@@ -1241,10 +1237,12 @@ export abstract class BaseProvider extends AbstractProvider {
       if (!ethTx.validUntil) return logger.throwError('expect validUntil');
       if (!ethTx.tip) return logger.throwError('expect priorityFee (tip)');
 
-      gasLimit = ethTx.gasLimit.toBigInt();
-      storageLimit = BigInt(ethTx.storageLimit.toString());
-      validUntil = BigInt(ethTx.validUntil.toString());
-      tip = BigInt(ethTx.tip.toString());
+      substrateParams = {
+        gasLimit: ethTx.gasLimit.toBigInt(),
+        storageLimit: BigInt(ethTx.storageLimit.toString()),
+        validUntil: BigInt(ethTx.validUntil.toString()),
+        tip: BigInt(ethTx.tip.toString()),
+      };
     } else if (
       ethTx.type === undefined || // legacy
       ethTx.type === null      || // legacy
@@ -1253,21 +1251,23 @@ export abstract class BaseProvider extends AbstractProvider {
       try {
         const { storageDepositPerByte, txFeePerGas } = this._getGasConsts();
 
-        const params = calcSubstrateTransactionParams({
+        const { gasLimit, validUntil, storageLimit } = calcSubstrateTransactionParams({
           txGasPrice: ethTx.maxFeePerGas || ethTx.gasPrice || '0',
           txGasLimit: ethTx.gasLimit || '0',
           storageByteDeposit: storageDepositPerByte,
           txFeePerGas: txFeePerGas,
         });
 
-        gasLimit = params.gasLimit.toBigInt();
-        validUntil = params.validUntil.toBigInt();
-        storageLimit = params.storageLimit.toBigInt();
-        tip = (ethTx.maxPriorityFeePerGas?.toBigInt() || 0n) * gasLimit;
-
-        if (gasLimit < 0n || validUntil < 0n || storageLimit < 0n) {
+        if (gasLimit.lt(0) || validUntil.lt(0) || storageLimit.lt(0)) {
           throw new Error();
         }
+
+        substrateParams = {
+          gasLimit: gasLimit.toBigInt(),
+          validUntil: validUntil.toBigInt(),
+          storageLimit: storageLimit.toBigInt(),
+          tip: 0n,
+        };
       } catch (error) {
         // v2
         v2 = true;
@@ -1275,26 +1275,10 @@ export abstract class BaseProvider extends AbstractProvider {
         if (!ethTx.gasLimit) return logger.throwError('expect gasLimit');
         if (!ethTx.gasPrice) return logger.throwError('expect gasPrice');
 
-        const bbbcc = ethTx.gasLimit.mod(GAS_MASK);
-        const encodedGasLimit = bbbcc.div(STORAGE_MASK); // bbb
-        const encodedStorageLimit = bbbcc.mod(STORAGE_MASK); // cc
-
-        let gasPrice = ethTx.gasPrice;
-        const tipNumber = gasPrice.div(TEN_GWEI).sub(10);
-        if (tipNumber.gt(0)) {
-          gasPrice = gasPrice.sub(tipNumber.mul(TEN_GWEI));
-          const ethTip = gasPrice.mul(ethTx.gasLimit).mul(tipNumber).div(10);
-          tip = ethToNativeDecimal(ethTip).toBigInt();
-        }
-
-        validUntil = gasPrice.sub(ONE_HUNDRED_GWEI).toBigInt();
-        if (validUntil > U32_MAX) {
-          validUntil = U32_MAX;
-        }
-        gasLimit = encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt();
-        storageLimit = BigNumber.from(2)
-          .pow(encodedStorageLimit.gt(MAX_GAS_LIMIT_CC) ? MAX_GAS_LIMIT_CC : encodedStorageLimit)
-          .toBigInt();
+        substrateParams = decodeEthGas({
+          gasLimit: ethTx.gasLimit,
+          gasPrice: ethTx.gasPrice,
+        });
       }
     } else if (ethTx.type === 1 || ethTx.type === 2) {
       return logger.throwError(
@@ -1308,10 +1292,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     return {
-      gasLimit,
-      storageLimit,
-      validUntil,
-      tip,
+      ...substrateParams,
       accessList: ethTx.accessList ?? [],
       v2,
     };

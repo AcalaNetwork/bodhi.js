@@ -1,10 +1,12 @@
 import { BigNumber, BigNumberish, Transaction } from 'ethers';
 import { Deferrable, resolveProperties } from '@ethersproject/properties';
-import { GAS_LIMIT_CHUNK, GAS_MASK, STORAGE_MASK } from '../consts';
 import { TransactionRequest } from '@ethersproject/abstract-provider';
 import { accessListify } from '@ethersproject/transactions';
-import { formatter } from './receiptHelper';
 import { hexlify } from '@ethersproject/bytes';
+
+import { GAS_LIMIT_CHUNK, GAS_MASK, MAX_GAS_LIMIT_CC, ONE_HUNDRED_GWEI, STORAGE_MASK, TEN_GWEI, U32_MAX } from '../consts';
+import { ethToNativeDecimal } from './utils';
+import { formatter } from './receiptHelper';
 
 type TxConsts = {
   storageByteDeposit: BigNumberish;
@@ -143,4 +145,44 @@ export const encodeGasLimit = (
   const cc = encodedStorageLimit;
 
   return aaaa00000.add(bbb00).add(cc); // aaaabbbcc
+};
+
+export const decodeEthGas = ({
+  gasPrice,
+  gasLimit,
+}: {
+  gasPrice: BigNumber,
+  gasLimit: BigNumber,
+}) => {
+  const bbbcc = gasLimit.mod(GAS_MASK);
+  const encodedGasLimit = bbbcc.div(STORAGE_MASK); // bbb
+  const encodedStorageLimit = bbbcc.mod(STORAGE_MASK); // cc
+
+  let tip = 0n;
+  const tipNumber = gasPrice.div(TEN_GWEI).sub(10);
+  if (tipNumber.gt(0)) {
+    gasPrice = gasPrice.sub(tipNumber.mul(TEN_GWEI));
+    const ethTip = gasPrice.mul(gasLimit).mul(tipNumber).div(10);
+    tip = ethToNativeDecimal(ethTip).toBigInt();
+  }
+
+  let validUntil = gasPrice.sub(ONE_HUNDRED_GWEI).toBigInt();
+  if (validUntil > U32_MAX) {
+    validUntil = U32_MAX;
+  }
+  const substrateGasLimit = encodedGasLimit.mul(GAS_LIMIT_CHUNK).toBigInt();
+  const storageLimit = BigNumber.from(2)
+    .pow(
+      encodedStorageLimit.gt(MAX_GAS_LIMIT_CC)
+        ? MAX_GAS_LIMIT_CC
+        : encodedStorageLimit
+    )
+    .toBigInt();
+
+  return {
+    gasLimit: substrateGasLimit,
+    storageLimit,
+    tip,
+    validUntil,
+  };
 };
