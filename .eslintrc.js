@@ -1,12 +1,13 @@
 module.exports = {
   root: true,
+  env: { node: true },
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'import', 'sort-imports-es6-autofix'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:import/recommended',
-    'plugin:import/typescript'
+    'plugin:import/typescript',
   ],
   rules: {
     /* -------------------- error -------------------- */
@@ -65,8 +66,8 @@ module.exports = {
   settings: {
     'import/resolver': {
       typescript: {
-        project: 'tsconfig.json'
-      }
-    }
-  }
+        project: 'tsconfig.json',
+      },
+    },
+  },
 };
