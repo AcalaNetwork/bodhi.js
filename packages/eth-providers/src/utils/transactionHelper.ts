@@ -151,8 +151,8 @@ export const decodeEthGas = ({
   gasPrice,
   gasLimit,
 }: {
-  gasPrice: BigNumber,
-  gasLimit: BigNumber,
+  gasPrice: BigNumber;
+  gasLimit: BigNumber;
 }) => {
   const bbbcc = gasLimit.mod(GAS_MASK);
   const encodedGasLimit = bbbcc.div(STORAGE_MASK); // bbb

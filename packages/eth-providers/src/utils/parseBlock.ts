@@ -143,7 +143,7 @@ const getEffectiveGasPrice = async (
       (dispatchInfo as any).weight as WeightV1;
 
     const [paymentInfo, feeDetails] = await Promise.all([
-      apiAtParentBlock.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(u8a,u8a.length),
+      apiAtParentBlock.call.transactionPaymentApi.queryInfo<RuntimeDispatchInfoV1 | RuntimeDispatchInfoV2>(u8a, u8a.length), // eslint-disable-line
       apiAtParentBlock.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length),
     ]);
 

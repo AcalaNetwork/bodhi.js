@@ -7,7 +7,9 @@ export const monitorRuntime = async (provider: EvmRpcProvider) => {
 
   const runtimeVersion$ = provider.api.rx.rpc.state.subscribeRuntimeVersion();
 
-  const initialRuntimeVersion = await firstValueFrom(runtimeVersion$.pipe(map(runtime => runtime.specVersion.toNumber())));
+  const initialRuntimeVersion = await firstValueFrom(
+    runtimeVersion$.pipe(map(runtime => runtime.specVersion.toNumber()))
+  );
 
   runtimeVersion$.subscribe(runtime => {
     const version = runtime.specVersion.toNumber();

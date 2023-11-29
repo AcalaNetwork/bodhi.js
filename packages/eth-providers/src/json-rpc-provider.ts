@@ -58,7 +58,19 @@ export class AcalaJsonRpcProvider extends JsonRpcProvider {
   }
 
   // override the underlying _wrapTransaction to avoid tx replacement check
-  async _waitForTransaction(transactionHash: string, confirmations: number, timeout: number, replaceable: { data: string, from: string, nonce: number, to: string, value: BigNumber, startBlock: number }): Promise<TransactionReceipt> {
+  async _waitForTransaction(
+    transactionHash: string,
+    confirmations: number,
+    timeout: number,
+    replaceable: {
+      data: string;
+      from: string;
+      nonce: number;
+      to: string;
+      value: BigNumber;
+      startBlock: number;
+    }
+  ): Promise<TransactionReceipt> {
     const receipt = await this.getTransactionReceipt(transactionHash);
 
     // Receipt is already good

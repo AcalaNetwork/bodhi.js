@@ -289,8 +289,8 @@ export abstract class BaseProvider extends AbstractProvider {
   #subscription: Promise<() => void> | undefined;
   head$: Observable<Header>;
   finalizedHead$: Observable<Header>;
-  best$ = new ReplaySubject<{ hash: string, number: number }>(1);
-  finalized$ = new ReplaySubject<{ hash: string, number: number }>(1);
+  best$ = new ReplaySubject<{ hash: string; number: number }>(1);
+  finalized$ = new ReplaySubject<{ hash: string; number: number }>(1);
 
   readonly #async = new AsyncScheduler(AsyncAction);
 
@@ -479,7 +479,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
 
     if (!this.storages.get(registry)) {
-      const storage = decorateStorage(registry.registry, registry.metadata.asLatest, registry.metadata.version);
+      const storage = decorateStorage(
+        registry.registry,
+        registry.metadata.asLatest,
+        registry.metadata.version,
+      );
       this.storages.set(registry, storage);
     }
 
@@ -490,7 +494,11 @@ export abstract class BaseProvider extends AbstractProvider {
     const entry = storage[section][method];
     const key = entry(...args);
 
-    const outputType = unwrapStorageType(registry.registry, entry.meta.type, entry.meta.modifier.isOptional);
+    const outputType = unwrapStorageType(
+      registry.registry,
+      entry.meta.type,
+      entry.meta.modifier.isOptional,
+    );
 
     const cacheKey = `${module}-${blockHash}-${args.join(',')}`;
     const cached = this.storageCache.get(cacheKey);
@@ -961,7 +969,10 @@ export abstract class BaseProvider extends AbstractProvider {
     const u8a = extrinsic.toU8a();
     const apiAt = await this.api.at(await this.bestBlockHash);
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
-    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(u8a, u8a.length + lenIncreaseAfterSignature);
+    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
+      u8a,
+      u8a.length + lenIncreaseAfterSignature,
+    );
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
 
     const nativeTxFee = BigNumber.from(
@@ -1223,10 +1234,10 @@ export abstract class BaseProvider extends AbstractProvider {
     v2: boolean;
   } => {
     let substrateParams: {
-      gasLimit: bigint,
-      storageLimit: bigint,
-      validUntil: bigint,
-      tip: bigint,
+      gasLimit: bigint;
+      storageLimit: bigint;
+      validUntil: bigint;
+      tip: bigint;
     };
     let v2 = false;
 
