@@ -38,7 +38,7 @@ export const eth_call = rpcGet('eth_call');
 export const eth_blockNumber = rpcGet('eth_blockNumber');
 export const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
 export const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
-export const eth_getLogs = rpcGet<{ data: { result: LogHexified[], error?: JsonRpcError } }>('eth_getLogs');
+export const eth_getLogs = rpcGet<{ data: { result: LogHexified[]; error?: JsonRpcError } }>('eth_getLogs');
 export const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');
 export const eth_accounts = rpcGet('eth_accounts');
 export const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction');
@@ -57,9 +57,9 @@ export const eth_newBlockFilter = rpcGet('eth_newBlockFilter');
 export const eth_getFilterChanges = rpcGet('eth_getFilterChanges');
 export const eth_getFilterLogs = rpcGet<{
   data: {
-    result: LogHexified[],
-    error?: JsonRpcError
-  }
+    result: LogHexified[];
+    error?: JsonRpcError;
+  };
 }>('eth_getFilterLogs');
 export const eth_uninstallFilter = rpcGet('eth_uninstallFilter');
 export const net_listening = rpcGet('net_listening');

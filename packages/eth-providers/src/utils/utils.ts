@@ -39,7 +39,7 @@ export interface HealthResult {
     // listeners
     listenersCount: {
       newHead: number;
-      newFinalizedHead: number,
+      newFinalizedHead: number;
       logs: number;
     };
   };
