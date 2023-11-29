@@ -580,7 +580,8 @@ describe('endpoint', () => {
     const queryEthBalance = async (addr): Promise<BigNumber> =>
       BigNumber.from((await eth_getBalance([addr, 'latest'])).data.result);
 
-    const queryNativeBalance = async (addr: string) => (await queryEthBalance(addr)).div(10 ** (ETH_Digits - ACA_Digits));
+    const queryNativeBalance = async (addr: string) =>
+      (await queryEthBalance(addr)).div(10 ** (ETH_Digits - ACA_Digits));
 
     const getTxFeeFromReceipt = async (txHash: string, toNative = false): Promise<bigint> => {
       await sleep(789); // give cache/subquery a little bit time
