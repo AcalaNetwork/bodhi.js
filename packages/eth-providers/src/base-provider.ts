@@ -928,8 +928,15 @@ export abstract class BaseProvider extends AbstractProvider {
    * @param transaction The transaction to estimate the gas of
    * @returns The estimated gas used by this transaction
    */
-  estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction);
+  estimateGas = async (
+    transaction: Deferrable<TransactionRequest>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<BigNumber> => {
+    const blockHash = blockTag && blockTag !== 'latest'
+      ? await this._getBlockHash(blockTag)
+      : undefined;  // if blockTag is latest, avoid explicit blockhash for better performance
+
+    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction, blockHash);
 
     const tx = await resolveProperties(transaction);
     const data = tx.data?.toString() ?? '0x';
@@ -948,7 +955,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ? this.api.tx.evm.call(...callParams)
       : this.api.tx.evm.create(...createParams);
 
-    let txFee = await this._estimateGasCost(extrinsic);
+    let txFee = await this._estimateGasCost(extrinsic, blockHash);
     txFee = txFee.mul(gasLimit).div(usedGas); // scale it to the same ratio when estimate passing gasLimit
 
     if (usedStorage.gt(0)) {
@@ -965,9 +972,13 @@ export abstract class BaseProvider extends AbstractProvider {
     return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage, isTokenTransfer);
   };
 
-  _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
+  _estimateGasCost = async (
+    extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>,
+    at?: string,
+  ) => {
+    const apiAt = await this.api.at(at ?? await this.bestBlockHash);
+
     const u8a = extrinsic.toU8a();
-    const apiAt = await this.api.at(await this.bestBlockHash);
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
     const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
       u8a,
@@ -1098,7 +1109,8 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated resources used by this transaction
    */
   estimateResources = async (
-    transaction: Deferrable<TransactionRequest>
+    transaction: Deferrable<TransactionRequest>,
+    blockHash?: string,
   ): Promise<{
     usedGas: BigNumber;
     gasLimit: BigNumber;
@@ -1116,7 +1128,7 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit: STORAGE_LIMIT,
     };
 
-    const gasInfo = await this._ethCall(txRequest);
+    const gasInfo = await this._ethCall(txRequest, blockHash);
     const usedGas = BigNumber.from(gasInfo.used_gas).toNumber();
     const usedStorage = gasInfo.used_storage;
 
@@ -1523,7 +1535,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     switch (blockTag) {
       case 'pending': {
-        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
+        return logger.throwError('pending tag not supported', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
         return this.safeMode ? this.finalizedBlockHash : this.bestBlockHash;

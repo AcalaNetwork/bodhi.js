@@ -293,8 +293,8 @@ class Eip1193BridgeImpl {
    * @returns GAS USED - the amount of gas used.
    */
   async eth_estimateGas(params: any[]): Promise<string> {
-    validate([{ type: 'transaction' }], params);
-    const val = await this.#provider.estimateGas(params[0]);
+    validate([{ type: 'transaction' }, { type: 'block?' }], params);
+    const val = await this.#provider.estimateGas(params[0], params[1]);
     return hexValue(val);
   }
 
