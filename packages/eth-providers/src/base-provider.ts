@@ -955,7 +955,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ? this.api.tx.evm.call(...callParams)
       : this.api.tx.evm.create(...createParams);
 
-    let txFee = await this._estimateGasCost(extrinsic);
+    let txFee = await this._estimateGasCost(extrinsic, blockHash);
     txFee = txFee.mul(gasLimit).div(usedGas); // scale it to the same ratio when estimate passing gasLimit
 
     if (usedStorage.gt(0)) {
