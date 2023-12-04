@@ -4,6 +4,7 @@ export type Schema = {
   type:
     | 'address'
     | 'block'
+    | 'block?'
     | 'transaction'
     | 'blockHash'
     | 'trasactionHash'
@@ -146,6 +147,10 @@ export const validate = (schema: Schema, data: unknown[]) => {
         }
         case 'block': {
           validateBlock(data[i]);
+          break;
+        }
+        case 'block?': {
+          data[i] && validateBlock(data[i]);
           break;
         }
         case 'transaction': {

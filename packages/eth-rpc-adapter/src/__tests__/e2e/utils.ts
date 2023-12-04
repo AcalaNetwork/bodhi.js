@@ -1,4 +1,5 @@
 import { BigNumber, ContractFactory, Signer } from 'ethers';
+import { BlockTagish } from '@acala-network/eth-providers';
 import { Log, TransactionRequest } from '@ethersproject/abstract-provider';
 import { expect } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
@@ -71,9 +72,9 @@ export const eth_getTransactionByHash_karura = rpcGet('eth_getTransactionByHash'
 export const eth_getBlockByNumber_karura = rpcGet('eth_getBlockByNumber', KARURA_ETH_RPC_URL);
 export const eth_getStorageAt_karura = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
 
-export const estimateGas = async (tx: TransactionRequest) => {
+export const estimateGas = async (tx: TransactionRequest, blockTag?: BlockTagish) => {
   const gasPrice = (await eth_gasPrice([])).data.result;
-  const res = await eth_estimateGas([{ ...tx, gasPrice }]);
+  const res = await eth_estimateGas([{ ...tx, gasPrice }, blockTag]);
   if (res.data.error) {
     throw new Error(res.data.error.message);
   }

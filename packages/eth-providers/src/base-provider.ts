@@ -928,8 +928,11 @@ export abstract class BaseProvider extends AbstractProvider {
    * @param transaction The transaction to estimate the gas of
    * @returns The estimated gas used by this transaction
    */
-  estimateGas = async (transaction: Deferrable<TransactionRequest>): Promise<BigNumber> => {
-    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction);
+  estimateGas = async (
+    transaction: Deferrable<TransactionRequest>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<BigNumber> => {
+    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction, blockTag);
 
     const tx = await resolveProperties(transaction);
     const data = tx.data?.toString() ?? '0x';
@@ -1098,7 +1101,8 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated resources used by this transaction
    */
   estimateResources = async (
-    transaction: Deferrable<TransactionRequest>
+    transaction: Deferrable<TransactionRequest>,
+    blockTag?: BlockTag | Promise<BlockTag>,
   ): Promise<{
     usedGas: BigNumber;
     gasLimit: BigNumber;
@@ -1116,7 +1120,11 @@ export abstract class BaseProvider extends AbstractProvider {
       storageLimit: STORAGE_LIMIT,
     };
 
-    const gasInfo = await this._ethCall(txRequest);
+    const blockHash = blockTag && blockTag !== 'latest'
+      ? await this._getBlockHash(blockTag)
+      : undefined;  // if blockTag is latest, avoid explicit blockhash for better performance
+
+    const gasInfo = await this._ethCall(txRequest, blockHash);
     const usedGas = BigNumber.from(gasInfo.used_gas).toNumber();
     const usedStorage = gasInfo.used_storage;
 
@@ -1523,7 +1531,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     switch (blockTag) {
       case 'pending': {
-        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
+        return logger.throwError('pending tag not supported', Logger.errors.UNSUPPORTED_OPERATION);
       }
       case 'latest': {
         return this.safeMode ? this.finalizedBlockHash : this.bestBlockHash;

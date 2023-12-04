@@ -1940,6 +1940,9 @@ describe('endpoint', () => {
       const { gasLimit } = await estimateGas(tx);
       const bbb = (gasLimit.toNumber() % 100000) / 100;
 
+      const { gasLimit: gasLimitWithBlockTag } = await estimateGas(tx, 'latest');
+      expect(gasLimitWithBlockTag).to.equal(gasLimit);
+
       // should be passing gasLimit instead of usedGas
       expect(bbb).to.gt(GAS_MONSTER_GAS_REQUIRED / 30000);
 
