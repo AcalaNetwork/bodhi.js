@@ -932,7 +932,11 @@ export abstract class BaseProvider extends AbstractProvider {
     transaction: Deferrable<TransactionRequest>,
     blockTag?: BlockTag | Promise<BlockTag>
   ): Promise<BigNumber> => {
-    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction, blockTag);
+    const blockHash = blockTag && blockTag !== 'latest'
+      ? await this._getBlockHash(blockTag)
+      : undefined;  // if blockTag is latest, avoid explicit blockhash for better performance
+
+    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction, blockHash);
 
     const tx = await resolveProperties(transaction);
     const data = tx.data?.toString() ?? '0x';
@@ -968,9 +972,13 @@ export abstract class BaseProvider extends AbstractProvider {
     return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage, isTokenTransfer);
   };
 
-  _estimateGasCost = async (extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
+  _estimateGasCost = async (
+    extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>,
+    at?: string,
+  ) => {
+    const apiAt = await this.api.at(at ?? await this.bestBlockHash);
+
     const u8a = extrinsic.toU8a();
-    const apiAt = await this.api.at(await this.bestBlockHash);
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
     const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
       u8a,
@@ -1102,7 +1110,7 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   estimateResources = async (
     transaction: Deferrable<TransactionRequest>,
-    blockTag?: BlockTag | Promise<BlockTag>,
+    blockHash?: string,
   ): Promise<{
     usedGas: BigNumber;
     gasLimit: BigNumber;
@@ -1119,10 +1127,6 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit: _txRequest.gasLimit?.toBigInt() || MAX_GAS_LIMIT,
       storageLimit: STORAGE_LIMIT,
     };
-
-    const blockHash = blockTag && blockTag !== 'latest'
-      ? await this._getBlockHash(blockTag)
-      : undefined;  // if blockTag is latest, avoid explicit blockhash for better performance
 
     const gasInfo = await this._ethCall(txRequest, blockHash);
     const usedGas = BigNumber.from(gasInfo.used_gas).toNumber();
