@@ -70,3 +70,6 @@ jspm_packages/
 dist
 lib
 *.tsbuildinfo
+
+flood
+flood-result
