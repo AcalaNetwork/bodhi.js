@@ -1,7 +1,7 @@
 # New Eth RPC Benchmark
 first start a local mandala with normal sealing
 ```
-docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-37d9e36 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive
+docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-7ae4bf4 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive
 ```
 
 then start an old rpc adapter
