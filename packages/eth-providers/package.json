@@ -10,8 +10,8 @@
     "test:e2e": "vitest --run --config vitest.config.e2e.ts"
   },
   "peerDependencies": {
-    "@acala-network/api": "~6.0.0",
-    "@polkadot/api": "^10.9.1"
+    "@acala-network/api": "~6.0.4",
+    "@polkadot/api": "^10.11.1"
   },
   "dependencies": {
     "@acala-network/contracts": "4.3.4",
@@ -24,7 +24,7 @@
     "lru-cache": "~7.8.2"
   },
   "devDependencies": {
-    "@acala-network/api": "^6.0.3",
+    "@acala-network/api": "~6.0.4",
     "@types/bn.js": "~5.1.0",
     "@types/dd-trace": "^0.9.0",
     "@types/lru-cache": "~7.6.1",
