@@ -4,13 +4,12 @@ import { Contract } from '@ethersproject/contracts';
 import { Interface, parseUnits } from 'ethers/lib/utils';
 import { Wallet } from '@ethersproject/wallet';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import dotenv from 'dotenv';
 
 import { EvmRpcProvider } from '../../rpc-provider';
-import { calcEthereumTransactionParams, sendTx, sleep } from '../../utils';
+import { calcEthereumTransactionParams, sleep } from '../../utils';
 import { computeDefaultSubstrateAddress } from '../../utils/address';
 import evmAccounts from '../evmAccounts';
 
