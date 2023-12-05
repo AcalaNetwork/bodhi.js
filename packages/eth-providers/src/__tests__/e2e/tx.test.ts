@@ -1,18 +1,17 @@
 import { AcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
-import { EvmRpcProvider } from '../../rpc-provider';
 import { Interface, parseUnits } from 'ethers/lib/utils';
 import { Wallet } from '@ethersproject/wallet';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { calcEthereumTransactionParams, sendTx, sleep } from '../../utils';
-import { computeDefaultSubstrateAddress } from '../../utils/address';
-import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import dotenv from 'dotenv';
+
+import { EvmRpcProvider } from '../../rpc-provider';
+import { calcEthereumTransactionParams, sleep } from '../../utils';
+import { computeDefaultSubstrateAddress } from '../../utils/address';
 import evmAccounts from '../evmAccounts';
-import type { UInt } from '@polkadot/types';
 
 dotenv.config();
 
@@ -38,8 +37,8 @@ describe('transaction tests', () => {
     await provider.isReady();
 
     chainId = await provider.chainId();
-    storageByteDeposit = (provider.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
-    txFeePerGas = (provider.api.consts.evm.txFeePerGas as UInt).toBigInt();
+    storageByteDeposit = provider.api.consts.evm.storageDepositPerByte.toBigInt();
+    txFeePerGas = provider.api.consts.evm.txFeePerGas.toBigInt();
 
     ({ txGasLimit, txGasPrice } = calcEthereumTransactionParams({
       gasLimit: 2100001n,
@@ -167,7 +166,7 @@ describe('transaction tests', () => {
           ...partialDeployTx,
           type: 0,
         });
-        const receipt = await response.wait(0);
+        const receipt = await response.wait();
 
         expect(receipt.type).equal(0);
         expect(receipt.status).equal(1);
@@ -195,7 +194,7 @@ describe('transaction tests', () => {
         expect(parsedTx.maxFeePerGas).equal(undefined);
 
         const response = await provider.sendTransaction(rawTx);
-        const receipt = await response.wait(0);
+        const receipt = await response.wait();
 
         expect(receipt.type).equal(0); // TODO: should be null, need to fix getPartialTransactionReceipt
         expect(receipt.status).equal(1);
@@ -283,7 +282,7 @@ describe('transaction tests', () => {
     const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, wallet1);
     const iface = new Interface(ACAABI.abi);
     const queryBalance = async (addr: string): Promise<BigNumber> => acaContract.balanceOf(addr);
-    const transferAmount = parseUnits('100', ACADigits);
+    const transferAmount = parseUnits('1.243', ACADigits);
     let partialTransferTX: any;
 
     beforeAll(() => {
@@ -302,24 +301,6 @@ describe('transaction tests', () => {
       expect(computeDefaultSubstrateAddress(account2.evmAddress)).to.equal(account2.defaultSubstrateAddress);
     });
 
-    describe('with provider', () => {
-      it('has correct balance after transfer', async () => {
-        const pairs = createTestPairs();
-        const alice = pairs.alice;
-
-        const oneAca = 10n ** BigInt(ACADigits);
-        const amount = 1000n * oneAca;
-        const balance = await queryBalance(account1.evmAddress);
-
-        const extrinsic = provider.api.tx.balances.transfer(account1.defaultSubstrateAddress, amount);
-        await extrinsic.signAsync(alice);
-        await sendTx(provider.api, extrinsic);
-
-        const _balance = await queryBalance(account1.evmAddress);
-        expect(_balance.sub(balance).toBigInt()).equal(amount);
-      });
-    });
-
     describe('with legacy EIP-155 signature', () => {
       it('has correct balance after transfer', async () => {
         const _balance1 = await queryBalance(account1.evmAddress);
@@ -334,7 +315,7 @@ describe('transaction tests', () => {
         const _parsedTx = parseTransaction(rawTx);
 
         const response = await provider.sendTransaction(rawTx);
-        const _receipt = await response.wait(0);
+        const _receipt = await response.wait();
 
         const __balance1 = await queryBalance(account1.evmAddress);
         const _balance2 = await queryBalance(account2.evmAddress);

@@ -32,7 +32,7 @@ describe('TransactionReceipt', async () => {
 
     /** transfer aca */
     console.log('transfer aca');
-    const extrinsic = provider.api.tx.balances.transfer(account1.defaultSubstrateAddress, 100n * oneAca);
+    const extrinsic = provider.api.tx.balances.transferAllowDeath(account1.defaultSubstrateAddress, 100n * oneAca);
     await extrinsic.signAsync(Alice);
     await sendTx(provider.api, extrinsic);
 
