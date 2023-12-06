@@ -26,7 +26,7 @@ import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
 import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
-import { Option, UInt, decorateStorage, unwrapStorageType } from '@polkadot/types';
+import { Option, decorateStorage, unwrapStorageType } from '@polkadot/types';
 import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { VersionedRegistry } from '@polkadot/api/base/types';
@@ -796,25 +796,20 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<string> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
-    const [txRequest, blockHash] = await Promise.all([
+    const [ethReq, blockHash] = await Promise.all([
       getTransactionRequest(transaction),
       this._getBlockHash(blockTag),
     ]);
 
-    txRequest.gasPrice ??= await this.getGasPrice();
-    txRequest.gasLimit ??= BigNumber.from(999999920);
+    ethReq.gasPrice ??= await this.getGasPrice();
+    ethReq.gasLimit ??= BigNumber.from(999999920);
 
-    const { storageLimit, gasLimit } = this._getSubstrateGasParams(txRequest);
-    console.log(txRequest, { storageLimit, gasLimit });
+    const substrateGas = this._getSubstrateGasParams(ethReq);
 
     const callRequest: SubstrateEvmCallRequest = {
-      from: txRequest.from,
-      to: txRequest.to,
-      gasLimit,
-      storageLimit,
-      value: txRequest.value?.toBigInt(),
-      data: txRequest.data,
-      accessList: txRequest.accessList,
+      ...ethReq,
+      value: ethReq.value?.toBigInt(),
+      ...substrateGas,
     };
 
     const res = await this._ethCall(callRequest, blockHash);

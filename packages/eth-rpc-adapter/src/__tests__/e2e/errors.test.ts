@@ -115,7 +115,7 @@ describe('errors', () => {
     });
   });
 
-  describe.only('throws outOfGas error when gaslimit too small', () => {
+  describe('throws outOfGas error when gaslimit too small', () => {
     const provider = new AcalaJsonRpcProvider(RPC_URL);
     const wallet = new Wallet(evmAccounts[0].privateKey, provider);
     const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet);
