@@ -8,6 +8,8 @@ import { GAS_LIMIT_CHUNK, GAS_MASK, MAX_GAS_LIMIT_CC, ONE_HUNDRED_GWEI, STORAGE_
 import { ethToNativeDecimal } from './utils';
 import { formatter } from './receiptHelper';
 
+export type TxRequestWithGas = TransactionRequest & { gas?: BigNumberish };
+
 type TxConsts = {
   storageByteDeposit: BigNumberish;
   txFeePerGas: BigNumberish;
@@ -78,45 +80,28 @@ export const calcSubstrateTransactionParams = (
 };
 
 export const getTransactionRequest = async (
-  transaction: Deferrable<TransactionRequest>
+  txRequest: Deferrable<TxRequestWithGas>
 ): Promise<Partial<Transaction>> => {
-  const values: any = await transaction;
+  const req = await resolveProperties(txRequest);
+  const tx: Partial<Transaction> = {};
 
-  const tx: any = {};
+  if (!req.gasLimit && req.gas !== undefined) {
+    req.gasLimit = req.gas;
+  }
 
-  ['from', 'to'].forEach(key => {
-    if (values[key] === null || values[key] === undefined) {
-      return;
-    }
-    tx[key] = Promise.resolve(values[key]).then(v => (v ? v : null));
+  ['from', 'to', 'type'].forEach(key => {
+    tx[key] = req[key];
   });
 
   ['gasLimit', 'gasPrice', 'maxFeePerGas', 'maxPriorityFeePerGas', 'value'].forEach(key => {
-    if (values[key] === null || values[key] === undefined) {
-      return;
-    }
-    tx[key] = Promise.resolve(values[key]).then(v => (v ? BigNumber.from(v) : null));
+    tx[key] = req[key] && BigNumber.from(req[key]);
   });
 
-  ['type'].forEach(key => {
-    if (values[key] === null || values[key] === undefined) {
-      return;
-    }
-    tx[key] = Promise.resolve(values[key]).then(v => (v !== null || v !== undefined ? v : null));
-  });
+  tx.accessList = req.accessList && accessListify(req.accessList);
 
-  if (values.accessList) {
-    tx.accessList = accessListify(values.accessList);
-  }
+  tx.data = req.data && hexlify(req.data);
 
-  ['data'].forEach(key => {
-    if (values[key] === null || values[key] === undefined) {
-      return;
-    }
-    tx[key] = Promise.resolve(values[key]).then(v => (v ? hexlify(v) : null));
-  });
-
-  return formatter.transactionRequest(await resolveProperties(tx));
+  return formatter.transactionRequest(tx);
 };
 
 export const encodeGasLimit = (

@@ -64,6 +64,7 @@ import {
   LogFilter,
   PROVIDER_ERRORS,
   SanitizedLogFilter,
+  TxRequestWithGas,
   calcEthereumTransactionParams,
   calcSubstrateTransactionParams,
   checkEvmExecutionError,
@@ -789,32 +790,31 @@ export abstract class BaseProvider extends AbstractProvider {
     return code.toHex();
   };
 
-  // TODO: removable?
   call = async (
-    _transaction: Deferrable<TransactionRequest>,
+    transaction: Deferrable<TxRequestWithGas>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [txRequest, blockHash] = await Promise.all([
-      getTransactionRequest(_transaction),
+      getTransactionRequest(transaction),
       this._getBlockHash(blockTag),
     ]);
 
-    const transaction = txRequest.gasLimit && txRequest.gasPrice
-      ? txRequest
-      : { ...txRequest, ...(await this._getEthGas()) };
+    txRequest.gasPrice ??= await this.getGasPrice();
+    txRequest.gasLimit ??= BigNumber.from(999999920);
 
-    const { storageLimit, gasLimit } = this._getSubstrateGasParams(transaction);
+    const { storageLimit, gasLimit } = this._getSubstrateGasParams(txRequest);
+    console.log(txRequest, { storageLimit, gasLimit });
 
     const callRequest: SubstrateEvmCallRequest = {
-      from: transaction.from,
-      to: transaction.to,
+      from: txRequest.from,
+      to: txRequest.to,
       gasLimit,
       storageLimit,
-      value: transaction.value?.toBigInt(),
-      data: transaction.data,
-      accessList: transaction.accessList,
+      value: txRequest.value?.toBigInt(),
+      data: txRequest.data,
+      accessList: txRequest.accessList,
     };
 
     const res = await this._ethCall(callRequest, blockHash);
@@ -826,7 +826,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const api = at ? await this.api.at(at) : this.api;
 
     const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
-    const estimate = true;
+    const estimate = false;
 
     const res = to
       ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
@@ -919,8 +919,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getGasConsts = (): GasConsts => ({
-    storageDepositPerByte: (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt(),
-    txFeePerGas: (this.api.consts.evm.txFeePerGas as UInt).toBigInt(),
+    storageDepositPerByte: this.api.consts.evm.storageDepositPerByte.toBigInt(),
+    txFeePerGas: this.api.consts.evm.txFeePerGas.toBigInt(),
   });
 
   /**
@@ -1026,8 +1026,8 @@ export abstract class BaseProvider extends AbstractProvider {
       validUntil = blockNumber + 100;
     }
 
-    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
-    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+    const storageByteDeposit = this.api.consts.evm.storageDepositPerByte.toBigInt();
+    const txFeePerGas = this.api.consts.evm.txFeePerGas.toBigInt();
 
     const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
       gasLimit,
@@ -1061,8 +1061,8 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: BigNumber;
   }> => {
     const validUntil = _validUntil || (await this.getBlockNumber()) + 150; // default 150 * 12 / 60 = 30min
-    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
-    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+    const storageByteDeposit = this.api.consts.evm.storageDepositPerByte.toBigInt();
+    const txFeePerGas = this.api.consts.evm.txFeePerGas.toBigInt();
 
     const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
       gasLimit,
@@ -1092,8 +1092,8 @@ export abstract class BaseProvider extends AbstractProvider {
     storageLimit: BigNumber;
     validUntil: BigNumber;
   } => {
-    const storageByteDeposit = (this.api.consts.evm.storageDepositPerByte as UInt).toBigInt();
-    const txFeePerGas = (this.api.consts.evm.txFeePerGas as UInt).toBigInt();
+    const storageByteDeposit = this.api.consts.evm.storageDepositPerByte.toBigInt();
+    const txFeePerGas = this.api.consts.evm.txFeePerGas.toBigInt();
 
     return calcSubstrateTransactionParams({
       txGasPrice: gasPrice,
@@ -1124,7 +1124,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const txRequest = {
       ..._txRequest,
       value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
-      gasLimit: _txRequest.gasLimit?.toBigInt() || MAX_GAS_LIMIT,
+      gasLimit: _txRequest.gasLimit?.toBigInt() ?? MAX_GAS_LIMIT,
       storageLimit: STORAGE_LIMIT,
     };
 
