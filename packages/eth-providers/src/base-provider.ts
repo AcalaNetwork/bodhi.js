@@ -184,6 +184,7 @@ export interface TXReceipt extends partialTX {
 export interface GasConsts {
   storageDepositPerByte: bigint;
   txFeePerGas: bigint;
+  storageByteDeposit: bigint;
 }
 export interface EventData {
   [index: string]: {
@@ -916,6 +917,7 @@ export abstract class BaseProvider extends AbstractProvider {
   _getGasConsts = (): GasConsts => ({
     storageDepositPerByte: this.api.consts.evm.storageDepositPerByte.toBigInt(),
     txFeePerGas: this.api.consts.evm.txFeePerGas.toBigInt(),
+    storageByteDeposit: this.api.consts.evm.storageDepositPerByte.toBigInt(),
   });
 
   /**
@@ -1021,15 +1023,11 @@ export abstract class BaseProvider extends AbstractProvider {
       validUntil = blockNumber + 100;
     }
 
-    const storageByteDeposit = this.api.consts.evm.storageDepositPerByte.toBigInt();
-    const txFeePerGas = this.api.consts.evm.txFeePerGas.toBigInt();
-
     const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
       gasLimit,
       storageLimit,
       validUntil,
-      storageByteDeposit,
-      txFeePerGas,
+      ...this._getGasConsts(),
     });
 
     return {
@@ -1056,15 +1054,12 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: BigNumber;
   }> => {
     const validUntil = _validUntil || (await this.getBlockNumber()) + 150; // default 150 * 12 / 60 = 30min
-    const storageByteDeposit = this.api.consts.evm.storageDepositPerByte.toBigInt();
-    const txFeePerGas = this.api.consts.evm.txFeePerGas.toBigInt();
 
     const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
       gasLimit,
       storageLimit,
       validUntil,
-      storageByteDeposit,
-      txFeePerGas,
+      ...this._getGasConsts(),
     });
 
     return {
@@ -1086,17 +1081,11 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: BigNumber;
     storageLimit: BigNumber;
     validUntil: BigNumber;
-  } => {
-    const storageByteDeposit = this.api.consts.evm.storageDepositPerByte.toBigInt();
-    const txFeePerGas = this.api.consts.evm.txFeePerGas.toBigInt();
-
-    return calcSubstrateTransactionParams({
-      txGasPrice: gasPrice,
-      txGasLimit: gasLimit,
-      storageByteDeposit,
-      txFeePerGas,
-    });
-  };
+  } => calcSubstrateTransactionParams({
+    txGasPrice: gasPrice,
+    txGasLimit: gasLimit,
+    ...this._getGasConsts(),
+  });
 
   /**
    * Estimate resources for a transaction.
