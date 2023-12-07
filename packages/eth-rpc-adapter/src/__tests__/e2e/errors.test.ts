@@ -1,13 +1,14 @@
+import { AcalaJsonRpcProvider } from '@acala-network/eth-providers';
+import { Contract, Wallet } from 'ethers';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { RPC_URL, rpcGet } from './utils';
-import { Wallet } from 'ethers';
 import { describe, expect, it } from 'vitest';
+import { parseEther } from 'ethers/lib/utils';
+import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
+import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import axios from 'axios';
 
-const eth_getEthGas = rpcGet('eth_getEthGas', RPC_URL);
-const eth_sendRawTransaction = rpcGet('eth_sendRawTransaction', RPC_URL);
-const eth_chainId = rpcGet('eth_chainId', RPC_URL);
-const eth_call = rpcGet('eth_call', RPC_URL);
+import { RPC_URL, eth_call, eth_chainId, eth_estimateGas, eth_getEthGas, eth_sendRawTransaction } from './utils';
+import { evmAccounts } from './consts';
 
 describe('errors', () => {
   const POOR_ACCOUNT = '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd570';
@@ -111,6 +112,58 @@ describe('errors', () => {
       code: -32603,
       data: '0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001d45524332303a20696e73756666696369656e7420616c6c6f77616e6365000000',
       message: 'execution reverted: ERC20: insufficient allowance',
+    });
+  });
+
+  describe('throws outOfGas error when gaslimit too small', () => {
+    const provider = new AcalaJsonRpcProvider(RPC_URL);
+    const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+    const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet);
+
+    it('when eth call', async () => {
+      const tx = await aca.populateTransaction.transfer(evmAccounts[1].evmAddress, parseEther('1.32'));
+      const { error } = (await eth_call([{ ...tx, gas: 0 }, 'latest'])).data;
+
+      expect(error).toMatchInlineSnapshot(`
+        {
+          "code": -32603,
+          "message": "execution error: outOfGas",
+        }
+      `);
+    });
+
+    it('when estimateGas', async () => {
+      const tx = await aca.populateTransaction.transfer(evmAccounts[1].evmAddress, parseEther('1.32'));
+      const { error } = (await eth_estimateGas([{ ...tx, gas: 0 }, 'latest'])).data;
+
+      expect(error).toMatchInlineSnapshot(`
+        {
+          "code": -32603,
+          "message": "execution error: outOfGas",
+        }
+      `);
+    });
+
+    it('when send raw transaction', async () => {
+      const tx = await aca.populateTransaction.transfer(evmAccounts[1].evmAddress, parseEther('1.32'));
+      const signedTx = await wallet.signTransaction({ ...tx, gasLimit: 0 });
+
+      const { error } = (await eth_sendRawTransaction([signedTx])).data;
+      expect(error).toMatchInlineSnapshot(`
+        {
+          "code": -32603,
+          "message": "execution error: outOfGas",
+        }
+      `);
+    });
+
+    it('when send transaction with ethers', async () => {
+      try {
+        await aca.transfer(evmAccounts[1].evmAddress, parseEther('1.32'), { gasLimit: 0 });
+        expect.fail('did not throw an err');
+      } catch (err) {
+        expect((err as any).error).toMatchInlineSnapshot('[Error: execution error: outOfGas]');
+      }
     });
   });
 });
