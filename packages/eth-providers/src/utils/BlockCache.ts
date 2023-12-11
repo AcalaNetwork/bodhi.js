@@ -1,3 +1,5 @@
+import { Log } from '@ethersproject/abstract-provider';
+
 import { FullReceipt } from './receiptHelper';
 
 export type TxHashToReceipt = Record<string, FullReceipt>;
@@ -15,13 +17,18 @@ export class BlockCache {
   txHashToReceipt: TxHashToReceipt;
   cachedBlockHashes: string[];
   maxCachedBlocks: number;
+  lastCachedHeight: number;
 
   constructor(maxCachedBlocks = 200) {
     this.txHashToReceipt = {};
     this.blockHashToReceipts = {};
     this.cachedBlockHashes = [];
     this.maxCachedBlocks = maxCachedBlocks;
+    this.lastCachedHeight = -1;
   }
+
+  setlastCachedHeight = (blockNumber: number) =>
+    (this.lastCachedHeight = blockNumber);
 
   // automatically preserve a sliding window of ${maxCachedBlocks} blocks
   addReceipts = (blockHash: string, receipts: FullReceipt[]): void => {
@@ -50,6 +57,9 @@ export class BlockCache {
 
   getReceiptAtBlock = (txHash: string, blockHash: string): FullReceipt | null =>
     this.getAllReceiptsAtBlock(blockHash).find(r => r.transactionHash === txHash) ?? null;
+
+  getLogsAtBlock = (blockHash: string): Log[] =>
+    this.getAllReceiptsAtBlock(blockHash).map(r => r.logs).flat();
 
   inspect = (): CacheInspect => ({
     maxCachedBlocks: this.maxCachedBlocks,

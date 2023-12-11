@@ -73,6 +73,7 @@ import {
   decodeEthGas,
   encodeGasLimit,
   filterLog,
+  filterLogByAddress,
   filterLogByTopics,
   getAllReceiptsAtBlock,
   getHealthResult,
@@ -403,10 +404,13 @@ export abstract class BaseProvider extends AbstractProvider {
   _onNewHead = async ([header, attempts]: [Header, number]) => {
     attempts--;
     const blockHash = header.hash.toHex();
+    const blockNumber = header.number.toNumber();
+
     try {
       const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
       // update block cache
       this.blockCache.addReceipts(blockHash, receipts);
+      this.blockCache.setlastCachedHeight(blockNumber);
 
       // eth_subscribe
       await this._notifySubscribers(header, receipts);
@@ -1742,14 +1746,42 @@ export abstract class BaseProvider extends AbstractProvider {
       await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
     ) return txFromCache;
 
-    // smallest block number to make sure there is no gap between subql and block cache
-    const subqlTargetBlock = await this.bestBlockNumber - this.blockCache.cachedBlockHashes.length + 1;
-    await this._waitForSubql(subqlTargetBlock);
+    // make sure there is no gap between subql and cache
+    await this._checkSubqlHeight(this.blockCache.cachedBlockHashes.length);
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
     return txFromSubql
       ? subqlReceiptAdapter(txFromSubql)
       : null;
+  };
+
+  _checkSubqlHeight = async (_maxMissedBlockCount: number): Promise<number> => {
+    if (!this.subql) return;
+
+    /* ---------------
+       usually subql is delayed for a couple blocks
+       so it doesn't make sense to check too small range (less than 5 block)
+       this can also prevent throwing error when provider just started
+                                                       --------------- */
+    const SUBQL_DELAYED_OK_RANGE = 5;
+    const maxMissedBlockCount = Math.max(SUBQL_DELAYED_OK_RANGE, _maxMissedBlockCount);
+
+    const lastProcessedHeight = await this.subql.getLastProcessedHeight();
+    const minSubqlHeight = await this.bestBlockNumber - maxMissedBlockCount;
+    if (lastProcessedHeight < minSubqlHeight) {
+      return logger.throwError(
+        'subql indexer height is less than the minimum height required',
+        Logger.errors.SERVER_ERROR,
+        {
+          lastProcessedHeight,
+          minSubqlHeight,
+          maxMissedBlockCount,
+          curHeight: await this.bestBlockNumber,
+        }
+      );
+    }
+
+    return lastProcessedHeight;
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
@@ -1788,6 +1820,33 @@ export abstract class BaseProvider extends AbstractProvider {
     return filter;
   };
 
+  _getMaxTargetBlock = async (toBlock: number): Promise<number> => {
+    const upperBound = await this.finalizedBlockNumber;
+    return Math.min(toBlock, upperBound);
+  };
+
+  _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
+    const SUBQL_MAX_MISSED_BLOCKS = 20;
+
+    const targetBlock = await this._getMaxTargetBlock(toBlock);
+    const lastProcessedHeight = await this._checkSubqlHeight(SUBQL_MAX_MISSED_BLOCKS);
+    const missedBlockCount = targetBlock - lastProcessedHeight;
+    if (missedBlockCount <= 0) return [];
+
+    const firstMissedBlock = lastProcessedHeight + 1;
+    const missedBlocks = Array.from({ length: missedBlockCount }, (_, i) => firstMissedBlock + i);
+    const missedBlockHashes = await Promise.all(missedBlocks.map(this._getBlockHash.bind(this)));
+
+    await this._waitForCache(targetBlock);
+
+    // all logs should be in cache since missedBlockCount <= 20
+    // no need to filter by blocknumber anymore, since these logs are from missedBlocks directly
+    return missedBlockHashes
+      .map(this.blockCache.getLogsAtBlock.bind(this))
+      .flat()
+      .filter(log => filterLogByAddress(log, filter.address));
+  };
+
   // Bloom-filter Queries
   getLogs = async (rawFilter: LogFilter): Promise<Log[]> => {
     if (!this.subql) {
@@ -1798,40 +1857,30 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filter = await this._sanitizeRawFilter(rawFilter);
 
-    await this._waitForSubql(filter.toBlock);
-
     const subqlLogs = await this.subql.getFilteredLogs(filter);   // only filtered by blockNumber and address
-    return subqlLogs
+    const extraLogs = await this._getSubqlMissedLogs(filter.toBlock, filter);
+
+    return subqlLogs.concat(extraLogs)
       .filter(log => filterLogByTopics(log, filter.topics))
       .map(log => this.formatter.filterLog(log));
   };
 
-  /* ----------
-     make sure subql already indexed to target block number
-     currently unfinalized blocks indexing is NOT enabled
-     so upper bound would be finalized block number
-                                                 ---------- */
-  _waitForSubql = async (_targetBlock: number) => {
-    if (!this.subql) return;
+  _waitForCache = async (_targetBlock: number) => {
+    const CACHE_MAX_WAIT_BLOCKS = 2;
 
-    const SUBQL_MAX_WAIT_BLOCKS = 3;
-
-    const upperBound = await this.finalizedBlockNumber;
-    const targetBlock = Math.min(_targetBlock, upperBound);
-
-    let lastProcessedHeight = await this.subql.getLastProcessedHeight();
-    if (targetBlock - lastProcessedHeight > SUBQL_MAX_WAIT_BLOCKS) {
+    const targetBlock = await this._getMaxTargetBlock(_targetBlock);
+    let lastCachedHeight = await this.subql.getLastProcessedHeight();
+    if (targetBlock - lastCachedHeight > CACHE_MAX_WAIT_BLOCKS){
       return logger.throwError(
-        `subql indexer is not synced to target block, please wait for it to catch up. Estimated ${(targetBlock - lastProcessedHeight) * 12}s remaining ...`,
+        'blockCache is not synced to target block, please wait for it to catch up',
         Logger.errors.SERVER_ERROR,
-        { targetBlock, lastProcessedHeight }
+        { targetBlock, lastCachedHeight }
       );
     }
 
-    // wait at most 3 * 12 = 36s
-    while (lastProcessedHeight < targetBlock) {
+    while (lastCachedHeight < targetBlock) {
       await sleep(1000);
-      lastProcessedHeight = await this.subql.getLastProcessedHeight();
+      lastCachedHeight = this.blockCache.lastCachedHeight;
     }
   };
 
