@@ -1746,8 +1746,7 @@ export abstract class BaseProvider extends AbstractProvider {
       await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
     ) return txFromCache;
 
-    // make sure there is no gap between subql and cache
-    await this._checkSubqlHeight(this.blockCache.cachedBlockHashes.length);
+    await this._checkSubqlHeight();
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
     return txFromSubql
@@ -1755,19 +1754,13 @@ export abstract class BaseProvider extends AbstractProvider {
       : null;
   };
 
-  _checkSubqlHeight = async (_maxMissedBlockCount: number): Promise<number> => {
+  // make sure there is no gap between subql and cache
+  _checkSubqlHeight = async (): Promise<number> => {
     if (!this.subql) return;
 
-    /* ---------------
-       usually subql is delayed for a couple blocks
-       so it doesn't make sense to check too small range (less than 5 block)
-       this can also prevent throwing error when provider just started
-                                                       --------------- */
-    const SUBQL_DELAYED_OK_RANGE = 5;
-    const maxMissedBlockCount = Math.max(SUBQL_DELAYED_OK_RANGE, _maxMissedBlockCount);
-
+    const maxMissedBlockCount = this.blockCache.cachedBlockHashes.length;
     const lastProcessedHeight = await this.subql.getLastProcessedHeight();
-    const minSubqlHeight = await this.bestBlockNumber - maxMissedBlockCount;
+    const minSubqlHeight = await this.finalizedBlockNumber - maxMissedBlockCount;
     if (lastProcessedHeight < minSubqlHeight) {
       return logger.throwError(
         'subql indexer height is less than the minimum height required',
@@ -1776,7 +1769,7 @@ export abstract class BaseProvider extends AbstractProvider {
           lastProcessedHeight,
           minSubqlHeight,
           maxMissedBlockCount,
-          curHeight: await this.bestBlockNumber,
+          curFinalizedHeight: await this.finalizedBlockNumber,
         }
       );
     }
@@ -1826,10 +1819,8 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
-    const SUBQL_MAX_MISSED_BLOCKS = 20;
-
     const targetBlock = await this._getMaxTargetBlock(toBlock);
-    const lastProcessedHeight = await this._checkSubqlHeight(SUBQL_MAX_MISSED_BLOCKS);
+    const lastProcessedHeight = await this._checkSubqlHeight();   // all missed logs should be in cache
     const missedBlockCount = targetBlock - lastProcessedHeight;
     if (missedBlockCount <= 0) return [];
 
@@ -1839,7 +1830,6 @@ export abstract class BaseProvider extends AbstractProvider {
 
     await this._waitForCache(targetBlock);
 
-    // all logs should be in cache since missedBlockCount <= 20
     // no need to filter by blocknumber anymore, since these logs are from missedBlocks directly
     return missedBlockHashes
       .map(this.blockCache.getLogsAtBlock.bind(this))
