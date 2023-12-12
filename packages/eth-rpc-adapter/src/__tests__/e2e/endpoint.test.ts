@@ -482,14 +482,14 @@ describe('endpoint', () => {
 
         // should return latest logs as soon as it's finalized
         const targetHeight = curHeight + 1;
-        await waitForHeight(provider, targetHeight);
+        await waitForHeight(provider, targetHeight);    // instant-sealing: best height = finalized height
         const res = await eth_getLogs([{ fromBlock: targetHeight, toBlock: targetHeight }]);
 
         expect(res.data?.result?.length).to.eq(1);
         expect(parseInt(res.data.result[0].blockNumber, 16)).to.eq(targetHeight);
 
         // should not hang if toBlock is large
-        const res2 = await eth_getLogs([{ fromBlock: curHeight + 1, toBlock: 9999999999 }]);
+        const res2 = await eth_getLogs([{ fromBlock: targetHeight, toBlock: 9999999999 }]);
         expect(res2.data.result).to.deep.equal(res.data.result);
       });
 
