@@ -118,7 +118,6 @@ describe('endpoint', () => {
           allLogs.length < DETERMINISTIC_SETUP_TOTAL_LOGS
         )
       ) {
-        console.log(allTxReceipts.length, allLogs.length);
         console.log(`let's give subql a little bit more time to index, retrying #${tries} in 3s ...`);
         await sleep(3000);
 

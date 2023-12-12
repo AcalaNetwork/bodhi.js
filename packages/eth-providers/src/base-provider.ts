@@ -1830,16 +1830,19 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
-    const targetBlock = await this._getMaxTargetBlock(toBlock);
+    const targetBlock = Math.min(toBlock, await this.finalizedBlockNumber);   // subql upperbound is finalizedBlockNumber
     const lastProcessedHeight = await this._checkSubqlHeight();
     const missedBlockCount = targetBlock - lastProcessedHeight;
     if (missedBlockCount <= 0) return [];
 
-    const firstMissedBlock = lastProcessedHeight + 1;
-    const missedBlocks = Array.from({ length: missedBlockCount }, (_, i) => firstMissedBlock + i);
-    const missedBlockHashes = await Promise.all(missedBlocks.map(this._getBlockHash.bind(this)));
+    const firstMissedHeight = lastProcessedHeight + 1;
+    const missedHeights = Array.from(
+      { length: missedBlockCount },
+      (_, i) => firstMissedHeight + i,
+    );
+    const missedBlockHashes = await Promise.all(missedHeights.map(this._getBlockHash.bind(this)));
 
-    // no need to filter by blocknumber anymore, since these logs are from missedBlocks directly
+    // no need to filter by blocknumber anymore, since these logs are from missedHeights directly
     return missedBlockHashes
       .map(this.blockCache.getLogsAtBlock.bind(this))
       .flat()
@@ -1856,8 +1859,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filter = await this._sanitizeRawFilter(rawFilter);
 
-    const subqlLogs = await this.subql.getFilteredLogs(filter);   // only filtered by blockNumber and address
-    const extraLogs = await this._getSubqlMissedLogs(filter.toBlock, filter);
+    // only filter by blockNumber and address, and topics are filtered at last
+    const [subqlLogs, extraLogs] = await Promise.all([
+      this.subql.getFilteredLogs(filter),
+      this._getSubqlMissedLogs(filter.toBlock, filter),
+    ]);
 
     return subqlLogs.concat(extraLogs)
       .filter(log => filterLogByTopics(log, filter.topics))
