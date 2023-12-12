@@ -66,6 +66,7 @@ import {
   net_listening,
   deployGasMonster,
   toDeterministic,
+  waitForHeight,
 } from './utils';
 
 import {
@@ -472,31 +473,40 @@ describe('endpoint', () => {
       beforeAll(async () => {
         // need to put in here to prevent interrupte deterministic setup
         token = await deployErc20(wallet);
+        await token.deployed();
       });
 
       it('should return latest logs as soon as it\'s finalized, and should not hang if toBlock is large', async () => {
-        const curblockNum = await provider.getBlockNumber();
+        const curHeight = await provider.getBlockNumber();
         await (await token.transfer(ADDRESS_ALICE, 1000)).wait();
 
         // should return latest logs as soon as it's finalized
-        const res = await eth_getLogs([{ fromBlock: curblockNum + 1, toBlock: curblockNum + 1 }]);
-        expect(res.data.result.length).to.eq(1);
+        const targetHeight = curHeight + 1;
+        await waitForHeight(provider, targetHeight);
+        const res = await eth_getLogs([{ fromBlock: targetHeight, toBlock: targetHeight }]);
+
+        expect(res.data?.result?.length).to.eq(1);
+        expect(parseInt(res.data.result[0].blockNumber, 16)).to.eq(targetHeight);
 
         // should not hang if toBlock is large
-        const res2 = await eth_getLogs([{ fromBlock: curblockNum + 1, toBlock: 9999999999 }]);
+        const res2 = await eth_getLogs([{ fromBlock: curHeight + 1, toBlock: 9999999999 }]);
         expect(res2.data.result).to.deep.equal(res.data.result);
       });
 
-      it('should throw correct error if subql is not synced', async () => {
-        const curblockNum = await provider.getBlockNumber();
+      it('should return latest logs before subql is synced', async () => {
+        const curHeight = await provider.getBlockNumber();
         const pendings = [] as any[];
         for (let i = 0; i < 5; i++) {
           pendings.push(await token.transfer(ADDRESS_ALICE, 1000));
         }
         await Promise.all(pendings.map(p => p.wait()));
 
-        const res = await eth_getLogs([{ fromBlock: curblockNum + 5, toBlock: curblockNum + 5 }]);
-        expect(res.data.error?.message).to.contain('Error: subql indexer is not synced to target block');
+        const targetHeight = curHeight + 5;
+        await waitForHeight(provider, targetHeight);
+        const res = await eth_getLogs([{ fromBlock: targetHeight, toBlock: targetHeight }]);
+
+        expect(res.data?.result?.length).to.eq(1);
+        expect(parseInt(res.data.result[0].blockNumber, 16)).to.eq(targetHeight);
       });
     });
   });
@@ -1670,12 +1680,12 @@ describe('endpoint', () => {
       res2 = (await eth_getFilterChanges([logFilterId2])).data.result;
       res3 = (await eth_getFilterChanges([logFilterId3])).data.result;
 
-      const curBlockNum = Number((await eth_blockNumber()).data.result);
+      const curHeight = Number((await eth_blockNumber()).data.result);
       expectedLogs = (
         await eth_getLogs([
           {
-            fromBlock: curBlockNum - txCount,
-            toBlock: curBlockNum,
+            fromBlock: curHeight - txCount,
+            toBlock: curHeight,
           },
         ])
       ).data.result;
@@ -1817,12 +1827,12 @@ describe('endpoint', () => {
       res2 = (await eth_getFilterLogs([logFilterId2])).data.result;
       res3 = (await eth_getFilterLogs([logFilterId3])).data.result;
 
-      const curBlockNum = Number((await eth_blockNumber()).data.result);
+      const curHeight = Number((await eth_blockNumber()).data.result);
       expectedLogs = (
         await eth_getLogs([
           {
-            fromBlock: curBlockNum - txCount,
-            toBlock: curBlockNum,
+            fromBlock: curHeight - txCount,
+            toBlock: curHeight,
           },
         ])
       ).data.result;

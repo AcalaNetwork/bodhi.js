@@ -74,6 +74,7 @@ import {
   encodeGasLimit,
   filterLog,
   filterLogByAddress,
+  filterLogByBlockNumber,
   filterLogByTopics,
   getAllReceiptsAtBlock,
   getHealthResult,
@@ -421,7 +422,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     try {
       const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
-      // update block cache
+
+      // update block cache, this should happen *before* notifying subscribers about the new block
       this.blockCache.addReceipts(blockHash, receipts);
       this.blockCache.setlastCachedBlock({ hash: blockHash, number: blockNumber });
 
@@ -1842,10 +1844,10 @@ export abstract class BaseProvider extends AbstractProvider {
     );
     const missedBlockHashes = await Promise.all(missedHeights.map(this._getBlockHash.bind(this)));
 
-    // no need to filter by blocknumber anymore, since these logs are from missedHeights directly
     return missedBlockHashes
       .map(this.blockCache.getLogsAtBlock.bind(this))
       .flat()
+      .filter(log => filterLogByBlockNumber(log, filter.fromBlock, filter.toBlock))
       .filter(log => filterLogByAddress(log, filter.address));
   };
 

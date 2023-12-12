@@ -1,6 +1,6 @@
 import { BigNumber, ContractFactory, Signer } from 'ethers';
-import { BlockTagish } from '@acala-network/eth-providers';
-import { Log, TransactionRequest } from '@ethersproject/abstract-provider';
+import { BlockTagish, sleep } from '@acala-network/eth-providers';
+import { Log, Provider, TransactionRequest } from '@ethersproject/abstract-provider';
 import { expect } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
 import { parseEther } from 'ethers/lib/utils';
@@ -146,4 +146,20 @@ export const toDeterministic = (data: any) => {
   }
 
   return res;
+};
+
+export const waitForHeight = async (
+  provider: Provider,
+  height: number,
+  timeout = 10000,
+) => {
+  const t = setTimeout(() => {
+    throw new Error(`waitForHeight timeout after ${timeout}ms`);
+  }, timeout);
+
+  while (await provider.getBlockNumber() < height) {
+    await sleep(200);
+  }
+
+  clearTimeout(t);
 };
