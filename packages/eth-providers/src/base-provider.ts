@@ -88,7 +88,6 @@ import {
   runWithRetries,
   runWithTiming,
   sendTx,
-  sleep,
   sortObjByKey,
   subqlReceiptAdapter,
   throwNotImplemented,
@@ -341,14 +340,17 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   get bestBlockHash() {
-    return firstValueFrom(this.best$).then(({ hash }) => hash);
+    return this.blockCache.lastCachedBlock.hash;
   }
+
   get bestBlockNumber() {
-    return firstValueFrom(this.best$).then(({ number }) => number);
+    return this.blockCache.lastCachedBlock.number;
   }
+
   get finalizedBlockHash() {
     return firstValueFrom(this.finalized$).then(({ hash }) => hash);
   }
+
   get finalizedBlockNumber() {
     return firstValueFrom(this.finalized$).then(({ number }) => number);
   }
@@ -362,15 +364,21 @@ export abstract class BaseProvider extends AbstractProvider {
     this.finalizedHead$ = this.api.rx.rpc.chain.subscribeFinalizedHeads();
 
     const headSub = this.head$.subscribe(header => {
-      this.best$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
+      this.best$.next({
+        hash: header.hash.toHex(),
+        number: header.number.toNumber(),
+      });
     });
 
     const finalizedSub = this.finalizedHead$.subscribe(header => {
       this.finalizedBlockHashes.add(header.hash.toHex());
-      this.finalized$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
+      this.finalized$.next({
+        hash: header.hash.toHex(),
+        number: header.number.toNumber(),
+      });
     });
 
-    await firstValueFrom(this.head$);
+    const firstBlock = await firstValueFrom(this.head$);
     await firstValueFrom(this.finalizedHead$);
 
     const safeHead$ = this.safeMode
@@ -393,6 +401,11 @@ export abstract class BaseProvider extends AbstractProvider {
       this.#finalizedHeadTasks.set(header.hash.toHex(), task);
     });
 
+    this.blockCache.setlastCachedBlock({
+      hash: firstBlock.hash.toHex(),
+      number: firstBlock.number.toNumber(),
+    });
+
     return () => {
       headSub.unsubscribe();
       finalizedSub.unsubscribe();
@@ -410,7 +423,7 @@ export abstract class BaseProvider extends AbstractProvider {
       const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
       // update block cache
       this.blockCache.addReceipts(blockHash, receipts);
-      this.blockCache.setlastCachedHeight(blockNumber);
+      this.blockCache.setlastCachedBlock({ hash: blockHash, number: blockNumber });
 
       // eth_subscribe
       await this._notifySubscribers(header, receipts);
@@ -558,11 +571,9 @@ export abstract class BaseProvider extends AbstractProvider {
   isReady = async (): Promise<void> => {
     try {
       await this.api.isReadyOrError;
-      await this.getNetwork();
 
-      if (!this.#subscription) {
-        this.#subscription = this.startSubscriptions();
-      }
+      this.#subscription ??= this.startSubscriptions();
+
       // wait for subscription to happen
       await this.#subscription;
     } catch (e) {
@@ -593,27 +604,27 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getNetwork = async (): Promise<Network> => {
-    if (!this.network) {
-      this.network = {
-        name: this.api.runtimeVersion.specName.toString(),
-        chainId: await this.chainId(),
-      };
-    }
+    await this.isReady();
+
+    this.network ??= {
+      name: this.api.runtimeVersion.specName.toString(),
+      chainId: await this.chainId(),
+    };
 
     return this.network;
   };
 
-  netVersion = async (): Promise<string> => {
-    return this.api.consts.evmAccounts.chainId.toString();
-  };
+  netVersion = async (): Promise<string> =>
+    this.api.consts.evmAccounts.chainId.toString();
 
-  chainId = async (): Promise<number> => {
-    return this.api.consts.evmAccounts.chainId.toNumber();
-  };
+  chainId = async (): Promise<number> =>
+    this.api.consts.evmAccounts.chainId.toNumber();
 
-  getBlockNumber = async (): Promise<number> => {
-    return this.safeMode ? this.finalizedBlockNumber : this.bestBlockNumber;
-  };
+  getBlockNumber = async (): Promise<number> => (
+    this.safeMode
+      ? this.finalizedBlockNumber
+      : this.bestBlockNumber
+  );
 
   getBlockData = async (_blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
@@ -1820,15 +1831,13 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
     const targetBlock = await this._getMaxTargetBlock(toBlock);
-    const lastProcessedHeight = await this._checkSubqlHeight();   // all missed logs should be in cache
+    const lastProcessedHeight = await this._checkSubqlHeight();
     const missedBlockCount = targetBlock - lastProcessedHeight;
     if (missedBlockCount <= 0) return [];
 
     const firstMissedBlock = lastProcessedHeight + 1;
     const missedBlocks = Array.from({ length: missedBlockCount }, (_, i) => firstMissedBlock + i);
     const missedBlockHashes = await Promise.all(missedBlocks.map(this._getBlockHash.bind(this)));
-
-    await this._waitForCache(targetBlock);
 
     // no need to filter by blocknumber anymore, since these logs are from missedBlocks directly
     return missedBlockHashes
@@ -1853,25 +1862,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return subqlLogs.concat(extraLogs)
       .filter(log => filterLogByTopics(log, filter.topics))
       .map(log => this.formatter.filterLog(log));
-  };
-
-  _waitForCache = async (_targetBlock: number) => {
-    const CACHE_MAX_WAIT_BLOCKS = 2;
-
-    const targetBlock = await this._getMaxTargetBlock(_targetBlock);
-    let lastCachedHeight = await this.subql.getLastProcessedHeight();
-    if (targetBlock - lastCachedHeight > CACHE_MAX_WAIT_BLOCKS){
-      return logger.throwError(
-        'blockCache is not synced to target block, please wait for it to catch up',
-        Logger.errors.SERVER_ERROR,
-        { targetBlock, lastCachedHeight }
-      );
-    }
-
-    while (lastCachedHeight < targetBlock) {
-      await sleep(1000);
-      lastCachedHeight = this.blockCache.lastCachedHeight;
-    }
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {

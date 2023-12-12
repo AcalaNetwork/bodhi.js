@@ -4,6 +4,10 @@ import { FullReceipt } from './receiptHelper';
 
 export type TxHashToReceipt = Record<string, FullReceipt>;
 export type BlockHashToReceipts = Record<string, FullReceipt[]>;
+export type Block = {
+  number: number;
+  hash: string;
+}
 
 export interface CacheInspect {
   maxCachedBlocks: number;
@@ -17,18 +21,17 @@ export class BlockCache {
   txHashToReceipt: TxHashToReceipt;
   cachedBlockHashes: string[];
   maxCachedBlocks: number;
-  lastCachedHeight: number;
+  lastCachedBlock: Block;
 
   constructor(maxCachedBlocks = 200) {
     this.txHashToReceipt = {};
     this.blockHashToReceipts = {};
     this.cachedBlockHashes = [];
     this.maxCachedBlocks = maxCachedBlocks;
-    this.lastCachedHeight = -1;
+    this.lastCachedBlock = null;
   }
 
-  setlastCachedHeight = (blockNumber: number) =>
-    (this.lastCachedHeight = blockNumber);
+  setlastCachedBlock = (block: Block) => (this.lastCachedBlock = block);
 
   // automatically preserve a sliding window of ${maxCachedBlocks} blocks
   addReceipts = (blockHash: string, receipts: FullReceipt[]): void => {

@@ -107,17 +107,31 @@ describe('endpoint', () => {
       const DETERMINISTIC_SETUP_TOTAL_TXS = 12;
       const DETERMINISTIC_SETUP_TOTAL_LOGS = 13;
       let tries = 0;
-      let [allTxReceipts, allLogs] = await Promise.all([subql.getAllTxReceipts(), subql.getAllLogs()]);
+      let [allTxReceipts, allLogs] = await Promise.all([
+        subql.getAllTxReceipts(),
+        subql.getAllLogs(),
+      ]);
       while (
-        (allTxReceipts.length < DETERMINISTIC_SETUP_TOTAL_TXS || allLogs.length < DETERMINISTIC_SETUP_TOTAL_LOGS) &&
-        tries++ < 10
+        tries++ < 5 &&
+        (
+          allTxReceipts.length < DETERMINISTIC_SETUP_TOTAL_TXS ||
+          allLogs.length < DETERMINISTIC_SETUP_TOTAL_LOGS
+        )
       ) {
-        console.log(`let's give subql a little bit more time to index, retrying #${tries} in 5s ...`);
-        await sleep(10000);
-        [allTxReceipts, allLogs] = await Promise.all([subql.getAllTxReceipts(), subql.getAllLogs()]);
+        console.log(allTxReceipts.length, allLogs.length);
+        console.log(`let's give subql a little bit more time to index, retrying #${tries} in 3s ...`);
+        await sleep(3000);
+
+        [allTxReceipts, allLogs] = await Promise.all([
+          subql.getAllTxReceipts(),
+          subql.getAllLogs(),
+        ]);
       }
 
-      if (allTxReceipts.length < DETERMINISTIC_SETUP_TOTAL_TXS || allLogs.length < DETERMINISTIC_SETUP_TOTAL_LOGS) {
+      if (
+        allTxReceipts.length < DETERMINISTIC_SETUP_TOTAL_TXS ||
+        allLogs.length < DETERMINISTIC_SETUP_TOTAL_LOGS
+      ) {
         throw new Error(`
           test env setup failed!
           expected ${DETERMINISTIC_SETUP_TOTAL_TXS} Txs in subql but got ${allTxReceipts.length}
@@ -222,7 +236,7 @@ describe('endpoint', () => {
   describe('eth_getLogs', () => {
     const ALL_BLOCK_RANGE_FILTER = { fromBlock: 'earliest' };
 
-    describe('when no filter', () => {
+    describe.concurrent('when no filter', () => {
       it('returns all logs from latest block', async () => {
         const res = (await eth_getLogs([{}])).data.result;
         expect(res.length).to.equal(2);
@@ -231,7 +245,7 @@ describe('endpoint', () => {
       });
     });
 
-    describe('filter by address', () => {
+    describe.concurrent('filter by address', () => {
       it('returns correct logs', async () => {
         /* ---------- single address ---------- */
         for (const log of allLogs) {
@@ -251,7 +265,7 @@ describe('endpoint', () => {
       });
     });
 
-    describe('filter by block number', () => {
+    describe.concurrent('filter by block number', () => {
       it('returns correct logs', async () => {
         const BIG_NUMBER = 88888888;
         const BIG_NUMBER_HEX = '0x54C5638';
@@ -299,7 +313,7 @@ describe('endpoint', () => {
       });
     });
 
-    describe('filter by block tag', () => {
+    describe.concurrent('filter by block tag', () => {
       it('returns correct logs for valid tag', async () => {
         let res: Awaited<ReturnType<typeof eth_getLogs>>;
         let expectedLogs: LogHexified[];
@@ -350,7 +364,7 @@ describe('endpoint', () => {
       });
     });
 
-    describe('filter by topics', () => {
+    describe.concurrent('filter by topics', () => {
       it('returns correct logs', async () => {
         let res: Awaited<ReturnType<typeof eth_getLogs>>;
         let expectedLogs: LogHexified[];
@@ -396,7 +410,7 @@ describe('endpoint', () => {
       });
     });
 
-    describe('filter by blockhash', () => {
+    describe.concurrent('filter by blockhash', () => {
       it('returns correct logs', async () => {
         const allLogsFromSubql = await subql.getAllLogs().then(logs => logs.map(hexilifyLog));
         for (const log of allLogsFromSubql) {
@@ -407,7 +421,7 @@ describe('endpoint', () => {
       });
     });
 
-    describe('filter by multiple params', () => {
+    describe.concurrent('filter by multiple params', () => {
       it('returns correct logs', async () => {
         let res: Awaited<ReturnType<typeof eth_getLogs>>;
         let expectedLogs: LogHexified[];
@@ -474,7 +488,7 @@ describe('endpoint', () => {
         expect(res2.data.result).to.deep.equal(res.data.result);
       });
 
-      it('should throw correct error is subql is not synced', async () => {
+      it('should throw correct error if subql is not synced', async () => {
         const curblockNum = await provider.getBlockNumber();
         const pendings = [] as any[];
         for (let i = 0; i < 5; i++) {

@@ -53,7 +53,6 @@ const TRACE_METHODS = [
   '_getMaxTargetBlock',
   '_getSubqlMissedLogs',
   'getLogs',
-  '_waitForCache',
   'getIndexerMetadata',
   'healthCheck',
   'addEventListener',
