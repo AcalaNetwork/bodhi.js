@@ -50,7 +50,6 @@ const TRACE_METHODS = [
   '_getReceipt',
   '_checkSubqlHeight',
   '_sanitizeRawFilter',
-  '_getMaxTargetBlock',
   '_getSubqlMissedLogs',
   'getLogs',
   'getIndexerMetadata',
