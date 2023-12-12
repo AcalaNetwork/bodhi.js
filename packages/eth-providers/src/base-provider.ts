@@ -1826,11 +1826,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return filter;
   };
 
-  _getMaxTargetBlock = async (toBlock: number): Promise<number> => {
-    const upperBound = await this.finalizedBlockNumber;
-    return Math.min(toBlock, upperBound);
-  };
-
   _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
     const targetBlock = Math.min(toBlock, await this.finalizedBlockNumber);   // subql upperbound is finalizedBlockNumber
     const lastProcessedHeight = await this._checkSubqlHeight();
@@ -1861,7 +1856,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filter = await this._sanitizeRawFilter(rawFilter);
 
-    // only filter by blockNumber and address, and topics are filtered at last
+    // only filter by blockNumber and address, since topics are filtered at last
     const [subqlLogs, extraLogs] = await Promise.all([
       this.subql.getFilteredLogs(filter),
       this._getSubqlMissedLogs(filter.toBlock, filter),
