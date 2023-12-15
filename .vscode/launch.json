@@ -20,7 +20,7 @@
       "cwd": "${workspaceRoot}/packages/eth-rpc-adapter",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**"]
-    }
+    },
     {
       "name": "hardhat test",
       "type": "node",
@@ -38,6 +38,24 @@
       "cwd": "${workspaceRoot}/scripts/runtime-upgrade-tests",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "vitest",
+      "autoAttachChildProcesses": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "packages/eth-rpc-adapter/src/__tests__/e2e",
+        "--config",
+        "packages/eth-rpc-adapter/vitest.config.e2e.ts"
+      ],
+      "smartStep": true,
+      "console": "integratedTerminal"
     }
   ]
 }

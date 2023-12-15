@@ -1,8 +1,9 @@
 import { expect } from 'chai';
 import { ethers, network } from 'hardhat';
-import { ERC20__factory, type Token } from '../typechain-types';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { parseEther, parseUnits } from 'ethers/lib/utils';
+
+import { ERC20__factory, type Token } from '../typechain-types';
 
 const one = parseEther('1');
 
