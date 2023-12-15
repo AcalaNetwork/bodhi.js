@@ -3,6 +3,8 @@ import { ethers, network } from 'hardhat';
 import { before, after } from 'mocha';
 import { parseUnits } from 'ethers/lib/utils';
 import { AcalaJsonRpcProvider, sleep } from '@acala-network/eth-providers';
+import { ACA } from '@acala-network/contracts/utils/AcalaAddress';
+import { KAR } from '@acala-network/contracts/utils/KaruraAddress';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Wallet } from 'ethers';
@@ -10,8 +12,10 @@ import { Wallet } from 'ethers';
 import { ERC20, ERC20__factory } from '../typechain-types';
 import { SubsManager, getAddrSelector } from './utils';
 
+const TOKEN_ADDR = network.name === 'acala'
+  ? ACA
+  : KAR;
 const oneAcaErc20 = parseUnits('1', 12);
-const ACA_ADDR = '0x0000000000000000000100000000000000000000';
 const TRANSFER_SELECTOR = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
 const ETH_RPC_URL = network.config.url;
@@ -33,7 +37,7 @@ describe('eth subscription', () => {
     console.log('setting up subscription ...');
 
     [deployer, user] = await ethers.getSigners();
-    aca = ERC20__factory.connect(ACA_ADDR, deployer);
+    aca = ERC20__factory.connect(TOKEN_ADDR, deployer);
 
     provider = new AcalaJsonRpcProvider(ETH_RPC_URL);
     sm = new SubsManager(ETH_RPC_URL_WS);
