@@ -231,6 +231,35 @@ describe('endpoint', () => {
 
       /* ---------- TODO: pending tx ---------- */
     });
+
+    describe('get latest receipt', async () => {
+      const provider = new AcalaJsonRpcProvider(RPC_URL);
+      const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+      let token: Contract;
+
+      beforeAll(async () => {
+        // need to put in here to prevent interrupte deterministic setup
+        token = await deployErc20(wallet);
+        await token.deployed();
+      });
+
+      it('should be able to get latest receipt as soon as new block is ready', async () => {
+        const curHeight = await provider.getBlockNumber();
+        await (await token.transfer(ADDRESS_ALICE, 1000)).wait();
+
+        // should return latest receipt as soon as block is ready
+        const targetHeight = curHeight + 1;
+        await waitForHeight(provider, targetHeight);
+        const blockRes = await eth_getBlockByNumber([targetHeight, false]);
+        const txHashes = blockRes.data?.result.transactions;
+        expect(txHashes.length).to.eq(1);
+        const txHash = txHashes[0];
+
+        const receipt = (await eth_getTransactionReceipt([txHash])).data?.result;
+        expect(receipt).to.not.be.null;
+        expect(parseInt(receipt.blockNumber, 16)).to.eq(targetHeight);
+      });
+    });
   });
 
   describe('eth_getLogs', () => {

@@ -158,7 +158,7 @@ export const waitForHeight = async (
   }, timeout);
 
   while (await provider.getBlockNumber() < height) {
-    await sleep(200);
+    await sleep(100);
   }
 
   clearTimeout(t);
