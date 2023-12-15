@@ -73,6 +73,8 @@ import {
   decodeEthGas,
   encodeGasLimit,
   filterLog,
+  filterLogByAddress,
+  filterLogByBlockNumber,
   filterLogByTopics,
   getAllReceiptsAtBlock,
   getHealthResult,
@@ -87,7 +89,6 @@ import {
   runWithRetries,
   runWithTiming,
   sendTx,
-  sleep,
   sortObjByKey,
   subqlReceiptAdapter,
   throwNotImplemented,
@@ -340,14 +341,17 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   get bestBlockHash() {
-    return firstValueFrom(this.best$).then(({ hash }) => hash);
+    return this.blockCache.lastCachedBlock.hash;
   }
+
   get bestBlockNumber() {
-    return firstValueFrom(this.best$).then(({ number }) => number);
+    return this.blockCache.lastCachedBlock.number;
   }
+
   get finalizedBlockHash() {
     return firstValueFrom(this.finalized$).then(({ hash }) => hash);
   }
+
   get finalizedBlockNumber() {
     return firstValueFrom(this.finalized$).then(({ number }) => number);
   }
@@ -361,15 +365,21 @@ export abstract class BaseProvider extends AbstractProvider {
     this.finalizedHead$ = this.api.rx.rpc.chain.subscribeFinalizedHeads();
 
     const headSub = this.head$.subscribe(header => {
-      this.best$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
+      this.best$.next({
+        hash: header.hash.toHex(),
+        number: header.number.toNumber(),
+      });
     });
 
     const finalizedSub = this.finalizedHead$.subscribe(header => {
       this.finalizedBlockHashes.add(header.hash.toHex());
-      this.finalized$.next({ hash: header.hash.toHex(), number: header.number.toNumber() });
+      this.finalized$.next({
+        hash: header.hash.toHex(),
+        number: header.number.toNumber(),
+      });
     });
 
-    await firstValueFrom(this.head$);
+    const firstBlock = await firstValueFrom(this.head$);
     await firstValueFrom(this.finalizedHead$);
 
     const safeHead$ = this.safeMode
@@ -392,6 +402,11 @@ export abstract class BaseProvider extends AbstractProvider {
       this.#finalizedHeadTasks.set(header.hash.toHex(), task);
     });
 
+    this.blockCache.setlastCachedBlock({
+      hash: firstBlock.hash.toHex(),
+      number: firstBlock.number.toNumber(),
+    });
+
     return () => {
       headSub.unsubscribe();
       finalizedSub.unsubscribe();
@@ -403,10 +418,14 @@ export abstract class BaseProvider extends AbstractProvider {
   _onNewHead = async ([header, attempts]: [Header, number]) => {
     attempts--;
     const blockHash = header.hash.toHex();
+    const blockNumber = header.number.toNumber();
+
     try {
       const receipts = await getAllReceiptsAtBlock(this.api, blockHash);
-      // update block cache
+
+      // update block cache, this should happen *before* notifying subscribers about the new block
       this.blockCache.addReceipts(blockHash, receipts);
+      this.blockCache.setlastCachedBlock({ hash: blockHash, number: blockNumber });
 
       // eth_subscribe
       await this._notifySubscribers(header, receipts);
@@ -554,11 +573,9 @@ export abstract class BaseProvider extends AbstractProvider {
   isReady = async (): Promise<void> => {
     try {
       await this.api.isReadyOrError;
-      await this.getNetwork();
 
-      if (!this.#subscription) {
-        this.#subscription = this.startSubscriptions();
-      }
+      this.#subscription ??= this.startSubscriptions();
+
       // wait for subscription to happen
       await this.#subscription;
     } catch (e) {
@@ -589,27 +606,27 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   getNetwork = async (): Promise<Network> => {
-    if (!this.network) {
-      this.network = {
-        name: this.api.runtimeVersion.specName.toString(),
-        chainId: await this.chainId(),
-      };
-    }
+    await this.isReady();
+
+    this.network ??= {
+      name: this.api.runtimeVersion.specName.toString(),
+      chainId: await this.chainId(),
+    };
 
     return this.network;
   };
 
-  netVersion = async (): Promise<string> => {
-    return this.api.consts.evmAccounts.chainId.toString();
-  };
+  netVersion = async (): Promise<string> =>
+    this.api.consts.evmAccounts.chainId.toString();
 
-  chainId = async (): Promise<number> => {
-    return this.api.consts.evmAccounts.chainId.toNumber();
-  };
+  chainId = async (): Promise<number> =>
+    this.api.consts.evmAccounts.chainId.toNumber();
 
-  getBlockNumber = async (): Promise<number> => {
-    return this.safeMode ? this.finalizedBlockNumber : this.bestBlockNumber;
-  };
+  getBlockNumber = async (): Promise<number> => (
+    this.safeMode
+      ? this.finalizedBlockNumber
+      : this.bestBlockNumber
+  );
 
   getBlockData = async (_blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
@@ -1742,14 +1759,35 @@ export abstract class BaseProvider extends AbstractProvider {
       await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
     ) return txFromCache;
 
-    // smallest block number to make sure there is no gap between subql and block cache
-    const subqlTargetBlock = await this.bestBlockNumber - this.blockCache.cachedBlockHashes.length + 1;
-    await this._waitForSubql(subqlTargetBlock);
+    await this._checkSubqlHeight();
 
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
     return txFromSubql
       ? subqlReceiptAdapter(txFromSubql)
       : null;
+  };
+
+  // make sure there is no gap between subql and cache
+  _checkSubqlHeight = async (): Promise<number> => {
+    if (!this.subql) return;
+
+    const maxMissedBlockCount = this.blockCache.cachedBlockHashes.length;
+    const lastProcessedHeight = await this.subql.getLastProcessedHeight();
+    const minSubqlHeight = await this.finalizedBlockNumber - maxMissedBlockCount;
+    if (lastProcessedHeight < minSubqlHeight) {
+      return logger.throwError(
+        'subql indexer height is less than the minimum height required',
+        Logger.errors.SERVER_ERROR,
+        {
+          lastProcessedHeight,
+          minSubqlHeight,
+          maxMissedBlockCount,
+          curFinalizedHeight: await this.finalizedBlockNumber,
+        }
+      );
+    }
+
+    return lastProcessedHeight;
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
@@ -1788,6 +1826,26 @@ export abstract class BaseProvider extends AbstractProvider {
     return filter;
   };
 
+  _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
+    const targetBlock = Math.min(toBlock, await this.finalizedBlockNumber);   // subql upperbound is finalizedBlockNumber
+    const lastProcessedHeight = await this._checkSubqlHeight();
+    const missedBlockCount = targetBlock - lastProcessedHeight;
+    if (missedBlockCount <= 0) return [];
+
+    const firstMissedHeight = lastProcessedHeight + 1;
+    const missedHeights = Array.from(
+      { length: missedBlockCount },
+      (_, i) => firstMissedHeight + i,
+    );
+    const missedBlockHashes = await Promise.all(missedHeights.map(this._getBlockHash.bind(this)));
+
+    return missedBlockHashes
+      .map(this.blockCache.getLogsAtBlock.bind(this))
+      .flat()
+      .filter(log => filterLogByBlockNumber(log, filter.fromBlock, filter.toBlock))
+      .filter(log => filterLogByAddress(log, filter.address));
+  };
+
   // Bloom-filter Queries
   getLogs = async (rawFilter: LogFilter): Promise<Log[]> => {
     if (!this.subql) {
@@ -1798,41 +1856,15 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const filter = await this._sanitizeRawFilter(rawFilter);
 
-    await this._waitForSubql(filter.toBlock);
+    // only filter by blockNumber and address, since topics are filtered at last
+    const [subqlLogs, extraLogs] = await Promise.all([
+      this.subql.getFilteredLogs(filter),
+      this._getSubqlMissedLogs(filter.toBlock, filter),
+    ]);
 
-    const subqlLogs = await this.subql.getFilteredLogs(filter);   // only filtered by blockNumber and address
-    return subqlLogs
+    return subqlLogs.concat(extraLogs)
       .filter(log => filterLogByTopics(log, filter.topics))
       .map(log => this.formatter.filterLog(log));
-  };
-
-  /* ----------
-     make sure subql already indexed to target block number
-     currently unfinalized blocks indexing is NOT enabled
-     so upper bound would be finalized block number
-                                                 ---------- */
-  _waitForSubql = async (_targetBlock: number) => {
-    if (!this.subql) return;
-
-    const SUBQL_MAX_WAIT_BLOCKS = 3;
-
-    const upperBound = await this.finalizedBlockNumber;
-    const targetBlock = Math.min(_targetBlock, upperBound);
-
-    let lastProcessedHeight = await this.subql.getLastProcessedHeight();
-    if (targetBlock - lastProcessedHeight > SUBQL_MAX_WAIT_BLOCKS) {
-      return logger.throwError(
-        `subql indexer is not synced to target block, please wait for it to catch up. Estimated ${(targetBlock - lastProcessedHeight) * 12}s remaining ...`,
-        Logger.errors.SERVER_ERROR,
-        { targetBlock, lastProcessedHeight }
-      );
-    }
-
-    // wait at most 3 * 12 = 36s
-    while (lastProcessedHeight < targetBlock) {
-      await sleep(1000);
-      lastProcessedHeight = await this.subql.getLastProcessedHeight();
-    }
   };
 
   getIndexerMetadata = async (): Promise<_Metadata | undefined> => {
