@@ -76,12 +76,12 @@ services:
       - mandala-node
       - graphql-engine
     ports:
-      - 8545:8545
+      - 8546:8546
     extra_hosts:
       - host.docker.internal:host-gateway
     environment:
       # - LOCAL_MODE=1
       - SUBQL_URL=http://graphql-engine:3001
       - ENDPOINT_URL=ws://mandala-node:9944
-      # - PORT=8546
+      - PORT=8546
     command: yarn start

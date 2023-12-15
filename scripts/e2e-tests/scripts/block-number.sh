@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Function to get block number from a given JSON RPC URL
 getBlockNumber() {
     local rpcUrl=$1
     local networkName=$2
@@ -15,10 +14,8 @@ getBlockNumber() {
     # Convert the hexadecimal block number to decimal
     blockNumberDecimal=$((16#$blockNumberHex))
 
-    # Print the block number
     echo "$networkName Block Number: $blockNumberDecimal"
 }
 
-# Call the function with Karura and Acala URLs
 getBlockNumber "https://karura-rpc.aca-api.network" "karura"
 getBlockNumber "https://acala-rpc.aca-api.network" "acala"
