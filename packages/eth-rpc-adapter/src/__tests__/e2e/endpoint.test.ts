@@ -164,110 +164,10 @@ describe('endpoint', () => {
     `);
   });
 
-  describe('eth_getTransactionReceipt', () => {
-    it('returns correct result when hash exist for local transactions', async () => {
-      const allTxReceipts = await subql.getAllTxReceipts();
-      expect(allTxReceipts.length).to.greaterThan(0);
-
-      const tx1 = allTxReceipts.find(r => r.blockNumber === '10');
-      const tx2 = allTxReceipts.find(r => r.blockNumber === '9');
-      const tx3 = allTxReceipts.find(r => r.blockNumber === '6');
-      const tx4 = allTxReceipts.find(r => r.blockNumber === '20');
-
-      const [
-        res1,
-        res2,
-        res3,
-        res4,   // dex.swap with erc20 tokens
-      ] = await Promise.all([
-        eth_getTransactionReceipt([tx1.transactionHash]),
-        eth_getTransactionReceipt([tx2.transactionHash]),
-        eth_getTransactionReceipt([tx3.transactionHash]),
-        eth_getTransactionReceipt([tx4.transactionHash]),
-      ]);
-
-      expect(toDeterministic(res1.data.result)).toMatchSnapshot();
-      expect(toDeterministic(res2.data.result)).toMatchSnapshot();
-      expect(toDeterministic(res3.data.result)).toMatchSnapshot();
-      expect(toDeterministic(res4.data.result)).toMatchSnapshot();
-    });
-
-    it('returns correct result for public karura transactions', async () => {
-      if (process.env.SKIP_PUBLIC) {
-        console.log('public karura tests are skipped ❗');
-        return;
-      }
-
-      const [
-        contractCallRes,
-        contractDeployRes,
-        sendKarRes,
-      ] = await Promise.all([
-        eth_getTransactionReceipt_karura([KARURA_CONTRACT_CALL_TX_HASH]),
-        eth_getTransactionReceipt_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
-        eth_getTransactionReceipt_karura([KARURA_SEND_KAR_TX_HASH]),
-      ]);
-
-      expect(contractCallRes.status).to.equal(200);
-      expect(contractDeployRes.status).to.equal(200);
-      expect(sendKarRes.status).to.equal(200);
-
-      expect(toDeterministic(contractCallRes.data.result)).toMatchSnapshot();
-      expect(toDeterministic(contractDeployRes.data.result)).toMatchSnapshot();
-      expect(toDeterministic(sendKarRes.data.result)).toMatchSnapshot();
-    });
-
-    it('return correct error or null', async () => {
-      let res;
-
-      /* ---------- invalid hex address ---------- */
-      res = await eth_getTransactionReceipt(['0x000']);
-      expect(res.data.error.code).to.equal(-32602);
-      expect(res.data.error.message).to.contain('invalid argument');
-
-      /* ---------- hash not found ---------- */
-      res = await eth_getTransactionReceipt(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
-      expect(res.data.result).to.equal(null);
-
-      /* ---------- TODO: pending tx ---------- */
-    });
-
-    describe('get latest receipt', async () => {
-      const provider = new AcalaJsonRpcProvider(RPC_URL);
-      const wallet = new Wallet(evmAccounts[0].privateKey, provider);
-      let token: Contract;
-
-      beforeAll(async () => {
-        // need to put in here to prevent interrupte deterministic setup
-        token = await deployErc20(wallet);
-        await token.deployed();
-      });
-
-      it('should be able to get latest receipt as soon as new block is ready', async () => {
-        const curHeight = await provider.getBlockNumber();
-        await (await token.transfer(ADDRESS_ALICE, 1000)).wait();
-
-        // should return latest receipt as soon as block is ready
-        const targetHeight = curHeight + 1;
-        await waitForHeight(provider, targetHeight);
-        const blockRes = await eth_getBlockByNumber([targetHeight, false]);
-        const txHashes = blockRes.data?.result.transactions;
-        expect(txHashes.length).to.eq(1);
-        const txHash = txHashes[0];
-
-        const receipt = (await eth_getTransactionReceipt([txHash])).data?.result;
-        expect(receipt).to.not.be.null;
-        expect(parseInt(receipt.blockNumber, 16)).to.eq(targetHeight);
-      });
-    });
-  });
-
+  // this should go first since it depends on the deterministic setup
+  // TODO: refactor tests to seperate self-dependent tests
   describe('eth_getLogs', () => {
     const ALL_BLOCK_RANGE_FILTER = { fromBlock: 'earliest' };
-
-    beforeAll(async () => {
-      await sleep(8000);    // give subql a couple seconds to sync
-    });
 
     describe.concurrent('when no filter', () => {
       it('returns all logs from latest block', async () => {
@@ -540,6 +440,104 @@ describe('endpoint', () => {
 
         expect(res.data?.result?.length).to.eq(1);
         expect(parseInt(res.data.result[0].blockNumber, 16)).to.eq(targetHeight);
+      });
+    });
+  });
+
+  describe('eth_getTransactionReceipt', () => {
+    it('returns correct result when hash exist for local transactions', async () => {
+      const allTxReceipts = await subql.getAllTxReceipts();
+      expect(allTxReceipts.length).to.greaterThan(0);
+
+      const tx1 = allTxReceipts.find(r => r.blockNumber === '10');
+      const tx2 = allTxReceipts.find(r => r.blockNumber === '9');
+      const tx3 = allTxReceipts.find(r => r.blockNumber === '6');
+      const tx4 = allTxReceipts.find(r => r.blockNumber === '20');
+
+      const [
+        res1,
+        res2,
+        res3,
+        res4,   // dex.swap with erc20 tokens
+      ] = await Promise.all([
+        eth_getTransactionReceipt([tx1.transactionHash]),
+        eth_getTransactionReceipt([tx2.transactionHash]),
+        eth_getTransactionReceipt([tx3.transactionHash]),
+        eth_getTransactionReceipt([tx4.transactionHash]),
+      ]);
+
+      expect(toDeterministic(res1.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res2.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res3.data.result)).toMatchSnapshot();
+      expect(toDeterministic(res4.data.result)).toMatchSnapshot();
+    });
+
+    it('returns correct result for public karura transactions', async () => {
+      if (process.env.SKIP_PUBLIC) {
+        console.log('public karura tests are skipped ❗');
+        return;
+      }
+
+      const [
+        contractCallRes,
+        contractDeployRes,
+        sendKarRes,
+      ] = await Promise.all([
+        eth_getTransactionReceipt_karura([KARURA_CONTRACT_CALL_TX_HASH]),
+        eth_getTransactionReceipt_karura([KARURA_CONTRACT_DEPLOY_TX_HASH]),
+        eth_getTransactionReceipt_karura([KARURA_SEND_KAR_TX_HASH]),
+      ]);
+
+      expect(contractCallRes.status).to.equal(200);
+      expect(contractDeployRes.status).to.equal(200);
+      expect(sendKarRes.status).to.equal(200);
+
+      expect(toDeterministic(contractCallRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(contractDeployRes.data.result)).toMatchSnapshot();
+      expect(toDeterministic(sendKarRes.data.result)).toMatchSnapshot();
+    });
+
+    it('return correct error or null', async () => {
+      let res;
+
+      /* ---------- invalid hex address ---------- */
+      res = await eth_getTransactionReceipt(['0x000']);
+      expect(res.data.error.code).to.equal(-32602);
+      expect(res.data.error.message).to.contain('invalid argument');
+
+      /* ---------- hash not found ---------- */
+      res = await eth_getTransactionReceipt(['0x7ae069634d1154c0299f7fe1d473cf3d6f06cd9b57182d5319eede35a3a4d776']);
+      expect(res.data.result).to.equal(null);
+
+      /* ---------- TODO: pending tx ---------- */
+    });
+
+    describe('get latest receipt', async () => {
+      const provider = new AcalaJsonRpcProvider(RPC_URL);
+      const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+      let token: Contract;
+
+      beforeAll(async () => {
+        // need to put in here to prevent interrupte deterministic setup
+        token = await deployErc20(wallet);
+        await token.deployed();
+      });
+
+      it('should be able to get latest receipt as soon as new block is ready', async () => {
+        const curHeight = await provider.getBlockNumber();
+        await (await token.transfer(ADDRESS_ALICE, 1000)).wait();
+
+        // should return latest receipt as soon as block is ready
+        const targetHeight = curHeight + 1;
+        await waitForHeight(provider, targetHeight);
+        const blockRes = await eth_getBlockByNumber([targetHeight, false]);
+        const txHashes = blockRes.data?.result.transactions;
+        expect(txHashes.length).to.eq(1);
+        const txHash = txHashes[0];
+
+        const receipt = (await eth_getTransactionReceipt([txHash])).data?.result;
+        expect(receipt).to.not.be.null;
+        expect(parseInt(receipt.blockNumber, 16)).to.eq(targetHeight);
       });
     });
   });
