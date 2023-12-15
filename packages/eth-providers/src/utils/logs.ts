@@ -56,6 +56,13 @@ export const filterLogByAddress = (log: Log, targetAddr: AddressFilter): boolean
   return true;
 };
 
+export const filterLogByBlockNumber = (log: Log, fromBlock?: number, toBlock?: number): boolean => {
+  const from = fromBlock ?? 0;
+  const to = toBlock ?? Infinity;
+
+  return log.blockNumber >= from && log.blockNumber <= to;
+};
+
 // it's for eth_subscribe, where only address and topic filter are available
 export const filterLog = (log: Log, filter: BaseLogFilter): boolean =>
   filterLogByAddress(log, filter.address) && filterLogByTopics(log, filter.topics);
