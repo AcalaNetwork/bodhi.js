@@ -265,6 +265,10 @@ describe('endpoint', () => {
   describe('eth_getLogs', () => {
     const ALL_BLOCK_RANGE_FILTER = { fromBlock: 'earliest' };
 
+    beforeAll(async () => {
+      await sleep(8000);    // give subql a couple seconds to sync
+    });
+
     describe.concurrent('when no filter', () => {
       it('returns all logs from latest block', async () => {
         const res = (await eth_getLogs([{}])).data.result;
