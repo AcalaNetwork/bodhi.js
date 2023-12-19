@@ -7,7 +7,7 @@
     "start": "ts-node index.ts"
   },
   "dependencies": {
-    "@acala-network/eth-providers": "^2.5.9",
+    "@acala-network/eth-providers": "~2.7.17",
     "ethers": "^5.7.2"
   },
   "devDependencies": {
