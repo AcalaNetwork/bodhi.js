@@ -52,4 +52,6 @@ balance on local acala fork: [999996579991919000000]
 ```
 
 ## Note
-In this local setup, one of the eth rpc `eth_getLogs` won't work. In order for that to work, the setup is a little more complex. If you need this RPC with chopsticks, please contact Acala team to supports you. 
+In this local setup, one of the eth rpc `eth_getLogs` won't work. In order for that to work, we needs either:
+- setup a full bodhi stack with subquery, and with chopsticks, this is a little tricky. Please contact Acala team for supporting if you need it.
+- until [this issue](https://github.com/AcalaNetwork/bodhi.js/issues/901) is resolved.
