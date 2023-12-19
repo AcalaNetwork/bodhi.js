@@ -4,7 +4,7 @@ This example demonstrates how to use [chopsticks](https://github.com/AcalaNetwor
 ## Setup local acala fork with chopsticks
 - run a local fork of Acala (use `npx` or `yarn dlx` if you prefer these over `bunx`)
 ```
-bunx @acala-network/chopsticks@latest -c https://raw.githubusercontent.com/AcalaNetwork/chopsticks/master/configs/acala.yml
+bunx @acala-network/chopsticks@latest -c acala
 ```
 
 Now we should have a local fork of acala running at `ws://localhost:8000`. **All state changes are local**, so we can do arbitrary experiment, without affecting the acutal public network.
