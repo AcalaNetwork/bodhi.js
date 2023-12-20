@@ -1911,7 +1911,7 @@ describe('endpoint', () => {
     });
   });
 
-  describe('finalized blocktag', () => {
+  describe('finalized/safe/pending blocktag', () => {
     /* ----------
       latest block <=> finalized block in local setup
                                             ---------- */
@@ -1919,40 +1919,48 @@ describe('endpoint', () => {
       const res = (await eth_getTransactionCount([ADDRESS_ALICE, 'latest'])).data.result;
       const resF = (await eth_getTransactionCount([ADDRESS_ALICE, 'finalized'])).data.result;
       const resS = (await eth_getTransactionCount([ADDRESS_ALICE, 'safe'])).data.result;
+      const resP = (await eth_getTransactionCount([ADDRESS_ALICE, 'pending'])).data.result;
 
       expect(parseInt(res)).to.greaterThan(0);
       expect(res).to.equal(resF);
       expect(res).to.equal(resS);
+      expect(res).to.equal(resP);   // no pending in local setup
     });
 
     it('eth_getCode', async () => {
       const res = (await eth_getCode([DETERMINISTIC_SETUP_DEX_ADDRESS, 'latest'])).data.result;
       const resF = (await eth_getCode([DETERMINISTIC_SETUP_DEX_ADDRESS, 'finalized'])).data.result;
       const resS = (await eth_getCode([DETERMINISTIC_SETUP_DEX_ADDRESS, 'safe'])).data.result;
+      const resP = (await eth_getCode([DETERMINISTIC_SETUP_DEX_ADDRESS, 'pending'])).data.result;
 
       expect(res).not.to.be.undefined;
       expect(res).to.equal(resF);
       expect(res).to.equal(resS);
+      expect(res).to.equal(resP);
     });
 
     it('eth_getBalance', async () => {
       const res = (await eth_getBalance([ADDRESS_ALICE, 'latest'])).data.result;
       const resF = (await eth_getBalance([ADDRESS_ALICE, 'finalized'])).data.result;
       const resS = (await eth_getBalance([ADDRESS_ALICE, 'safe'])).data.result;
+      const resP = (await eth_getBalance([ADDRESS_ALICE, 'pending'])).data.result;
 
       expect(parseInt(res)).to.greaterThan(0);
       expect(res).to.equal(resF);
       expect(res).to.equal(resS);
+      expect(res).to.equal(resP);
     });
 
     it('eth_getBlockByNumber', async () => {
       const res = (await eth_getBlockByNumber(['latest', false])).data.result;
       const resF = (await eth_getBlockByNumber(['finalized', false])).data.result;
       const resS = (await eth_getBlockByNumber(['safe', false])).data.result;
+      const resP = (await eth_getBlockByNumber(['pending', false])).data.result;
 
       expect(res).not.to.be.undefined;
       expect(res).to.deep.equal(resF);
       expect(res).to.deep.equal(resS);
+      expect(res).to.deep.equal(resP);
     });
 
     it('eth_isBlockFinalized', async () => {
@@ -1994,8 +2002,13 @@ describe('endpoint', () => {
       const { gasLimit } = await estimateGas(tx);
       const bbb = (gasLimit.toNumber() % 100000) / 100;
 
-      const { gasLimit: gasLimitWithBlockTag } = await estimateGas(tx, 'latest');
-      expect(gasLimitWithBlockTag.toBigInt()).to.equal(gasLimit.toBigInt());
+      /* ---------- should work with latest and pending tag ---------- */
+      const { gasLimit: gasLimitLatest } = await estimateGas(tx, 'latest');
+      const { gasLimit: gasLimitPending } = await estimateGas(tx, 'pending');
+
+      expect(gasLimitLatest.toBigInt()).to.equal(gasLimit.toBigInt());
+      expect(gasLimitPending.toBigInt()).to.equal(gasLimit.toBigInt());
+      /* -------------------------------------------------------------- */
 
       // should be passing gasLimit instead of usedGas
       expect(bbb).to.gt(GAS_MONSTER_GAS_REQUIRED / 30000);
