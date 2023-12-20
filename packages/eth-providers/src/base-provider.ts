@@ -1506,6 +1506,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = _blockTag ?? 'latest';
 
     switch (blockTag) {
+      case 'pending':
       case 'latest': {
         return this.safeMode ? this.finalizedBlockHash : this.bestBlockHash;
       }
