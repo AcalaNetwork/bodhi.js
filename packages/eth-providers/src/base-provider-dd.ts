@@ -13,7 +13,6 @@ const TRACE_METHODS = [
   'getBalance',
   'getTransactionCount',
   'getEvmTransactionCount',
-  'getSubstrateNonce',
   'getCode',
   'call',
   '_ethCall',

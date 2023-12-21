@@ -758,35 +758,11 @@ export abstract class BaseProvider extends AbstractProvider {
     return minedNonce + pendingNonce;
   };
 
-  getSubstrateNonce = async (
-    addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<number> => {
-    const resolvedBlockTag = await blockTag;
-
-    const address = await addressOrName;
-    const [substrateAddress, blockHash] = await Promise.all([
-      this.getSubstrateAddress(address),
-      this._getBlockHash(blockTag),
-    ]);
-
-    if (resolvedBlockTag === 'pending') {
-      const idx = await this.api.rpc.system.accountNextIndex(substrateAddress);
-      return idx.toNumber();
-    }
-
-    const accountInfo = await this.queryStorage('system.account', [substrateAddress], blockHash);
-
-    return accountInfo.nonce.toNumber();
-  };
-
   getCode = async (
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
-
-    if (blockTag === 'pending') return '0x';
 
     const [address, blockHash] = await Promise.all([
       addressOrName,
@@ -944,7 +920,7 @@ export abstract class BaseProvider extends AbstractProvider {
    */
   estimateGas = async (
     transaction: Deferrable<TransactionRequest>,
-    blockTag?: BlockTag | Promise<BlockTag>
+    blockTag?: BlockTag,
   ): Promise<BigNumber> => {
     const blockHash = blockTag && blockTag !== 'latest'
       ? await this._getBlockHash(blockTag)
@@ -1186,7 +1162,7 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getSubstrateAddress = async (addressOrName: string, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
+  getSubstrateAddress = async (addressOrName: string, blockTag?: BlockTag): Promise<string> => {
     const [address, blockHash] = await Promise.all([
       addressOrName,
       this._getBlockHash(blockTag),
@@ -1197,7 +1173,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return substrateAccount.isEmpty ? computeDefaultSubstrateAddress(address) : substrateAccount.toString();
   };
 
-  getEvmAddress = async (substrateAddress: string, blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
+  getEvmAddress = async (substrateAddress: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
     const evmAddress = await this.queryStorage<Option<H160>>('evmAccounts.evmAddresses', [substrateAddress], blockHash);
 
@@ -1208,10 +1184,7 @@ export abstract class BaseProvider extends AbstractProvider {
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<Option<EvmAccountInfo>> => {
-    let blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
-    if (blockTag === 'pending') {
-      blockTag = 'latest';
-    }
+    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [address, blockHash] = await Promise.all([
       addressOrName,
@@ -1502,9 +1475,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getBlockNumber = async (blockTag: BlockTag): Promise<number> => {
     switch (blockTag) {
-      case 'pending': {
-        return logger.throwError('pending tag not implemented', Logger.errors.UNSUPPORTED_OPERATION);
-      }
+      case 'pending':
       case 'latest': {
         return this.getBlockNumber();
       }
@@ -1531,13 +1502,11 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  _getBlockHash = async (_blockTag?: BlockTag | Promise<BlockTag>): Promise<string> => {
-    const blockTag = (await _blockTag) || 'latest';
+  _getBlockHash = async (_blockTag?: BlockTag): Promise<string> => {
+    const blockTag = _blockTag ?? 'latest';
 
     switch (blockTag) {
-      case 'pending': {
-        return logger.throwError('pending tag not supported', Logger.errors.UNSUPPORTED_OPERATION);
-      }
+      case 'pending':
       case 'latest': {
         return this.safeMode ? this.finalizedBlockHash : this.bestBlockHash;
       }
@@ -1638,7 +1607,7 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
-    const blockHash = await this._getBlockHash(blockTag);
+    const blockHash = await this._getBlockHash(await blockTag);
 
     try {
       const header = await this.api.rpc.chain.getHeader(blockHash);
