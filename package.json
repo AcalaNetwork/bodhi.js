@@ -10,7 +10,8 @@
   },
   "workspaces": [
     "packages/*",
-    "examples/waffle/*"
+    "examples/waffle/*",
+    "examples/viem"
   ],
   "scripts": {
     "clean": "yarn workspaces foreach -pvit --include \"@acala-network/*\" run clean",

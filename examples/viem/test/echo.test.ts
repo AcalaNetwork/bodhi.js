@@ -8,7 +8,7 @@ const TEST_MNEMONIC = 'fox sight canyon orphan hotel grow hedgehog build bless a
 const account = mnemonicToAccount(TEST_MNEMONIC) 
 const client = createWalletClient({
   account,
-  chain: {
+  chain: {    // TODO: support public mandala after PR is merged
     name: 'local',
     id: 595,
     nativeCurrency: {

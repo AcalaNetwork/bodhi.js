@@ -1,0 +1,86 @@
+services:
+  mandala-node:
+    image: ghcr.io/acalanetwork/mandala-node:sha-7ae4bf4
+    container_name: mandala-node
+    ports:
+      - 9944:9944
+    command:
+      - --dev
+      - -levm=debug
+      - --rpc-external
+      - --rpc-cors=all
+      - --rpc-methods=unsafe
+      - --pruning=archive
+      - --instant-sealing
+
+  postgres:
+    image: postgres:12-alpine
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+
+  subquery-node:
+    image: acala/evm-subql:2.7.16
+    container_name: subquery-node
+    ports:
+      - 3000:3000
+    depends_on:
+      - mandala-node
+      - postgres
+    restart: always
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+    command:
+      - -f=project.yaml   # local mandala
+      - --network-endpoint=ws://mandala-node:9944
+      - --db-schema=acala_evm
+      - --log-level=debug
+      - --unsafe
+      - --disable-historical
+
+  graphql-engine:
+    image: onfinality/subql-query:v1.4.0
+    container_name: graphql-engine
+    ports:
+      - 3001:3001
+    depends_on:
+      - subquery-node
+    restart: always
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      PORT: 3001
+    command:
+      - --name=acala_evm
+      - --playground
+      - --indexer=http://subquery-node:3000
+
+  eth-rpc-adapter-server:
+    image: acala/eth-rpc-adapter:2.7.16
+    container_name: eth-rpc-adapter-server
+    restart: always
+    depends_on:
+      - mandala-node
+      - graphql-engine
+    ports:
+      - 8545:8545
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    environment:
+      - SUBQL_URL=http://graphql-engine:3001
+      - ENDPOINT_URL=ws://mandala-node:9944
+      - LOCAL_MODE=1
+    command: yarn start
