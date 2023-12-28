@@ -31,7 +31,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     endpoint: {
       alias: 'e',
       demandOption: false,
-      default: ENDPOINT_URL ?? 'ws://localhost:9944',
+      default: ENDPOINT_URL ?? 'ws://0.0.0.0:9944',
       describe: 'Node websocket endpoint(s): can provide one or more endpoints, seperated by comma',
       type: 'string',
     },
