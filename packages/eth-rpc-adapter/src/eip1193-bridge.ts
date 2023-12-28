@@ -1,6 +1,5 @@
 import {
   EvmRpcProvider,
-  EvmRpcProviderWithTrace,
   PROVIDER_ERRORS,
   PollFilterType,
   TX,
@@ -13,6 +12,7 @@ import { hexValue } from '@ethersproject/bytes';
 import EventEmitter from 'events';
 import WebSocket from 'ws';
 
+import { EvmRpcProviderWithTrace } from './wrapped-provider';
 import { InvalidParams, MethodNotFound } from './errors';
 import { validate } from './validate';
 import { version } from './_version';
