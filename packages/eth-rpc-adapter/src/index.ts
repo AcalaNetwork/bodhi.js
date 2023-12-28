@@ -1,7 +1,7 @@
 import './utils/tracer';
 
 import { Eip1193Bridge } from './eip1193-bridge';
-import { EvmRpcProviderWithTrace } from '@acala-network/eth-providers';
+import { EvmRpcProviderWithTrace } from './wrapped-provider';
 import { Router } from './router';
 import { monitorRuntime } from './utils/monitor-runtime';
 import { yargsOptions as opts } from './utils';
