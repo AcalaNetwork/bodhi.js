@@ -4,12 +4,15 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "hardhat compile",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "test:mandala": "CHAIN=mandala hardhat test",
+    "test:karura": "CHAIN=karura hardhat test",
+    "test:acala": "CHAIN=acala hardhat test"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
     "hardhat": "^2.19.4",
     "typescript": "^5.3.3",
-    "viem": "^1.21.0"
+    "viem": "^1.21.4"
   }
 }
