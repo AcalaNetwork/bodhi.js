@@ -1,28 +1,31 @@
 import { expect } from 'chai';
 import { createWalletClient, http, getContractAddress, publicActions } from 'viem'
+import { mandala, karura, acala } from 'viem/chains'
 import { mnemonicToAccount } from 'viem/accounts'
 
 import EchoJson from '../artifacts/contracts/Echo.sol/Echo.json';
+import { localChainConfig } from './utils';
 
 const TEST_MNEMONIC = 'fox sight canyon orphan hotel grow hedgehog build bless august weather swarm';
-const account = mnemonicToAccount(TEST_MNEMONIC) 
+const account = mnemonicToAccount(TEST_MNEMONIC);
+
+const targetChain = process.env.CHAIN ?? 'local';
+const chainConfig = ({
+  local: localChainConfig,
+  mandala,
+  karura,
+  acala,
+})[targetChain];
+
+if (!chainConfig) {
+  throw new Error("Invalid CHAIN env variable. Must be one { local, mandala, karura, acala }")
+}
+
+console.log(`creating client for ${chainConfig.name}`)
 const client = createWalletClient({
   account,
-  chain: {    // TODO: support public mandala after PR is merged
-    name: 'local',
-    id: 595,
-    nativeCurrency: {
-      name: 'acala',
-      symbol: 'ACA',
-      decimals: 18,
-    },
-    rpcUrls: {
-      default: { http: ['http://localhost:8545'] },
-      public: { http: ['http://localhost:8545'] },
-    },
-    network: 'local',
-  },
-  transport: http('http://localhost:8545')
+  chain: chainConfig,
+  transport: http()
 }).extend(publicActions)
 
 describe('Echo contract', function () {

@@ -51,3 +51,10 @@ yarn build
 ```
 yarn test
 ```
+
+- run tests on public networks
+```
+yarn test:mandala
+yarn test:karura
+yarn test:acala
+```
