@@ -1117,7 +1117,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const txRequest = {
       ...ethTx,
-      ...substrateGasParams,
+      gasLimit: maxGasLimit,
       storageLimit,
       value: BigNumber.isBigNumber(ethTx.value) ? ethTx.value.toBigInt() : ethTx.value,
     };
