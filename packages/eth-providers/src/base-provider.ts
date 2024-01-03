@@ -1103,11 +1103,11 @@ export abstract class BaseProvider extends AbstractProvider {
 
     // if user explicitly provides gasLimit, decode it and use as max value
     const maxGasLimit = ethTx.gasLimit !== undefined
-      ? substrateGasParams.gasLimit
+      ? Number(substrateGasParams.gasLimit)
       : BLOCK_GAS_LIMIT * 10;
 
     const storageLimit = ethTx.gasLimit !== undefined
-      ? substrateGasParams.storageLimit
+      ? Number(substrateGasParams.storageLimit)
       : BLOCK_STORAGE_LIMIT;
 
     const txRequest = {
