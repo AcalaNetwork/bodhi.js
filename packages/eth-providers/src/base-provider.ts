@@ -1094,26 +1094,21 @@ export abstract class BaseProvider extends AbstractProvider {
     usedStorage: BigNumber;
   }> => {
     const ethTx = await getTransactionRequest(transaction);
-    const substrateGasParams = decodeEthGas({
-      gasLimit: ethTx.gasLimit ?? BigNumber.from(199999),   // use max storage limit and gas limit
-      gasPrice: ethTx.gasPrice ?? await this.getGasPrice(),
-    });
 
     const minGasLimit = 21000;
+    let maxGasLimit = BLOCK_GAS_LIMIT * 10;
+    let storageLimit = BLOCK_STORAGE_LIMIT;
 
     // if user explicitly provides gasLimit override, decode it and use as max values
-    // otherwise use default max values
-    const [
-      maxGasLimit,
-      storageLimit,
-    ] = ethTx.gasLimit !== undefined
-      ? [
-        Number(substrateGasParams.gasLimit),
-        Number(substrateGasParams.storageLimit),
-      ] : [
-        BLOCK_GAS_LIMIT * 10,
-        BLOCK_STORAGE_LIMIT,
-      ];
+    if (ethTx.gasLimit !== undefined) {
+      const substrateGasParams = decodeEthGas({
+        gasLimit: ethTx.gasLimit ?? BigNumber.from(199999),   // use max storage limit and gas limit
+        gasPrice: ethTx.gasPrice ?? await this.getGasPrice(),
+      });
+
+      maxGasLimit = Number(substrateGasParams.gasLimit);
+      storageLimit = Number(substrateGasParams.storageLimit);
+    }
 
     const txRequest = {
       ...ethTx,
