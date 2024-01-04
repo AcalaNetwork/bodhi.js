@@ -2022,7 +2022,6 @@ describe('endpoint', () => {
 
       beforeAll(async () => {
         token = await deployErc20(wallet);
-        await token.deployed();
       });
 
       it('works with valid gas overrides', async () => {
@@ -2054,7 +2053,6 @@ describe('endpoint', () => {
       it('throws error with invalid gas overrides', async () => {
         const tx = await token.populateTransaction.transfer(Wallet.createRandom().address, 100000);
 
-        // gasPrice is ignored since evmRuntimeApi.call doesn't take tip and validUntil as params
         const resps = await Promise.all([
           eth_estimateGas([{ ...tx, gasPrice: parseUnits('100.000000001', 'gwei') }]),  // too low valid until
           eth_estimateGas([{ ...tx, gasPrice: parseUnits('38.0000090000', 'gwei') }]),  // invalid gasPrice
