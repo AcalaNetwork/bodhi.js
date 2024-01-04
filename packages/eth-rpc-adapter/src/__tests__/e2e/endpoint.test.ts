@@ -67,6 +67,7 @@ import {
   deployGasMonster,
   toDeterministic,
   waitForHeight,
+  eth_estimateGas,
 } from './utils';
 
 import {
@@ -2014,6 +2015,57 @@ describe('endpoint', () => {
       expect(bbb).to.gt(GAS_MONSTER_GAS_REQUIRED / 30000);
 
       await (await gm.run()).wait();    // make sure running has no error
+    });
+
+    describe('works with gas overrides', () => {
+      let token: Contract;
+
+      beforeAll(async () => {
+        token = await deployErc20(wallet);
+        await token.deployed();
+      });
+
+      it('works with valid gas overrides', async () => {
+        const tx = await token.populateTransaction.transfer(evmAccounts[1].evmAddress, 1000);
+        const { gasLimit: realGasLimit, gasPrice } = await estimateGas(tx);
+
+        const resps = await Promise.all([
+          eth_estimateGas([{ ...tx, gasPrice, gas: realGasLimit }]),
+          eth_estimateGas([{ ...tx, gasPrice }]),
+          eth_estimateGas([{ ...tx, gas: realGasLimit }]),
+
+          eth_estimateGas([{ ...tx, gas: 101520 }]),  // increase gas and storagelimits
+          eth_estimateGas([{ ...tx, gasPrice: parseUnits('234.001298752', 'gwei') }]),  // increase tip and valid until
+          eth_estimateGas([{ ...tx, gasPrice: parseUnits('321.001000000', 'gwei'), gas: 102518 }]),  // increase everything
+        ]);
+
+        const errs = resps.map(r => r.data.error);
+        if (errs.some(e => e !== undefined)) {
+          expect.fail(`some of the requests failed: ${JSON.stringify(errs, null, 2) }`);
+        }
+
+        const results = resps.map(r => r.data.result)
+          .slice(0, 4);   // last request has slightly different estimated gaslimit since it has different gasPrice
+        if (results.some(e => BigInt(e) !== realGasLimit.toBigInt())) {
+          expect.fail(`some of the requests returned wrong gasLimit: ${JSON.stringify(results, null, 2) }`);
+        }
+      });
+
+      it('throws error with invalid gas overrides', async () => {
+        const tx = await token.populateTransaction.transfer(Wallet.createRandom().address, 100000);
+
+        // gasPrice is ignored since evmRuntimeApi.call doesn't take tip and validUntil as params
+        const resps = await Promise.all([
+          eth_estimateGas([{ ...tx, gas: 201002 }]),  // too low storagelimit
+          eth_estimateGas([{ ...tx, gas: 200109 }]),  // too low gaslimit
+          eth_estimateGas([{ ...tx, gas: 200301 }]),  // too low gaslimit + storagelimit
+        ]);
+
+        const errs = resps.map(r => r.data.error);
+        if (errs.some(e => e === undefined)) {
+          expect.fail(`some of the requests didn't fail when it should: ${JSON.stringify(errs, null, 2) }`);
+        }
+      });
     });
   });
 });
