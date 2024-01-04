@@ -81,7 +81,6 @@ describe('Dex', () => {
     expect(
       await dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD], 1_000_000_000_000, 1, {
         value: ethers.utils.parseEther('1'),
-        gasLimit: 2_000_000
       })
     ).to.be.ok;
 
@@ -92,7 +91,6 @@ describe('Dex', () => {
     expect(
       await dex.swapWithExactSupply([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT], 1_000_000_000_000, 1, {
         value: ethers.utils.parseEther('1'),
-        gasLimit: 2_000_000
       })
     ).to.be.ok;
     let pool_3 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
@@ -114,7 +112,6 @@ describe('Dex', () => {
     expect(
       await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD], 1, 1_000_000_000_000, {
         value: ethers.utils.parseEther('1'),
-        gasLimit: 2_000_000
       })
     ).to.be.ok;
 
@@ -125,7 +122,6 @@ describe('Dex', () => {
     expect(
       await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD, ADDRESS.DOT], 1, 1_000_000_000_000, {
         value: ethers.utils.parseEther('1'),
-        gasLimit: 2_000_000
       })
     ).to.be.ok;
     let pool_3 = await dex.getLiquidityPool(ADDRESS.AUSD, ADDRESS.DOT);
@@ -147,7 +143,6 @@ describe('Dex', () => {
     expect(
       await dex.swapWithExactTarget([ADDRESS.ACA, ADDRESS.AUSD], 1_000_000_000_000, 1_000_000_000_000, {
         value: ethers.utils.parseEther('1'),
-        gasLimit: 2_000_000
       })
     ).to.be.ok;
 
@@ -157,7 +152,6 @@ describe('Dex', () => {
     expect(
       await dex.addLiquidity(ADDRESS.ACA, ADDRESS.AUSD, 1_000_000_000_000, 1_000_000_000_000, 0, {
         value: ethers.utils.parseEther('1'),
-        gasLimit: 2_000_000
       })
     ).to.be.ok;
 
@@ -167,7 +161,6 @@ describe('Dex', () => {
     expect(
       await dex.removeLiquidity(ADDRESS.ACA, ADDRESS.AUSD, 100_000_000_000, 0, 0, {
         value: ethers.utils.parseEther('1'),
-        gasLimit: 2_000_000
       })
     ).to.be.ok;
   });

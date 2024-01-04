@@ -1086,23 +1086,43 @@ export abstract class BaseProvider extends AbstractProvider {
    * @returns The estimated resources used by this transaction
    */
   estimateResources = async (
-    transaction: Deferrable<TransactionRequest>,
+    transaction: Deferrable<TxRequestWithGas>,
     blockHash?: string,
   ): Promise<{
     usedGas: BigNumber;
     gasLimit: BigNumber;
     usedStorage: BigNumber;
   }> => {
-    const MAX_GAS_LIMIT = BLOCK_GAS_LIMIT * 10; // capped at 10x (1000%) the current block gas limit
-    const MIN_GAS_LIMIT = 21000;
-    const STORAGE_LIMIT = BLOCK_STORAGE_LIMIT;
+    const ethTx = await getTransactionRequest(transaction);
 
-    const _txRequest = await getTransactionRequest(transaction);
+    const minGasLimit = 21000;
+    let maxGasLimit = BLOCK_GAS_LIMIT * 10;
+    let storageLimit = BLOCK_STORAGE_LIMIT;
+
+    // if user explicitly provides gasLimit override, decode it and use as max values
+    if (ethTx.gasLimit !== undefined || ethTx.gasPrice !== undefined) {
+      const substrateGasParams = decodeEthGas({
+        gasLimit: ethTx.gasLimit ?? BigNumber.from(199999),   // use max storage limit and gas limit
+        gasPrice: ethTx.gasPrice ?? await this.getGasPrice(),
+      });
+
+      if (substrateGasParams.validUntil < await this.getBlockNumber()) {
+        return logger.throwError(
+          'invalid gasPrice, which corresponds to a too low validUntil',
+          Logger.errors.CALL_EXCEPTION,
+          transaction
+        );
+      }
+
+      maxGasLimit = Number(substrateGasParams.gasLimit);
+      storageLimit = Number(substrateGasParams.storageLimit);
+    }
+
     const txRequest = {
-      ..._txRequest,
-      value: BigNumber.isBigNumber(_txRequest.value) ? _txRequest.value.toBigInt() : _txRequest.value,
-      gasLimit: _txRequest.gasLimit?.toBigInt() ?? MAX_GAS_LIMIT,
-      storageLimit: STORAGE_LIMIT,
+      ...ethTx,
+      gasLimit: maxGasLimit,
+      storageLimit,
+      value: BigNumber.isBigNumber(ethTx.value) ? ethTx.value.toBigInt() : ethTx.value,
     };
 
     const gasInfo = await this._ethCall(txRequest, blockHash);
@@ -1127,8 +1147,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     if (!gasAlreadyWorks) {
       // need to binary search the best passing gasLimit
-      let lowest = MIN_GAS_LIMIT;
-      let highest = MAX_GAS_LIMIT;
+      let lowest = minGasLimit;
+      let highest = maxGasLimit;
       let mid = Math.min(usedGas * 3, Math.floor((lowest + highest) / 2));
       let prevHighest = highest;
       while (highest - lowest > 1) {
@@ -1209,9 +1229,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return accountInfo.unwrap().contractInfo;
   };
 
-  _getSubstrateGasParams = (
-    ethTx: Partial<AcalaEvmTX>
-  ): {
+  _getSubstrateGasParams = (ethTx: Partial<AcalaEvmTX>): {
     gasLimit: bigint;
     storageLimit: bigint;
     validUntil: bigint;

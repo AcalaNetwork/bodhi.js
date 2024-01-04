@@ -122,7 +122,6 @@ describe('Schedule', () => {
       wallet,
       RecurringPayment,
       [3, 4, ethers.utils.parseEther('1000'), transferTo],
-      { gasLimit: 2_000_000 }
     );
     // ACA as erc20 decimals is 12
     await erc20.transfer(recurringPayment.address, dollar.mul(5000));
@@ -178,7 +177,6 @@ describe('Schedule', () => {
 
     const subscription = await deployContract(wallet, Subscription, [subPrice, period], {
       value: ethers.utils.parseEther('5000'),
-      gasLimit: 2_000_000
     });
     if (!process.argv.includes('--with-ethereum-compatibility')) {
       // If it is not called by the maintainer, developer, or contract, it needs to be deployed first
@@ -192,7 +190,6 @@ describe('Schedule', () => {
     const subscriberContract = subscription.connect(subscriber as any);
     await subscriberContract.subscribe({
       value: ethers.utils.parseEther(formatAmount('10_000')).toString(),
-      gasLimit: 2_000_000
     });
 
     expect((await subscription.balanceOf(subscriberAddr)).toString()).to.equal(
@@ -225,7 +222,7 @@ describe('Schedule', () => {
     expect((await subscription.subTokensOf(subscriberAddr)).toString()).to.equal('6');
     expect((await subscription.monthsSubscribed(subscriberAddr)).toString()).to.equal('3');
 
-    await subscriberContract.unsubscribe({ gasLimit: 2_000_000 });
+    await subscriberContract.unsubscribe();
 
     current_block_number = await provider.getBlockNumber();
     await nextBlock(provider);

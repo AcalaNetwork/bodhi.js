@@ -24,9 +24,7 @@ describe('LP ACA-AUSD Token', () => {
 
     let pool_1 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(
-      await dex.addLiquidity(ADDRESS.ACA, ADDRESS.AUSD, 1_000_000_000_000, 1_000_000_000_000, 0, {
-        gasLimit: 2_000_000
-      })
+      await dex.addLiquidity(ADDRESS.ACA, ADDRESS.AUSD, 1_000_000_000_000, 1_000_000_000_000, 0)
     ).to.be.ok;
     let pool_2 = await dex.getLiquidityPool(ADDRESS.ACA, ADDRESS.AUSD);
     expect(pool_2[1].sub(pool_1[1])).to.equal(1_000_000_000_000);
