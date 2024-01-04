@@ -2056,15 +2056,25 @@ describe('endpoint', () => {
 
         // gasPrice is ignored since evmRuntimeApi.call doesn't take tip and validUntil as params
         const resps = await Promise.all([
-          eth_estimateGas([{ ...tx, gas: 201002 }]),  // too low storagelimit
+          eth_estimateGas([{ ...tx, gasPrice: parseUnits('100.000000001', 'gwei') }]),  // too low valid until
+          eth_estimateGas([{ ...tx, gasPrice: parseUnits('38.0000090000', 'gwei') }]),  // invalid gasPrice
+          eth_estimateGas([{ ...tx, gas: 20100 }]),   // too low storagelimit
           eth_estimateGas([{ ...tx, gas: 200109 }]),  // too low gaslimit
           eth_estimateGas([{ ...tx, gas: 200301 }]),  // too low gaslimit + storagelimit
+          eth_estimateGas([{ ...tx, gasPrice: parseUnits('100.000000001', 'gwei'), gas: 200301 }]),  // too low everything
         ]);
 
-        const errs = resps.map(r => r.data.error);
+        const errs = resps.map(r => r.data.error?.message);
         if (errs.some(e => e === undefined)) {
           expect.fail(`some of the requests didn't fail when it should: ${JSON.stringify(errs, null, 2) }`);
         }
+
+        expect(errs[0]).to.contain('Error: invalid gasPrice');
+        expect(errs[1]).to.contain('Error: invalid gasPrice');
+        expect(errs[2]).to.contain('evm.OutOfStorage');
+        expect(errs[3]).to.contain('execution error: outOfGas');
+        expect(errs[4]).to.contain('evm.OutOfStorage');
+        expect(errs[5]).to.contain('Error: invalid gasPrice');
       });
     });
   });

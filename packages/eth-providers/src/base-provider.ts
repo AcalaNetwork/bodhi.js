@@ -1100,11 +1100,19 @@ export abstract class BaseProvider extends AbstractProvider {
     let storageLimit = BLOCK_STORAGE_LIMIT;
 
     // if user explicitly provides gasLimit override, decode it and use as max values
-    if (ethTx.gasLimit !== undefined) {
+    if (ethTx.gasLimit !== undefined || ethTx.gasPrice !== undefined) {
       const substrateGasParams = decodeEthGas({
         gasLimit: ethTx.gasLimit ?? BigNumber.from(199999),   // use max storage limit and gas limit
         gasPrice: ethTx.gasPrice ?? await this.getGasPrice(),
       });
+
+      if (substrateGasParams.validUntil < await this.getBlockNumber()) {
+        return logger.throwError(
+          'invalid gasPrice, which corresponds to a too low validUntil',
+          Logger.errors.CALL_EXCEPTION,
+          transaction
+        );
+      }
 
       maxGasLimit = Number(substrateGasParams.gasLimit);
       storageLimit = Number(substrateGasParams.storageLimit);
