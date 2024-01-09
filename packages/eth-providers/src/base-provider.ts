@@ -817,6 +817,14 @@ export abstract class BaseProvider extends AbstractProvider {
     const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
     const estimate = false;
 
+    // call evm rpc when `state_call` is not supported yet
+    if (!api.call.evmRuntimeRPCApi) {
+      const data = await this.api.rpc.evm.call(callRequest);
+      return {
+        value: data.toHex(),
+      };
+    }
+
     const res = to
       ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
       : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList, estimate);
