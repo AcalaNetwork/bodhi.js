@@ -202,7 +202,7 @@ services:
         condition: service_completed_successfully
     restart: always
     command:
-      - --endpoint=wss://karura-rpc.aca-api.network:8443
+      - --endpoint=wss://karura-rpc.aca-api.network
       - --subql=https://subql-query-karura.aca-api.network
       - --port=8546
 
