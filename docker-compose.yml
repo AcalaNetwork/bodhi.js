@@ -202,7 +202,7 @@ services:
         condition: service_completed_successfully
     restart: always
     command:
-      - --endpoint=wss://acala-karura-eu-1.bdnodes.net:8443/parachain?auth=4VFR_UEvc8mUAd58z11nSRqp-EBZcqPl14j_MgEm-4E
+      - --endpoint=wss://karura-rpc.aca-api.network
       - --subql=https://subql-query-karura.aca-api.network
       - --port=8546
 
