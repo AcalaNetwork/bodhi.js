@@ -34,7 +34,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
-import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
 import LRUCache from 'lru-cache';
 
@@ -49,6 +49,7 @@ import {
   EMPTY_HEX_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
+  ERROR_PATTERN,
   LOCAL_MODE_MSG,
   ONE_HUNDRED_GWEI,
   PROD_MODE_MSG,
@@ -250,17 +251,25 @@ export interface PollFilters {
   [PollFilterType.Logs]: LogPollFilter[];
 }
 
-export interface CallInfoJson {
-  exit_reason: {
-    succeed?: 'Stopped' | 'Returned' | 'Suicided';
-    error?: any;
-    revert?: 'Reverted';
-    fatal?: any;
+export interface CallInfo {
+  ok?: {
+    exit_reason: {
+      succeed?: 'Stopped' | 'Returned' | 'Suicided';
+      error?: any;
+      revert?: 'Reverted';
+      fatal?: any;
+    };
+    value: string;
+    used_gas: string;
+    used_storage: number;
+    logs: Log[];
   };
-  value: string;
-  used_gas: string;
-  used_storage: number;
-  logs: Log[];
+  err?: {
+    module: {
+      index: number;
+      error: `0x${string}`;
+    };
+  };
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -802,7 +811,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return res.value;
   };
 
-  _ethCall = async (callRequest: SubstrateEvmCallRequest, at?: string): Promise<CallInfoJson> => {
+  _ethCall = async (callRequest: SubstrateEvmCallRequest, at?: string) => {
     const api = at ? await this.api.at(at) : this.api;
 
     const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
@@ -811,42 +820,47 @@ export abstract class BaseProvider extends AbstractProvider {
     // call evm rpc when `state_call` is not supported yet
     if (!api.call.evmRuntimeRPCApi) {
       const data = await this.api.rpc.evm.call(callRequest);
-
-      return {
-        exit_reason: { succeed: 'Returned' },
-        value: data.toHex(),
-        used_gas: '0',
-        used_storage: 0,
-        logs: [],
+      const res: CallInfo = {
+        ok: {
+          exit_reason: { succeed: 'Returned' },
+          value: data.toHex(),
+          used_gas: '0',
+          used_storage: 0,
+          logs: [],
+        },
       };
+      return res.ok;
     }
 
     const res = to
       ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
       : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList, estimate);
 
-    if (res.isErr) {
+    const { ok, err } = res.toJSON() as CallInfo;
+    if (!ok) {
       // substrate level error
-      if (!res.asErr.isModule) {
-        throw new Error(res.asErr.toString());
+      const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
+      if (!errMetaValid) {
+        return logger.throwError(
+          'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
+          Logger.errors.CALL_EXCEPTION,
+          callRequest
+        );
       }
 
-      const err = res.asErr.asModule;
       const errInfo = this.api.registry.findMetaError({
-        index: new BN(err.index),
-        error: new BN(err.error),
+        index: new BN(err.module.index),
+        error: new BN(hexToU8a(err.module.error)[0]),
       });
       const msg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
 
       return logger.throwError(msg, Logger.errors.CALL_EXCEPTION, callRequest);
     }
 
-    const ok = res.asOk;
-
     // check evm level error
     checkEvmExecutionError(ok);
 
-    return ok.toJSON() as unknown as CallInfoJson;
+    return ok!;
   };
 
   getStorageAt = async (
@@ -1141,7 +1155,7 @@ export abstract class BaseProvider extends AbstractProvider {
       await this._ethCall({
         ...txRequest,
         gasLimit,
-      }, blockHash);
+      });
     } catch {
       gasAlreadyWorks = false;
     }
@@ -1157,7 +1171,7 @@ export abstract class BaseProvider extends AbstractProvider {
           await this._ethCall({
             ...txRequest,
             gasLimit: mid,
-          }, blockHash);
+          });
           highest = mid;
 
           if ((prevHighest - highest) / prevHighest < 0.1) break;
