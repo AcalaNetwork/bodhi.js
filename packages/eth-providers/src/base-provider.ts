@@ -251,25 +251,17 @@ export interface PollFilters {
   [PollFilterType.Logs]: LogPollFilter[];
 }
 
-export interface CallInfo {
-  ok?: {
-    exit_reason: {
-      succeed?: 'Stopped' | 'Returned' | 'Suicided';
-      error?: any;
-      revert?: 'Reverted';
-      fatal?: any;
-    };
-    value: string;
-    used_gas: string;
-    used_storage: number;
-    logs: Log[];
+export interface CallReturnInfo {
+  exit_reason: {
+    succeed?: 'Stopped' | 'Returned' | 'Suicided';
+    error?: any;
+    revert?: 'Reverted';
+    fatal?: any;
   };
-  err?: {
-    module: {
-      index: number;
-      error: `0x${string}`;
-    };
-  };
+  value: string;
+  used_gas: string;
+  used_storage: number;
+  logs: Log[];
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -814,53 +806,50 @@ export abstract class BaseProvider extends AbstractProvider {
   _ethCall = async (callRequest: SubstrateEvmCallRequest, at?: string) => {
     const api = at ? await this.api.at(at) : this.api;
 
-    const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
-    const estimate = false;
-
     // call evm rpc when `state_call` is not supported yet
     if (!api.call.evmRuntimeRPCApi) {
       const data = await this.api.rpc.evm.call(callRequest);
-      const res: CallInfo = {
-        ok: {
-          exit_reason: { succeed: 'Returned' },
-          value: data.toHex(),
-          used_gas: '0',
-          used_storage: 0,
-          logs: [],
-        },
+
+      return {
+        exit_reason: { succeed: 'Returned' },
+        value: data.toHex(),
+        used_gas: '0',
+        used_storage: 0,
+        logs: [],
       };
-      return res.ok;
     }
+
+    const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
+    const estimate = false;
 
     const res = to
       ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
       : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList, estimate);
 
-    const { ok, err } = res.toJSON() as CallInfo;
+    const ok = res.toJSON()['ok'] as CallReturnInfo | undefined;
     if (!ok) {
       // substrate level error
-      const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
-      if (!errMetaValid) {
-        return logger.throwError(
-          'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
-          Logger.errors.CALL_EXCEPTION,
-          callRequest
-        );
+      let errMsg: string;
+      const err = res.asErr;
+      if (err.isModule) {
+        const { index, error } = err.asModule;
+        const errInfo = this.api.registry.findMetaError({
+          index: new BN(index),
+          error: new BN(error),
+        });
+
+        errMsg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
+      } else {
+        errMsg = err.toString();
       }
 
-      const errInfo = this.api.registry.findMetaError({
-        index: new BN(err.module.index),
-        error: new BN(hexToU8a(err.module.error)[0]),
-      });
-      const msg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
-
-      return logger.throwError(msg, Logger.errors.CALL_EXCEPTION, callRequest);
+      return logger.throwError(errMsg, Logger.errors.CALL_EXCEPTION, callRequest);
     }
 
     // check evm level error
     checkEvmExecutionError(ok);
 
-    return ok!;
+    return ok;
   };
 
   getStorageAt = async (
