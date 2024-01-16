@@ -930,7 +930,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ? await this._getBlockHash(blockTag)
       : undefined;  // if blockTag is latest, avoid explicit blockhash for better performance
 
-    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction, blockHash);
+    const { usedGas, gasLimit, safeStorage } = await this.estimateResources(transaction, blockHash);
 
     const tx = await resolveProperties(transaction);
     const data = tx.data?.toString() ?? '0x';
@@ -939,7 +939,7 @@ export abstract class BaseProvider extends AbstractProvider {
       data,
       toBN(BigNumber.from(tx.value ?? 0)),
       toBN(gasLimit),
-      toBN(usedStorage.isNegative() ? 0 : usedStorage),
+      toBN(safeStorage),
       accessListify(tx.accessList ?? []),
     ] as const;
 
@@ -952,8 +952,8 @@ export abstract class BaseProvider extends AbstractProvider {
     let txFee = await this._estimateGasCost(extrinsic, blockHash);
     txFee = txFee.mul(gasLimit).div(usedGas); // scale it to the same ratio when estimate passing gasLimit
 
-    if (usedStorage.gt(0)) {
-      const storageFee = usedStorage.mul(this._getGasConsts().storageDepositPerByte);
+    if (safeStorage.gt(0)) {
+      const storageFee = safeStorage.mul(this._getGasConsts().storageDepositPerByte);
       txFee = txFee.add(storageFee);
     }
 
@@ -963,7 +963,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const tokenTransferSelector = '0xa9059cbb';   // transfer(address,uint256)
     const isTokenTransfer = hexlify(await transaction.data ?? '0x').startsWith(tokenTransferSelector);
-    return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage, isTokenTransfer);
+    return encodeGasLimit(txFee, gasPrice, gasLimit, safeStorage, isTokenTransfer);
   };
 
   _estimateGasCost = async (
@@ -1009,7 +1009,7 @@ export abstract class BaseProvider extends AbstractProvider {
     gasLimit: BigNumber;
   }> => {
     if (!gasLimit || !storageLimit) {
-      const { gasLimit: gas, usedStorage: storage } = await this.estimateResources(transaction);
+      const { gasLimit: gas, safeStorage: storage } = await this.estimateResources(transaction);
       gasLimit = gasLimit ?? gas;
       storageLimit = storageLimit ?? storage;
     }
@@ -1095,7 +1095,7 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<{
     usedGas: BigNumber;
     gasLimit: BigNumber;
-    usedStorage: BigNumber;
+    safeStorage: BigNumber;
   }> => {
     const ethTx = await getTransactionRequest(transaction);
 
@@ -1144,7 +1144,7 @@ export abstract class BaseProvider extends AbstractProvider {
       await this._ethCall({
         ...txRequest,
         gasLimit,
-      });
+      }, blockHash);
     } catch {
       gasAlreadyWorks = false;
     }
@@ -1160,7 +1160,7 @@ export abstract class BaseProvider extends AbstractProvider {
           await this._ethCall({
             ...txRequest,
             gasLimit: mid,
-          });
+          }, blockHash);
           highest = mid;
 
           if ((prevHighest - highest) / prevHighest < 0.1) break;
@@ -1179,10 +1179,11 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit = highest;
     }
 
+    const safeStorage = Math.floor((Math.max(usedStorage, 0) + 64) * 1.1);
     return {
-      usedGas: BigNumber.from(usedGas),   // actual used gas
-      gasLimit: BigNumber.from(gasLimit), // gasLimit to pass execution
-      usedStorage: BigNumber.from(usedStorage),
+      usedGas: BigNumber.from(usedGas),         // actual used gas
+      gasLimit: BigNumber.from(gasLimit),       // gasLimit to pass execution
+      safeStorage: BigNumber.from(safeStorage), // slightly over estimated storage to be safer
     };
   };
 
