@@ -1,12 +1,14 @@
 import { AnyFunction } from '@polkadot/types/types';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { BlockTagish, CallInfo, Eip1898BlockTag } from '../base-provider';
-import { CacheInspect } from './BlockCache';
+import { CallInfo } from '@acala-network/types/interfaces';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { _Metadata } from './gqlTypes';
 import { hexToBn, hexToU8a, isHex, isU8a, u8aToBn } from '@polkadot/util';
 import BN from 'bn.js';
+
+import { BlockTagish, Eip1898BlockTag } from '../base-provider';
+import { CacheInspect } from './BlockCache';
+import { _Metadata } from './gqlTypes';
 
 export interface EthCallTimingResult {
   gasPriceTime: number;
@@ -300,26 +302,26 @@ export const decodeRevertMsg = (hexMsg: string) => {
 };
 
 // https://github.com/AcalaNetwork/Acala/blob/067b65bc19ff525bdccae020ad2bd4bdf41f4300/modules/evm/rpc/src/lib.rs#L87
-export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
+export const checkEvmExecutionError = (data: CallInfo): void => {
   if (!data) return;
 
   const { exit_reason: exitReason, value: returnData } = data;
-  if (!exitReason.succeed) {
+  if (!exitReason.isSucceed) {
     let msg: string;
     let err: any;
-    if (exitReason.revert) {
-      msg = decodeRevertMsg(returnData);
+    if (exitReason.isRevert) {
+      msg = decodeRevertMsg(returnData.toHex());
       err = new Error(`execution reverted: ${msg}`);
       err.data = returnData;
-    } else if (exitReason.fatal) {
-      msg = JSON.stringify(exitReason.fatal);
+    } else if (exitReason.isFatal) {
+      msg = exitReason.asFatal.type;
       err = new Error(`execution fatal: ${msg}`);
-    } else if (exitReason.error) {
-      const reason = Object.keys(exitReason.error)[0];
-      msg = reason === 'other' ? exitReason.error[reason] : reason;
+    } else if (exitReason.isError) {
+      const msg = exitReason.asError.type;
       err = new Error(`execution error: ${msg}`);
     } else {
-      err = new Error('unknown eth call error');
+      const msg = exitReason.toJSON();
+      err = new Error(`unknown eth call error: ${msg}`);
     }
 
     err.code = -32603;
