@@ -990,50 +990,6 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   /**
-   * Get the gas for eth transactions
-   * @returns The gas used by eth transaction
-   */
-  getEthResources = async (
-    transaction: Deferrable<TransactionRequest>,
-    {
-      gasLimit,
-      storageLimit,
-      validUntil,
-    }: {
-      gasLimit?: BigNumberish;
-      storageLimit?: BigNumberish;
-      validUntil?: BigNumberish;
-    } = {}
-  ): Promise<{
-    gasPrice: BigNumber;
-    gasLimit: BigNumber;
-  }> => {
-    if (!gasLimit || !storageLimit) {
-      const { gasLimit: gas, safeStorage: storage } = await this.estimateResources(transaction);
-      gasLimit = gasLimit ?? gas;
-      storageLimit = storageLimit ?? storage;
-    }
-
-    if (!validUntil) {
-      const blockNumber = await this.getBlockNumber();
-      // Expires after 100 blocks by default
-      validUntil = blockNumber + 100;
-    }
-
-    const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
-      gasLimit,
-      storageLimit,
-      validUntil,
-      ...this._getGasConsts(),
-    });
-
-    return {
-      gasLimit: txGasLimit,
-      gasPrice: txGasPrice,
-    };
-  };
-
-  /**
    * helper to get ETH gas when don't know the whole transaction
    * default to return big enough gas for contract deployment
    * @returns The gas used by eth transaction

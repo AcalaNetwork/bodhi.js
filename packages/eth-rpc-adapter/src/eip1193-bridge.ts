@@ -312,20 +312,6 @@ class Eip1193BridgeImpl {
     };
   }
 
-  async eth_getEthResources(params: any[]): Promise<{
-    gasPrice: string;
-    gasLimit: string;
-  }> {
-    validate([{ type: 'transaction' }], params);
-
-    const res = await this.#provider.getEthResources(params[0]);
-
-    return {
-      gasPrice: hexValue(res.gasPrice),
-      gasLimit: hexValue(res.gasLimit),
-    };
-  }
-
   /**
    * Returns the information about a transaction requested by transaction hash.
    * @param DATA, 32 Bytes - hash of a transaction

@@ -50,7 +50,6 @@ export const eth_gasPrice = rpcGet('eth_gasPrice');
 export const eth_estimateGas = rpcGet('eth_estimateGas');
 export const eth_getEthGas = rpcGet('eth_getEthGas');
 export const eth_getCode = rpcGet('eth_getCode');
-export const eth_getEthResources = rpcGet('eth_getEthResources');
 export const net_runtimeVersion = rpcGet('net_runtimeVersion');
 export const eth_isBlockFinalized = rpcGet('eth_isBlockFinalized');
 export const eth_newFilter = rpcGet('eth_newFilter');
