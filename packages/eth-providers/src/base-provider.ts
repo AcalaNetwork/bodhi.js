@@ -835,7 +835,7 @@ export abstract class BaseProvider extends AbstractProvider {
         const { index, error } = err.asModule;
         const errInfo = this.api.registry.findMetaError({
           index: new BN(index),
-          error: new BN(error),
+          error: new BN(error.toU8a()[0]),
         });
 
         errMsg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
