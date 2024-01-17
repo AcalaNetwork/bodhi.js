@@ -63,7 +63,7 @@ function _parseEip712Signature(
   );
 }
 
-export type SignatureType = 'Ethereum' | 'AcalaEip712' | 'Eip1559';
+export type SignatureType = 'Ethereum' | 'AcalaEip712' | 'Eip1559' | 'Eip2930';
 
 // rlp([chainId, salt, nonce, gasLimit, storageLimit, to, value, data, validUntil, tip, accessList, eip712sig])
 export function parseEip712(payload: Uint8Array): AcalaEvmTX {
@@ -134,7 +134,8 @@ export function parseTransaction(rawTransaction: BytesLike): AcalaEvmTX {
 export function checkSignatureType(rawTransaction: BytesLike): SignatureType {
   const payload = arrayify(rawTransaction);
 
-  if (payload[0] > 0x7f || payload[0] === 1) return 'Ethereum'; // Legacy and EIP-155
+  if (payload[0] > 0x7f) return 'Ethereum';    // Legacy and EIP-155
+  if (payload[0] === 1) return 'Eip2930';      // EIP-2930
   if (payload[0] === 96) return 'AcalaEip712'; // Acala EIP-712
 
   return logger.throwError(`unsupported transaction type: ${payload[0]}, please use legacy or EIP-712 instead. More info about EVM+ gas: https://evmdocs.acala.network/network/gas-parameters`, Logger.errors.UNSUPPORTED_OPERATION, {

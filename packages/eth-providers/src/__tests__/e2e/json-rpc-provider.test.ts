@@ -150,8 +150,7 @@ describe('JsonRpcProvider', async () => {
       expect(await echo.echo()).to.equal('hello Vegito!');
     });
 
-    // TODO: enable me when we support type 1 tx
-    it.skip('call contract with access list', async () => {
+    it('call contract with access list', async () => {
       const echoFactory = new ContractFactory(echoJson.abi, echoJson.bytecode, wallet);
       const echo = await echoFactory.deploy();
       await echo.deployed();
@@ -170,7 +169,8 @@ describe('JsonRpcProvider', async () => {
       const receipt2 = await (await echo.scream('hello Vegito!', { accessList, type: 1 })).wait();
       expect(await echo.echo()).to.equal('hello Vegito!');
 
-      expect(receipt1.gasUsed).to.be.gt(receipt2.gasUsed);
+      // interestingly passing empty access list can still reduce gas cost
+      expect(BigInt(receipt1.gasUsed)).toBeGreaterThan(BigInt(receipt2.gasUsed));
     });
   });
 
