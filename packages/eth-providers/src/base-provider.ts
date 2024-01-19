@@ -1133,7 +1133,9 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit = highest;
     }
 
-    const safeStorage = Math.floor((Math.max(usedStorage, 0) + 64) * 1.1);
+    // Some contracts rely on block height and have different treatments.
+    // Transfer use `usedStorage`
+    const safeStorage = ethTx.data.length() == 0 ? Math.max(usedStorage, 0) : Math.floor((Math.max(usedStorage, 0) + 64) * 1.1);
     return {
       usedGas: BigNumber.from(usedGas),         // actual used gas
       gasLimit: BigNumber.from(gasLimit),       // gasLimit to pass execution
