@@ -81,7 +81,7 @@ describe('transaction tests', () => {
       const expectedGasPrice = 100000000000 + validUntil;
 
       expect(Math.abs((params.gasPrice as BigNumber).toNumber() - expectedGasPrice)).to.lt(2);
-      expect(params.gasLimit?.toString()).toMatchInlineSnapshot('"100107"');
+      expect(params.gasLimit?.toString()).toMatchInlineSnapshot('"100100"');
     });
   });
 
