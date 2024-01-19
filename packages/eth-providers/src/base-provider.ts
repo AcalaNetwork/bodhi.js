@@ -952,10 +952,8 @@ export abstract class BaseProvider extends AbstractProvider {
     let txFee = await this._estimateGasCost(extrinsic, blockHash);
     txFee = txFee.mul(gasLimit).div(usedGas); // scale it to the same ratio when estimate passing gasLimit
 
-    if (safeStorage.gt(0)) {
-      const storageFee = safeStorage.mul(this._getGasConsts().storageDepositPerByte);
-      txFee = txFee.add(storageFee);
-    }
+    const storageFee = safeStorage.mul(this._getGasConsts().storageDepositPerByte);
+    txFee = txFee.add(storageFee);
 
     const gasPrice = tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0)
       ? BigNumber.from(tx.gasPrice)
