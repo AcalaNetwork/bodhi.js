@@ -34,7 +34,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
-import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
 import LRUCache from 'lru-cache';
 
