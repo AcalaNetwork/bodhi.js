@@ -23,7 +23,6 @@ const TRACE_METHODS = [
   'getFeeData',
   'estimateGas',
   '_estimateGasCost',
-  'getEthResources',
   '_getEthGas',
   'estimateResources',
   'getSubstrateAddress',

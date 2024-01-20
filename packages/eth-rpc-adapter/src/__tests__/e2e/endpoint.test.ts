@@ -42,7 +42,6 @@ import {
   eth_chainId,
   eth_getEthGas,
   eth_getCode,
-  eth_getEthResources,
   net_runtimeVersion,
   eth_isBlockFinalized,
   eth_newFilter,
@@ -697,7 +696,9 @@ describe('endpoint', () => {
           // });
 
           expect(diffReceiptTxFee < TX_FEE_OFF_TOLERANCE).to.be.true;
-          expect(diffEstimateTxFee < TX_FEE_OFF_TOLERANCE).to.be.true;
+
+          // estimated tx fee is slightly overestimated now
+          expect(diffEstimateTxFee < TX_FEE_OFF_TOLERANCE).to.be.false;
         });
       });
 
@@ -1200,22 +1201,6 @@ describe('endpoint', () => {
     });
   });
 
-  describe('eth_getEthResources', () => {
-    it('get correct gas', async () => {
-      const rawRes = (
-        await eth_getEthResources([
-          {
-            from: '0xd2a5c8867d1b3665fb3b2d93d514bd1c73bb2227',
-            to: '0x4e3e1108e86c3fafb389629e99bff9c4fa911e54',
-            data: '0x',
-          },
-        ])
-      ).data.result;
-      expect(rawRes.gasPrice).to.equal('0x2e90f20000');
-      expect(rawRes.gasLimit).to.equal('0x6270');
-    });
-  });
-
   describe('net_runtimeVersion', () => {
     it('get correct runtime version', async () => {
       const version = (await net_runtimeVersion([])).data.result;
@@ -1257,7 +1242,7 @@ describe('endpoint', () => {
 
   describe('eth_getBalance', () => {
     it('get correct balance', async () => {
-      const block8Balance = 8999995192389995117000000n; // edit me for different mandala version
+      const block8Balance = 8999995192339995117000000n; // edit me for different mandala version
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x8'])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(block8Balance);

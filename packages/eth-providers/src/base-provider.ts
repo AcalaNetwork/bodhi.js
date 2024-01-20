@@ -34,7 +34,7 @@ import { createHeaderExtended } from '@polkadot/api-derive';
 import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
-import { hexToU8a, isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
+import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
 import LRUCache from 'lru-cache';
 
@@ -251,25 +251,17 @@ export interface PollFilters {
   [PollFilterType.Logs]: LogPollFilter[];
 }
 
-export interface CallInfo {
-  ok?: {
-    exit_reason: {
-      succeed?: 'Stopped' | 'Returned' | 'Suicided';
-      error?: any;
-      revert?: 'Reverted';
-      fatal?: any;
-    };
-    value: string;
-    used_gas: string;
-    used_storage: number;
-    logs: Log[];
+export interface CallReturnInfo {
+  exit_reason: {
+    succeed?: 'Stopped' | 'Returned' | 'Suicided';
+    error?: any;
+    revert?: 'Reverted';
+    fatal?: any;
   };
-  err?: {
-    module: {
-      index: number;
-      error: `0x${string}`;
-    };
-  };
+  value: string;
+  used_gas: string;
+  used_storage: number;
+  logs: Log[];
 }
 
 export abstract class BaseProvider extends AbstractProvider {
@@ -814,53 +806,50 @@ export abstract class BaseProvider extends AbstractProvider {
   _ethCall = async (callRequest: SubstrateEvmCallRequest, at?: string) => {
     const api = at ? await this.api.at(at) : this.api;
 
-    const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
-    const estimate = false;
-
     // call evm rpc when `state_call` is not supported yet
     if (!api.call.evmRuntimeRPCApi) {
       const data = await this.api.rpc.evm.call(callRequest);
-      const res: CallInfo = {
-        ok: {
-          exit_reason: { succeed: 'Returned' },
-          value: data.toHex(),
-          used_gas: '0',
-          used_storage: 0,
-          logs: [],
-        },
+
+      return {
+        exit_reason: { succeed: 'Returned' },
+        value: data.toHex(),
+        used_gas: '0',
+        used_storage: 0,
+        logs: [],
       };
-      return res.ok;
     }
+
+    const { from, to, gasLimit, storageLimit, value, data, accessList } = callRequest;
+    const estimate = false;
 
     const res = to
       ? await api.call.evmRuntimeRPCApi.call(from, to, data, value, gasLimit, storageLimit, accessList, estimate)
       : await api.call.evmRuntimeRPCApi.create(from, data, value, gasLimit, storageLimit, accessList, estimate);
 
-    const { ok, err } = res.toJSON() as CallInfo;
+    const ok = res.toJSON()['ok'] as CallReturnInfo | undefined;
     if (!ok) {
       // substrate level error
-      const errMetaValid = err?.module.index !== undefined && err?.module.error !== undefined;
-      if (!errMetaValid) {
-        return logger.throwError(
-          'internal JSON-RPC error [unknown error - cannot decode error info from error meta]',
-          Logger.errors.CALL_EXCEPTION,
-          callRequest
-        );
+      let errMsg: string;
+      const err = res.asErr;
+      if (err.isModule) {
+        const { index, error } = err.asModule;
+        const errInfo = this.api.registry.findMetaError({
+          index: new BN(index),
+          error: new BN(error.toU8a()[0]),
+        });
+
+        errMsg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
+      } else {
+        errMsg = err.toString();
       }
 
-      const errInfo = this.api.registry.findMetaError({
-        index: new BN(err.module.index),
-        error: new BN(hexToU8a(err.module.error)[0]),
-      });
-      const msg = `internal JSON-RPC error [${errInfo.section}.${errInfo.name}: ${errInfo.docs}]`;
-
-      return logger.throwError(msg, Logger.errors.CALL_EXCEPTION, callRequest);
+      return logger.throwError(errMsg, Logger.errors.CALL_EXCEPTION, callRequest);
     }
 
     // check evm level error
     checkEvmExecutionError(ok);
 
-    return ok!;
+    return ok;
   };
 
   getStorageAt = async (
@@ -941,7 +930,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ? await this._getBlockHash(blockTag)
       : undefined;  // if blockTag is latest, avoid explicit blockhash for better performance
 
-    const { usedGas, gasLimit, usedStorage } = await this.estimateResources(transaction, blockHash);
+    const { usedGas, gasLimit, safeStorage } = await this.estimateResources(transaction, blockHash);
 
     const tx = await resolveProperties(transaction);
     const data = tx.data?.toString() ?? '0x';
@@ -950,7 +939,7 @@ export abstract class BaseProvider extends AbstractProvider {
       data,
       toBN(BigNumber.from(tx.value ?? 0)),
       toBN(gasLimit),
-      toBN(usedStorage.isNegative() ? 0 : usedStorage),
+      toBN(safeStorage),
       accessListify(tx.accessList ?? []),
     ] as const;
 
@@ -963,10 +952,8 @@ export abstract class BaseProvider extends AbstractProvider {
     let txFee = await this._estimateGasCost(extrinsic, blockHash);
     txFee = txFee.mul(gasLimit).div(usedGas); // scale it to the same ratio when estimate passing gasLimit
 
-    if (usedStorage.gt(0)) {
-      const storageFee = usedStorage.mul(this._getGasConsts().storageDepositPerByte);
-      txFee = txFee.add(storageFee);
-    }
+    const storageFee = safeStorage.mul(this._getGasConsts().storageDepositPerByte);
+    txFee = txFee.add(storageFee);
 
     const gasPrice = tx.gasPrice && BigNumber.from(tx.gasPrice).gt(0)
       ? BigNumber.from(tx.gasPrice)
@@ -974,7 +961,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const tokenTransferSelector = '0xa9059cbb';   // transfer(address,uint256)
     const isTokenTransfer = hexlify(await transaction.data ?? '0x').startsWith(tokenTransferSelector);
-    return encodeGasLimit(txFee, gasPrice, gasLimit, usedStorage, isTokenTransfer);
+    return encodeGasLimit(txFee, gasPrice, gasLimit, safeStorage, isTokenTransfer);
   };
 
   _estimateGasCost = async (
@@ -998,50 +985,6 @@ export abstract class BaseProvider extends AbstractProvider {
     );
 
     return nativeToEthDecimal(nativeTxFee);
-  };
-
-  /**
-   * Get the gas for eth transactions
-   * @returns The gas used by eth transaction
-   */
-  getEthResources = async (
-    transaction: Deferrable<TransactionRequest>,
-    {
-      gasLimit,
-      storageLimit,
-      validUntil,
-    }: {
-      gasLimit?: BigNumberish;
-      storageLimit?: BigNumberish;
-      validUntil?: BigNumberish;
-    } = {}
-  ): Promise<{
-    gasPrice: BigNumber;
-    gasLimit: BigNumber;
-  }> => {
-    if (!gasLimit || !storageLimit) {
-      const { gasLimit: gas, usedStorage: storage } = await this.estimateResources(transaction);
-      gasLimit = gasLimit ?? gas;
-      storageLimit = storageLimit ?? storage;
-    }
-
-    if (!validUntil) {
-      const blockNumber = await this.getBlockNumber();
-      // Expires after 100 blocks by default
-      validUntil = blockNumber + 100;
-    }
-
-    const { txGasLimit, txGasPrice } = calcEthereumTransactionParams({
-      gasLimit,
-      storageLimit,
-      validUntil,
-      ...this._getGasConsts(),
-    });
-
-    return {
-      gasLimit: txGasLimit,
-      gasPrice: txGasPrice,
-    };
   };
 
   /**
@@ -1106,7 +1049,7 @@ export abstract class BaseProvider extends AbstractProvider {
   ): Promise<{
     usedGas: BigNumber;
     gasLimit: BigNumber;
-    usedStorage: BigNumber;
+    safeStorage: BigNumber;
   }> => {
     const ethTx = await getTransactionRequest(transaction);
 
@@ -1155,7 +1098,7 @@ export abstract class BaseProvider extends AbstractProvider {
       await this._ethCall({
         ...txRequest,
         gasLimit,
-      });
+      }, blockHash);
     } catch {
       gasAlreadyWorks = false;
     }
@@ -1171,7 +1114,7 @@ export abstract class BaseProvider extends AbstractProvider {
           await this._ethCall({
             ...txRequest,
             gasLimit: mid,
-          });
+          }, blockHash);
           highest = mid;
 
           if ((prevHighest - highest) / prevHighest < 0.1) break;
@@ -1190,10 +1133,16 @@ export abstract class BaseProvider extends AbstractProvider {
       gasLimit = highest;
     }
 
+    // Some contracts rely on block height and have different treatments.
+    // Transfer use `usedStorage`
+    const safeStorage = ethTx.data?.length > 0
+      ? Math.floor((Math.max(usedStorage, 0) + 64) * 1.1)
+      : Math.max(usedStorage, 0);
+
     return {
-      usedGas: BigNumber.from(usedGas),   // actual used gas
-      gasLimit: BigNumber.from(gasLimit), // gasLimit to pass execution
-      usedStorage: BigNumber.from(usedStorage),
+      usedGas: BigNumber.from(usedGas),         // actual used gas
+      gasLimit: BigNumber.from(gasLimit),       // gasLimit to pass execution
+      safeStorage: BigNumber.from(safeStorage), // slightly over estimated storage to be safer
     };
   };
 

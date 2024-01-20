@@ -208,7 +208,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
       ..._transaction,
     };
 
-    const { gasLimit, usedStorage: storageLimit } = await this.provider.estimateResources(transaction);
+    const { gasLimit, safeStorage: storageLimit } = await this.provider.estimateResources(transaction);
 
     const tx = await this.populateTransaction(transaction);
     const data = tx.data?.toString() ?? '0x';
