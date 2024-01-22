@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { BaseProvider, BaseProviderOptions } from '@acala-network/eth-providers/base-provider';
-import { options } from '@acala-network/api';
+import { acalaRuntime, acalaTypesBundle } from '@acala-network/types';
 import tracer from 'dd-trace';
 
 const TRACE_METHODS = [
@@ -85,8 +85,11 @@ export class EvmRpcProviderWithTrace extends BaseProviderWithTrace {
   constructor(endpoint: string | string[], opts?: BaseProviderOptions) {
     super(opts);
 
-    const provider = new WsProvider(endpoint);
-    const api = new ApiPromise(options({ provider }));
+    const api = new ApiPromise({
+      provider: new WsProvider(endpoint),
+      runtime: acalaRuntime,
+      typesBundle: acalaTypesBundle,
+    });
 
     this.setApi(api);
   }
