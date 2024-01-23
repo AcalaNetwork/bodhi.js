@@ -88,7 +88,7 @@ export class EvmRpcProviderWithTrace extends BaseProviderWithTrace {
     const api = new ApiPromise({
       provider: new WsProvider(endpoint),
       runtime: acalaRuntime,
-      typesBundle: acalaTypesBundle,
+      // typesBundle: acalaTypesBundle,
     });
 
     this.setApi(api);

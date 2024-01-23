@@ -10,7 +10,7 @@ export class EvmRpcProvider extends BaseProvider {
     const api = new ApiPromise({
       provider: new WsProvider(endpoint),
       runtime: acalaRuntime,
-      typesBundle: acalaTypesBundle,
+      // typesBundle: acalaTypesBundle,
     });
 
     this.setApi(api);
