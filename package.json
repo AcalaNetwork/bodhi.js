@@ -3,7 +3,7 @@
   "repository": "git@github.com:AcalaNetwork/bodhi.js.git",
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
-  "packageManager": "yarn@3.6.3",
+  "packageManager": "yarn@4.0.2",
   "private": true,
   "engines": {
     "node": ">=v16"
