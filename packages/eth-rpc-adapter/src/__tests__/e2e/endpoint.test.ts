@@ -1238,6 +1238,14 @@ describe('endpoint', () => {
       expect(resFull).toMatchSnapshot();
       expect(res).toMatchSnapshot();
     });
+
+    it('for very old runtime', async () => {
+      const resFull = (await eth_getBlockByNumber_karura([372268, true])).data.result;
+      const res = (await eth_getBlockByNumber_karura([372268, false])).data.result;
+
+      expect(resFull).toMatchSnapshot();
+      expect(res).toMatchSnapshot();
+    });
   });
 
   describe('eth_getBalance', () => {
