@@ -341,11 +341,18 @@ export abstract class BaseProvider extends AbstractProvider {
   }
 
   get finalizedBlockHash() {
-    return firstValueFrom(this.finalized$).then(({ hash }) => hash);
+    return firstValueFrom(this.finalized$).then(
+      ({ hash: chainFinalizedHash, number: chainFinalizedNumber }) =>
+        chainFinalizedNumber <= this.bestBlockNumber
+          ? chainFinalizedHash
+          : this.bestBlockHash
+    );
   }
 
   get finalizedBlockNumber() {
-    return firstValueFrom(this.finalized$).then(({ number }) => number);
+    return firstValueFrom(this.finalized$).then(
+      ({ number: chainFinalizedNumber }) => Math.min(this.bestBlockNumber, chainFinalizedNumber)
+    );
   }
 
   static isProvider(value: any): value is Provider {
