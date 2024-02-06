@@ -2,7 +2,7 @@ version: '3'
 
 services:
   mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-7ae4bf4
+    image: ghcr.io/acalanetwork/mandala-node:sha-06e988b
     ports:
       - 9944:9944
     command:
