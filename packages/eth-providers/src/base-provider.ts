@@ -1232,6 +1232,7 @@ export abstract class BaseProvider extends AbstractProvider {
     } else if (
       ethTx.type === undefined || // legacy
       ethTx.type === null      || // legacy
+      ethTx.type === 1         || // EIP-2930
       ethTx.type === 0            // EIP-155
     ) {
       try {
@@ -1266,9 +1267,18 @@ export abstract class BaseProvider extends AbstractProvider {
           gasPrice: ethTx.gasPrice,
         });
       }
-    } else if (ethTx.type === 1 || ethTx.type === 2) {
+    } else if (ethTx.type === 2) {
       return logger.throwError(
         `unsupported transaction type: ${ethTx.type}, please use legacy or EIP-712 instead.`,
+        Logger.errors.UNSUPPORTED_OPERATION,
+        {
+          operation: '_getSubstrateGasParams',
+          transactionType: ethTx.type,
+        }
+      );
+    } else {
+      return logger.throwError(
+        `unknwon transaction type: ${ethTx.type}`,
         Logger.errors.UNSUPPORTED_OPERATION,
         {
           operation: '_getSubstrateGasParams',
