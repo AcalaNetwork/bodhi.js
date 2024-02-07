@@ -4,7 +4,7 @@ A node service that provides [JSON-RPC](https://eth.wiki/json-rpc/API) for [Acal
 ## Run
 First run a Mandala node locally
 ```
-docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-7ae4bf4 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
+docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-06e988b --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
 ```
 
 Then there are 3 ways to run an RPC adapter:

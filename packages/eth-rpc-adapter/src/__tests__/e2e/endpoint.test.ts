@@ -1250,7 +1250,7 @@ describe('endpoint', () => {
 
   describe('eth_getBalance', () => {
     it('get correct balance', async () => {
-      const block8Balance = 8999995192339995117000000n; // edit me for different mandala version
+      const block8Balance = 8999995192313663934000000n; // edit me for different mandala version
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, 8])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, '0x8'])).data.result)).to.equal(block8Balance);
       expect(BigInt((await eth_getBalance([ADDRESS_ALICE, { blockNumber: 8 }])).data.result)).to.equal(block8Balance);
