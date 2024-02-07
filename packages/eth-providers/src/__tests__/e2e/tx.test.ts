@@ -65,27 +65,6 @@ describe('transaction tests', () => {
   });
 
   describe.concurrent('test eth gas', () => {
-    it('getEthResources', async () => {
-      const randomWallet = Wallet.createRandom().connect(provider);
-
-      const amount = '1000000000000000000';
-      const resources = await provider.getEthResources({
-        type: 0,
-        from: wallet3.address,
-        to: randomWallet.address,
-        value: BigNumber.from(amount),
-      });
-
-      await wallet3.sendTransaction({
-        type: 0,
-        to: randomWallet.address,
-        value: BigNumber.from(amount),
-        ...resources,
-      });
-
-      expect((await randomWallet.getBalance()).toString()).eq(amount);
-    });
-
     it('use v2 gas params', async () => {
       const randomWallet = Wallet.createRandom().connect(provider);
 
@@ -102,7 +81,7 @@ describe('transaction tests', () => {
       const expectedGasPrice = 100000000000 + validUntil;
 
       expect(Math.abs((params.gasPrice as BigNumber).toNumber() - expectedGasPrice)).to.lt(2);
-      expect((params.gasLimit as BigNumber).toNumber()).eq(100100);
+      expect(params.gasLimit?.toString()).toMatchInlineSnapshot('"100100"');
     });
   });
 

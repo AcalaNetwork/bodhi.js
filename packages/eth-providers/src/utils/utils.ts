@@ -1,12 +1,13 @@
 import { AnyFunction } from '@polkadot/types/types';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
-import { BlockTagish, CallInfo, Eip1898BlockTag } from '../base-provider';
-import { CacheInspect } from './BlockCache';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { _Metadata } from './gqlTypes';
 import { hexToBn, hexToU8a, isHex, isU8a, u8aToBn } from '@polkadot/util';
 import BN from 'bn.js';
+
+import { BlockTagish, CallReturnInfo, Eip1898BlockTag } from '../base-provider';
+import { CacheInspect } from './BlockCache';
+import { _Metadata } from './gqlTypes';
 
 export interface EthCallTimingResult {
   gasPriceTime: number;
@@ -300,7 +301,7 @@ export const decodeRevertMsg = (hexMsg: string) => {
 };
 
 // https://github.com/AcalaNetwork/Acala/blob/067b65bc19ff525bdccae020ad2bd4bdf41f4300/modules/evm/rpc/src/lib.rs#L87
-export const checkEvmExecutionError = (data: CallInfo['ok']): void => {
+export const checkEvmExecutionError = (data: CallReturnInfo): void => {
   if (!data) return;
 
   const { exit_reason: exitReason, value: returnData } = data;

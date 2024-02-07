@@ -4,7 +4,7 @@ A node service that provides [JSON-RPC](https://eth.wiki/json-rpc/API) for [Acal
 ## Run
 First run a Mandala node locally
 ```
-docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-7ae4bf4 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
+docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-06e988b --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
 ```
 
 Then there are 3 ways to run an RPC adapter:
@@ -118,7 +118,6 @@ These are ETH compatible RPCs, the interface and functionalities match https://e
 ### Custom RPCs
 These are EVM+ custom RPCs that only exist on Acala/Karura
 - `eth_getEthGas`: calculate eth transaction gas params from substrate gas params. More details please refer [here](https://evmdocs.acala.network/network/gas-parameters)]
-- `eth_getEthResources`: calculate eth transaction gas params from transaction details, params: [TransactionRequest](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionRequest)
 - `net_indexer`: get subql indexer metadata
 - `net_cacheInfo`: get the cache info
 - `net_isSafeMode`: check if this RPC is running in safe mode
