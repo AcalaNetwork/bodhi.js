@@ -10,6 +10,7 @@ import { errorHandler } from './middlewares';
 import { logger } from './utils/logger';
 
 export interface EthRpcServerOptions extends ServerOptions {
+  host?: string;
   port: number;
   batchSize: number;
   middleware?: HandleFunction[];
@@ -101,7 +102,7 @@ export default class EthRpcServer {
   }
 
   start(): void {
-    this.server.listen(this.options.port);
+    this.server.listen(this.options.port, this.options.host);
   }
 
   stop(): void {

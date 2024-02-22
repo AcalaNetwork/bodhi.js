@@ -6,6 +6,7 @@ export const sleep = async (time = 1000): Promise<void> => new Promise(resolve =
 const {
   ENDPOINT_URL,
   SUBQL_URL,
+  HOST,
   PORT,
   MAX_CACHE_SIZE,
   MAX_BATCH_SIZE,
@@ -41,6 +42,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       default: SUBQL_URL,
       describe:
         'Subquery url: *optional* if testing contracts locally that doesn\'t query logs or historical Tx, otherwise *required*',
+      type: 'string',
+    },
+    host: {
+      alias: 'h',
+      demandOption: false,
+      default: HOST ?? 'localhost',
+      describe: 'host to listen for http and ws requests',
       type: 'string',
     },
     port: {

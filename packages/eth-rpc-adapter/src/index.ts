@@ -55,7 +55,8 @@ export async function start(): Promise<void> {
   version         : ${version}
   endpoint url    : ${opts.endpoint}
   subquery url    : ${opts.subqlUrl}
-  listening to    : ${opts.port}
+  server host     : ${opts.host}
+  server port     : ${opts.port}
   max blockCache  : ${opts.maxBlockCacheSize}
   max batchSize   : ${opts.maxBatchSize}  
   max storageSize : ${opts.storageCacheSize}
