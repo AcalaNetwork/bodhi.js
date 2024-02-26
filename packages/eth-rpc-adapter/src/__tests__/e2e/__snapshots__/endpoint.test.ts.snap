@@ -311,7 +311,7 @@ exports[`endpoint > eth_getTransactionByHash > finds correct tx when hash exist 
   "blockNumber": "0x14",
   "from": "0x82a258cb20e2adb4788153cd5eb5839615ece9a0",
   "gas": "0x200b20",
-  "gasPrice": "0x41d4ad924b",
+  "gasPrice": "0x41d4ad9224",
   "input": "0x",
   "nonce": "0x10",
   "r": "0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea",
@@ -554,7 +554,7 @@ exports[`endpoint > eth_getTransactionReceipt > returns correct result when hash
   "blockNumber": "0x14",
   "contractAddress": null,
   "cumulativeGasUsed": "0x0",
-  "effectiveGasPrice": "0x41d4ad924b",
+  "effectiveGasPrice": "0x41d4ad9224",
   "from": "0x82a258cb20e2adb4788153cd5eb5839615ece9a0",
   "gasUsed": "0xcbbd",
   "logs": [
