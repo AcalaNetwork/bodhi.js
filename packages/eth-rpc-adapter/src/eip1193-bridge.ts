@@ -33,7 +33,7 @@ export class Eip1193Bridge extends EventEmitter {
   }
 
   isMethodValid(method: string): boolean {
-    return method.startsWith('eth_') || method.startsWith('net_') || method.startsWith('web3_');
+    return method.startsWith('eth_') || method.startsWith('net_') || method.startsWith('web3_') || method.startsWith('txpool_');
   }
 
   isMethodImplemented(method: string): method is keyof Eip1193BridgeImpl {
