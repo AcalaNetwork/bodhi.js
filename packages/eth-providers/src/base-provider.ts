@@ -264,6 +264,24 @@ export interface CallReturnInfo {
   logs: Log[];
 }
 
+export interface PendingTx {
+  blockHash: string;
+  blockNumber: null;
+  from: string;
+  gas: string;
+  gasPrice: string;
+  hash: string;
+  input: string;
+  nonce: string;
+  to: string;
+  transactionIndex: null;
+  value: string;
+}
+export interface TxpoolContent {
+  pending: { [from: string]: { [nonce: string]: PendingTx } };
+  queued: { [from: string]: { [nonce: string]: PendingTx } };
+}
+
 export abstract class BaseProvider extends AbstractProvider {
   readonly _api?: ApiPromise;
   readonly subql?: SubqlProvider;
@@ -2068,6 +2086,42 @@ export abstract class BaseProvider extends AbstractProvider {
     });
 
     return found;
+  };
+
+  txpoolContent = async (): Promise<TxpoolContent> => {
+    const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
+    const pendingTxs = await Promise.all(pendingExtrinsics
+      .filter(isEvmExtrinsic)
+      .map(async extrinsic => {
+        const from = await this.getEvmAddress(extrinsic.signer.toString());
+        const { value, gas, input, to, nonce } = parseExtrinsic(extrinsic);
+
+        return {
+          blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          blockNumber: null,
+          from,
+          gas,
+          gasPrice: 0, // hard to calculate
+          hash: extrinsic.toHex(),
+          input,
+          nonce,
+          to,
+          transactionIndex: null,
+          value,
+        };
+      }));
+
+    const pending = pendingTxs.reduce((res, tx) => {
+      res[tx.from] ??= {};
+      res[tx.from][tx.nonce] = hexlifyRpcResult(tx);
+
+      return res;
+    }, {} as TxpoolContent['pending']);
+
+    return {
+      pending,
+      queued: {},
+    };
   };
 
   on = (_eventName: EventType, _listener: Listener): Provider => throwNotImplemented('on');

@@ -495,4 +495,9 @@ class Eip1193BridgeImpl {
 
     return this.#provider.removeEventListener(params[0]);
   }
+
+  async txpool_content(params: any[]): Promise<any> {
+    validate([], params);
+    return this.#provider.txpoolContent();
+  }
 }
