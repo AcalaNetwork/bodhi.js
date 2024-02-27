@@ -14,7 +14,7 @@ schema:
   file: ./schema.graphql
 network:
   # public mandala tc9
-  chainId: '0x8837eb25f126806eca5012c67621cca1c04fadb6c93b3488e63fe94f872e2387'
+  chainId: '0x3035b88c212be330a1a724c675d56d53a5016ec32af1790738832db0227ac54c'
   endpoint: wss://mandala-tc9-rpc.aca-staging.network
   chaintypes:
     file: ./dist/chain-types/index.js
