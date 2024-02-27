@@ -2102,7 +2102,7 @@ export abstract class BaseProvider extends AbstractProvider {
           from,
           gas,
           gasPrice: 0, // hard to calculate
-          hash: extrinsic.toHex(),
+          hash: extrinsic.hash.toHex(),
           input,
           nonce,
           to,
