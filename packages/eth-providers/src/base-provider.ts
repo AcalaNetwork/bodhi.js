@@ -2094,20 +2094,15 @@ export abstract class BaseProvider extends AbstractProvider {
       .filter(isEvmExtrinsic)
       .map(async extrinsic => {
         const from = await this.getEvmAddress(extrinsic.signer.toString());
-        const { value, gas, input, to, nonce } = parseExtrinsic(extrinsic);
 
         return {
-          blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          blockHash: null,
           blockNumber: null,
           from,
-          gas,
           gasPrice: 0, // hard to calculate
-          hash: extrinsic.toHex(),
-          input,
-          nonce,
-          to,
+          hash: extrinsic.hash.toHex(),
           transactionIndex: null,
-          value,
+          ...parseExtrinsic(extrinsic),
         };
       }));
 
