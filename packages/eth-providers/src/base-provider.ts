@@ -273,9 +273,12 @@ export interface PendingTx {
   hash: string;
   input: string;
   nonce: string;
-  to: string;
+  to: string | null;
   transactionIndex: null;
   value: string;
+  v: string;
+  r: string;
+  s: string;
 }
 export interface TxpoolContent {
   pending: { [from: string]: { [nonce: string]: PendingTx } };
