@@ -6,7 +6,7 @@ import { TX } from '../base-provider';
 import { TransactionReceipt as TransactionReceiptSubql } from './gqlTypes';
 import { hexToU8a, nToU8a } from '@polkadot/util';
 import { hexValue } from '@ethersproject/bytes';
-import { isOrphanEvmEvent } from './utils';
+import { isEvmExtrinsic, isOrphanEvmEvent } from './utils';
 import { keccak256 } from '@ethersproject/keccak256';
 import { logger } from './logger';
 import type { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
@@ -176,7 +176,6 @@ export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => 
 };
 
 // parse info that can be extracted from extrinsic alone
-// only works for EVM extrinsics
 export const parseExtrinsic = (
   extrinsic: GenericExtrinsic
 ): {
@@ -200,7 +199,7 @@ export const parseExtrinsic = (
     ...DUMMY_V_R_S, // TODO: get correct VRS
   };
 
-  if (extrinsic.method.section.toUpperCase() !== 'EVM') {
+  if (!isEvmExtrinsic(extrinsic)){
     return NONE_EVM_TX_DEFAULT_DATA;
   }
 
