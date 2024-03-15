@@ -1745,7 +1745,10 @@ export abstract class BaseProvider extends AbstractProvider {
     if (
       txFromCache &&
       await this._isBlockCanonical(txFromCache.blockHash, txFromCache.blockNumber)
-    ) return txFromCache;
+    ) {
+      delete txFromCache.byzantium;
+      return txFromCache;
+    }
 
     await this._checkSubqlHeight();
 
