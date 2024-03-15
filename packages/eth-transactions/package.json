@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-transactions",
-  "version": "2.7.22",
+  "version": "2.7.23",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "scripts": {
