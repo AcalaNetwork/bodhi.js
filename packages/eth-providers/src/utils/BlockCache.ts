@@ -1,9 +1,7 @@
-import { Log } from '@ethersproject/abstract-provider';
+import { Log, TransactionReceipt } from '@ethersproject/abstract-provider';
 
-import { FullReceipt } from './receiptHelper';
-
-export type TxHashToReceipt = Record<string, FullReceipt>;
-export type BlockHashToReceipts = Record<string, FullReceipt[]>;
+export type TxHashToReceipt = Record<string, TransactionReceipt>;
+export type BlockHashToReceipts = Record<string, TransactionReceipt[]>;
 export type Block = {
   number: number;
   hash: string;
@@ -34,7 +32,7 @@ export class BlockCache {
   setlastCachedBlock = (block: Block) => (this.lastCachedBlock = block);
 
   // automatically preserve a sliding window of ${maxCachedBlocks} blocks
-  addReceipts = (blockHash: string, receipts: FullReceipt[]): void => {
+  addReceipts = (blockHash: string, receipts: TransactionReceipt[]): void => {
     this.blockHashToReceipts[blockHash] = receipts;
     receipts.forEach(r => {
       this.txHashToReceipt[r.transactionHash] = r;
@@ -52,13 +50,13 @@ export class BlockCache {
     }
   };
 
-  getReceiptByHash = (txHash: string): FullReceipt | null =>
+  getReceiptByHash = (txHash: string): TransactionReceipt | null =>
     this.txHashToReceipt[txHash] ?? null;
 
-  getAllReceiptsAtBlock = (blockHash: string): FullReceipt[] =>
+  getAllReceiptsAtBlock = (blockHash: string): TransactionReceipt[] =>
     this.blockHashToReceipts[blockHash] ?? [];
 
-  getReceiptAtBlock = (txHash: string, blockHash: string): FullReceipt | null =>
+  getReceiptAtBlock = (txHash: string, blockHash: string): TransactionReceipt | null =>
     this.getAllReceiptsAtBlock(blockHash).find(r => r.transactionHash === txHash) ?? null;
 
   getLogsAtBlock = (blockHash: string): Log[] =>

@@ -59,7 +59,6 @@ import {
 } from './consts';
 import {
   BaseLogFilter,
-  FullReceipt,
   HealthResult,
   LogFilter,
   PROVIDER_ERRORS,
@@ -484,7 +483,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
   };
 
-  _notifySubscribers = async (header: Header, receipts: FullReceipt[]) => {
+  _notifySubscribers = async (header: Header, receipts: TransactionReceipt[]) => {
     const headSubscribers = this.eventListeners[SubscriptionType.NewHeads];
     const logSubscribers = this.eventListeners[SubscriptionType.Logs];
 
@@ -672,7 +671,7 @@ export abstract class BaseProvider extends AbstractProvider {
       ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase()
       : DUMMY_ADDRESS;
 
-    let receipts: FullReceipt[];
+    let receipts: TransactionReceipt[];
     if (receiptsFromSubql?.length) {
       receipts = receiptsFromSubql.map(subqlReceiptAdapter);
     } else {

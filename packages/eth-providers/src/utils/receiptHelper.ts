@@ -39,10 +39,6 @@ export interface ExtrinsicMethodJSON {
   };
 }
 
-export interface FullReceipt extends TransactionReceipt {
-  exitReason?: string;
-}
-
 export const getPartialLog = (evmLog: EvmLog, logIndex: number): PartialLog => {
   return {
     removed: false,
@@ -68,7 +64,6 @@ export interface PartialTransactionReceipt {
   gasUsed: BigNumber;
   cumulativeGasUsed: BigNumber;
   status?: number;
-  exitReason?: string;
 }
 
 const DUMMY_LOGS_BLOOM =
@@ -125,7 +120,6 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         gasUsed: BigNumber.from(usedGas?.toString() || 0),
         logs: getPartialLogs(logs),
         status: 0,
-        exitReason: _exitReason.toString(),
         ...defaultValue,
       };
     }
@@ -146,7 +140,6 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
         contractAddress: undefined,
         gasUsed: BigNumber.from(usedGas?.toString() || 0),
         status: 0,
-        exitReason: _exitReason.toString(),
         logs: getPartialLogs(logs),
         ...defaultValue,
       };
@@ -221,17 +214,13 @@ const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof n
 };
 
 export const formatter = new Formatter();
-export const fullReceiptFormatter = {
-  ...formatter.formats.receipt,
-  exitReason: (x: any) => x,
-};
 
 export const getOrphanTxReceiptsFromEvents = (
   events: FrameSystemEventRecord[],
   blockHash: string,
   blockNumber: number,
   indexOffset: number
-): FullReceipt[] => {
+): TransactionReceipt[] => {
   const receipts = events
     .filter(isOrphanEvmEvent)
     .map(getPartialTransactionReceipt)
@@ -257,19 +246,18 @@ export const getOrphanTxReceiptsFromEvents = (
       };
     });
 
-  return receipts.map(receipt => Formatter.check(fullReceiptFormatter, receipt));
+  return receipts.map(receipt => formatter.receipt(receipt));
 };
 
-export const subqlReceiptAdapter = <T extends TransactionReceiptSubql | null>(receipt: T):
-  T extends null ? null : FullReceipt =>
-    receipt
-      ? Formatter.check(fullReceiptFormatter, {
-        ...receipt,
-        logs: receipt.logs.nodes,
-      })
-      : null;
+export const subqlReceiptAdapter = (receipt: TransactionReceiptSubql): TransactionReceipt => (
+  formatter.receipt({
+    ...receipt,
+    logs: receipt.logs.nodes,
+  })
+);
 
-export const receiptToTransaction = (tx: FullReceipt, block: SignedBlock): TX => {
+
+export const receiptToTransaction = (tx: TransactionReceipt, block: SignedBlock): TX => {
   const extrinsic = block.block.extrinsics.find(ex => ex.hash.toHex() === tx.transactionHash);
 
   const extraData = extrinsic ? parseExtrinsic(extrinsic) : ORPHAN_TX_DEFAULT_INFO;

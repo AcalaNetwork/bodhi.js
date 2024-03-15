@@ -425,7 +425,6 @@ export const acala1555311b = {
   contractAddress: null,
   transactionIndex: '0x1',
   gasUsed: '0x237fd',
-  exitReason: '{"revert":"Reverted"}',
   logsBloom: DUMMY_LOGS_BLOOM,
   blockHash: '0xf9655bfef23bf7dad14a037aa39758daccfd8dc99a7ce69525f81548068a5946',
   transactionHash: '0x240a9ec2efdacae2a89486980874b23987b9801fd1ca7a424506629b71a53fa6',
@@ -450,7 +449,6 @@ export const acala1102030a = {
   blockNumber: '0x10d0ce',
   cumulativeGasUsed: '0x0',
   effectiveGasPrice: '0x513d6f23',
-  exitReason: '{"error":{"other":"ReserveStorageFailed"}}',
   status: '0x0',
   type: '0x0',
 };
@@ -468,7 +466,6 @@ export const acala1102030b = {
   blockNumber: '0x10d0ce',
   cumulativeGasUsed: '0x0',
   effectiveGasPrice: '0x2a1c0bcb',
-  exitReason: '{"error":{"other":"ReserveStorageFailed"}}',
   status: '0x0',
   type: '0x0',
 };

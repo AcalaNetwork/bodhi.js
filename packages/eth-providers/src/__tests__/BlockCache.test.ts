@@ -1,9 +1,10 @@
+import { TransactionReceipt } from '@ethersproject/abstract-provider';
+
 import { BlockCache } from '../utils/BlockCache';
-import { FullReceipt } from '../utils';
 import { describe, expect, it } from 'vitest';
 import { mockChain } from './testUtils';
 
-const sortReceipt = (r1: FullReceipt, r2: FullReceipt) => {
+const sortReceipt = (r1: TransactionReceipt, r2: TransactionReceipt) => {
   if (r1.blockNumber !== r2.blockNumber) {
     return r1.blockNumber - r2.blockNumber;
   } else if (r1.blockHash !== r2.blockHash) {
