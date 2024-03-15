@@ -337,6 +337,7 @@ class Eip1193BridgeImpl {
 
     // @ts-ignore
     delete res.confirmations;
+    delete res.byzantium;
     return hexlifyRpcResult(res);
   }
 

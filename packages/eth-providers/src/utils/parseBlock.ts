@@ -1,7 +1,6 @@
 import { AnyTuple } from '@polkadot/types/types';
 import { ApiDecoration } from '@polkadot/api/types';
 import { ApiPromise } from '@polkadot/api';
-import { BIGNUMBER_ZERO, ONE_HUNDRED_GWEI } from '../consts';
 import { BigNumber } from 'ethers';
 import {
   EventRecord,
@@ -11,16 +10,17 @@ import {
   WeightV1,
   WeightV2,
 } from '@polkadot/types/interfaces';
-import { Formatter } from '@ethersproject/providers';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { GenericExtrinsic } from '@polkadot/types';
+import { TransactionReceipt } from '@ethersproject/abstract-provider';
+
+import { BIGNUMBER_ZERO, ONE_HUNDRED_GWEI } from '../consts';
 import {
-  FullReceipt,
   findEvmEvent,
-  fullReceiptFormatter,
+  formatter,
   getOrphanTxReceiptsFromEvents,
   getPartialTransactionReceipt,
 } from './receiptHelper';
-import { GenericExtrinsic } from '@polkadot/types';
 import {
   isExtrinsicFailedEvent,
   isExtrinsicSuccessEvent,
@@ -33,7 +33,7 @@ export const getAllReceiptsAtBlock = async (
   api: ApiPromise,
   blockHash: string,
   targetTxHash?: string
-): Promise<FullReceipt[]> => {
+): Promise<TransactionReceipt[]> => {
   const apiAtTargetBlock = await api.at(blockHash);
 
   const [block, blockEvents] = await Promise.all([
@@ -49,7 +49,7 @@ export const parseReceiptsFromBlockData = async (
   block: SignedBlock,
   blockEvents: FrameSystemEventRecord[],
   targetTxHash?: string
-): Promise<FullReceipt[]> => {
+): Promise<TransactionReceipt[]> => {
   const { header } = block.block;
   const blockNumber = header.number.toNumber();
   const blockHash = header.hash.toHex();
@@ -69,7 +69,7 @@ export const parseReceiptsFromBlockData = async (
     normalTxs = normalTxs.filter(({ extrinsic }) => extrinsic.hash.toHex() === targetTxHash);
   }
 
-  const normalReceiptsPending: Promise<FullReceipt>[] = normalTxs.map(
+  const normalReceiptsPending: Promise<TransactionReceipt>[] = normalTxs.map(
     async ({ extrinsicEvents, extrinsic }, transactionIndex) => {
       const evmEvent = findEvmEvent(extrinsicEvents);
       if (!evmEvent) {
@@ -89,7 +89,7 @@ export const parseReceiptsFromBlockData = async (
         ...log,
       }));
 
-      return Formatter.check(fullReceiptFormatter, {
+      return formatter.receipt({
         effectiveGasPrice,
         ...txInfo,
         ...partialReceipt,

@@ -1,9 +1,9 @@
-import { FullReceipt } from '../utils';
+import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 type MochBlock = {
   blockHash: string;
   blockNumber: number;
-  receipts: FullReceipt[];
+  receipts: TransactionReceipt[];
 };
 type MochChain = MochBlock[];
 
@@ -12,12 +12,12 @@ export const randHash = (): string => {
   return '0x' + hash.padStart(64, '0');
 };
 
-export const randReceipt = (blockNumber: number, blockHash: string): FullReceipt =>
+export const randReceipt = (blockNumber: number, blockHash: string): TransactionReceipt =>
   ({
     blockHash,
     blockNumber,
     transactionHash: randHash(),
-  } as FullReceipt);
+  } as TransactionReceipt);
 
 export const mockBlock = (blockNumber: number): MochBlock => {
   const blockHash = randHash();
