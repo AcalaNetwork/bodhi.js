@@ -1,4 +1,4 @@
-FROM onfinality/subql-node:v1.21.2 as subql-node
+FROM subquerynetwork/subql-node-substrate:v3.10.1 as subql-node
 LABEL maintainer="hello@acala.network"
 
 VOLUME ["/app"]

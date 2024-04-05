@@ -31,6 +31,7 @@ services:
     volumes:
       - ./:/app
     command:
+      - ${SUB_COMMAND:-} # set SUB_COMMAND env variable to "test" to run tests
       - -f=/app/project-acala.yaml
       - --network-endpoint=wss://acala-rpc.aca-api.network
       - --db-schema=acala_evm
