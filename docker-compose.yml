@@ -48,7 +48,7 @@ services:
       - --disable-historical
 
   graphql-engine:
-    image: onfinality/subql-query:v1.4.0
+    image: subquerynetwork/subql-query:v2.10.0
     ports:
       - 3001:3001
     depends_on:

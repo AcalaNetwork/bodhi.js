@@ -180,7 +180,7 @@ An example is [here](../docker-compose-example.yml#L27)
 Latest stable versions:
 - `acala/eth-rpc-adapter:v2.7.4`
 - `acala/evm-subql:v2.6.5`
-- `onfinality/subql-query:v1.4.0`
+- `subquerynetwork/subql-query:v2.10.0`
 
 #### config
 One trick is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
