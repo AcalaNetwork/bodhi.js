@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 projects=(
   project-acala.ts
