@@ -1,41 +1,23 @@
 version: '3.9'
 
 services:
-  mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-89ef1e5
-    ports:
-      - 9944:9944
-    healthcheck:
-      test: "curl --fail -X POST -H \"Content-Type: application/json\" http://localhost:9944 -d \"{\"jsonrpc\": \"2.0\" }\" || exit 1"
-      interval: 10s
-      retries: 10
-      start_period: 30s
-    command:
-      - --dev
-      - -lruntime=debug
-      - -levm=debug
-      - --rpc-external
-      - --rpc-cors=all
-      - --rpc-methods=unsafe
-      - --pruning=archive
-      - --instant-sealing
-      - --tmp
-
   postgres:
     image: postgres:12-alpine
+    container_name: postgres
     ports:
       - 5432:5432
-    volumes:
-      - postgres:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   subquery-node:
-    image: onfinality/subql-node:v1.21.2
+    image: subquerynetwork/subql-node-substrate:v3.10.1
     depends_on:
       postgres: 
-        condition: service_started
-      mandala-node:
         condition: service_healthy
     ports:
       - 3000:3000
@@ -49,20 +31,28 @@ services:
     volumes:
       - ./:/app
     command:
-      - -f=/app
-      - --network-endpoint=ws://mandala-node:9944
+      - -f=/app/project-acala.yaml
+      - --network-endpoint=wss://acala-rpc.aca-api.network
       - --db-schema=acala_evm
       - --log-level=debug
       - --unsafe
       - --disable-historical
+      - --batch-size=1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
 
   graphql-engine:
-    image: onfinality/subql-query:v1.4.0
+    image: subquerynetwork/subql-query:v2.10.0
     ports:
       - 3001:3001
     depends_on:
-      - postgres
-      - subquery-node
+      postgres:
+        condition: service_healthy
+      subquery-node:
+        condition: service_healthy
     restart: always
     environment:
       DB_USER: postgres
