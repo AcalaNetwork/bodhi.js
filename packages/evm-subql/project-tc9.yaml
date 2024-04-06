@@ -1,0 +1,28 @@
+# // Auto-generated , DO NOT EDIT
+specVersion: 1.0.0
+version: 0.0.1
+name: '@acala-network/evm-subql'
+description: subquery for Acala EVM+
+runner:
+  node:
+    name: '@subql/node'
+    version: '>=3.0.1'
+  query:
+    name: '@subql/query'
+    version: '*'
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0x3035b88c212be330a1a724c675d56d53a5016ec32af1790738832db0227ac54c'
+  endpoint:
+    - wss://mandala-tc9-rpc.aca-staging.network
+  chaintypes:
+    file: ./dist/chain-types/index.js
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 1
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - kind: substrate/BlockHandler
+          handler: handleBlock

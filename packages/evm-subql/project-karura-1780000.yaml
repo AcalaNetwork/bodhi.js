@@ -1,0 +1,28 @@
+# // Auto-generated , DO NOT EDIT
+specVersion: 1.0.0
+version: 0.0.1
+name: '@acala-network/evm-subql'
+description: subquery for Acala EVM+
+runner:
+  node:
+    name: '@subql/node'
+    version: '>=3.0.1'
+  query:
+    name: '@subql/query'
+    version: '*'
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b'
+  endpoint:
+    - wss://karura-rpc.aca-api.network
+  chaintypes:
+    file: ./dist/chain-types/index.js
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 1780000
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - kind: substrate/BlockHandler
+          handler: handleBlock
