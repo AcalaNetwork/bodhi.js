@@ -15,6 +15,7 @@ RUN unlink /usr/bin/python && \
 COPY . .
 RUN yarn install --immutable
 RUN yarn workspace @acala-network/evm-subql pack
+RUN chmod a+r packages/evm-subql/package.tgz
 
 # =============
 
