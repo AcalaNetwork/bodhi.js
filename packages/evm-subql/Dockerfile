@@ -29,3 +29,7 @@ RUN tar -xvzf /tmp/package.tgz
 RUN mv /package /app
 RUN rm -rf /tmp
 WORKDIR /app
+
+# has to override entry point for now
+# https://github.com/subquery/subql/pull/2344
+ENTRYPOINT ["/sbin/tini", "--", "/bin/run"],
