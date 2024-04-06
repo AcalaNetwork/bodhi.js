@@ -5,6 +5,7 @@ services:
   # -------------------------------- #
   postgres:
     image: postgres:12-alpine
+    container_name: db
     ports:
       - 5432:5432
     environment:
@@ -20,6 +21,7 @@ services:
       context: .
       dockerfile: docker/subql-node.Dockerfile
       target: subql-node
+    container_name: subql-node
     depends_on:
       yarn-install:
         condition: service_completed_successfully
@@ -46,9 +48,17 @@ services:
       - --log-level=debug
       - --unsafe
       - --disable-historical
+      - --batch-size=10
+      - --store-flush-interval=1    # has to set this for instant sealing, otherwise some data will stuck in cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
+      interval: 2s
+      timeout: 5s
+      retries: 100
 
   graphql-engine:
     image: subquerynetwork/subql-query:v2.10.0
+    container_name: subql-query
     ports:
       - 3001:3001
     depends_on:
