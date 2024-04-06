@@ -48,7 +48,6 @@ const TRACE_METHODS = [
   'getTransactionByHash',
   'getReceipt',
   '_getReceipt',
-  '_checkSubqlHeight',
   '_sanitizeRawFilter',
   '_getSubqlMissedLogs',
   'getLogs',

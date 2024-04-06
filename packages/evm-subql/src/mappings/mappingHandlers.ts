@@ -1,18 +1,22 @@
 import '@subql/types/dist/global';
 import { SubstrateBlock } from '@subql/types';
-import { parseReceiptsFromBlockData } from '@acala-network/eth-providers/utils';
+import { parseReceiptsFromBlockData } from '@acala-network/eth-providers';
 
 export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void> => {
+  if (!unsafeApi) {
+    logger.error('Unsafe API is not available');
+  }
+
   const receipts = await parseReceiptsFromBlockData(
-    unsafeApi,
+    unsafeApi!,
     substrateBlock,
     substrateBlock.events,
   );
 
   const blockNumber = substrateBlock.block.header.number.toBigInt();
   const timestamp = substrateBlock.timestamp;
-  const receiptEntities = [];
-  const logEntities = [];
+  const receiptEntities: any[] = [];
+  const logEntities: any[] = [];
 
   receipts.forEach((receipt, idx) => {
     const receiptId = `${receipt.blockNumber.toString()}-${idx}`;
@@ -25,7 +29,7 @@ export const handleBlock = async (substrateBlock: SubstrateBlock): Promise<void>
       cumulativeGasUsed: receipt.cumulativeGasUsed.toBigInt(),
       effectiveGasPrice: receipt.effectiveGasPrice.toBigInt(),
       type: BigInt(receipt.type),
-      status: BigInt(receipt.status),
+      status: BigInt(receipt.status!),
       transactionIndex,
       blockNumber,
       timestamp,

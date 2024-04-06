@@ -1750,35 +1750,10 @@ export abstract class BaseProvider extends AbstractProvider {
       return txFromCache;
     }
 
-    await this._checkSubqlHeight();
-
     const txFromSubql = await this.subql?.getTxReceiptByHash(txHash);
     return txFromSubql
       ? subqlReceiptAdapter(txFromSubql)
       : null;
-  };
-
-  // make sure there is no gap between subql and cache
-  _checkSubqlHeight = async (): Promise<number> => {
-    if (!this.subql) return;
-
-    const maxMissedBlockCount = this.blockCache.cachedBlockHashes.length;
-    const lastProcessedHeight = await this.subql.getLastProcessedHeight();
-    const minSubqlHeight = await this.finalizedBlockNumber - maxMissedBlockCount;
-    if (lastProcessedHeight < minSubqlHeight) {
-      return logger.throwError(
-        'subql indexer height is less than the minimum height required',
-        Logger.errors.SERVER_ERROR,
-        {
-          lastProcessedHeight,
-          minSubqlHeight,
-          maxMissedBlockCount,
-          curFinalizedHeight: await this.finalizedBlockNumber,
-        }
-      );
-    }
-
-    return lastProcessedHeight;
   };
 
   _sanitizeRawFilter = async (rawFilter: LogFilter): Promise<SanitizedLogFilter> => {
@@ -1819,7 +1794,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
     const targetBlock = Math.min(toBlock, await this.finalizedBlockNumber);   // subql upperbound is finalizedBlockNumber
-    const lastProcessedHeight = await this._checkSubqlHeight();
+    const lastProcessedHeight = await this.subql.getLastProcessedHeight();
     const missedBlockCount = targetBlock - lastProcessedHeight;
     if (missedBlockCount <= 0) return [];
 
