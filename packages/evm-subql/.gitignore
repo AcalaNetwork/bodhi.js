@@ -52,6 +52,3 @@ Thumbs.db
 *.wmv
 
 .yarn
-
-# auto generated project files
-project*.yaml
