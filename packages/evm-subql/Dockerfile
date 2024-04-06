@@ -15,12 +15,14 @@ RUN unlink /usr/bin/python && \
 COPY . .
 RUN yarn install --immutable
 RUN yarn workspace @acala-network/evm-subql pack
-RUN chmod a+r packages/evm-subql/package.tgz
 
 # =============
 
 FROM subquerynetwork/subql-node-substrate:v3.10.1
 LABEL maintainer="hello@acala.network"
+
+# subql node changed defualt user to USER 1000
+USER root
 
 COPY --from=builder /app/packages/evm-subql/package.tgz /tmp
 RUN tar -xvzf /tmp/package.tgz
