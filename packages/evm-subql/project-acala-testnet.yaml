@@ -17,7 +17,7 @@ network:
   endpoint:
     - wss://acala-dev.aca-dev.network/rpc/ws
   chaintypes:
-    file: ./dist/chain-types/index.js
+    file: ./dist/chaintypes.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1

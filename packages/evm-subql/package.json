@@ -14,13 +14,17 @@
     "query": "PORT=3001 subql-query --name acala_evm --playground --indexer=http://localhost:3000 --debug"
   },
   "dependencies": {
-    "@acala-network/eth-providers": "workspace:*"
+    "@acala-network/eth-providers": "workspace:*",
+    "@subql/types-core": "latest"
   },
   "devDependencies": {
     "@subql/cli": "~4.5.0",
     "@subql/types": "~3.4.0",
     "@vercel/ncc": "^0.36.1",
     "typescript": "~4.6.3"
+  },
+  "exports": {
+    "chaintypes": "src/chaintypes.ts"
   },
   "files": [
     "dist",

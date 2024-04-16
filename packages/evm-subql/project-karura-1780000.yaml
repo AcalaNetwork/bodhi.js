@@ -17,7 +17,7 @@ network:
   endpoint:
     - wss://karura-rpc.aca-api.network
   chaintypes:
-    file: ./dist/chain-types/index.js
+    file: ./dist/chaintypes.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1780000

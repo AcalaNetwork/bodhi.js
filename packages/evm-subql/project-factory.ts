@@ -33,7 +33,7 @@ export const getProjectConfig = ({ chainId, endpoint, startBlock }: ProjectParam
     chainId,
     endpoint,
     chaintypes: {
-      file: './dist/chain-types/index.js',
+      file: './dist/chaintypes.js',
     },
   },
   dataSources: [

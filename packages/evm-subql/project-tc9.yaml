@@ -17,7 +17,7 @@ network:
   endpoint:
     - wss://mandala-tc9-rpc.aca-staging.network
   chaintypes:
-    file: ./dist/chain-types/index.js
+    file: ./dist/chaintypes.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1

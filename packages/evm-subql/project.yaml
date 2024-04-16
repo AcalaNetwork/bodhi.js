@@ -17,7 +17,7 @@ network:
   endpoint:
     - ws://localhost:9944
   chaintypes:
-    file: ./dist/chain-types/index.js
+    file: ./dist/chaintypes.js
 dataSources:
   - kind: substrate/Runtime
     startBlock: 1
