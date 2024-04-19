@@ -1826,8 +1826,13 @@ export abstract class BaseProvider extends AbstractProvider {
     const filter = await this._sanitizeRawFilter(rawFilter);
 
     if (!this.subql) {
-      const _throwErr = () => logger.throwError(
-        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
+      const _throwErr = (earliestCachedBlockNumber?: number) => logger.throwError(
+        'cache does not contain enough info to fetch requested logs, please reduce block range or initialize provider with a subql url',
+        Logger.errors.SERVER_ERROR,
+        {
+          requestFromBlock: filter.fromBlock,
+          earliestCachedBlockNumber,
+        },
       );
 
       const earliestCachedBlockHash = this.blockCache.cachedBlockHashes[0];
@@ -1838,7 +1843,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
       return isAllLogsIncache
         ? this._getLogsFromCache(filter.fromBlock, filter.toBlock, filter)
-        : _throwErr();
+        : _throwErr(earliestCachedBlockNumber);
     }
 
     // only filter by blockNumber and address, since topics are filtered at last
