@@ -1839,9 +1839,9 @@ export abstract class BaseProvider extends AbstractProvider {
       if (!earliestCachedBlockHash) return _throwErr();
 
       const earliestCachedBlockNumber = await this._getBlockNumber(earliestCachedBlockHash);
-      const isAllLogsIncache = earliestCachedBlockNumber <= filter.fromBlock;
+      const isAllTargetLogsInCache = earliestCachedBlockNumber <= filter.fromBlock;
 
-      return isAllLogsIncache
+      return isAllTargetLogsInCache
         ? this._getLogsFromCache(filter.fromBlock, filter.toBlock, filter)
         : _throwErr(earliestCachedBlockNumber);
     }
