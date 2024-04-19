@@ -174,6 +174,27 @@ describe('JsonRpcProvider', async () => {
     });
   });
 
+  describe('get logs without subql', () => {
+    it('works', async () => {
+      const echoFactory = new ContractFactory(echoJson.abi, echoJson.bytecode, wallet);
+      const echo = await echoFactory.deploy();
+
+      const { blockNumber: block0 } = await (await echo.scream('hello Gogeta!')).wait();
+      let logs = await wallet.provider.getLogs({
+        address: echo.address,
+      });
+      expect(logs.length).to.eq(1);
+
+      const { blockNumber: block1 } = await (await echo.scream('hello Vegito!')).wait();
+      logs = await wallet.provider.getLogs({
+        address: echo.address,
+        fromBlock: block0,
+        toBlock: block1,
+      });
+      expect(logs.length).to.eq(2);
+    });
+  });
+
   describe('subscription', () => {
     it('subscribe to new block', async () => {
       const curBlockNumber = await provider.getBlockNumber();

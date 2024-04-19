@@ -1795,17 +1795,26 @@ export abstract class BaseProvider extends AbstractProvider {
   _getSubqlMissedLogs = async (toBlock: number, filter: SanitizedLogFilter): Promise<Log[]> => {
     const targetBlock = Math.min(toBlock, await this.finalizedBlockNumber);   // subql upperbound is finalizedBlockNumber
     const lastProcessedHeight = await this.subql.getLastProcessedHeight();
-    const missedBlockCount = targetBlock - lastProcessedHeight;
-    if (missedBlockCount <= 0) return [];
-
     const firstMissedHeight = lastProcessedHeight + 1;
-    const missedHeights = Array.from(
-      { length: missedBlockCount },
-      (_, i) => firstMissedHeight + i,
-    );
-    const missedBlockHashes = await Promise.all(missedHeights.map(this._getBlockHash.bind(this)));
 
-    return missedBlockHashes
+    return this._getLogsFromCache(firstMissedHeight, targetBlock, filter);
+  };
+
+  _getLogsFromCache = async (
+    fromBlock: number,
+    toBlock: number,
+    filter: SanitizedLogFilter,
+  ): Promise<Log[]> => {
+    const blockCount = toBlock - fromBlock + 1;   // when to === from, it should return 1 block
+    if (blockCount <= 0) return [];
+
+    const heights = Array.from(
+      { length: blockCount },
+      (_, i) => fromBlock + i,
+    );
+    const blockHashes = await Promise.all(heights.map(this._getBlockHash.bind(this)));
+
+    return blockHashes
       .map(this.blockCache.getLogsAtBlock.bind(this))
       .flat()
       .filter(log => filterLogByBlockNumber(log, filter.fromBlock, filter.toBlock))
@@ -1814,13 +1823,28 @@ export abstract class BaseProvider extends AbstractProvider {
 
   // Bloom-filter Queries
   getLogs = async (rawFilter: LogFilter): Promise<Log[]> => {
-    if (!this.subql) {
-      return logger.throwError(
-        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
-      );
-    }
-
     const filter = await this._sanitizeRawFilter(rawFilter);
+
+    if (!this.subql) {
+      const _throwErr = (earliestCachedBlockNumber?: number) => logger.throwError(
+        'cache does not contain enough info to fetch requested logs, please reduce block range or initialize provider with a subql url',
+        Logger.errors.SERVER_ERROR,
+        {
+          requestFromBlock: filter.fromBlock,
+          earliestCachedBlockNumber,
+        },
+      );
+
+      const earliestCachedBlockHash = this.blockCache.cachedBlockHashes[0];
+      if (!earliestCachedBlockHash) return _throwErr();
+
+      const earliestCachedBlockNumber = await this._getBlockNumber(earliestCachedBlockHash);
+      const isAllTargetLogsInCache = earliestCachedBlockNumber <= filter.fromBlock;
+
+      return isAllTargetLogsInCache
+        ? this._getLogsFromCache(filter.fromBlock, filter.toBlock, filter)
+        : _throwErr(earliestCachedBlockNumber);
+    }
 
     // only filter by blockNumber and address, since topics are filtered at last
     const [subqlLogs, extraLogs] = await Promise.all([
