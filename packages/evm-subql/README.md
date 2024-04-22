@@ -178,8 +178,8 @@ In the local example, we use `subquerynetwork/subql-node-substrate:v3.10.1` as i
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.8.0`
-- `acala/evm-subql:v2.8.0`
+- `acala/eth-rpc-adapter:2.8.1`
+- `acala/evm-subql:2.8.1`
 - `subquerynetwork/subql-query:v2.10.0`
 
 #### config
