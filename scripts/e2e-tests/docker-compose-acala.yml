@@ -20,7 +20,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: acala/evm-subql:2.7.17
+    image: acala/evm-subql:2.8.1
     volumes:
        - ./configs/subql/karura.yaml:/app/karura.yaml
        - ./configs/subql/acala.yaml:/app/acala.yaml
@@ -69,7 +69,7 @@ services:
       - --indexer=http://subquery-node:3000
 
   eth-rpc-adapter:
-    image: acala/eth-rpc-adapter:2.7.17
+    image: acala/eth-rpc-adapter:2.8.1
     environment:
       - SUBQL_URL=http://graphql-engine:3001
       - ENDPOINT_URL=ws://chopsticks:8000

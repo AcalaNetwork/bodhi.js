@@ -22,7 +22,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: acala/evm-subql:2.7.16
+    image: acala/evm-subql:2.8.1
     container_name: subquery-node
     ports:
       - 3000:3000

@@ -43,7 +43,7 @@ NOTE: using CLI is for **local testing** only, so you can get familiar with each
 1. Install SubQl globally
 
 ```shell
-npm i -g @subql/node@1.21.2 @subql/query@1.4.0
+npm i -g @subql/node@3.10.1 @subql/query@2.10.0
 ```
 
 2. Run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port number `9944` (in the first terminal)
@@ -173,13 +173,13 @@ For production deployment, there are a couple differences:
 In local setup we can run all of the services together with one single [docker compose](./docker-compose.yml). However, in prod we  usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s.
 
 #### image
-In the local example, we use `onfinality/subql-node:v1.17.0` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
+In the local example, we use `subquerynetwork/subql-node-substrate:v3.10.1` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
 
 An example is [here](../docker-compose-example.yml#L27)
 
 Latest stable versions:
-- `acala/eth-rpc-adapter:v2.7.4`
-- `acala/evm-subql:v2.6.5`
+- `acala/eth-rpc-adapter:2.8.1`
+- `acala/evm-subql:2.8.1`
 - `subquerynetwork/subql-query:v2.10.0`
 
 #### config
@@ -195,9 +195,9 @@ It usually takes 1 to 3 days to index all of the data, depending on the node lat
 To upgrade the production subql, we usually need to do a full re-index. In order not to interrupt the currnetly running subql, we can run another indexer in parallel to the old one, and hot replace the old one once the full re-index is finished. 
 
 Below are the detailed steps:
-1) start a new indexer service `acala/evm-subql` that uses a difference `--db-schema`, for example, `--db-schema=evm-karura-2`. It can share the same DB with the old indexer
+1) start a new indexer service `acala/evm-subql` that uses a difference `--db-schema`, for example, `--db-schema=evm-acala`. It can share the same DB with the old indexer
 2) wait until the new indexer finish indexing
-3) update the config of graphql service `onfinality/subql-query` to use the new indexer. In particular, change the `--name` command, such as `--name=evm-karura-2`, and `--indexer=<new indexer url>`
+3) update the config of graphql service `subquerynetwork/subql-query` to use the new indexer. In particular, change the `--name` command, such as `--name=evm-acala`, and `--indexer=<new indexer url>`
 4) delete the old indexer service, as well as the old db schema
 5) upgrade is finished! No need to modify `eth-rpc-adapter`
 
