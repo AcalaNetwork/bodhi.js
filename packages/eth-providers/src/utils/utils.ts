@@ -341,6 +341,10 @@ export const isNormalEvmEvent = (event: FrameSystemEventRecord): boolean =>
 export const isOrphanEvmEvent = (event: FrameSystemEventRecord): boolean =>
   isEvmEvent(event) && !event.phase.isApplyExtrinsic;
 
+export const isBatchResultEvent = (event: FrameSystemEventRecord): boolean =>
+  event.event.section === 'utility' &&
+  ['BatchCompleted', 'BatchCompletedWithErrors'].includes(event.event.method);
+
 export const isTxFeeEvent = (event: FrameSystemEventRecord): boolean =>
   event.event.section.toUpperCase() === 'TRANSACTIONPAYMENT' && event.event.method === 'TransactionFeePaid';
 
