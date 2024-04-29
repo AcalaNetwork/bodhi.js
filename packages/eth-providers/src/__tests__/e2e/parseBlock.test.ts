@@ -216,4 +216,14 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       // TODO: construct a similar one on karura
     });
   });
+
+  describe.concurrent('batch evm tx', () => {
+    it('batch approve + draw lottery', async () => {
+      const blockNumber = 6066931;
+      const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
+
+      expect(receipts.length).to.equal(2);
+      console.log(receipts);
+    });
+  });
 });

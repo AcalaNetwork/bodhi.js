@@ -1,7 +1,8 @@
-import { AnyFunction } from '@polkadot/types/types';
+import { AnyFunction , AnyTuple } from '@polkadot/types/types';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import { GenericExtrinsic } from '@polkadot/types';
 import { hexToBn, hexToU8a, isHex, isU8a, u8aToBn } from '@polkadot/util';
 import BN from 'bn.js';
 
@@ -329,6 +330,11 @@ export const checkEvmExecutionError = (data: CallReturnInfo): void => {
 };
 
 export const isEvmExtrinsic = (e: Extrinsic): boolean => e.method.section.toLowerCase() === 'evm';
+
+export const isBatchExtrinsic = (extrinsic: GenericExtrinsic<AnyTuple>): boolean => {
+  const { method: { method, section } } = extrinsic;
+  return section.toString() === 'utility' && method.toString().includes('batch');
+};
 
 export const isEvmEvent = (e: FrameSystemEventRecord): boolean =>
   e.event.section.toLowerCase() === 'evm' &&

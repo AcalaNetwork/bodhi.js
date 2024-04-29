@@ -146,7 +146,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     }
   }
 
-  return logger.throwError(`unsupported event: ${event.event.method}`);
+  return logger.throwError(`unsupported event: ${event.event.section}:${event.event.method}`);
 };
 
 export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
@@ -216,13 +216,12 @@ const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof n
 export const formatter = new Formatter();
 
 export const getOrphanTxReceiptsFromEvents = (
-  events: FrameSystemEventRecord[],
+  orphanEvents: FrameSystemEventRecord[],
   blockHash: string,
   blockNumber: number,
   indexOffset: number
 ): TransactionReceipt[] => {
-  const receipts = events
-    .filter(isOrphanEvmEvent)
+  const receipts = orphanEvents
     .map(getPartialTransactionReceipt)
     .map((partialReceipt, i) => {
       const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8aLegacy(i)]);

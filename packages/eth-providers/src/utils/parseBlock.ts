@@ -22,9 +22,12 @@ import {
   getPartialTransactionReceipt,
 } from './receiptHelper';
 import {
+  isBatchExtrinsic,
+  isEvmEvent,
   isExtrinsicFailedEvent,
   isExtrinsicSuccessEvent,
   isNormalEvmEvent,
+  isOrphanEvmEvent,
   isTxFeeEvent,
   nativeToEthDecimal,
 } from './utils';
@@ -55,8 +58,9 @@ export const parseReceiptsFromBlockData = async (
   const blockHash = header.hash.toHex();
   const _apiAtParentBlock = api.at(header.parentHash); // don't wait here in case not being used
 
-  let normalTxs = block.block.extrinsics
+  const succeededEvmExtrinsics = block.block.extrinsics
     .map((extrinsic, idx) => ({
+      isBatch: isBatchExtrinsic(extrinsic),
       extrinsic,
       extrinsicEvents: extractTargetEvents(blockEvents, idx),
     }))
@@ -64,6 +68,9 @@ export const parseReceiptsFromBlockData = async (
       extrinsicEvents.some(isNormalEvmEvent) &&
       !extrinsicEvents.find(isExtrinsicFailedEvent)
     ));
+
+  let normalTxs = succeededEvmExtrinsics.filter(({ isBatch }) => !isBatch);
+  const batchTxs = succeededEvmExtrinsics.filter(({ isBatch }) => isBatch);
 
   if (targetTxHash) {
     normalTxs = normalTxs.filter(({ extrinsic }) => extrinsic.hash.toHex() === targetTxHash);
@@ -99,7 +106,17 @@ export const parseReceiptsFromBlockData = async (
   );
 
   const normalReceipts = await Promise.all(normalReceiptsPending);
-  const orphanReceipts = getOrphanTxReceiptsFromEvents(blockEvents, blockHash, blockNumber, normalReceipts.length);
+
+  const batchEvmEvents = batchTxs
+    .map(tx => tx.extrinsicEvents)
+    .flat()
+    .filter(isEvmEvent);
+
+  const orphanEvents = blockEvents
+    .filter(isOrphanEvmEvent)
+    .concat(batchEvmEvents);    // batch evm events are treated as orphan events
+
+  const orphanReceipts = getOrphanTxReceiptsFromEvents(orphanEvents, blockHash, blockNumber, normalReceipts.length);
   const allCandidateReceipts = [...normalReceipts, ...orphanReceipts];
 
   return targetTxHash
