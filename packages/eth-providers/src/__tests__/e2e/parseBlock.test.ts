@@ -1,10 +1,10 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, it } from 'vitest';
 import { options } from '@acala-network/api';
 
 import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
-import { hexlifyRpcResult } from '../../utils';
+import { hexlifyRpcResult, sleep } from '../../utils';
 
 interface FormatedReceipt {
   to?: string;
@@ -72,6 +72,7 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   afterAll(async () => {
+    await sleep(10_000);
     await apiK.disconnect();
     await apiA.disconnect();
   });
