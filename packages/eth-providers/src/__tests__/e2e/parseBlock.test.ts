@@ -1,27 +1,10 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
-import {
-  acala1102030a,
-  acala1102030b,
-  acala1555311a,
-  acala1555311b,
-  acala1563383,
-  acala2669090,
-  acala2859806,
-  karura1824665,
-  karura2043397b,
-  karura2449983a,
-  karura2449983b,
-  karura2826860,
-  karura2936174,
-  karura3524761,
-  karura3597964,
-  karura3607973,
-} from './receipt-snapshots';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
-import { hexlifyRpcResult, sleep } from '../../utils';
 import { options } from '@acala-network/api';
+
+import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
+import { hexlifyRpcResult } from '../../utils';
 
 interface FormatedReceipt {
   to?: string;
@@ -89,141 +72,137 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   afterAll(async () => {
-    await sleep(10_000);
     await apiK.disconnect();
     await apiA.disconnect();
   });
 
-  describe.concurrent('transfer kar', async () => {
-    it('basic one', async () => {
+  describe.concurrent('transfer kar', () => {
+    it('basic one', async ({ expect }) => {
       const blockNumber = 3607973;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(karura3607973);
+      expect(receipts).toMatchSnapshot();
     });
   });
 
   describe.concurrent('contract creation', () => {
-    it('basic one', async () => {
+    it('basic one', async ({ expect }) => {
       const blockNumber = 3524761;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(karura3524761);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('with logs + legacy gas', async () => {
+    it('with logs + legacy gas', async ({ expect }) => {
       const blockNumber = 1824665;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(karura1824665);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('2 contract creation failed', async () => {
+    it('2 contract creation failed', async ({ expect }) => {
       const blockNumber = 1102030;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(2);
-      expect(receipts[0]).to.deep.equal(acala1102030a);
-      expect(receipts[1]).to.deep.equal(acala1102030b);
+      expect(receipts).toMatchSnapshot();
     });
   });
 
   describe.concurrent('contract call', () => {
-    it('aggregatedDex.swapWithExactSupply => transfer 1 erc20', async () => {
+    it('aggregatedDex.swapWithExactSupply => transfer 1 erc20', async ({ expect }) => {
       const blockNumber = 2826860;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(karura2826860);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('evm.call => tranfer 2 erc20', async () => {
+    it('evm.call => tranfer 2 erc20', async ({ expect }) => {
       const blockNumber = 3597964;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(karura3597964);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('evm.call + aggregatedDex.swapWithExactSupply', async () => {
+    it('evm.call + aggregatedDex.swapWithExactSupply', async ({ expect }) => {
       const blockNumber = 2449983;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(2);
-      expect(receipts[0]).to.deep.equal(karura2449983a);
-      expect(receipts[1]).to.deep.equal(karura2449983b);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('negative usedStorage', async () => {
+    it('negative usedStorage', async ({ expect }) => {
       const blockNumber = 2043397;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(2);
-      expect(receipts[1]).to.deep.equal(karura2043397b);
+      expect(receipts).toMatchSnapshot();
     });
   });
 
   describe.concurrent('orphan tx', () => {
-    it('1 orphan tx', async () => {
+    it('1 orphan tx', async ({ expect }) => {
       const blockNumber = 1563383;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(acala1563383);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('1 successful orphan + 1 failed orphan', async () => {
+    it('1 successful orphan + 1 failed orphan', async ({ expect }) => {
       const blockNumber = 1555311;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(2);
-      expect(receipts[0]).to.deep.equal(acala1555311a);
-      expect(receipts[1]).to.deep.equal(acala1555311b);
+      expect(receipts).toMatchSnapshot();
     });
   });
 
   describe.concurrent('erc20 XCM', () => {
-    it('basic xcm', async () => {
+    it('basic xcm', async ({ expect }) => {
       const blockNumber = 2936174;
       const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(karura2936174);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('with some other random txs in the block', async () => {
+    it('with some other random txs in the block', async ({ expect }) => {
       const blockNumber = 2669090;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(acala2669090);
+      expect(receipts).toMatchSnapshot();
     });
 
-    it('multiple xcms', async () => {
+    it('multiple xcms', async ({ expect }) => {
       const blockNumber = 2859806;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(1);
-      expect(receipts[0]).to.deep.equal(acala2859806);
+      expect(receipts).toMatchSnapshot();
     });
   });
 
   describe.concurrent.skip('other types', () => {
-    it('failed EVM extrinsic - 0 gasLimit', async () => {
+    it('failed EVM extrinsic - 0 gasLimit', async ({ expect }) => {
       // TODO: construct a similar one on karura
     });
   });
 
   describe.concurrent('batch evm tx', () => {
-    it('batch approve + draw lottery', async () => {
+    it('batch approve + draw lottery', async ({ expect }) => {
       const blockNumber = 6066931;
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(2);
-      console.log(receipts);
+      expect(receipts).toMatchSnapshot();
     });
   });
 });
