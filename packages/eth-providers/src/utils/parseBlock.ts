@@ -22,7 +22,6 @@ import {
   getPartialTransactionReceipt,
 } from './receiptHelper';
 import {
-  isBatchExtrinsic,
   isEvmEvent,
   isExtrinsicFailedEvent,
   isExtrinsicSuccessEvent,
@@ -59,11 +58,15 @@ export const parseReceiptsFromBlockData = async (
   const _apiAtParentBlock = api.at(header.parentHash); // don't wait here in case not being used
 
   const succeededEvmExtrinsics = block.block.extrinsics
-    .map((extrinsic, idx) => ({
-      isBatch: isBatchExtrinsic(extrinsic),
-      extrinsic,
-      extrinsicEvents: extractTargetEvents(blockEvents, idx),
-    }))
+    .map((extrinsic, idx) => {
+      const extrinsicEvents = extractTargetEvents(blockEvents, idx);
+      const isBatch = extrinsicEvents.some(({ event }) =>
+        event.section === 'utility' &&
+        ['BatchCompleted', 'BatchCompletedWithErrors'].includes(event.method)
+      );
+
+      return { extrinsic, extrinsicEvents, isBatch };
+    })
     .filter(({ extrinsicEvents }) => (
       extrinsicEvents.some(isNormalEvmEvent) &&
       !extrinsicEvents.find(isExtrinsicFailedEvent)

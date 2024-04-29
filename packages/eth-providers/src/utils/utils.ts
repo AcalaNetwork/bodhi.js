@@ -331,11 +331,6 @@ export const checkEvmExecutionError = (data: CallReturnInfo): void => {
 
 export const isEvmExtrinsic = (e: Extrinsic): boolean => e.method.section.toLowerCase() === 'evm';
 
-export const isBatchExtrinsic = (extrinsic: GenericExtrinsic<AnyTuple>): boolean => {
-  const { method: { method, section } } = extrinsic;
-  return section.toString() === 'utility' && method.toString().includes('batch');
-};
-
 export const isEvmEvent = (e: FrameSystemEventRecord): boolean =>
   e.event.section.toLowerCase() === 'evm' &&
   ['Created', 'Executed', 'CreatedFailed', 'ExecutedFailed'].includes(e.event.method);
