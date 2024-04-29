@@ -1,8 +1,7 @@
-import { AnyFunction , AnyTuple } from '@polkadot/types/types';
+import { AnyFunction } from '@polkadot/types/types';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { GenericExtrinsic } from '@polkadot/types';
 import { hexToBn, hexToU8a, isHex, isU8a, u8aToBn } from '@polkadot/util';
 import BN from 'bn.js';
 
