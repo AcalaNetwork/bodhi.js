@@ -103,14 +103,6 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       expect(receipts.length).to.equal(1);
       expect(receipts).toMatchSnapshot();
     });
-
-    it('2 contract creation failed', async ({ expect }) => {
-      const blockNumber = 1102030;
-      const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
-
-      expect(receipts.length).to.equal(2);
-      expect(receipts).toMatchSnapshot();
-    });
   });
 
   describe.concurrent('contract call', () => {
@@ -163,6 +155,22 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       expect(receipts.length).to.equal(2);
       expect(receipts).toMatchSnapshot();
     });
+
+    it('9 contract creation failed by technicalCommittee', async ({ expect }) => {
+      const blockNumber = 1102030;
+      const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
+
+      expect(receipts.length).to.equal(9);
+      expect(receipts).toMatchSnapshot();
+    });
+
+    it('batch approve + draw lottery', async ({ expect }) => {
+      const blockNumber = 6066931;
+      const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
+
+      expect(receipts.length).to.equal(2);
+      expect(receipts).toMatchSnapshot();
+    });
   });
 
   describe.concurrent('erc20 XCM', () => {
@@ -194,16 +202,6 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   describe.concurrent.skip('other types', () => {
     it('failed EVM extrinsic - 0 gasLimit', async ({ expect }) => {
       // TODO: construct a similar one on karura
-    });
-  });
-
-  describe.concurrent('batch evm tx', () => {
-    it('batch approve + draw lottery', async ({ expect }) => {
-      const blockNumber = 6066931;
-      const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
-
-      expect(receipts.length).to.equal(2);
-      expect(receipts).toMatchSnapshot();
     });
   });
 });
