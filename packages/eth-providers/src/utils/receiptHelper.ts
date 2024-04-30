@@ -1,17 +1,18 @@
-import { BIGNUMBER_ZERO, DUMMY_V_R_S, ORPHAN_TX_DEFAULT_INFO } from '../consts';
 import { BigNumber } from '@ethersproject/bignumber';
 import { Formatter, TransactionReceipt } from '@ethersproject/providers';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
-import { TX } from '../base-provider';
-import { TransactionReceipt as TransactionReceiptSubql } from './gqlTypes';
 import { hexToU8a, nToU8a } from '@polkadot/util';
 import { hexValue } from '@ethersproject/bytes';
-import { isEvmExtrinsic, isOrphanEvmEvent } from './utils';
 import { keccak256 } from '@ethersproject/keccak256';
-import { logger } from './logger';
 import type { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
 import type { EvmLog, ExitReason, H160 } from '@polkadot/types/interfaces/types';
 import type { GenericExtrinsic, i32, u64 } from '@polkadot/types';
+
+import { BIGNUMBER_ZERO, DUMMY_V_R_S, ORPHAN_TX_DEFAULT_INFO } from '../consts';
+import { TX } from '../base-provider';
+import { TransactionReceipt as TransactionReceiptSubql } from './gqlTypes';
+import { isEvmExtrinsic } from './utils';
+import { logger } from './logger';
 
 export interface PartialLog {
   removed: boolean;
@@ -146,7 +147,7 @@ export const getPartialTransactionReceipt = (event: FrameSystemEventRecord): Par
     }
   }
 
-  return logger.throwError(`unsupported event: ${event.event.method}`);
+  return logger.throwError(`unsupported event: ${event.event.section}:${event.event.method}`);
 };
 
 export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => {
@@ -216,13 +217,12 @@ const nToU8aLegacy = (...params: Parameters<typeof nToU8a>): ReturnType<typeof n
 export const formatter = new Formatter();
 
 export const getOrphanTxReceiptsFromEvents = (
-  events: FrameSystemEventRecord[],
+  orphanEvents: FrameSystemEventRecord[],
   blockHash: string,
   blockNumber: number,
   indexOffset: number
 ): TransactionReceipt[] => {
-  const receipts = events
-    .filter(isOrphanEvmEvent)
+  const receipts = orphanEvents
     .map(getPartialTransactionReceipt)
     .map((partialReceipt, i) => {
       const transactionHash = keccak256([...hexToU8a(blockHash), ...nToU8aLegacy(i)]);
