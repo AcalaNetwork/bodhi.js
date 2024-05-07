@@ -2,7 +2,7 @@ endpoint: wss://karura-rpc.aca-api.network
 mock-signature-host: true
 # block: 3000000
 db: ./db.sqlite
-wasm-override: ./wasm/karura-2240.wasm
+wasm-override: ./wasm/karura-2250.wasm
 
 import-storage:
   Sudo:

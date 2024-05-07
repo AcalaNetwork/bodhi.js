@@ -2,7 +2,7 @@ endpoint: wss://acala-rpc.aca-api.network
 mock-signature-host: true
 # block: 2694000
 db: ./db.sqlite
-wasm-override: ./wasm/acala-2240.wasm
+wasm-override: ./wasm/acala-2250.wasm
 
 import-storage:
   Sudo:

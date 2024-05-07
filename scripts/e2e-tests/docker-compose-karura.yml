@@ -2,11 +2,11 @@ version: '3'
 
 services:
   chopsticks:
-    image: oven/bun
+    image: oven/bun:1
     container_name: chopsticks-node
     volumes:
       - ./:/home/bun/app
-      - ./.bunx-cache:/root/.bun/install/cache
+      # - ./.bunx-cache:/root/.bun/install/cache
     command: bunx @acala-network/chopsticks@latest -c ./configs/karura.yml
     ports:
       - 8000:8000
@@ -20,7 +20,7 @@ services:
       POSTGRES_PASSWORD: postgres
 
   subquery-node:
-    image: acala/evm-subql:2.8.1
+    image: acala/evm-subql:latest
     volumes:
        - ./configs/subql/karura.yaml:/app/karura.yaml
        - ./configs/subql/acala.yaml:/app/acala.yaml
@@ -42,7 +42,7 @@ services:
       - -f=./karura.yaml
       - --network-endpoint=ws://chopsticks:8000
       - --db-schema=acala_evm
-      - --log-level=debug
+      - --log-level=info
       - --unsafe
       - --disable-historical
 
@@ -69,7 +69,7 @@ services:
       - --indexer=http://subquery-node:3000
 
   eth-rpc-adapter:
-    image: acala/eth-rpc-adapter:2.8.1
+    image: acala/eth-rpc-adapter:latest
     environment:
       - SUBQL_URL=http://graphql-engine:3001
       - ENDPOINT_URL=ws://chopsticks:8000

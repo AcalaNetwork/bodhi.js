@@ -1,28 +1,28 @@
+# // Auto-generated , DO NOT EDIT
 specVersion: 1.0.0
+version: 0.0.1
 name: '@acala-network/evm-subql'
-version: 1.0.0
+description: subquery for Acala EVM+
 runner:
   node:
     name: '@subql/node'
-    version: 1.21.2
+    version: '>=3.0.1'
   query:
     name: '@subql/query'
-    version: 1.4.0
-description: 'subquery for Acala EVM+'
-repository: 'https://github.com/AcalaNetwork/bodhi.js/tree/master/evm-subql'
+    version: '*'
 schema:
   file: ./schema.graphql
 network:
-  # Acala
   chainId: '0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c'
-  endpoint: ws://chopsticks:8000
+  endpoint:
+    - ws://chopsticks:8000
   chaintypes:
     file: ./dist/chain-types/index.js
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 5108461
+    startBlock: 6134893
     mapping:
       file: ./dist/index.js
       handlers:
-        - handler: handleBlock
-          kind: substrate/BlockHandler
+        - kind: substrate/BlockHandler
+          handler: handleBlock
