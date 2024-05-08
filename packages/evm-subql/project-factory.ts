@@ -96,7 +96,7 @@ export const PROJECT_PARAMS = {
     startBlock: 1,
   },
   localMandala: {
-    chainId: '0x8837eb25f126806eca5012c67621cca1c04fadb6c93b3488e63fe94f872e2387',
+    chainId: '0xfed39d074b506cd8979ba50d64489dd11226eef1275917de229642edd4cec132',
     endpoint: ['ws://localhost:9944'],
     startBlock: 1,
   },
