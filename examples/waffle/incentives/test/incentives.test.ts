@@ -75,7 +75,7 @@ describe('incentives', () => {
   });
 
   it('incentives getClaimRewardDeductionRate works', async () => {
-    const Rate = FixedU128.div(BigNumber.from('10')); // 1/10
+    const newRate = FixedU128.div(BigNumber.from('10')).toBigInt(); // 1/10
     const updateClaimRewardDeductionRates = provider.api.tx.sudo.sudo(
       provider.api.tx.incentives.updateClaimRewardDeductionRates([
         [
@@ -84,13 +84,14 @@ describe('incentives', () => {
               DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
             }
           },
-          Rate.toBigInt()
+          newRate
         ]
       ])
     );
     await send(updateClaimRewardDeductionRates, wallet.substrateAddress);
 
-    expect(await incentives.getClaimRewardDeductionRate(1, ADDRESS.LP_ACA_AUSD)).to.equal(Rate);
+    const curRate = await incentives.getClaimRewardDeductionRate(1, ADDRESS.LP_ACA_AUSD);
+    expect(curRate.toBigInt()).to.equal(newRate);
   });
 
   it('incentives getPendingRewards works', async () => {
@@ -123,14 +124,14 @@ describe('incentives', () => {
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
-        1_000_000_000
+        1_000_000_000_000
       )
     );
     await send(updateBalance, wallet.substrateAddress);
 
-    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000_000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000_000);
   });
 
   it('incentives withdrawDexShare works', async () => {
@@ -140,18 +141,18 @@ describe('incentives', () => {
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
-        1_000_000_000
+        1_000_000_000_000
       )
     );
     await send(updateBalance, wallet.substrateAddress);
 
-    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000_000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000_000);
 
-    await expect(incentivesPredeployed.withdrawDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.withdrawDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000_000))
       .to.emit(incentivesPredeployed, 'WithdrewShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000_000);
   });
 
   it('incentives claimRewards works', async () => {
@@ -161,14 +162,14 @@ describe('incentives', () => {
         {
           DexShare: [{ Token: 'ACA' }, { Token: 'AUSD' }]
         },
-        1_000_000_000
+        1_000_000_000_000
       )
     );
     await send(updateBalance, wallet.substrateAddress);
 
-    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000_000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000_000);
 
     await expect(incentivesPredeployed.claimRewards(1, ADDRESS.LP_ACA_AUSD))
       .to.emit(incentivesPredeployed, 'ClaimedRewards')
