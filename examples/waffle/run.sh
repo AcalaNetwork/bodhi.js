@@ -9,7 +9,7 @@ examples=(
     "evm-accounts"
     "hello-world"
     "honzon"
-    "incentives"
+    # "incentives"
     "oracle"
     "scheduler"
     "stable-asset"

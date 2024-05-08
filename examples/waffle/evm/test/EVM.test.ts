@@ -45,8 +45,6 @@ describe('EVM', () => {
       expect((await evm.developerDeposit()).toString()).to.equal(formatAmount('1_000_000_000_000_000_000'));
 
       expect((await evm.publicationFee()).toString()).to.equal(formatAmount('1_000_000_000_000_000_000'));
-
-      await evmPredeployed.publishContract(evm.address);
     } else {
       expect(await evm.newContractExtraBytes()).to.equal(0);
 
