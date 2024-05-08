@@ -128,9 +128,9 @@ describe('incentives', () => {
     );
     await send(updateBalance, wallet.substrateAddress);
 
-    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000);
   });
 
   it('incentives withdrawDexShare works', async () => {
@@ -145,13 +145,13 @@ describe('incentives', () => {
     );
     await send(updateBalance, wallet.substrateAddress);
 
-    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000);
 
-    await expect(incentivesPredeployed.withdrawDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.withdrawDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000))
       .to.emit(incentivesPredeployed, 'WithdrewShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000);
   });
 
   it('incentives claimRewards works', async () => {
@@ -166,9 +166,9 @@ describe('incentives', () => {
     );
     await send(updateBalance, wallet.substrateAddress);
 
-    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1000))
+    await expect(incentivesPredeployed.depositDexShare(ADDRESS.LP_ACA_AUSD, 1_000_000_000))
       .to.emit(incentivesPredeployed, 'DepositedShare')
-      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1000);
+      .withArgs(await wallet.getAddress(), ADDRESS.LP_ACA_AUSD, 1_000_000_000);
 
     await expect(incentivesPredeployed.claimRewards(1, ADDRESS.LP_ACA_AUSD))
       .to.emit(incentivesPredeployed, 'ClaimedRewards')
