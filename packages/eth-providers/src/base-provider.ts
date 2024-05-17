@@ -23,6 +23,7 @@ import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/pr
 import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { Formatter } from '@ethersproject/providers';
 import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
+import { ISubmittableResult } from '@polkadot/types/types';
 import { Logger } from '@ethersproject/logger';
 import { Network } from '@ethersproject/networks';
 import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
@@ -94,10 +95,24 @@ import {
   toBN,
 } from './utils';
 import { BlockCache, CacheInspect } from './utils/BlockCache';
-import { ISubmittableResult } from '@polkadot/types/types';
 import { MaxSizeSet } from './utils/MaxSizeSet';
 import { SubqlProvider } from './utils/subqlProvider';
 import { _Metadata } from './utils/gqlTypes';
+
+export interface HeadsInfo {
+  internalState: {
+    finalizedHeight: number;
+    finalizedHash: string;
+    curHeight: number;
+    curHash: string;
+  };
+  chainState: {
+    curHeight: number;
+    curHash: string;
+    finalizedHeight: number;
+    finalizedHash: string;
+  };
+}
 
 export type Eip1898BlockTag = {
   blockNumber: string | number;
@@ -746,18 +761,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getTransactionCount = async (
     addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
+    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<number> => {
-    return this.getEvmTransactionCount(addressOrName, await parseBlockTag(blockTag));
-  };
+    const blockTag = await parseBlockTag(_blockTag);
 
-  // TODO: test pending
-  getEvmTransactionCount = async (
-    addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<number> => {
     let pendingNonce = 0;
-    if ((await blockTag) === 'pending') {
+    if (blockTag === 'pending') {
       const [substrateAddress, pendingExtrinsics] = await Promise.all([
         this.getSubstrateAddress(await addressOrName),
         this.api.rpc.author.pendingExtrinsics(),
@@ -1903,14 +1912,39 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
+  _getHeadsInfo = async (): Promise<HeadsInfo> => {
+    const internalState = {
+      curHeight: this.bestBlockNumber,
+      curHash: this.bestBlockHash,
+      finalizedHeight: await this.finalizedBlockNumber,
+      finalizedHash: await this.finalizedBlockHash,
+    };
+
+    const [header, finalizedHeader] = await Promise.all([
+      this.api.rpc.chain.getHeader(),
+      this.api.rpc.chain.getFinalizedHead().then(hash => this.api.rpc.chain.getHeader(hash)),
+    ]);
+
+    const chainState = {
+      curHeight: header.number.toNumber(),
+      curHash: header.hash.toHex(),
+      finalizedHeight: finalizedHeader.number.toNumber(),
+      finalizedHash: finalizedHeader.hash.toHex(),
+    };
+
+    return { internalState, chainState };
+  };
+
+  // TODO: move the whole health check thing to a new class?
   healthCheck = async (): Promise<HealthResult> => {
-    const [indexerMeta, ethCallTiming] = await Promise.all([
+    const [indexerMeta, ethCallTiming, headsInfo] = await Promise.all([
       this.getIndexerMetadata(),
       this._timeEthCalls(),
+      this._getHeadsInfo(),
     ]);
 
     const cacheInfo = this.getCachInfo();
-    const curFinalizedHeight = await this.finalizedBlockNumber;
+
     const listenersCount = {
       newHead: this.eventListeners[SubscriptionType.NewHeads]?.length || 0,
       newFinalizedHead: this.eventListeners[SubscriptionType.NewFinalizedHeads]?.length || 0,
@@ -1920,7 +1954,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return getHealthResult({
       indexerMeta,
       cacheInfo,
-      curFinalizedHeight,
+      headsInfo,
       ethCallTiming,
       listenersCount,
     });

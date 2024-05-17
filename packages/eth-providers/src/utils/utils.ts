@@ -5,7 +5,7 @@ import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { hexToBn, hexToU8a, isHex, isU8a, u8aToBn } from '@polkadot/util';
 import BN from 'bn.js';
 
-import { BlockTagish, CallReturnInfo, Eip1898BlockTag } from '../base-provider';
+import { BlockTagish, CallReturnInfo, Eip1898BlockTag, HeadsInfo } from '../base-provider';
 import { CacheInspect } from './BlockCache';
 import { _Metadata } from './gqlTypes';
 
@@ -21,24 +21,25 @@ export interface HealthResult {
   isSubqlOK: boolean;
   isCacheOK: boolean;
   isRPCOK: boolean;
+  isHeadsOK: boolean;
   msg: string[];
   moreInfo: {
-    // cache
-    cachedBlocksCount: number;
-    maxCachedBlocksCount: number;
-    // subql
-    lastProcessedHeight: number;
-    targetHeight: number;
-    curFinalizedHeight: number;
-    lastProcessedTimestamp: number;
-    curTimestamp: number;
-    idleSeconds: number;
-    idleBlocks: number;
-    indexerHealthy: boolean;
-    // RPC
+    headsInfo: HeadsInfo;
+    cache: {
+      cachedBlocksCount: number;
+      maxCachedBlocksCount: number;
+    };
+    subql: {
+      lastProcessedHeight: number;
+      targetHeight: number;
+      lastProcessedTimestamp: number;
+      curTimestamp: number;
+      idleSeconds: number;
+      idleBlocks: number;
+      isIndexerHealthy: boolean;
+    };
     ethCallTiming: EthCallTimingResult;
-    // listeners
-    listenersCount: {
+    listeners: {
       newHead: number;
       newFinalizedHead: number;
       logs: number;
@@ -49,7 +50,7 @@ export interface HealthResult {
 export interface HealthData {
   indexerMeta?: _Metadata;
   cacheInfo?: CacheInspect;
-  curFinalizedHeight: number;
+  headsInfo: HeadsInfo;
   ethCallTiming: EthCallTimingResult;
   listenersCount: {
     newHead: number;
@@ -109,7 +110,7 @@ export const runWithRetries = async <F extends AnyFunction>(
 export const getHealthResult = ({
   indexerMeta,
   cacheInfo,
-  curFinalizedHeight,
+  headsInfo,
   ethCallTiming,
   listenersCount,
 }: HealthData): HealthResult => {
@@ -121,7 +122,34 @@ export const getHealthResult = ({
   let isSubqlOK = true;
   let isCacheOK = true;
   let isRPCOK = true;
+  let isHeadsOK = true;
   const msg = [];
+
+  /* --------------- heads --------------- */
+  const { chainState, internalState } = headsInfo;
+  if (chainState.curHeight !== internalState.curHeight) {
+    msg.push(`curHeight mismatch! chain: ${chainState.curHeight}, internal: ${internalState.curHeight}`);
+    isHealthy = false;
+    isHeadsOK = false;
+  }
+
+  if (chainState.finalizedHeight !== internalState.finalizedHeight) {
+    msg.push(`finalizedHeight mismatch! chain: ${chainState.finalizedHeight}, internal: ${internalState.finalizedHeight}`);
+    isHealthy = false;
+    isHeadsOK = false;
+  }
+
+  if (chainState.curHash !== internalState.curHash) {
+    msg.push(`curHash mismatch! chain: ${chainState.curHash}, internal: ${internalState.curHash}`);
+    isHealthy = false;
+    isHeadsOK = false;
+  }
+
+  if (chainState.finalizedHash !== internalState.finalizedHash) {
+    msg.push(`finalizedHash mismatch! chain: ${chainState.finalizedHash}, internal: ${internalState.finalizedHash}`);
+    isHealthy = false;
+    isHeadsOK = false;
+  }
 
   /* --------------- cache --------------- */
   const maxCachedBlocks = cacheInfo?.maxCachedBlocks || 0;
@@ -143,10 +171,12 @@ export const getHealthResult = ({
 
   /* --------------- subql --------------- */
   // lastProcessedTimestamp seems to be delayed for a little bit, but it's OK
+  const curFinalizedHeight = headsInfo.chainState.finalizedHeight;
+
   const lastProcessedTimestamp = parseInt(indexerMeta?.lastProcessedTimestamp || '0');
   const lastProcessedHeight = indexerMeta?.lastProcessedHeight || 0;
   const targetHeight = indexerMeta?.targetHeight || 0;
-  const indexerHealthy = indexerMeta?.indexerHealthy || false;
+  const isIndexerHealthy = indexerMeta?.indexerHealthy || false;
 
   const curTimestamp = Date.now();
   const idleTime = (curTimestamp - lastProcessedTimestamp) / 1000;
@@ -175,6 +205,12 @@ export const getHealthResult = ({
       msg.push(`node production already idle for: ${-idleBlocks} blocks`);
       isHealthy = false;
     }
+
+    if (!isIndexerHealthy) {
+      msg.push('subql self reported that indexer is not healthy');
+      isHealthy = false;
+      isSubqlOK = false;
+    }
   }
 
   /* --------------- RPC --------------- */
@@ -202,31 +238,34 @@ export const getHealthResult = ({
     }
   });
 
+  /* --------------- listeners --------------- */
+  // TODO: currently only print out info, no threshold check
+
   /* --------------- result --------------- */
   return {
     isHealthy,
     isSubqlOK,
     isCacheOK,
     isRPCOK,
+    isHeadsOK,
     msg,
     moreInfo: {
-      // cache
-      cachedBlocksCount,
-      maxCachedBlocksCount: maxCachedBlocks,
-      // subql
-      lastProcessedHeight,
-      targetHeight,
-      curFinalizedHeight,
-      lastProcessedTimestamp,
-      curTimestamp,
-      idleSeconds: idleTime,
-      idleBlocks,
-      indexerHealthy,
-      // RPC
+      headsInfo,
+      cache: {
+        cachedBlocksCount,
+        maxCachedBlocksCount: maxCachedBlocks,
+      },
+      subql: {
+        lastProcessedHeight,
+        targetHeight,
+        lastProcessedTimestamp,
+        curTimestamp,
+        idleSeconds: idleTime,
+        idleBlocks,
+        isIndexerHealthy,
+      },
       ethCallTiming,
-      // listeners
-      // TODO: currently only print out info, no threshold check
-      listenersCount,
+      listeners: listenersCount,
     },
   };
 };
@@ -276,10 +315,13 @@ export const nativeToEthDecimal = (value: any): BigNumber =>
 export const ethToNativeDecimal = (value: any): BigNumber =>
   BigNumber.from(value).div(10 ** (ETH_DECIMALS - NATIVE_DECIMALS));
 
-export const parseBlockTag = async (_blockTag: BlockTagish | Eip1898BlockTag): Promise<string | number | undefined> => {
+export const parseBlockTag = async (
+  _blockTag: BlockTagish | Eip1898BlockTag | undefined
+): Promise<string | number | undefined> => {
   const blockTag = await _blockTag;
 
-  if (!blockTag || typeof blockTag !== 'object') return blockTag as any;
+  if (blockTag === undefined) return blockTag as undefined;
+  if (typeof blockTag !== 'object') return blockTag;
 
   return blockTag['blockHash'] || blockTag['blockNumber'];
 };
