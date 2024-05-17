@@ -1,3 +1,6 @@
+import { describe, expect, it, vi } from 'vitest';
+import { hexValue } from '@ethersproject/bytes';
+
 import { CacheInspect } from '../utils/BlockCache';
 import {
   EthCallTimingResult,
@@ -10,9 +13,8 @@ import {
   runWithTiming,
   sleep,
 } from '../utils';
+import { HeadsInfo } from '../base-provider';
 import { _Metadata } from '../utils/gqlTypes';
-import { describe, expect, it, vi } from 'vitest';
-import { hexValue } from '@ethersproject/bytes';
 
 describe('utils', () => {
   it('connect chain', async () => {
@@ -136,15 +138,31 @@ describe('runwithTiming', () => {
 });
 
 describe('getHealthResult', () => {
-  const indexerHealthy = true;
+  const isIndexerHealthy = true;
   const lastProcessedHeight = 2000;
   const lastProcessedTimestamp = Date.now() - 10000;
   const targetHeight = 2002;
+  const finalizedHeight = targetHeight;
   const indexerMeta: _Metadata = {
-    indexerHealthy,
+    indexerHealthy: isIndexerHealthy,
     lastProcessedHeight,
     lastProcessedTimestamp,
     targetHeight,
+  };
+
+  const headsInfo: HeadsInfo = {
+    internalState: {
+      curHeight: finalizedHeight + 2,
+      curHash: '0x34567',
+      finalizedHeight,
+      finalizedHash: '0x12321',
+    },
+    chainState: {
+      curHeight: finalizedHeight + 2,
+      curHash: '0x34567',
+      finalizedHeight,
+      finalizedHash: '0x12321',
+    },
   };
 
   const maxCachedBlocks = 200;
@@ -171,37 +189,52 @@ describe('getHealthResult', () => {
 
   const healthResult = {
     isHealthy: true,
+    isHeadsOK: true,
     isSubqlOK: true,
     isCacheOK: true,
     isRPCOK: true,
     msg: [],
     moreInfo: {
-      cachedBlocksCount,
-      maxCachedBlocksCount: maxCachedBlocks,
-      // subql
-      lastProcessedHeight,
-      targetHeight,
-      curFinalizedHeight,
-      lastProcessedTimestamp,
-      idleBlocks: curFinalizedHeight - lastProcessedHeight,
-      indexerHealthy,
-      // RPC
+      headsInfo,
+      cache: {
+        maxCachedBlocksCount: maxCachedBlocks,
+        cachedBlocksCount,
+      },
+      subql: {
+        lastProcessedHeight,
+        targetHeight,
+        lastProcessedTimestamp,
+        idleBlocks: curFinalizedHeight - lastProcessedHeight,
+        isIndexerHealthy: indexerMeta.indexerHealthy!,
+      },
       ethCallTiming,
+      listeners: {
+        newHead: 0,
+        newFinalizedHead: 0,
+        logs: 0,
+      },
     },
   };
 
+  const healthyData = {
+    indexerMeta,
+    cacheInfo,
+    headsInfo,
+    ethCallTiming,
+    listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
+  };
+
+  const expectedSubql = expect.objectContaining(healthResult.moreInfo.subql);
+
   it('return correct healthy data when healthy', () => {
-    const res = getHealthResult({
-      indexerMeta,
-      cacheInfo,
-      curFinalizedHeight,
-      ethCallTiming,
-      listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
-    });
+    const res = getHealthResult(healthyData);
 
     expect(res).toEqual(expect.objectContaining({
       ...healthResult,
-      moreInfo: expect.objectContaining(healthResult.moreInfo),
+      moreInfo: expect.objectContaining({
+        ...healthResult.moreInfo,
+        subql: expectedSubql,
+      }),
     }));
   });
 
@@ -211,15 +244,12 @@ describe('getHealthResult', () => {
       const lastProcessedTimestampBad = lastProcessedTimestamp - 35 * 60 * 1000;
 
       const res = getHealthResult({
+        ...healthyData,
         indexerMeta: {
           ...indexerMeta,
           lastProcessedHeight: lastProcessedHeightBad,
           lastProcessedTimestamp: lastProcessedTimestampBad,
         },
-        cacheInfo,
-        curFinalizedHeight,
-        ethCallTiming,
-        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -229,55 +259,63 @@ describe('getHealthResult', () => {
         msg: expect.any(Array),
         moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
-          maxCachedBlocksCount: maxCachedBlocks,
-          lastProcessedHeight: lastProcessedHeightBad,
-          lastProcessedTimestamp: lastProcessedTimestampBad,
-          idleBlocks: curFinalizedHeight - lastProcessedHeightBad,
+          subql: expect.objectContaining({
+            ...healthResult.moreInfo.subql,
+            lastProcessedHeight: lastProcessedHeightBad,
+            lastProcessedTimestamp: lastProcessedTimestampBad,
+            idleBlocks: curFinalizedHeight - lastProcessedHeightBad,
+          }),
         }),
       }));
 
       expect(res.msg.length).to.equal(2);
     });
 
-    // this only happens when subql and rpc adapter are connecting to different node urls
-    it('when block production stopped', () => {
-      const idleBlocks = -100;
-      const curFinalizedHeightBad = lastProcessedHeight + idleBlocks;
+    it('when heads out of sync', () => {
+      const internalHeadsBad = {
+        curHeight: headsInfo.internalState.curHeight - 125,
+        curHash: '0xrrr',
+        finalizedHeight: headsInfo.internalState.finalizedHeight - 678,
+        finalizedHash: '0xhhh',
+      };
 
       const res = getHealthResult({
-        indexerMeta,
-        cacheInfo,
-        curFinalizedHeight: curFinalizedHeightBad,
-        ethCallTiming,
-        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
+        ...healthyData,
+        headsInfo: {
+          ...headsInfo,
+          internalState: internalHeadsBad,
+        },
       });
 
       expect(res).toEqual(expect.objectContaining({
         ...healthResult,
         isHealthy: false,
-        msg: expect.any(Array),
+        isHeadsOK: false,
+        msg: [
+          `curHeight mismatch! chain: ${headsInfo.chainState.curHeight}, internal: ${internalHeadsBad.curHeight}`,
+          `finalizedHeight mismatch! chain: ${headsInfo.chainState.finalizedHeight}, internal: ${internalHeadsBad.finalizedHeight}`,
+          `curHash mismatch! chain: ${headsInfo.chainState.curHash}, internal: ${internalHeadsBad.curHash}`,
+          `finalizedHash mismatch! chain: ${headsInfo.chainState.finalizedHash}, internal: ${internalHeadsBad.finalizedHash}`,
+        ],
         moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
-          idleBlocks: idleBlocks,
-          curFinalizedHeight: curFinalizedHeightBad,
+          subql: expectedSubql,
+          headsInfo: {
+            ...headsInfo,
+            internalState: internalHeadsBad,
+          },
         }),
       }));
-
-      expect(res.msg.length).to.equal(1);
-      expect(res.msg[0]).to.equal(`node production already idle for: ${-idleBlocks} blocks`);
     });
 
     it('when cache unhealthy', () => {
       const cachedBlocksCountBad = cachedBlocksCount + 1300;
       const res = getHealthResult({
-        indexerMeta,
+        ...healthyData,
         cacheInfo: {
           ...cacheInfo,
           cachedBlocksCount: cachedBlocksCountBad,
         },
-        curFinalizedHeight,
-        ethCallTiming,
-        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -289,7 +327,11 @@ describe('getHealthResult', () => {
         ],
         moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
-          cachedBlocksCount: cachedBlocksCountBad,
+          subql: expectedSubql,
+          cache: expect.objectContaining({
+            ...healthResult.moreInfo.cache,
+            cachedBlocksCount: cachedBlocksCountBad,
+          }),
         }),
       }));
     });
@@ -300,11 +342,8 @@ describe('getHealthResult', () => {
         getFullBlockTime: 23000,
       };
       const res = getHealthResult({
-        indexerMeta,
-        cacheInfo,
-        curFinalizedHeight,
+        ...healthyData,
         ethCallTiming: ethCallTimingBad,
-        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -318,6 +357,7 @@ describe('getHealthResult', () => {
         ],
         moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
+          subql: expectedSubql,
           ethCallTiming: ethCallTimingBad,
         }),
       }));
@@ -329,11 +369,8 @@ describe('getHealthResult', () => {
         getFullBlockTime: -1,
       };
       const res = getHealthResult({
-        indexerMeta,
-        cacheInfo,
-        curFinalizedHeight,
+        ...healthyData,
         ethCallTiming: ethCallTimingBad,
-        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -343,6 +380,7 @@ describe('getHealthResult', () => {
         msg: [`an RPC is getting running errors. All timings: ${JSON.stringify(ethCallTimingBad)}`],
         moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
+          subql: expectedSubql,
           ethCallTiming: ethCallTimingBad,
         }),
       }));
@@ -354,11 +392,8 @@ describe('getHealthResult', () => {
         getFullBlockTime: -999,
       };
       const res = getHealthResult({
-        indexerMeta,
-        cacheInfo,
-        curFinalizedHeight,
+        ...healthyData,
         ethCallTiming: ethCallTimingBad,
-        listenersCount: { newHead: 0, newFinalizedHead: 0, logs: 0 },
       });
 
       expect(res).toEqual(expect.objectContaining({
@@ -368,6 +403,7 @@ describe('getHealthResult', () => {
         msg: [`an RPC is getting timeouts. All timings: ${JSON.stringify(ethCallTimingBad)}`],
         moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
+          subql: expectedSubql,
           ethCallTiming: ethCallTimingBad,
         }),
       }));
