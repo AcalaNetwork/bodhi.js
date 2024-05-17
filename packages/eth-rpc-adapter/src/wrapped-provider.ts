@@ -14,7 +14,6 @@ const TRACE_METHODS = [
   'getBlockDataForHeader',
   'getBalance',
   'getTransactionCount',
-  'getEvmTransactionCount',
   'getCode',
   'call',
   '_ethCall',
