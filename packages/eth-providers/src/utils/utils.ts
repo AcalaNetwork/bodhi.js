@@ -139,18 +139,6 @@ export const getHealthResult = ({
     isHeadsOK = false;
   }
 
-  if (chainState.curHash !== internalState.curHash) {
-    msg.push(`curHash mismatch! chain: ${chainState.curHash}, internal: ${internalState.curHash}`);
-    isHealthy = false;
-    isHeadsOK = false;
-  }
-
-  if (chainState.finalizedHash !== internalState.finalizedHash) {
-    msg.push(`finalizedHash mismatch! chain: ${chainState.finalizedHash}, internal: ${internalState.finalizedHash}`);
-    isHealthy = false;
-    isHeadsOK = false;
-  }
-
   /* --------------- cache --------------- */
   const maxCachedBlocks = cacheInfo?.maxCachedBlocks || 0;
   let cachedBlocksCount = 0;
