@@ -127,13 +127,13 @@ export const getHealthResult = ({
 
   /* --------------- heads --------------- */
   const { chainState, internalState } = headsInfo;
-  if (Math.abs(chainState.curHeight - internalState.curHeight) > 2) {
+  if (Math.abs(chainState.curHeight - internalState.curHeight) >= 2) {
     msg.push(`curHeight mismatch! chain: ${chainState.curHeight}, internal: ${internalState.curHeight}`);
     isHealthy = false;
     isHeadsOK = false;
   }
 
-  if (Math.abs(chainState.finalizedHeight - internalState.finalizedHeight) > 2) {
+  if (Math.abs(chainState.finalizedHeight - internalState.finalizedHeight) >= 2) {
     msg.push(`finalizedHeight mismatch! chain: ${chainState.finalizedHeight}, internal: ${internalState.finalizedHeight}`);
     isHealthy = false;
     isHeadsOK = false;
