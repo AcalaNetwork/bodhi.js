@@ -293,7 +293,7 @@ describe('getHealthResult', () => {
         isHeadsOK: false,
         msg: [
           `curHeight mismatch! chain: ${headsInfo.chainState.curHeight}, internal: ${internalHeadsBad.curHeight}`,
-          `curHash mismatch! chain: ${headsInfo.chainState.curHash}, internal: ${internalHeadsBad.curHash}`,
+          `finalizedHeight mismatch! chain: ${headsInfo.chainState.finalizedHeight}, internal: ${internalHeadsBad.finalizedHeight}`,
         ],
         moreInfo: expect.objectContaining({
           ...healthResult.moreInfo,
