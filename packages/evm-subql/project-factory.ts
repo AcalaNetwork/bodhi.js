@@ -86,8 +86,8 @@ export const PROJECT_PARAMS = {
     startBlock: 1,
   },
   acalaTestnet: {
-    chainId: '0xd878fca7d80ffa1630527d63a835c0f1862f10c80657bf2be8e5dfcf9d1b0a7d',
-    endpoint: ['wss://acala-dev.aca-dev.network/rpc/ws'],
+    chainId: '0x5820dd20052b531310e9d7c0c7c3f3fd70188fe436ab9faca028f393bee8ecc0',
+    endpoint: ['wss://acala-testnet.aca-staging.network/rpc/ws'],
     startBlock: 1,
   },
   karuraTestnet: {
