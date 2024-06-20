@@ -91,8 +91,8 @@ export const PROJECT_PARAMS = {
     startBlock: 1,
   },
   karuraTestnet: {
-    chainId: '0xd5f7c90bd50e61d833e3f0836b0f3e1503054200ef5aa32856f8da5ce1213b01',
-    endpoint: ['wss://karura-dev.aca-dev.network/rpc/ws'],
+    chainId: '0x2ca2bef178f43b2b84bf3152d7eadc87d9658d8a5cde154ed65fc5e56e68af99',
+    endpoint: ['wss://karura-testnet.aca-staging.network/rpc/ws'],
     startBlock: 1,
   },
   localMandala: {

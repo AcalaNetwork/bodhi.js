@@ -13,9 +13,9 @@ runner:
 schema:
   file: ./schema.graphql
 network:
-  chainId: '0xd5f7c90bd50e61d833e3f0836b0f3e1503054200ef5aa32856f8da5ce1213b01'
+  chainId: '0x2ca2bef178f43b2b84bf3152d7eadc87d9658d8a5cde154ed65fc5e56e68af99'
   endpoint:
-    - wss://karura-dev.aca-dev.network/rpc/ws
+    - wss://karura-testnet.aca-staging.network/rpc/ws
   chaintypes:
     file: ./dist/chain-types/index.js
 dataSources:
