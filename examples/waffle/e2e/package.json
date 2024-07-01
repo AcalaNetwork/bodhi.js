@@ -22,7 +22,7 @@
     "@acala-network/bodhi": "workspace:*",
     "@acala-network/contracts": "4.3.4",
     "@acala-network/eth-providers": "workspace:*",
-    "@openzeppelin/contracts": "^4.4.2",
+    "@openzeppelin/contracts": "^4.9.6",
     "@polkadot/api": "^10.9.1"
   }
 }
