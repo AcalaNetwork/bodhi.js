@@ -32,12 +32,8 @@ export class Eip1193Bridge extends EventEmitter {
     return this.send(request.method, request.params || []);
   }
 
-  isMethodValid(method: string): boolean {
-    return method.startsWith('eth_') || method.startsWith('net_') || method.startsWith('web3_') || method.startsWith('txpool_');
-  }
-
   isMethodImplemented(method: string): method is keyof Eip1193BridgeImpl {
-    return this.isMethodValid(method) && method in this.#impl;
+    return method in this.#impl;
   }
 
   async send(method: string, params: any[] = [], ws?: WebSocket): Promise<any> {
@@ -500,5 +496,10 @@ class Eip1193BridgeImpl {
   async txpool_content(params: any[]): Promise<any> {
     validate([], params);
     return this.#provider.txpoolContent();
+  }
+
+  async debug_traceTransaction(params: any[]): Promise<any> {
+    validate([{ type: 'trasactionHash' }, { type: '?' }], params);
+    return this.#provider.traceTx(params[0], params[1]);
   }
 }

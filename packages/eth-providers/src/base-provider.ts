@@ -97,6 +97,7 @@ import {
 import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { MaxSizeSet } from './utils/MaxSizeSet';
 import { SubqlProvider } from './utils/subqlProvider';
+import { TracerType, traceCall, traceVM } from './utils/trace';
 import { _Metadata } from './utils/gqlTypes';
 
 export interface HeadsInfo {
@@ -2164,4 +2165,37 @@ export abstract class BaseProvider extends AbstractProvider {
   listeners = (_eventName?: EventType): Array<Listener> => throwNotImplemented('listeners');
   off = (_eventName: EventType, _listener?: Listener): Provider => throwNotImplemented('off');
   removeAllListeners = (_eventName?: EventType): Provider => throwNotImplemented('removeAllListeners');
+
+  traceTx = async (txHash: string, traceConf: any) => {
+    const tracerOptions = Object.values(TracerType);
+    if (!tracerOptions.includes(traceConf.tracer)) {
+      logger.throwError(
+        `traceTx: invalid tracer, must be one of { ${tracerOptions.join(', ')} }`,
+        Logger.errors.INVALID_ARGUMENT,
+        { tracer: traceConf.tracer },
+      );
+    }
+
+    if (!this.api.call.evmTraceApi) {
+      logger.throwError('traceTx: evm tracing not supported', Logger.errors.NOT_IMPLEMENTED, { txHash });
+    }
+
+    const receipt = await this.getReceipt(txHash);
+    if (!receipt) {
+      logger.throwError('traceTx: tx not found', Logger.errors.UNKNOWN_ERROR, { txHash });
+    }
+
+    const { blockHash, transactionIndex } = receipt;
+    const blockData = await this.api.rpc.chain.getBlock(blockHash);
+    const evmExtrinsics = blockData.block.extrinsics.filter(isEvmExtrinsic);
+
+    const targetExtrinsic = evmExtrinsics[transactionIndex];
+    if (!targetExtrinsic) {
+      logger.throwError('traceTx: target extrinsic not found', Logger.errors.UNKNOWN_ERROR, { txHash });
+    }
+
+    return traceConf.tracer === TracerType.CallTracer
+      ? await traceCall(this.api, targetExtrinsic)
+      : await traceVM(this.api, targetExtrinsic);
+  };
 }

@@ -16,7 +16,8 @@ export type Schema = {
     | 'message'
     | 'hexNumber'
     | 'eventName'
-    | 'substrateGasParams?';
+    | 'substrateGasParams?'
+    | '?';
 }[];
 
 export const validateEventName = (value: any) => {
@@ -199,6 +200,10 @@ export const validate = (schema: Schema, data: unknown[]) => {
         }
         case 'substrateGasParams?': {
           data[i] && validateSubstrateGasParams(data[i] as any);
+          break;
+        }
+        case '?': {
+          // TODO: refactor the param validating process
           break;
         }
         default:
