@@ -44,7 +44,11 @@ export enum TracerType {
 export const traceVM = async (
   api: ApiPromise,
   extrinsic: Extrinsic | IExtrinsic | string | Uint8Array,
-) => {
+): Promise<Step[]> => {
+  if (!api.call.evmTraceApi) {
+    throw new Error('traceCall: EVM tracing is not supported by the node');
+  }
+
   const pageSize = 10000;
   const traceConf = {
     page: 0,
@@ -98,6 +102,10 @@ export const traceCall = async (
   api: ApiPromise,
   extrinsic: Extrinsic | IExtrinsic | string | Uint8Array,
 ): Promise<CallTrace[]> => {
+  if (!api.call.evmTraceApi) {
+    throw new Error('traceCall: EVM tracing is not supported by the node');
+  }
+
   const traceConf = { CallTracer: null };
   const res = await api.call.evmTraceApi.traceExtrinsic(extrinsic, traceConf);
   if (!res.isOk) {

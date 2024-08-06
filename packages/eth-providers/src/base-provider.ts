@@ -2185,13 +2185,12 @@ export abstract class BaseProvider extends AbstractProvider {
       logger.throwError('traceTx: tx not found', Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
-    const { blockHash, transactionIndex } = receipt;
-    const blockData = await this.api.rpc.chain.getBlock(blockHash);
-    const evmExtrinsics = blockData.block.extrinsics.filter(isEvmExtrinsic);
+    const blockData = await this.api.rpc.chain.getBlock(receipt.blockHash);
 
-    const targetExtrinsic = evmExtrinsics[transactionIndex];
+    const targetExtrinsic = blockData.block.extrinsics.find(ex => ex.hash.toHex() === txHash);
     if (!targetExtrinsic) {
-      logger.throwError('traceTx: target extrinsic not found', Logger.errors.UNKNOWN_ERROR, { txHash });
+      // if receipt can be found, but no evm extrinsic, it's either orphan or batch tx
+      logger.throwError('traceTx: tracing for orphan/batch tx is not supported', Logger.errors.UNKNOWN_ERROR, { txHash });
     }
 
     return traceConf.tracer === TracerType.CallTracer
