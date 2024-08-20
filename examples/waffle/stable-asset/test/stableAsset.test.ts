@@ -1,10 +1,12 @@
-import { BodhiSigner, evmChai, getTestUtils, BodhiProvider } from '@acala-network/bodhi';
+import { BodhiSigner, getTestUtils, BodhiProvider } from '@acala-network/bodhi';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { BigNumber, Contract, ethers } from 'ethers';
 import StableAsset from '../build/StableAsset.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { AddressOrPair, SubmittableExtrinsic } from '@polkadot/api/types';
+
+import { evmChai } from '../../evm-chai';
 
 use(solidity);
 use(evmChai);

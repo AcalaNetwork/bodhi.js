@@ -1,8 +1,10 @@
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
 import { Contract } from 'ethers';
-import { evmChai, Signer, getTestUtils } from '@acala-network/bodhi';
+import { Signer, getTestUtils } from '@acala-network/bodhi';
 import HelloWorld from '../build/HelloWorld.json';
+
+import { evmChai } from '../../evm-chai';
 
 use(solidity);
 use(evmChai);

@@ -1,12 +1,14 @@
 import { expect, use } from 'chai';
 import { Contract, ContractFactory, BigNumber } from 'ethers';
-import { evmChai, getTestUtils } from '@acala-network/bodhi';
+import { getTestUtils } from '@acala-network/bodhi';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 
 import UniswapFactory from '../artifacts/UniswapV2Factory.json';
 import UniswapRouter from '../artifacts/UniswapV2Router02.json';
 import Arbitrager from '../build/Arbitrager.json';
 import IERC20 from '../artifacts/IERC20.json';
+
+import { evmChai } from '../../evm-chai';
 
 use(evmChai);
 

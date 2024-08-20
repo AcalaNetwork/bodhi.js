@@ -1,0 +1,16 @@
+{
+  "name": "evm-waffle-example-evm-chai",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "chai": "~4.3.4"
+  },
+  "devDependencies": {
+    "@types/chai": "~4.2.22",
+    "typescript": "~4.6.3"
+  }
+}
