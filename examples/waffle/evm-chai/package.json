@@ -1,7 +1,7 @@
 {
   "name": "evm-waffle-example-evm-chai",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
     "build": "tsc"
