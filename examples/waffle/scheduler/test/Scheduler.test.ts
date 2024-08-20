@@ -1,12 +1,14 @@
 import { expect, use } from 'chai';
 import { ethers, BigNumber, Contract } from 'ethers';
 import { deployContract } from 'ethereum-waffle';
-import { getTestUtils, BodhiSigner, evmChai, BodhiProvider } from '@acala-network/bodhi';
+import { getTestUtils, BodhiSigner, BodhiProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import RecurringPayment from '../build/RecurringPayment.json';
 import Subscription from '../build/Subscription.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { sleep } from '@acala-network/eth-providers';
+
+import { evmChai } from '../../evm-chai';
 
 use(evmChai);
 

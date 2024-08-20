@@ -2,8 +2,10 @@ import { expect, use } from 'chai';
 import { Contract } from 'ethers';
 import { deployContract, solidity } from 'ethereum-waffle';
 import BasicToken from '../build/BasicToken.json';
-import { getTestUtils, BodhiSigner, evmChai, BodhiProvider } from '@acala-network/bodhi';
+import { getTestUtils, BodhiSigner, BodhiProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
+
+import { evmChai } from '../../evm-chai';
 
 use(solidity);
 use(evmChai);

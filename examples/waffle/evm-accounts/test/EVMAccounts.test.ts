@@ -1,4 +1,4 @@
-import { Signer, evmChai, getTestUtils } from '@acala-network/bodhi';
+import { Signer, getTestUtils } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
@@ -8,6 +8,8 @@ import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { Keyring } from '@polkadot/keyring';
 import { randomAsHex, blake2AsU8a } from '@polkadot/util-crypto';
 import { u8aConcat, stringToU8a, u8aToHex } from '@polkadot/util';
+
+import { evmChai } from '../../evm-chai';
 
 use(solidity);
 use(evmChai);

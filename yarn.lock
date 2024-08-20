@@ -12001,6 +12001,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"evm-waffle-example-evm-chai@workspace:examples/waffle/evm-chai":
+  version: 0.0.0-use.local
+  resolution: "evm-waffle-example-evm-chai@workspace:examples/waffle/evm-chai"
+  dependencies:
+    "@types/chai": ~4.2.22
+    chai: ~4.3.4
+    typescript: ~4.6.3
+  languageName: unknown
+  linkType: soft
+
 "evm-waffle-example-evm@workspace:examples/waffle/evm":
   version: 0.0.0-use.local
   resolution: "evm-waffle-example-evm@workspace:examples/waffle/evm"

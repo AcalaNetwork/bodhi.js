@@ -1,15 +1,17 @@
 import { Contract, BigNumber, ContractFactory } from 'ethers';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { use } from 'chai';
-import { evmChai, getTestUtils } from '@acala-network/bodhi';
+import { getTestUtils } from '@acala-network/bodhi';
 
 import UniswapFactory from '../artifacts/UniswapV2Factory.json';
 import UniswapRouter from '../artifacts/UniswapV2Router02.json';
 import IERC20 from '../artifacts/IERC20.json';
 
-const dollar = BigNumber.from('1000000000000');
+import { evmChai } from '../../evm-chai';
+
 use(evmChai);
 
+const dollar = BigNumber.from('1000000000000');
 const endpoint = process.env.ENDPOINT_URL ?? 'ws://localhost:9944';
 
 const deploy = async () => {

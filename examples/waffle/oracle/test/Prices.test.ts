@@ -1,4 +1,4 @@
-import { evmChai, getTestUtils, BodhiProvider } from '@acala-network/bodhi';
+import { getTestUtils, BodhiProvider } from '@acala-network/bodhi';
 import { createTestPairs } from '@polkadot/keyring/testingPairs';
 import { expect, use } from 'chai';
 import { deployContract, solidity } from 'ethereum-waffle';
@@ -6,6 +6,8 @@ import { Contract, BigNumber } from 'ethers';
 import Prices from '../build/Prices.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import { parseEther } from 'ethers/lib/utils';
+
+import { evmChai } from '../../evm-chai';
 
 use(solidity);
 use(evmChai);
