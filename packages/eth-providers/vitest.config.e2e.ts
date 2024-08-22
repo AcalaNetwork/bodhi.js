@@ -8,7 +8,7 @@ export default defineConfig({
     testTimeout: 300_000,
     hookTimeout: 60_000,
     environment: 'jsdom',
-    exclude: ['src/__tests__/utils.test.ts'],
+    // exclude: ['src/__tests__/utils.test.ts'],
   },
   plugins: [swc.vite(), tsconfigPaths()],
 });
