@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   eth-providers:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -45,7 +45,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   eth-rpc-adaptor:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -80,7 +80,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   waffle-examples:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -115,7 +115,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   hardhat-tutorials:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -149,7 +149,7 @@ jobs:
         uses: jwalton/gh-docker-logs@v2
 
   truffle-tutorials:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -210,7 +210,7 @@ jobs:
         run: yarn build
 
   e2e-tests:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -258,7 +258,7 @@ jobs:
 
 
   tutorials-tests:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v3
