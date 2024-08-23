@@ -1,5 +1,5 @@
 # =============== yarn install =============== #
-FROM bodhi-runner as yarn-install
+FROM bodhi-runner AS yarn-install
 
 VOLUME ["/app"]
 WORKDIR /app

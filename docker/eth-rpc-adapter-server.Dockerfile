@@ -1,5 +1,5 @@
 # =============== eth-rpc-adapter =============== #
-FROM bodhi-runner as eth-rpc-adapter
+FROM bodhi-runner AS eth-rpc-adapter
 
 VOLUME ["/app"]
 WORKDIR /app

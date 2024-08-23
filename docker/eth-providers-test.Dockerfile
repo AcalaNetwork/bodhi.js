@@ -1,5 +1,5 @@
 # =============== eth-providers-test =============== #
-FROM bodhi-runner as eth-providers-test
+FROM bodhi-runner AS eth-providers-test
 
 VOLUME ["/app"]
 WORKDIR /app
