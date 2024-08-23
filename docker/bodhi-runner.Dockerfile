@@ -1,4 +1,4 @@
-FROM node:16-alpine as bodhi-runner
+FROM node:16-alpine AS bodhi-runner
 LABEL maintainer="hello@acala.network"
 
 ### required to build some native deps

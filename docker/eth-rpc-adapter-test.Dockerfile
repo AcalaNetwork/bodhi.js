@@ -1,5 +1,5 @@
 # =============== eth-rpc-adapter-test =============== #
-FROM bodhi-runner as eth-rpc-adapter-test
+FROM bodhi-runner AS eth-rpc-adapter-test
 VOLUME ["/app"]
 WORKDIR /app
 ENV ENDPOINT_URL=ws://mandala-node:9944

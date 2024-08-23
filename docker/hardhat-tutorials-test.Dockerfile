@@ -1,5 +1,5 @@
 # =============== hardhat-tutorials =============== #
-FROM bodhi-runner as hardhat-tutorials
+FROM bodhi-runner AS hardhat-tutorials
 VOLUME ["/app"]
 WORKDIR /app
 ENV ENDPOINT_URL=ws://mandala-node:9944
