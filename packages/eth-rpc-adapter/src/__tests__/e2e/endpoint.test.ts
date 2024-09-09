@@ -432,6 +432,7 @@ describe('endpoint', () => {
         for (let i = 0; i < 5; i++) {
           pendings.push(await token.transfer(ADDRESS_ALICE, 1000));
         }
+
         await Promise.all(pendings.map(p => p.wait()));
 
         const targetHeight = curHeight + 5;
