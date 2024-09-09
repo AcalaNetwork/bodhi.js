@@ -16,7 +16,7 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@acala-network/eth-providers": "~2.7.3",
+    "@acala-network/eth-providers": "~2.8.9",
     "@certusone/wormhole-sdk": "^0.9.11",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@types/chai": "^4.3.4",
