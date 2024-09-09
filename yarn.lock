@@ -58,10 +58,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@acala-network/contracts@npm:~4.3.4":
-  version: 4.3.9
-  resolution: "@acala-network/contracts@npm:4.3.9"
-  checksum: 4c93391cff916f6a17bf0e4a8dea1b75227528df878f57b53de037395732f8fb773a4689b673b3d29acdf0d0760b1957b701f4d4bb2523198eae5d78a8435d5a
+"@acala-network/contracts@npm:~2.3.4":
+  version: 2.3.4
+  resolution: "@acala-network/contracts@npm:2.3.4"
+  checksum: abe826e6700541abcb838ad90f5a5487784073e915492fba3c3749902e83a051fd0e6511a5f260a9e083e6a5ba96e8abf3e7649ea6bcc97f42b6da7de03dbb0b
   languageName: node
   linkType: hard
 
@@ -11922,7 +11922,7 @@ __metadata:
   resolution: "evm-waffle-example-arbitrager@workspace:examples/waffle/arbitrager"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": ~2.3.4
     "@openzeppelin/contracts": ~3.4.2
     "@polkadot/api": ^12.4.2
     "@types/chai": ~4.2.22
@@ -12132,7 +12132,7 @@ __metadata:
   resolution: "evm-waffle-example-scheduler@workspace:examples/waffle/scheduler"
   dependencies:
     "@acala-network/bodhi": "workspace:*"
-    "@acala-network/contracts": ~4.3.4
+    "@acala-network/contracts": ~2.3.4
     "@openzeppelin/contracts": ~3.4.2
     "@polkadot/api": ^12.4.2
     "@types/chai": ~4.2.22

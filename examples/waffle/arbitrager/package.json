@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@acala-network/bodhi": "workspace:*",
-    "@acala-network/contracts": "~4.3.4",
+    "@acala-network/contracts": "~2.3.4",
     "@polkadot/api": "^12.4.2",
     "@uniswap/v2-core": "~1.0.1",
     "@uniswap/v2-periphery": "~1.1.0-beta.0"
