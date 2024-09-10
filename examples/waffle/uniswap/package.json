@@ -21,6 +21,6 @@
   "dependencies": {
     "@acala-network/bodhi": "workspace:*",
     "@acala-network/contracts": "4.3.4",
-    "@polkadot/api": "^10"
+    "@polkadot/api": "10.9.1"
   }
 }

@@ -9,7 +9,7 @@
     "build": "tsc --build ./tsconfig.json"
   },
   "peerDependencies": {
-    "@polkadot/api": "^10"
+    "@polkadot/api": "10.9.1"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
