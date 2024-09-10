@@ -47,7 +47,7 @@ __metadata:
     ethers: ~5.7.0
     typescript: ~4.6.3
   peerDependencies:
-    "@polkadot/api": ^10.11.1
+    "@polkadot/api": ^12.4.2
   languageName: unknown
   linkType: soft
 
@@ -84,7 +84,7 @@ __metadata:
     vitest: 0.34.2
   peerDependencies:
     "@acala-network/api": 6.1.0
-    "@polkadot/api": ^10.11.1
+    "@polkadot/api": ^12.4.2
   languageName: unknown
   linkType: soft
 
@@ -118,7 +118,7 @@ __metadata:
     ws: ~8.2.3
     yargs: 16.2.0
   peerDependencies:
-    "@polkadot/api": ^10.11.1
+    "@polkadot/api": ^12.4.2
   bin:
     eth-rpc-adapter: ./bin/eth-rpc-adapter.js
   languageName: unknown
