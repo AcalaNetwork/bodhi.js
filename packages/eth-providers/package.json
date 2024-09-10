@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@acala-network/api": "6.1.0",
+    "@polkadot/api": "^12.4.2",
     "@types/bn.js": "~5.1.0",
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
