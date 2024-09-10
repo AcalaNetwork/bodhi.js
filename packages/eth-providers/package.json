@@ -16,7 +16,7 @@
   "dependencies": {
     "@acala-network/contracts": "4.3.4",
     "@acala-network/eth-transactions": "workspace:*",
-    "bn.js": "~5.2.0",
+    "bn.js": "~5.2.1",
     "ethers": "~5.7.0",
     "graphql": "~16.0.1",
     "graphql-request": "~3.6.1",
@@ -25,7 +25,7 @@
   "devDependencies": {
     "@acala-network/api": "6.1.0",
     "@polkadot/api": "^12.4.2",
-    "@types/bn.js": "~5.1.0",
+    "@types/bn.js": "~5.1.5",
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
     "jsdom": "^22.0.0",
