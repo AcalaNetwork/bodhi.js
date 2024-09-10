@@ -11,7 +11,7 @@
   },
   "peerDependencies": {
     "@acala-network/api": "6.1.0",
-    "@polkadot/api": "^12.4.2"
+    "@polkadot/api": "11.0.1"
   },
   "dependencies": {
     "@acala-network/contracts": "4.3.4",
@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@acala-network/api": "6.1.0",
-    "@polkadot/api": "^12.4.2",
+    "@polkadot/api": "11.0.1",
     "@types/bn.js": "~5.1.5",
     "@types/lru-cache": "~7.6.1",
     "dotenv": "~10.0.0",
