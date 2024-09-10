@@ -20,7 +20,7 @@ network:
     file: ./dist/chain-types/index.js
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 6134893
+    startBlock: 6894195
     mapping:
       file: ./dist/index.js
       handlers:
