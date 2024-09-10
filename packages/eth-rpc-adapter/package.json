@@ -14,7 +14,7 @@
     "ncc:pack": "ncc build src/index.ts -t --target es2020"
   },
   "peerDependencies": {
-    "@polkadot/api": "^12.4.2"
+    "@polkadot/api": "^11"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",
