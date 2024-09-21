@@ -7,7 +7,7 @@ import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
 import { BigNumber } from 'ethers';
 import { EvmRpcProvider } from '../rpc-provider';
 import { parseEther } from 'ethers/lib/utils';
-import evmAccounts from './evmAccounts';
+import evmAccounts from './utils/evmAccounts';
 
 describe('TransactionReceipt', async () => {
   const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
