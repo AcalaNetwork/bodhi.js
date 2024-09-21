@@ -3,10 +3,10 @@ import { Wallet } from '@ethersproject/wallet';
 import { afterAll, describe, expect, it } from 'vitest';
 import { hexZeroPad, parseEther } from 'ethers/lib/utils';
 
-import { AcalaJsonRpcProvider } from '../../json-rpc-provider';
-import { sleep } from '../../utils';
-import echoJson from '../abis/Echo.json';
-import erc20Json from '../abis/IERC20.json';
+import { AcalaJsonRpcProvider } from '../json-rpc-provider';
+import { sleep } from '../utils';
+import echoJson from './abis/Echo.json';
+import erc20Json from './abis/IERC20.json';
 
 const localEthRpc = process.env.ETH_RPC || 'http://localhost:8545';
 

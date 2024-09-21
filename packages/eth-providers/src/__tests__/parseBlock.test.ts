@@ -3,8 +3,8 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider';
 import { afterAll, beforeAll, describe, it } from 'vitest';
 import { options } from '@acala-network/api';
 
-import { getAllReceiptsAtBlock } from '../../utils/parseBlock';
-import { hexlifyRpcResult, sleep } from '../../utils';
+import { getAllReceiptsAtBlock } from '../utils/parseBlock';
+import { hexlifyRpcResult, sleep } from '../utils';
 
 interface FormatedReceipt {
   to?: string;

@@ -1,0 +1,41 @@
+import { Contract } from '@ethersproject/contracts';
+import { Wallet } from '@ethersproject/wallet';
+import { afterAll, describe, expect, it } from 'vitest';
+import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
+import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
+
+import { BigNumber } from 'ethers';
+import { EvmRpcProvider } from '../rpc-provider';
+import { parseEther } from 'ethers/lib/utils';
+import evmAccounts from './evmAccounts';
+
+describe('TransactionReceipt', async () => {
+  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+  const provider = EvmRpcProvider.from(endpoint);
+  await provider.isReady();
+
+  afterAll(async () => {
+    await provider.disconnect();
+  });
+
+  it('getTransactionReceipt', async () => {
+    const wallet1 = new Wallet(evmAccounts[0].privateKey).connect(provider);
+    const addr1 = wallet1.address;
+    console.log({ addr1 });
+    const acaContract = new Contract(ADDRESS.ACA, ACAABI.abi, wallet1);
+
+    const tx = await acaContract.transfer(evmAccounts[1].evmAddress, parseEther('10'), {
+      gasLimit: BigNumber.from(34132001n),
+      gasPrice: BigNumber.from(200786445289n),
+      type: 0,
+    });
+    await tx.wait();
+
+    const receipt = await provider.getReceiptAtBlock(tx.hash, tx.blockHash);
+    expect(receipt).toBeTruthy();
+    expect(receipt.blockHash).equal(tx.blockHash);
+    expect(receipt.logs.length).equal(1);
+    expect(receipt.logs[0].blockNumber).equal(tx.blockNumber);
+    expect(receipt.logs[0].topics.length).equal(3);
+  });
+});

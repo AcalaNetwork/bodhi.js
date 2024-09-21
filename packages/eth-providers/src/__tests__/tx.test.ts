@@ -8,10 +8,10 @@ import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import dotenv from 'dotenv';
 
-import { EvmRpcProvider } from '../../rpc-provider';
-import { calcEthereumTransactionParams, sleep } from '../../utils';
-import { computeDefaultSubstrateAddress } from '../../utils/address';
-import evmAccounts from '../evmAccounts';
+import { EvmRpcProvider } from '../rpc-provider';
+import { calcEthereumTransactionParams, sleep } from '../utils';
+import { computeDefaultSubstrateAddress } from '../utils/address';
+import evmAccounts from './evmAccounts';
 
 dotenv.config();
 

@@ -7,7 +7,7 @@ import { parseEther } from 'ethers/lib/utils';
 import axios from 'axios';
 
 import { ERC20_ABI, ERC20_BYTECODE, GASMONSTER_ABI, GASMONSTER_BYTECODE, LogHexified } from './consts';
-import { JsonRpcError } from '../../server';
+import { JsonRpcError } from '../server';
 
 export const NODE_RPC_URL = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 export const KARURA_ETH_RPC_URL = process.env.KARURA_ETH_RPC_URL || 'http://127.0.0.1:8546';

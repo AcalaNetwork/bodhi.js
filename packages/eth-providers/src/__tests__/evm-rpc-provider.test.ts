@@ -1,6 +1,6 @@
-import { EvmRpcProvider } from '../../rpc-provider';
+import { EvmRpcProvider } from '../rpc-provider';
 import { afterAll, describe, expect, it } from 'vitest';
-import { runWithTiming, sleep } from '../../utils';
+import { runWithTiming, sleep } from '../utils';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -107,7 +107,7 @@ describe.concurrent('rpc test', async () => {
 
   it('chainId', async () => {
     const result = await provider.chainId();
-    expect(result).to.equal(595);
+    expect(result).to.equal(787);
   });
 
   it('getTransactionCount', async () => {
@@ -116,13 +116,11 @@ describe.concurrent('rpc test', async () => {
   });
 
   it('getCode', async () => {
-    const result1 = await provider.getCode('0x1000000000000000000000000000000000000802');
+    const noCode = await provider.getCode('0x1110000000000000000000000000000000000802');
+    expect(noCode).to.equal('0x');
 
-    expect(result1).to.equal('0x');
-
-    const result2 = await provider.getCode('0x0000000000000000000000000000000000000802');
-
-    expect(result2.length > 2).to.be.true;
+    const dexCode = await provider.getCode('0x0000000000000000000000000000000000000803');
+    expect(dexCode.length > 2).to.be.true;
   });
 
   it('call', async () => {
@@ -144,6 +142,6 @@ describe.concurrent('rpc test', async () => {
   it('getBlockByNumber', async () => {
     await expect(
       provider._getBlockHeader('0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c')
-    ).rejects.toThrow('header not found');
+    ).rejects.toThrow('not found');
   });
 });

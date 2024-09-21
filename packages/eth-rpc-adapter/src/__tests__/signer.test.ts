@@ -1,4 +1,4 @@
-import { Eip1193Bridge } from '../../eip1193-bridge';
+import { Eip1193Bridge } from '../eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Wallet, verifyMessage } from '@ethersproject/wallet';
 import { afterAll, describe, expect, it } from 'vitest';

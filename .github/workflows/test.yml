@@ -20,25 +20,19 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
-      - name: Setup yarn
+      - name: setup yarn
         run: npm install -g yarn
 
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
+      - name: install deps
+        run: yarn install --immutable
 
-      - run: yarn install --immutable
-      - run: yarn build:waffle
+      - name: start test infra
+        run: docker compose up -d -- node-ready
 
-      - name: Build bodhi-runner
-        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-      - name: test
-        run: docker compose up --abort-on-container-exit --exit-code-from=eth-providers-test --build -- eth-providers-test
+      - name: run tests
+        run: yarn workspace @acala-network/eth-providers run test:coverage
 
       - name: dump docker logs on failure
         if: failure()

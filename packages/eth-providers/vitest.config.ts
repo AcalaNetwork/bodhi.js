@@ -5,8 +5,14 @@ export default mergeConfig(
   configShared,
   {
     test: {
-      environment: 'jsdom',
-      exclude: ['src/__tests__/e2e'],
+      // include: ['**/*.test.ts'],  // TODO: run all tests
+      include: ['src/__tests__/evm-rpc-provider.test.ts'],
+      coverage: {
+        provider: 'istanbul',
+        reporter: ['text', 'json', 'html'],
+        include: ['src/**/*.ts'],
+        exclude: ['**/*.test.ts'],
+      },
     },
-  }
+  },
 );

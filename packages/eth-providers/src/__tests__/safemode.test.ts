@@ -1,6 +1,7 @@
-import { EvmRpcProvider } from '../../rpc-provider';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sleep } from '../../utils';
+
+import { EvmRpcProvider } from '../rpc-provider';
+import { sleep } from '../utils';
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 const safeProvider = EvmRpcProvider.from(endpoint, { safeMode: true });
