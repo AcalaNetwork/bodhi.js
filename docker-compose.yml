@@ -16,7 +16,7 @@ services:
       # bun image doesn't have wget or curl ...
       test: |
         bun --eval '
-          fetch("http://localhost:8000", {
+          fetch("http://localhost:9944", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: 1, jsonrpc: "2.0", method: "system_health", params: [] })
