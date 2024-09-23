@@ -32,26 +32,6 @@ services:
       timeout: 5s
       retries: 100
 
-  eth-rpc:
-    container_name: eth-rpc
-    image: acala/eth-rpc-adapter:2.8.7
-    restart: on-failure
-    depends_on:
-      node:
-        condition: service_healthy
-    ports:
-      - 8545:8545
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    environment:
-      - ENDPOINT_URL=ws://node:9944
-    healthcheck:
-      test: |
-          wget -q -O- --post-data='{"id": 1, "jsonrpc": "2.0", "method": "eth_chainId", "params": []}' --header='Content-Type: application/json' http://localhost:8545 || exit 1
-      interval: 2s
-      timeout: 5s
-      retries: 100
-
   node-ready:
     image: alpine:latest
     restart: on-failure
@@ -59,11 +39,3 @@ services:
       node:
         condition: service_healthy
     command: echo "node ready 🚀"
-
-  eth-rpc-ready:
-    image: alpine:latest
-    restart: on-failure
-    depends_on:
-      eth-rpc:
-        condition: service_healthy
-    command: echo "eth rpc ready 🚀"

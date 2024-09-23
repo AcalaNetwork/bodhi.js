@@ -5,13 +5,15 @@
   "author": "Acala Developers <hello@acala.network>",
   "bin": "./bin/eth-rpc-adapter.js",
   "scripts": {
-    "clean": "rm -rf lib tsconfig.tsbuildinfo",
-    "build": "tsc --build tsconfig.json",
-    "test:e2e": "vitest --run --config vitest.config.e2e.ts",
-    "start": "ts-node -r tsconfig-paths/register src/index.ts",
+    "build": "tsc",
+    "ncc:pack": "ncc build src/index.ts -t --target es2020",
     "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts -l | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc,dd",
-    "test:CI": "vitest --run --config vitest.config.e2e.ts",
-    "ncc:pack": "ncc build src/index.ts -t --target es2020"
+    "clean": "rm -rf tsconfig.tsbuildinfo .nyc_output coverage/ lib/",
+    "start": "ts-node -r tsconfig-paths/register src/index.ts",
+    "start:coverage": "pm2 start --name relayer 'nyc node -r ts-node/register -r tsconfig-paths/register src/index.ts' && ./scripts/health-check.sh",
+    "stop:coverage": "pm2 stop relayer && pm2 delete relayer",
+    "test": "vitest",
+    "test:coverage": "yarn start:coverage && yarn test --run && yarn stop:coverage"
   },
   "peerDependencies": {
     "@polkadot/api": "^10.11.1"
@@ -40,7 +42,9 @@
     "@types/ws": "~8.2.0",
     "@types/yargs": "^16.0.4",
     "@vercel/ncc": "^0.36.1",
+    "nyc": "^17.1.0",
     "pino-pretty": "~7.0.1",
+    "pm2": "^5.4.2",
     "ts-node": "~10.7.0",
     "typescript": "~4.6.3",
     "vitest": "0.34.2"

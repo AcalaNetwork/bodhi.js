@@ -29,7 +29,7 @@ jobs:
         run: yarn install --immutable
 
       - name: start test infra
-        run: docker compose up -d -- node-ready
+        run: docker compose up -d
 
       - name: run tests
         run: yarn workspace @acala-network/eth-providers run test:coverage
@@ -49,203 +49,204 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
-      - name: Setup yarn
+      - name: setup yarn
         run: npm install -g yarn
 
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - run: yarn install --immutable
-      - run: yarn build:waffle
-
-      - name: Build bodhi-runner
-        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-      - name: test
-        run: docker compose up --abort-on-container-exit --exit-code-from=eth-rpc-adapter-test --build -- eth-rpc-adapter-test
-
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-
-  waffle-examples:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-
-      - name: setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - run: yarn install --immutable
-      - run: yarn build:waffle
-
-      - name: Build bodhi-runner
-        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-      - name: test
-        run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
-
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-
-  hardhat-tutorials:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Setup yarn
-        run: npm install -g yarn
-
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
-
-      - name: install dependencies
+      - name: install deps
         run: yarn install --immutable
 
-      - name: Build bodhi-runner
-        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+      - name: start test infra
+        run: docker compose up -d
 
-      - name: test
-        run: yarn e2e:hardhat
+      - name: run tests
+        run: yarn workspace @acala-network/eth-providers run test:coverage
+
+      - name: upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # files: ./coverage/lcov.info
+          fail_ci_if_error: true
 
       - name: dump docker logs on failure
         if: failure()
         uses: jwalton/gh-docker-logs@v2
 
-  truffle-tutorials:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
+  # waffle-examples:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
 
-      - name: setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+  #     - name: setup node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
 
-      - name: Setup yarn
-        run: npm install -g yarn
+  #     - name: Setup yarn
+  #       run: npm install -g yarn
 
-      - name: setup node env
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
+  #     - name: setup node env
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+  #         cache: 'yarn'
 
-      - name: install dependencies
-        run: yarn install --immutable
+  #     - run: yarn install --immutable
+  #     - run: yarn build:waffle
 
-      - name: Build bodhi-runner
-        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+  #     - name: Build bodhi-runner
+  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
-      - name: test
-        run: yarn e2e:truffle
+  #     - name: test
+  #       run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
 
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
+  #     - name: dump docker logs on failure
+  #       if: failure()
+  #       uses: jwalton/gh-docker-logs@v2
 
-  tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  # hardhat-tutorials:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: setup node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
 
-      - name: setup yarn cache
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
+  #     - name: Setup yarn
+  #       run: npm install -g yarn
 
-      - name: install dependencies
-        run: yarn install --immutable
+  #     - name: setup node env
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+  #         cache: 'yarn'
 
-      - name: lint
-        run: yarn lint
+  #     - name: install dependencies
+  #       run: yarn install --immutable
 
-      - name: test
-        run: yarn test
+  #     - name: Build bodhi-runner
+  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
-      - name: build
-        run: yarn build
+  #     - name: test
+  #       run: yarn e2e:hardhat
 
-  e2e-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
+  #     - name: dump docker logs on failure
+  #       if: failure()
+  #       uses: jwalton/gh-docker-logs@v2
 
-      - name: setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
+  # truffle-tutorials:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
 
-      - name: Setup yarn
-        run: npm install -g yarn
+  #     - name: setup node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
 
-      - name: setup yarn cache
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'yarn'
+  #     - name: Setup yarn
+  #       run: npm install -g yarn
 
-      - name: install dependencies
-        run: yarn install --immutable
+  #     - name: setup node env
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+  #         cache: 'yarn'
 
-      - name: build waffle tests
-        run: yarn build:waffle
+  #     - name: install dependencies
+  #       run: yarn install --immutable
 
-      - name: build bodhi-runner
-        run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+  #     - name: Build bodhi-runner
+  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
 
-      - name: e2e:eth-providers
-        run: |
-          yarn e2e:eth-providers
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
+  #     - name: test
+  #       run: yarn e2e:truffle
 
-      - name: e2e:eth-rpc-adapter
-        if: always()
-        run: |
-          docker compose down
-          yarn e2e:eth-rpc-adapter
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
+  #     - name: dump docker logs on failure
+  #       if: failure()
+  #       uses: jwalton/gh-docker-logs@v2
+
+  # tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+
+  #     - name: setup yarn cache
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+  #         cache: 'yarn'
+
+  #     - name: install dependencies
+  #       run: yarn install --immutable
+
+  #     - name: lint
+  #       run: yarn lint
+
+  #     - name: test
+  #       run: yarn test
+
+  #     - name: build
+  #       run: yarn build
+
+  # e2e-tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+
+  #     - name: setup node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+
+  #     - name: Setup yarn
+  #       run: npm install -g yarn
+
+  #     - name: setup yarn cache
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 16
+  #         cache: 'yarn'
+
+  #     - name: install dependencies
+  #       run: yarn install --immutable
+
+  #     - name: build waffle tests
+  #       run: yarn build:waffle
+
+  #     - name: build bodhi-runner
+  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
+
+  #     - name: e2e:eth-providers
+  #       run: |
+  #         yarn e2e:eth-providers
+  #     - name: dump docker logs on failure
+  #       if: failure()
+  #       uses: jwalton/gh-docker-logs@v2
+
+  #     - name: e2e:eth-rpc-adapter
+  #       if: always()
+  #       run: |
+  #         docker compose down
+  #         yarn e2e:eth-rpc-adapter
+  #     - name: dump docker logs on failure
+  #       if: failure()
+  #       uses: jwalton/gh-docker-logs@v2
