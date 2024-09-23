@@ -9,8 +9,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  eth-providers:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [
+          eth-providers,
+          eth-rpc-adapter,
+          # bodhi,
+          # eth-transactions,
+        ]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -32,14 +40,11 @@ jobs:
         run: docker compose up -d
 
       - name: run tests
-        run: yarn workspace @acala-network/eth-providers run test:coverage
+        run: yarn workspace @acala-network/${{ matrix.project }} run test:coverage
 
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-
-  eth-rpc-adaptor:
+  merge-and-upload-coverage:
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -57,56 +62,80 @@ jobs:
       - name: install deps
         run: yarn install --immutable
 
-      - name: start test infra
-        run: docker compose up -d
-
-      - name: run tests
-        run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
-
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
-
-  all-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
+      - name: download coverage reports for eth-providers
+        uses: actions/download-artifact@v3
         with:
-          submodules: 'recursive'
+          name: coverage-eth-providers
+          path: packages/eth-providers/coverage/
 
-      - name: setup node
-        uses: actions/setup-node@v3
+      - name: download coverage reports for eth-rpc-adapter
+        uses: actions/download-artifact@v3
         with:
-          node-version: 18
+          name: coverage-eth-rpc-adapter
+          path: packages/eth-rpc-adapter/coverage/
 
-      - name: setup yarn
-        run: npm install -g yarn
+      # - name: download coverage reports for bodhi
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: coverage-bodhi
+      #     path: packages/bodhi/coverage/
 
-      - name: install deps
-        run: yarn install --immutable
-
-      - name: start test infra
-        run: docker compose up -d
-
-      - name: run tests for eth-providers
-        run: yarn workspace @acala-network/eth-providers run test:coverage
-
-      - name: run tests for eth-rpc-adapter
-        run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
+      # - name: download coverage reports for eth-transactions
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: coverage-eth-transactions
+      #     path: packages/eth-transactions/coverage/
 
       - name: merge coverage reports
         run: yarn merge-coverage
 
-      - name: upload coverage reports
+      - name: upload merged coverage report
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
-      - name: dump docker logs on failure
-        if: failure()
-        uses: jwalton/gh-docker-logs@v2
+  # TODO: run each of the tests in parallel and then merge the coverage reports?
+  # combined-tests:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+
+  #     - name: setup node
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+
+  #     - name: setup yarn
+  #       run: npm install -g yarn
+
+  #     - name: install deps
+  #       run: yarn install --immutable
+
+  #     - name: start test infra
+  #       run: docker compose up -d
+
+  #     - name: run tests for eth-providers
+  #       run: yarn workspace @acala-network/eth-providers run test:coverage
+
+  #     - name: run tests for eth-rpc-adapter
+  #       run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
+
+  #     - name: merge coverage reports
+  #       run: yarn merge-coverage
+
+  #     - name: upload coverage reports
+  #       uses: codecov/codecov-action@v4
+  #       with:
+  #         token: ${{ secrets.CODECOV_TOKEN }}
+  #         fail_ci_if_error: true
+
+  #     - name: dump docker logs on failure
+  #       if: failure()
+  #       uses: jwalton/gh-docker-logs@v2
 
   # waffle-examples:
   #   runs-on: ubuntu-latest
