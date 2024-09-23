@@ -61,7 +61,7 @@ jobs:
         run: docker compose up -d
 
       - name: run tests
-        run: yarn workspace @acala-network/eth-providers run test:coverage
+        run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
 
       - name: upload coverage reports
         uses: codecov/codecov-action@v4
