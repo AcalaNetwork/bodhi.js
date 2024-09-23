@@ -9203,6 +9203,7 @@ __metadata:
     eslint-plugin-sort-imports-es6-autofix: ^0.6.0
     husky: ^8.0.3
     lint-staged: ^13.2.2
+    nyc: ^17.1.0
     pm2: ^5.4.2
     ts-node: ^10.9.1
     tsconfig-paths: ^4.2.0

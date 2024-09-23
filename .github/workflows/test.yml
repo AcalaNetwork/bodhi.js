@@ -63,11 +63,45 @@ jobs:
       - name: run tests
         run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
 
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+
+  all-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: setup yarn
+        run: npm install -g yarn
+
+      - name: install deps
+        run: yarn install --immutable
+
+      - name: start test infra
+        run: docker compose up -d
+
+      - name: run tests for eth-providers
+        run: yarn workspace @acala-network/eth-providers run test:coverage
+
+      - name: run tests for eth-rpc-adapter
+        run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
+
+      - name: merge coverage reports
+        run: yarn merge-coverage
+
       - name: upload coverage reports
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          # files: ./coverage/lcov.info
           fail_ci_if_error: true
 
       - name: dump docker logs on failure

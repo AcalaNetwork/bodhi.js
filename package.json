@@ -35,7 +35,8 @@
     "e2e:truffle": "yarn start:eth-rpc-adapter-subql; cd examples/truffle-tutorials; yarn install --immutable; yarn test:mandala",
     "e2e:hardhat": "yarn start:eth-rpc-adapter; cd examples/hardhat-tutorials; yarn install --immutable; yarn test:mandala",
     "bump": "yarn workspaces foreach -vit --include '@acala-network/*' --exclude '@acala-network/evm-subql' version",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "merge-coverage": "./scripts/merge-coverage.sh"
   },
   "devDependencies": {
     "@swc/core": "^1.3.56",
@@ -50,6 +51,7 @@
     "eslint-plugin-sort-imports-es6-autofix": "^0.6.0",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.2",
+    "nyc": "^17.1.0",
     "pm2": "^5.4.2",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",

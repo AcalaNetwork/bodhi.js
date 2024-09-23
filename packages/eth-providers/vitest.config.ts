@@ -9,9 +9,7 @@ export default mergeConfig(
       include: ['src/__tests__/evm-rpc-provider.test.ts'],
       coverage: {
         provider: 'istanbul',
-        reporter: ['text', 'json', 'html'],
-        include: ['src/**/*.ts'],
-        exclude: ['**/*.test.ts'],
+        configFile: './.nycrc',
       },
     },
   },
