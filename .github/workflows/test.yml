@@ -82,14 +82,11 @@ jobs:
           COVERAGE_DIR: .coverage/${{ matrix.project }}
         run: yarn workspace @acala-network/eth-rpc-adapter run start:coverage
 
-      - name: wait for coverage server to be ready
-        run: yarn workspace @acala-network/eth-rpc-adapter run health-check
-
       - name: install deps for e2e tests
         run: cd e2e-tests/${{ matrix.project }} && yarn install --immutable
 
       - name: run e2e tests
-        run: yarn test:acalaFork
+        run: cd e2e-tests/${{ matrix.project }} && yarn test:acalaFork
 
       - name: stop coverage server and generate coverage report
         run: yarn workspace @acala-network/eth-rpc-adapter run stop:coverage
