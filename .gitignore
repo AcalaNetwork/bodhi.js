@@ -70,3 +70,6 @@ jspm_packages/
 dist
 lib
 *.tsbuildinfo
+
+# temp coverage files
+**/.coverage/
