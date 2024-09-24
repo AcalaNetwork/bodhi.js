@@ -7,5 +7,5 @@
   "reporter": ["html", "text", "lcov", "json"],
   "instrument": true,
   "require": ["ts-node/register"],
-  "report-dir": "eth-rpc-adapter/coverage"
+  "report-dir": ".coverage/eth-rpc-adapter"
 }

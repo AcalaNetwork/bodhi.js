@@ -4,12 +4,8 @@ on:
     paths-ignore:
       - '**/README.md'
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,7 +13,6 @@ jobs:
           eth-providers,
           eth-rpc-adapter,
           eth-transactions,
-          # bodhi,
         ]
     steps:
       - name: checkout
@@ -43,15 +38,55 @@ jobs:
         run: yarn workspace @acala-network/${{ matrix.project }} run test:coverage
 
       - name: save coverage reports
-        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: coverage-${{ matrix.project }}
-          path: packages/${{ matrix.project }}/coverage/
+          path: packages/.coverage/${{ matrix.project }}
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [
+          e2e-hardhat,
+          # e2e-truffle,
+          # e2e-waffle,
+          # e2e-viem,
+        ]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: setup yarn
+        run: npm install -g yarn
+
+      - name: install deps
+        run: yarn install --immutable
+
+      - name: start test infra
+        run: docker compose up -d
+
+      - name: run e2e tests
+        env:
+          COVERAGE_DIR: .coverage/${{ matrix.project }}
+        run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
+
+      - name: save coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-${{ matrix.project }}
+          path: packages/.coverage/${{ matrix.project }}
 
   merge-and-upload-coverage:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [tests, e2e-tests]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -73,25 +108,25 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage-eth-providers
-          path: packages/eth-providers/coverage/
+          path: packages/.coverage/eth-providers
 
       - name: download coverage reports for eth-rpc-adapter
         uses: actions/download-artifact@v3
         with:
           name: coverage-eth-rpc-adapter
-          path: packages/eth-rpc-adapter/coverage/
-
-      # - name: download coverage reports for bodhi
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: coverage-bodhi
-      #     path: packages/bodhi/coverage/
+          path: packages/.coverage/eth-rpc-adapter
 
       - name: download coverage reports for eth-transactions
         uses: actions/download-artifact@v3
         with:
           name: coverage-eth-transactions
-          path: packages/eth-transactions/coverage/
+          path: packages/.coverage/eth-transactions
+
+      - name: download coverage reports for e2e-hardhat
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-e2e-hardhat
+          path: packages/.coverage/e2e-hardhat
 
       - name: merge coverage reports
         run: yarn merge-coverage
@@ -101,222 +136,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-
-  # TODO: run each of the tests in parallel and then merge the coverage reports?
-  # combined-tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-
-  #     - name: setup node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18
-
-  #     - name: setup yarn
-  #       run: npm install -g yarn
-
-  #     - name: install deps
-  #       run: yarn install --immutable
-
-  #     - name: start test infra
-  #       run: docker compose up -d
-
-  #     - name: run tests for eth-providers
-  #       run: yarn workspace @acala-network/eth-providers run test:coverage
-
-  #     - name: run tests for eth-rpc-adapter
-  #       run: yarn workspace @acala-network/eth-rpc-adapter run test:coverage
-
-  #     - name: merge coverage reports
-  #       run: yarn merge-coverage
-
-  #     - name: upload coverage reports
-  #       uses: codecov/codecov-action@v4
-  #       with:
-  #         token: ${{ secrets.CODECOV_TOKEN }}
-  #         fail_ci_if_error: true
-
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v2
-
-  # waffle-examples:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-
-  #     - name: setup node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-
-  #     - name: Setup yarn
-  #       run: npm install -g yarn
-
-  #     - name: setup node env
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-  #         cache: 'yarn'
-
-  #     - run: yarn install --immutable
-  #     - run: yarn build:waffle
-
-  #     - name: Build bodhi-runner
-  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-  #     - name: test
-  #       run: docker compose up --abort-on-container-exit --exit-code-from=waffle-examples-test --build -- waffle-examples-test
-
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v2
-
-  # hardhat-tutorials:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: setup node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-
-  #     - name: Setup yarn
-  #       run: npm install -g yarn
-
-  #     - name: setup node env
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-  #         cache: 'yarn'
-
-  #     - name: install dependencies
-  #       run: yarn install --immutable
-
-  #     - name: Build bodhi-runner
-  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-  #     - name: test
-  #       run: yarn e2e:hardhat
-
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v2
-
-  # truffle-tutorials:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-
-  #     - name: setup node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-
-  #     - name: Setup yarn
-  #       run: npm install -g yarn
-
-  #     - name: setup node env
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-  #         cache: 'yarn'
-
-  #     - name: install dependencies
-  #       run: yarn install --immutable
-
-  #     - name: Build bodhi-runner
-  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-  #     - name: test
-  #       run: yarn e2e:truffle
-
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v2
-
-  # tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: recursive
-
-  #     - name: setup yarn cache
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-  #         cache: 'yarn'
-
-  #     - name: install dependencies
-  #       run: yarn install --immutable
-
-  #     - name: lint
-  #       run: yarn lint
-
-  #     - name: test
-  #       run: yarn test
-
-  #     - name: build
-  #       run: yarn build
-
-  # e2e-tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: checkout
-  #       uses: actions/checkout@v3
-  #       with:
-  #         submodules: recursive
-
-  #     - name: setup node
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-
-  #     - name: Setup yarn
-  #       run: npm install -g yarn
-
-  #     - name: setup yarn cache
-  #       uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 16
-  #         cache: 'yarn'
-
-  #     - name: install dependencies
-  #       run: yarn install --immutable
-
-  #     - name: build waffle tests
-  #       run: yarn build:waffle
-
-  #     - name: build bodhi-runner
-  #       run: docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-  #     - name: e2e:eth-providers
-  #       run: |
-  #         yarn e2e:eth-providers
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v2
-
-  #     - name: e2e:eth-rpc-adapter
-  #       if: always()
-  #       run: |
-  #         docker compose down
-  #         yarn e2e:eth-rpc-adapter
-  #     - name: dump docker logs on failure
-  #       if: failure()
-  #       uses: jwalton/gh-docker-logs@v2

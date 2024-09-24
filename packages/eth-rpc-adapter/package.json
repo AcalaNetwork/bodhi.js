@@ -10,10 +10,10 @@
     "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts -l | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc,dd",
     "clean": "rm -rf tsconfig.tsbuildinfo .nyc_output coverage/ lib/",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "start:coverage": "pm2 start --name relayer 'nyc node -r ts-node/register -r tsconfig-paths/register src/index.ts' && ./scripts/health-check.sh",
-    "stop:coverage": "pm2 stop relayer && pm2 delete relayer",
+    "start:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} pm2 start --name eth-rpc 'nyc --report-dir=$COVERAGE_DIR node -r ts-node/register -r tsconfig-paths/register src/index.ts' && ./scripts/health-check.sh",
+    "stop:coverage": "pm2 stop eth-rpc && pm2 delete eth-rpc",
     "test": "vitest",
-    "test:coverage": "yarn start:coverage && yarn test --run && yarn stop:coverage"
+    "test:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn start:coverage && COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn test --run && yarn stop:coverage"
   },
   "peerDependencies": {
     "@polkadot/api": "^10.11.1"
