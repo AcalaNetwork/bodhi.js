@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@acala-network/api": "6.1.0",
+    "@polkadot/api": "^10.11.1",
     "@types/bn.js": "~5.1.0",
     "@types/lru-cache": "~7.6.1",
     "@vitest/coverage-istanbul": "^2.1.1",
