@@ -41,7 +41,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-${{ matrix.project }}
-          path: packages/.coverage/${{ matrix.project }}
+          path: packages/${{ matrix.project }}/coverage
+          if-no-files-found: error
+          include-hidden-files: true
 
       - name: dump docker logs on failure
         if: failure()
@@ -79,7 +81,7 @@ jobs:
 
       - name: start coverage server
         env:
-          COVERAGE_DIR: .coverage/${{ matrix.project }}
+          COVERAGE_DIR: eth-rpc-adapter/coverage-e2e-${{ matrix.project }}
         run: yarn workspace @acala-network/eth-rpc-adapter run start:coverage
 
       - name: install deps for e2e tests
@@ -94,8 +96,10 @@ jobs:
       - name: save coverage reports
         uses: actions/upload-artifact@v3
         with:
-          name: coverage-${{ matrix.project }}
-          path: packages/.coverage/${{ matrix.project }}
+          name: coverage-e2e-${{ matrix.project }}
+          path: packages/eth-rpc-adapter/coverage-e2e-${{ matrix.project }}
+          if-no-files-found: error
+          include-hidden-files: true
 
       - name: dump docker logs on failure
         if: failure()
@@ -125,25 +129,25 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: coverage-eth-providers
-          path: packages/.coverage/eth-providers
+          path: packages/eth-providers/coverage
 
       - name: download coverage reports for eth-rpc-adapter
         uses: actions/download-artifact@v3
         with:
           name: coverage-eth-rpc-adapter
-          path: packages/.coverage/eth-rpc-adapter
+          path: packages/eth-rpc-adapter/coverage
 
       - name: download coverage reports for eth-transactions
         uses: actions/download-artifact@v3
         with:
           name: coverage-eth-transactions
-          path: packages/.coverage/eth-transactions
+          path: packages/eth-transactions/coverage
 
       - name: download coverage reports for e2e-hardhat
         uses: actions/download-artifact@v3
         with:
           name: coverage-e2e-hardhat
-          path: packages/.coverage/e2e-hardhat
+          path: packages/eth-rpc-adapter/coverage-e2e-hardhat
 
       - name: merge coverage reports
         run: yarn merge-coverage
