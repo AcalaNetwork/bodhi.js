@@ -96,8 +96,8 @@ jobs:
       - name: save coverage reports
         uses: actions/upload-artifact@v3
         with:
-          name: coverage-e2e-${{ matrix.project }}
-          path: packages/eth-rpc-adapter/coverage-e2e-${{ matrix.project }}
+          name: coverage-${{ matrix.project }}
+          path: packages/eth-rpc-adapter/coverage-${{ matrix.project }}
           if-no-files-found: error
           include-hidden-files: true
 
