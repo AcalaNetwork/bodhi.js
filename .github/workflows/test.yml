@@ -81,7 +81,7 @@ jobs:
 
       - name: start coverage server
         env:
-          COVERAGE_DIR: eth-rpc-adapter/coverage-e2e-${{ matrix.project }}
+          COVERAGE_DIR: eth-rpc-adapter/coverage-${{ matrix.project }}
         run: yarn workspace @acala-network/eth-rpc-adapter run start:coverage
 
       - name: install deps for e2e tests
