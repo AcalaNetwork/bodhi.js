@@ -43,6 +43,10 @@ jobs:
           name: coverage-${{ matrix.project }}
           path: packages/.coverage/${{ matrix.project }}
 
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+
   e2e-tests:
     runs-on: ubuntu-latest
     strategy:
@@ -83,6 +87,10 @@ jobs:
         with:
           name: coverage-${{ matrix.project }}
           path: packages/.coverage/${{ matrix.project }}
+
+      - name: dump docker logs on failure
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
 
   merge-and-upload-coverage:
     runs-on: ubuntu-latest
