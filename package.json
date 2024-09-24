@@ -9,9 +9,7 @@
     "node": ">=v16"
   },
   "workspaces": [
-    "packages/*",
-    "examples/waffle/*",
-    "examples/viem"
+    "packages/*"
   ],
   "scripts": {
     "clean": "yarn workspaces foreach -pvit --include \"@acala-network/*\" run clean",

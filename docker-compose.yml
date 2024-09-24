@@ -7,7 +7,9 @@ services:
     working_dir: /app
     volumes:
       - ./configs/acala.yml:/app/acala.yml
-      - ~/.bun/install/cache:/root/.bun/install/cache
+
+      # TODO: cache does not seem to work
+      # - ~/.bun/install/cache:/root/.bun/install/cache
     command:
       bunx @acala-network/chopsticks@latest -c /app/acala.yml -p 9944
     ports:
