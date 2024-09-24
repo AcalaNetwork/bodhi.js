@@ -16,8 +16,8 @@ jobs:
         project: [
           eth-providers,
           eth-rpc-adapter,
+          eth-transactions,
           # bodhi,
-          # eth-transactions,
         ]
     steps:
       - name: checkout
@@ -87,11 +87,11 @@ jobs:
       #     name: coverage-bodhi
       #     path: packages/bodhi/coverage/
 
-      # - name: download coverage reports for eth-transactions
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: coverage-eth-transactions
-      #     path: packages/eth-transactions/coverage/
+      - name: download coverage reports for eth-transactions
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-eth-transactions
+          path: packages/eth-transactions/coverage/
 
       - name: merge coverage reports
         run: yarn merge-coverage
