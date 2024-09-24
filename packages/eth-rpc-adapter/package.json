@@ -17,7 +17,7 @@
     "test:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn start:coverage && COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn test --run && yarn stop:coverage"
   },
   "peerDependencies": {
-    "@polkadot/api": "^10.11.1"
+    "@polkadot/api": "^12.4.2"
   },
   "dependencies": {
     "@acala-network/eth-providers": "workspace:*",

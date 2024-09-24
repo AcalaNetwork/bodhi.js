@@ -428,11 +428,11 @@ describe('endpoint', () => {
 
       it('should return latest logs before subql is synced', async () => {
         const curHeight = await provider.getBlockNumber();
-        const pendings = [] as any[];
+
         for (let i = 0; i < 5; i++) {
-          pendings.push(await token.transfer(ADDRESS_ALICE, 1000));
+          const tx = await token.transfer(ADDRESS_ALICE, 1000);
+          await tx.wait();
         }
-        await Promise.all(pendings.map(p => p.wait()));
 
         const targetHeight = curHeight + 5;
         await waitForHeight(provider, targetHeight);
