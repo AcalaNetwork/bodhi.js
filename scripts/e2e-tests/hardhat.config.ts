@@ -1,8 +1,5 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 const networkCommon = {
   url: 'http://127.0.0.1:8545',
@@ -11,8 +8,6 @@ const networkCommon = {
     path: 'm/44\'/60\'/0\'/0',
   },
 };
-
-const MY_ACCOUNTS = process.env.KEY ? process.env.KEY.split(',') : [];
 
 const config: HardhatUserConfig = {
   solidity: '0.8.9',
@@ -34,17 +29,6 @@ const config: HardhatUserConfig = {
       ...networkCommon,
       chainId: 787,
     },
-    karuraFork: {
-      url: 'https://crosschain-dev.polkawallet.io/chopsticksKaruraRpc',
-      chainId: 686,
-      accounts: MY_ACCOUNTS,
-    },
-    acalaFork: {
-      url: 'https://crosschain-dev.polkawallet.io/chopsticksAcalaRpc',
-      chainId: 787,
-      accounts: MY_ACCOUNTS,
-    },
-
   },
   mocha: {
     timeout: 987654321,

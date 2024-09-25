@@ -28,7 +28,6 @@
     "@types/yargs": "^17.0.19",
     "chai": "^4.2.0",
     "dlx": "^0.2.1",
-    "dotenv": "^16.4.5",
     "eslint": "^8.31.0",
     "ethereum-waffle": "^3.4.4",
     "ethers": "~5.7.0",
