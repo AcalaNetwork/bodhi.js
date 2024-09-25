@@ -55,7 +55,7 @@ jobs:
       matrix:
         project: [
           e2e-hardhat,
-          # e2e-truffle,
+          e2e-truffle,
           # e2e-waffle,
           # e2e-viem,
         ]

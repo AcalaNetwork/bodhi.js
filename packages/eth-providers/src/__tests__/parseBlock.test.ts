@@ -200,8 +200,8 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   describe.concurrent.skip('other types', () => {
-    it('failed EVM extrinsic - 0 gasLimit', async ({ expect }) => {
-      // TODO: construct a similar one on karura
-    });
+    // it('failed EVM extrinsic - 0 gasLimit', async ({ expect }) => {
+    //   // TODO: construct a similar one on karura
+    // });
   });
 });
