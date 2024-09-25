@@ -57,7 +57,7 @@ jobs:
           e2e-hardhat,
           e2e-truffle,
           # e2e-waffle,
-          # e2e-viem,
+          e2e-viem,
         ]
     steps:
       - name: checkout
@@ -154,6 +154,12 @@ jobs:
         with:
           name: coverage-e2e-truffle
           path: packages/eth-rpc-adapter/coverage-e2e-truffle
+
+      - name: download coverage reports for e2e-viem
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-e2e-viem
+          path: packages/eth-rpc-adapter/coverage-e2e-viem
 
       - name: merge coverage reports
         run: yarn merge-coverage
