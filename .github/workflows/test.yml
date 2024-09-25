@@ -4,6 +4,10 @@ on:
     paths-ignore:
       - '**/README.md'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pkg-tests:
     runs-on: ubuntu-latest
@@ -40,7 +44,7 @@ jobs:
         run: yarn workspace @acala-network/${{ matrix.project }} run test:coverage
 
       - name: save coverage reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.project }}
           path: packages/${{ matrix.project }}/coverage
@@ -96,7 +100,7 @@ jobs:
         run: yarn workspace @acala-network/eth-rpc-adapter run stop:coverage
 
       - name: save coverage reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.project }}
           path: packages/eth-rpc-adapter/coverage-${{ matrix.project }}
