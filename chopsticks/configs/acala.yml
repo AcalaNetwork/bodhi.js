@@ -2,10 +2,9 @@ endpoint:
   - wss://acala-rpc.aca-api.network
   - wss://acala-rpc.dwellir.com
 mock-signature-host: true
-# block: ${env.ACALA_BLOCK_NUMBER}
-block: 7000000
-db: ./db.sqlite
 runtime-log-level: 5
+block: 7000000
+wasm-override: ./chopsticks/wasm/acala-2250.wasm
 
 import-storage:
   Sudo:
