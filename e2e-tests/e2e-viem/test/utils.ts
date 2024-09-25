@@ -1,6 +1,6 @@
-export const localChainConfig = {
-  name: 'local',
-  id: 595,
+export const acalaForkConfig = {
+  name: 'acala fork',
+  id: 787,
   nativeCurrency: {
     name: 'acala',
     symbol: 'ACA',
