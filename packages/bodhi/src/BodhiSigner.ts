@@ -10,18 +10,19 @@ import { Bytes, concat, joinSignature } from '@ethersproject/bytes';
 import { Deferrable } from '@ethersproject/properties';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { Logger } from '@ethersproject/logger';
-import { MultiSigner } from './MultiSigner';
 import { Signer } from '@polkadot/api/types';
 import { SubmittableResult } from '@polkadot/api';
-import { SubstrateSigner } from './SubstrateSigner';
 import { TransactionRequest, TransactionResponse } from '@ethersproject/abstract-provider';
-import { blake2AsU8a, decodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
-import { dataToString } from './utils';
+import { blake2AsU8a, decodeAddress, encodeAddress, isEthereumAddress } from '@polkadot/util-crypto';
 import { getAddress } from '@ethersproject/address';
 import { toUtf8Bytes } from '@ethersproject/strings';
 import { u8aConcat, u8aEq, u8aToHex } from '@polkadot/util';
-import { version } from './_version';
 import type { TransactionReceipt } from '@ethersproject/abstract-provider';
+
+import { MultiSigner } from './MultiSigner';
+import { SubstrateSigner } from './SubstrateSigner';
+import { dataToString } from './utils';
+import { version } from './_version';
 
 export const logger = new Logger(version);
 
@@ -29,6 +30,7 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
   readonly provider: BodhiProvider;
   readonly substrateAddress: string;
   readonly signer: Signer;
+
   constructor(provider: BodhiProvider, substrateAddress: string, signer: Signer) {
     super();
 
@@ -58,7 +60,8 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
   }
 
   static fromPair(provider: BodhiProvider, pair: KeyringPair): BodhiSigner {
-    return new BodhiSigner(provider, pair.address, new SubstrateSigner(provider.api.registry, pair));
+    const substrateAddr = encodeAddress(pair.address, provider.api.registry.chainSS58);
+    return new BodhiSigner(provider, substrateAddr, new SubstrateSigner(provider.api.registry, pair));
   }
 
   connect(_provider: BodhiProvider): BodhiSigner {
@@ -128,9 +131,9 @@ export class BodhiSigner extends AbstractSigner implements TypedDataSigner {
   }
 
   async claimEvmAccount(evmAddress: string): Promise<void> {
-    const isConnented = await this.isClaimed(evmAddress);
+    const isClaimed = await this.isClaimed(evmAddress);
 
-    if (isConnented) return;
+    if (isClaimed) return;
 
     const publicKey = decodeAddress(this.substrateAddress);
     const data = 'acala evm:' + Buffer.from(publicKey).toString('hex');
