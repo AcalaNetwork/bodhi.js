@@ -149,6 +149,12 @@ jobs:
           name: coverage-e2e-hardhat
           path: packages/eth-rpc-adapter/coverage-e2e-hardhat
 
+      - name: download coverage reports for e2e-truffle
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-e2e-truffle
+          path: packages/eth-rpc-adapter/coverage-e2e-truffle
+
       - name: merge coverage reports
         run: yarn merge-coverage
 
