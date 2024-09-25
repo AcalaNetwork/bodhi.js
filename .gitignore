@@ -71,9 +71,6 @@ dist
 lib
 *.tsbuildinfo
 
-# temp coverage files
-**/.coverage/
-
 ## yarn cache
 **/.yarn/cache
 **/.yarn/install-state.gz
