@@ -1,12 +1,12 @@
 import { Contract, ContractFactory } from 'ethers';
 import { Wallet } from '@ethersproject/wallet';
-import { afterAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { hexZeroPad, parseEther } from 'ethers/lib/utils';
 
 import { AcalaJsonRpcProvider } from '../json-rpc-provider';
-import { sleep } from '../utils';
 import echoJson from './abis/Echo.json';
 import erc20Json from './abis/IERC20.json';
+import evmAccounts from './utils/evmAccounts';
 
 const localEthRpc = process.env.ETH_RPC || 'http://localhost:8545';
 
@@ -14,68 +14,64 @@ describe('JsonRpcProvider', async () => {
   /* --------- karura --------- */
   const someOne = '0xf7ABcfa42bF7e7d43d3d53C665deD80fDAfB5244';
 
-  const provider = new AcalaJsonRpcProvider('https://eth-rpc-karura.aca-api.network');
+  const providerKar = new AcalaJsonRpcProvider('https://eth-rpc-karura.aca-api.network');
   const usdcAddr = '0x1F3a10587A20114EA25Ba1b388EE2dD4A337ce27';
-  const usdc = new Contract(usdcAddr, erc20Json.abi, provider);
+  const usdc = new Contract(usdcAddr, erc20Json.abi, providerKar);
 
   /* --------- local --------- */
-  const testKey = 'a872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f';   // 0x75E480dB528101a381Ce68544611C169Ad7EB342
+  const testKey = evmAccounts[0].privateKey;   // 0x75E480dB528101a381Ce68544611C169Ad7EB342
   const providerLocal = new AcalaJsonRpcProvider(localEthRpc);
   const wallet = new Wallet(testKey, providerLocal);
 
-  afterAll(async () => {
-    await sleep(5000);
-  });
-
   describe.concurrent('get chain data', () => {
     it('get chain id', async () => {
-      const network = await provider.getNetwork();
+      const network = await providerKar.getNetwork();
       expect(network.chainId).to.eq(686);
     });
 
     it('get block number', async () => {
-      const blockNumber = await provider.getBlockNumber();
+      const blockNumber = await providerKar.getBlockNumber();
       expect(blockNumber).to.be.gt(0);
     });
 
     it('get gas price', async () => {
-      const gasPrice = await provider.getGasPrice();
+      const gasPrice = await providerKar.getGasPrice();
       expect(gasPrice.gt(0)).to.be.true;
     });
 
     it('get balance', async () => {
-      const balance = await provider.getBalance(someOne);
+      const balance = await providerKar.getBalance(someOne);
       expect(balance.gt(0)).to.be.true;
     });
 
     it('get transaction count', async () => {
-      const transactionCount = await provider.getTransactionCount(wallet.address);
+      const transactionCount = await providerKar.getTransactionCount(wallet.address);
       expect(transactionCount).to.be.gt(0);
     });
 
     it('get contract code', async () => {
       const bridgeImplAddress = '0xae9d7fe007b3327AA64A32824Aaac52C42a6E624';
-      const code = await provider.getCode(bridgeImplAddress);
+      const code = await providerKar.getCode(bridgeImplAddress);
       expect(code.length).to.gt(100);
     });
 
     it('get transaction by hash', async () => {
       const txHash = '0xbd273dc63f4e5e1998d0f1e191e7bc5e3a3067a4101771dfd7091a32a8784d95';
-      const fetchedTransaction = await provider.getTransaction(txHash);
+      const fetchedTransaction = await providerKar.getTransaction(txHash);
       expect(fetchedTransaction.hash).to.equal(txHash);
     });
 
     it('get transaction receipt', async () => {
       const txHash = '0xbd273dc63f4e5e1998d0f1e191e7bc5e3a3067a4101771dfd7091a32a8784d95';
-      const fetchedTransaction = await provider.getTransactionReceipt(txHash);
+      const fetchedTransaction = await providerKar.getTransactionReceipt(txHash);
       expect(fetchedTransaction.transactionHash).to.equal(txHash);
     });
 
     it('get block with transactions', async () => {
-      let data = await provider.getBlockWithTransactions(1818518);
+      let data = await providerKar.getBlockWithTransactions(1818518);
       expect(data.transactions.length).to.eq(1);
 
-      data = await provider.getBlockWithTransactions(2449983);
+      data = await providerKar.getBlockWithTransactions(2449983);
       expect(data.transactions.length).to.eq(2);
     });
 
@@ -87,7 +83,7 @@ describe('JsonRpcProvider', async () => {
         toBlock: 4128888,
       };
 
-      const logs = await provider.getLogs(filter);
+      const logs = await providerKar.getLogs(filter);
 
       expect(logs.length).to.eq(6);
       for (const log of logs) {
@@ -97,11 +93,11 @@ describe('JsonRpcProvider', async () => {
     });
   });
 
-  describe('call', () => {
+  describe.concurrent('call', () => {
     it('estimate gas', async () => {
       const to = '0x742d35Cc6634C0532925a3b844Bc454e4438f44e';
       const value = parseEther('0.1');
-      const gasEstimate = await provider.estimateGas({
+      const gasEstimate = await providerKar.estimateGas({
         from: someOne,
         to,
         value,
@@ -197,20 +193,20 @@ describe('JsonRpcProvider', async () => {
 
   describe('subscription', () => {
     it('subscribe to new block', async () => {
-      const curBlockNumber = await provider.getBlockNumber();
+      const curBlockNumber = await providerKar.getBlockNumber();
 
       const blockNumber = await new Promise((resolve, reject) => {
         const onBlock = (blockNumber: number) => {
           // TODO: is it normal that cb is triggered immediately for current block
           if (blockNumber > curBlockNumber) {
-            provider.off('block', onBlock);
+            providerKar.off('block', onBlock);
             resolve(blockNumber);
           }
 
-          setTimeout(() => reject('<provider.onBlock> no new block in 30s!'), 30_000);
+          setTimeout(() => reject('<providerKar.onBlock> no new block in 30s!'), 30_000);
         };
 
-        provider.on('block', onBlock);
+        providerKar.on('block', onBlock);
       });
 
       expect(blockNumber).to.be.eq(curBlockNumber + 1);

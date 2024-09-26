@@ -38,6 +38,10 @@ jobs:
       - name: start test infra
         run: docker compose up -d
 
+      - name: start rpc adapter for eth-providers
+        if: matrix.project == 'eth-providers'
+        run: yarn workspace @acala-network/eth-rpc-adapter run start:coverage
+
       - name: run tests
         run: yarn workspace @acala-network/${{ matrix.project }} run test:coverage
 

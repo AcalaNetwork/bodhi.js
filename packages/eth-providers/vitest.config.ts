@@ -1,15 +1,15 @@
-import { mergeConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
 import configShared from '../../vitest.shared';
 
 export default mergeConfig(
   configShared,
-  {
+  defineConfig({
     test: {
-      // include: ['**/*.test.ts'],  // TODO: run all tests
-      include: ['src/__tests__/evm-rpc-provider.test.ts'],
+      include: ['**/*.test.ts'],
+      exclude: ['**/safemode.test.ts'],
       coverage: {
         provider: 'istanbul',
       },
     },
-  },
+  })
 );
