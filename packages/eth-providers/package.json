@@ -28,10 +28,7 @@
     "@polkadot/api": "^12.4.2",
     "@types/bn.js": "^5.1.5",
     "@types/lru-cache": "~7.6.1",
-    "@vitest/coverage-istanbul": "^2.1.1",
-    "dotenv": "~10.0.0",
-    "jsdom": "^22.0.0",
-    "vitest": "^2.1.1"
+    "dotenv": "~10.0.0"
   },
   "files": [
     "lib"
