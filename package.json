@@ -14,7 +14,7 @@
   "scripts": {
     "clean": "yarn workspaces foreach -pvit --include \"@acala-network/*\" run clean",
     "build": "yarn workspaces foreach -pvit --include \"@acala-network/*\" run build",
-    "lint": "tsc --noEmit --project tsconfig.json && eslint . --ext .js,.ts",
+    "lint": "tsc --noEmit --project tsconfig.json && eslint . --ext .js,.ts --fix",
     "fix": "eslint . --ext .js,.ts --fix",
     "test:all": "yarn workspaces foreach -vit run test",
     "test": "vitest run",
@@ -60,7 +60,7 @@
     "vitest": "^2.1.1"
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint . --config ./.eslintrc.js --fix"
+    "*.{js,ts}": "yarn lint"
   },
   "exports": {
     ".": "./lib/index.js",
