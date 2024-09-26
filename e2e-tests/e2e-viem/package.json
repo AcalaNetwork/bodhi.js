@@ -1,0 +1,21 @@
+{
+  "name": "acala-evm-e2e-tests-truffle",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "hardhat compile",
+    "test": "hardhat test",
+    "test:acalaFork": "CHAIN=acalaFork hardhat test",
+    "test:karura": "CHAIN=karura hardhat test",
+    "test:acala": "CHAIN=acala hardhat test"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.0",
+    "@types/mocha": "^10.0.8",
+    "@types/node": "^20.10.5",
+    "chai": "^4.2.0",
+    "hardhat": "^2.19.4",
+    "typescript": "^5.3.3",
+    "viem": "^1.21.4"
+  }
+}

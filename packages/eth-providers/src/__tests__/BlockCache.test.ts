@@ -2,7 +2,7 @@ import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 import { BlockCache } from '../utils/BlockCache';
 import { describe, expect, it } from 'vitest';
-import { mockChain } from './testUtils';
+import { mockChain } from './utils/testUtils';
 
 const sortReceipt = (r1: TransactionReceipt, r2: TransactionReceipt) => {
   if (r1.blockNumber !== r2.blockNumber) {

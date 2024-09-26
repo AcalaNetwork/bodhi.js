@@ -5,7 +5,10 @@ export default mergeConfig(
   configShared,
   {
     test: {
-      environment: 'jsdom',
+      include: ['**/*.test.ts'],
+      coverage: {
+        provider: 'istanbul',
+      },
     },
-  }
+  },
 );

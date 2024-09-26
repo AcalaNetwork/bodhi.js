@@ -1,6 +1,0 @@
-# Don't allow people to merge changes to these generated files, because the result
-# may be invalid.  You need to run "rush update" again.
-pnpm-lock.yaml               merge=binary linguist-generated=true
-shrinkwrap.yaml              merge=binary linguist-generated=true
-npm-shrinkwrap.json          merge=binary linguist-generated=true
-yarn.lock                    merge=binary linguist-generated=true

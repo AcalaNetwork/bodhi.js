@@ -1,0 +1,10 @@
+{
+  "cwd": "..",
+  "extension": [".ts"],
+  "all": true,
+  "include": ["*/src/**/*.ts"],
+  "exclude": ["**/*.test.ts", "**/__tests__/", "**/evm-subql/**"],
+  "reporter": ["html", "text", "lcov", "json"],
+  "instrument": true,
+  "require": ["ts-node/register"]
+}

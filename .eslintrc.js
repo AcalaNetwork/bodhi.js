@@ -70,4 +70,7 @@ module.exports = {
       },
     },
   },
+  ignorePatterns: [
+    '**/e2e-truffle/**',
+  ],
 };

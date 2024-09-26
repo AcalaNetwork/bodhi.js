@@ -5,8 +5,10 @@
   "author": "Acala Developers <hello@acala.network>",
   "license": "Apache-2.0",
   "scripts": {
-    "clean": "rm -rf lib tsconfig.tsbuildinfo",
-    "build": "tsc --build ./tsconfig.json"
+    "build": "tsc",
+    "clean": "rm -rf tsconfig.tsbuildinfo .nyc_output coverage/ lib/",
+    "test": "vitest",
+    "test:coverage": "vitest --run --coverage"
   },
   "peerDependencies": {
     "@polkadot/api": "^12.4.2"
@@ -18,9 +20,8 @@
     "ethers": "~5.7.0"
   },
   "devDependencies": {
-    "@types/chai": "~4.2.22",
-    "chai": "~4.3.4",
-    "typescript": "~4.6.3"
+    "typescript": "~4.6.3",
+    "vitest": "^2.1.1"
   },
   "files": [
     "lib"

@@ -1,6 +1,6 @@
 import { MaxSizeSet } from '../utils/MaxSizeSet';
 import { describe, expect, it } from 'vitest';
-import { mockChain } from './testUtils';
+import { mockChain } from './utils/testUtils';
 
 describe('MaxSizeSet', () => {
   const MAX_CACHED_BLOCK = 5;
