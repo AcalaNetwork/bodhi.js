@@ -1,19 +1,16 @@
 # Acala EVM+ SDKs
+[![codecov](https://codecov.io/github/AcalaNetwork/bodhi.js/graph/badge.svg?token=knumpsfImD)](https://codecov.io/github/AcalaNetwork/bodhi.js)
+
 These are some tools and SDKs related to Acala EVM+. It also contains some examples about how to interact with EVM+ with these tools.
+
 
 Packages:
 - [bodhi.js](./packages/bodhi)
 - [eth-providers](./packages/eth-providers)
 - [eth-rpc-adapter](./packages/eth-rpc-adapter)
 - [evm-subql](./packages/evm-subql)
-- [examples](./examples)
 
 ## Getting Started
-- initialize submodules (only need to do once after git clone)
-```
-git submodule update --init --recursive
-```
-
 - install all dependencies
 ```
 yarn
@@ -24,53 +21,20 @@ yarn
 yarn build
 ```
 
-- run tests
-```
-yarn test
-```
-
-## e2e-tests
-```
-# build the bodhi-runner image
-docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-yarn e2e:eth-providers
-yarn e2e:eth-rpc-adapter
-yarn e2e:waffle
-yarn e2e:hardhat
-yarn e2e:truffle
-```
-
 ## Run Tests
-### with docker
 - clean up
 ```
 docker compose down -v
 ```
 
-- run tests
+- start a chopsticks acala fork as the test node
 ```
-## build the bodhi-runner image
-docker build . -t bodhi-runner -f docker/bodhi-runner.Dockerfile
-
-## run any test
-docker compose up --abort-on-container-exit --exit-code-from=xxx --build -- xxx
-
-where xxx ∈ {
-  eth-providers-test,
-  eth-rpc-adapter-test,
-  waffle-examples-test,
-  hardhat-tutorials-test,
-  truffle-tutorials-test,
-}
-
-## run all tests (not recommended since log will be too messy)
 docker compose up
 ```
 
-we can grep container logs by
+- run tests
 ```
-docker compose logs --tail=0 --follow   # all logs
-docker logs -f <container_id>           # logs for specific container
+yarn workspace @acala-network/<pkg-name> run test:coverage
 ```
 
 ## Docker Images

@@ -19,10 +19,6 @@
     "bn.js": "~5.2.0",
     "ethers": "~5.7.0"
   },
-  "devDependencies": {
-    "typescript": "~4.6.3",
-    "vitest": "^2.1.1"
-  },
   "files": [
     "lib"
   ],
@@ -38,5 +34,8 @@
       "default": "./lib/*.js"
     },
     "./package.json": "./package.json"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.1"
   }
 }
