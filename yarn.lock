@@ -97,6 +97,8 @@ __metadata:
     pino: ~7.0.0-rc.3
     pino-pretty: ~7.0.1
     pm2: ^5.4.2
+    ts-node: ^10.9.1
+    ts-node-dev: ^2.0.0
     vitest: ^2.1.1
     ws: ~8.2.3
     yargs: 16.2.0
