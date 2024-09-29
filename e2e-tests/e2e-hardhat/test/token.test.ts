@@ -133,12 +133,12 @@ describe('Token contract', () => {
       });
 
       it('should revert when tring to transfer more than allowed amount', async () => {
-        await token.approve(userAddress, 100);
+        await (await token.approve(userAddress, 100)).wait();
         await expect(token.connect(user).transferFrom(deployerAddress, userAddress, 1000)).to.be.revertedWith('ERC20: insufficient allowance');
       });
 
       it('should revert when transfering to 0x0 address', async () => {
-        await token.approve(userAddress, 100);
+        await (await token.approve(userAddress, 100)).wait();
         await expect(token.connect(user).transferFrom(deployerAddress, NULL_ADDRESS, 50)).to.be.revertedWith(
           'ERC20: transfer to the zero address'
         );
