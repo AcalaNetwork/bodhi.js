@@ -25,7 +25,6 @@ module.exports = {
       exports: 'always-multiline',
       functions: 'only-multiline',
     }],
-    '@typescript-eslint/member-delimiter-style': 2,
 
     /* -------------------- warn -------------------- */
     semi: [1, 'always'],
@@ -57,6 +56,7 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 0,
     '@typescript-eslint/ban-ts-comment': 0,
     '@typescript-eslint/no-non-null-asserted-optional-chain': 0,
+    '@typescript-eslint/no-unused-expressions': 0,          // short circuit if
     'import/no-named-as-default-member': 0,
     'import/no-named-as-default': 0,
     'no-unused-expressions': 0,                             // short ciucuit if
