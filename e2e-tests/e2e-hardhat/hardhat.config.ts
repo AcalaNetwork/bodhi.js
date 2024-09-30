@@ -1,8 +1,9 @@
 import '@nomicfoundation/hardhat-toolbox';
+import '@openzeppelin/hardhat-upgrades';
 import { HardhatUserConfig } from 'hardhat/config';
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.9',
+  solidity: '0.8.20',
   networks: {
     acalaFork: {
       chainId: 787,
@@ -14,7 +15,7 @@ const config: HardhatUserConfig = {
     },
   },
   mocha: {
-    timeout: 100000,
+    timeout: 30 * 60 * 1000,    // 30 min
   },
 };
 
