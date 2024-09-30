@@ -10,17 +10,6 @@ export interface LogHexified {
   logIndex: string;
 }
 
-export const evmAccounts = [
-  {
-    privateKey: '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f',
-    evmAddress: '0x75E480dB528101a381Ce68544611C169Ad7EB342',
-  },
-  {
-    privateKey: '0x4daddf7d5d2a9059e8065cb3ec50beabe2c23c7d6b3e380c1de8c40269acd85c',
-    evmAddress: '0xb00cB924ae22b2BBb15E10c17258D6a2af980421',
-  },
-];
-
 export const ADDRESS_ALICE = '0x82a258cb20e2adb4788153cd5eb5839615ece9a0';
 
 export const DETERMINISTIC_SETUP_DEX_ADDRESS = '0x532394de2ca885b7e0306a2e258074cca4e42449';

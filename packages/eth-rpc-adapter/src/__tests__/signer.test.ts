@@ -1,10 +1,8 @@
-import { Eip1193Bridge } from '../eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Wallet, verifyMessage } from '@ethersproject/wallet';
 import { afterAll, describe, expect, it } from 'vitest';
-import dotenv from 'dotenv';
 
-dotenv.config();
+import { Eip1193Bridge } from '../eip1193-bridge';
 
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 

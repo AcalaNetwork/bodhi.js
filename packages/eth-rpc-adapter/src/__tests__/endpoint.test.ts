@@ -67,9 +67,7 @@ import {
   toDeterministic,
   waitForHeight,
   eth_estimateGas,
-} from './utils';
 
-import {
   ADDRESS_ALICE,
   DETERMINISTIC_SETUP_DEX_ADDRESS,
   GAS_MONSTER_GAS_REQUIRED,
@@ -81,8 +79,8 @@ import {
   deployHelloWorldData,
   evmAccounts,
   log22_0,
-  log22_1,
-} from './consts';
+  log22_1 } from './utils';
+
 
 const subql = new SubqlProvider(SUBQL_URL);
 

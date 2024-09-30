@@ -13,7 +13,7 @@ coverage:
 
 comment:
   layout: "reach, diff, flags, files"
-  behavior: default
+  behavior: new
   require_changes: false
   require_base: false
   require_head: false

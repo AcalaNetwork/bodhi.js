@@ -42,6 +42,10 @@ jobs:
         if: matrix.project == 'eth-providers'
         run: yarn workspace @acala-network/eth-rpc-adapter run start:coverage
 
+      - name: generate typechain for eth-rpc-adapter tests
+        if: matrix.project == 'eth-rpc-adapter'
+        run: yarn workspace @acala-network/eth-rpc-adapter run typegen
+
       - name: run tests
         run: yarn workspace @acala-network/${{ matrix.project }} run test:coverage
 
