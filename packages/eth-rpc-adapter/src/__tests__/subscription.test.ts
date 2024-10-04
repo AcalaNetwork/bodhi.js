@@ -1,19 +1,16 @@
 import { ACA } from '@acala-network/contracts/utils/AcalaAddress';
-import { AcalaJsonRpcProvider, sleep } from '@acala-network/eth-providers';
+import { AcalaJsonRpcProvider } from '@acala-network/eth-providers';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Wallet } from 'ethers';
 import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { expect } from 'chai';
 import { parseUnits } from 'ethers/lib/utils';
 
+import { ETH_RPC_URL, ETH_RPC_URL_WS, SubsManager, evmAccounts, getAddrSelector } from './utils';
 import { IERC20, IERC20__factory } from './types';
-import { SubsManager, evmAccounts, getAddrSelector } from './utils';
 
 const oneAcaErc20 = parseUnits('1', 12);
 const TRANSFER_SELECTOR = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-
-const ETH_RPC_URL = process.env.ENDPOINT_URL || 'http://localhost:8545';
-const ETH_RPC_URL_WS = ETH_RPC_URL.replace('http', 'ws');
 
 describe('eth subscription', () => {
   let deployer: Wallet;

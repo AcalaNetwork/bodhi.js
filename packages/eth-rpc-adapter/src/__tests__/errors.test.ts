@@ -7,16 +7,24 @@ import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 import TokenABI from '@acala-network/contracts/build/contracts/Token.json';
 import axios from 'axios';
 
-import { RPC_URL, eth_call, eth_chainId, eth_estimateGas, eth_getEthGas, eth_sendRawTransaction , evmAccounts } from './utils';
+import {
+  ETH_RPC_URL,
+  eth_call,
+  eth_chainId,
+  eth_estimateGas,
+  eth_getEthGas,
+  eth_sendRawTransaction ,
+  evmAccounts,
+} from './utils';
 
 describe('errors', () => {
   const POOR_ACCOUNT = '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd570';
-  const poorWallet = new Wallet(POOR_ACCOUNT, new JsonRpcProvider(RPC_URL));
+  const poorWallet = new Wallet(POOR_ACCOUNT, new JsonRpcProvider(ETH_RPC_URL));
 
   it('invalid request', async () => {
     const id = 12345;
 
-    const res = await axios.get(RPC_URL, {
+    const res = await axios.get(ETH_RPC_URL, {
       data: {
         id,
         methodddddddd: 'vdhgkjshdbfksdh',
@@ -34,8 +42,7 @@ describe('errors', () => {
     });
   });
 
-  // TODO: after the banned pool is disabled in dev mode, mayve change the endpoint to public one? or manually setup the banned pool time to positive to enable it
-  it('tx banned', async () => {
+  it('not enough balance', async () => {
     const [gasRes, chainIdRes, nonce] = await Promise.all([
       eth_getEthGas(),
       eth_chainId(),
@@ -55,26 +62,26 @@ describe('errors', () => {
     };
     const rawTx = await poorWallet.signTransaction(tx);
 
-    let res = await eth_sendRawTransaction([rawTx]);
+    const res = await eth_sendRawTransaction([rawTx]);
     expect(res.data).to.deep.equal({
       id: 0,
       jsonrpc: '2.0',
       error: {
         code: -32603,
-        data: 'Inability to pay some fees (e.g. account balance too low)',
-        message: '1010: Invalid Transaction: Inability to pay some fees , e.g. account balance too low',
+        message: '1010: {\"invalid\":{\"payment\":null}}',
       },
     });
 
-    res = await eth_sendRawTransaction([rawTx]);
-    expect(res.data).to.deep.equal({
-      id: 0,
-      jsonrpc: '2.0',
-      error: {
-        code: -32603,
-        message: '1012: Transaction is temporarily banned',
-      },
-    });
+    // chopsticks does not support this
+    // res = await eth_sendRawTransaction([rawTx]);
+    // expect(res.data).to.deep.equal({
+    //   id: 0,
+    //   jsonrpc: '2.0',
+    //   error: {
+    //     code: -32603,
+    //     message: '1012: Transaction is temporarily banned',
+    //   },
+    // });
   });
 
   it('internal json rpc error', async () => {
@@ -98,7 +105,7 @@ describe('errors', () => {
     const rawTx = await poorWallet.signTransaction(tx);
     const res = await eth_sendRawTransaction([rawTx]);
 
-    expect(res.data.error.message).to.contain('Invalid decimals');
+    expect(res.data.error.message).to.contain('evm.InvalidDecimals');
   });
 
   it('correct error format for contract revert', async () => {
@@ -115,7 +122,7 @@ describe('errors', () => {
   });
 
   describe('throws outOfGas error when gaslimit too small', () => {
-    const provider = new AcalaJsonRpcProvider(RPC_URL);
+    const provider = new AcalaJsonRpcProvider(ETH_RPC_URL);
     const wallet = new Wallet(evmAccounts[0].privateKey, provider);
     const aca = new Contract(ADDRESS.ACA, TokenABI.abi, wallet);
 

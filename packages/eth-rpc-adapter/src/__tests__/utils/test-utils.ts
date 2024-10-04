@@ -5,18 +5,20 @@ import { expect } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
 import { parseEther } from 'ethers/lib/utils';
 import axios from 'axios';
+import erc20Abi from '../abis/IERC20.json';
 
-import { ERC20_ABI, ERC20_BYTECODE, GASMONSTER_ABI, GASMONSTER_BYTECODE, LogHexified } from './consts';
+import {
+  ERC20_BYTECODE,
+  ETH_RPC_URL,
+  GASMONSTER_ABI,
+  GASMONSTER_BYTECODE,
+  KARURA_ETH_RPC_URL,
+  LogHexified,
+} from './consts';
 import { JsonRpcError } from '../../server';
 
-export const NODE_RPC_URL = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
-export const KARURA_ETH_RPC_URL = process.env.KARURA_ETH_RPC_URL || 'http://127.0.0.1:8546';
-export const RPC_URL = process.env.RPC_URL || 'http://127.0.0.1:8545';
-export const WS_URL = process.env.WS_URL || 'ws://127.0.0.1:8545';
-export const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';
-
 export const rpcGet =
-  <R = any>(method: string, url: string = RPC_URL) =>
+  <R = any>(method: string, url: string = ETH_RPC_URL) =>
     (params: any[] = []) =>
       axios.get<any, R>(url, {
         data: {
@@ -111,7 +113,7 @@ export const expectLogsEqual = (a: LogHexified[], b: LogHexified[]): void => {
 };
 
 export const deployErc20 = async (wallet: Signer) => {
-  const Token = new ContractFactory(ERC20_ABI, ERC20_BYTECODE, wallet);
+  const Token = new ContractFactory(erc20Abi.abi, ERC20_BYTECODE, wallet);
   const token = await Token.deploy(parseEther('1000000000'), 'TestToken', 18, 'TT');
   await token.deployed();
 
