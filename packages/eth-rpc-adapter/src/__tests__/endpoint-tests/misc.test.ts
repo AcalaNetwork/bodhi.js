@@ -5,6 +5,7 @@ import {
   eth_blockNumber,
   eth_getEthGas,
   net_listening,
+  net_runtimeVersion,
 } from '../utils';
 
 describe('eth_accounts', () => {
@@ -18,6 +19,14 @@ describe('net_listening', () => {
   it('returns true', async () => {
     const res = (await net_listening([])).data.result;
     expect(res).to.deep.equal(true);
+  });
+});
+
+describe('net_runtimeVersion', () => {
+  it('get correct runtime version', async () => {
+    const version = (await net_runtimeVersion([])).data.result;
+
+    expect(version).to.be.gte(2250);
   });
 });
 
