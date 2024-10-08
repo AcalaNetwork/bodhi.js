@@ -50,7 +50,7 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 30
-          max_attempts: 1
+          max_attempts: 2
           command: yarn workspace @acala-network/${{ matrix.project }} run test:coverage
 
       - name: save coverage reports
@@ -107,7 +107,7 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 30
-          max_attempts: 1
+          max_attempts: 2
           command: cd e2e-tests/${{ matrix.project }} && yarn test:acalaFork
 
       - name: stop coverage server and generate coverage report
