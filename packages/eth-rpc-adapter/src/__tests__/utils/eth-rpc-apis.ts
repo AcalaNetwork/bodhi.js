@@ -54,4 +54,4 @@ export const eth_blockNumber_karura = rpcGet('eth_blockNumber', KARURA_ETH_RPC_U
 export const eth_getTransactionReceipt_karura = rpcGet('eth_getTransactionReceipt', KARURA_ETH_RPC_URL);
 export const eth_getTransactionByHash_karura = rpcGet('eth_getTransactionByHash', KARURA_ETH_RPC_URL);
 export const eth_getBlockByNumber_karura = rpcGet('eth_getBlockByNumber', KARURA_ETH_RPC_URL);
-export const eth_getStorageAt_karura = rpcGet('eth_getStorageAt', KARURA_ETH_RPC_URL);
+export const eth_getStorageAt = rpcGet('eth_getStorageAt', ETH_RPC_URL);

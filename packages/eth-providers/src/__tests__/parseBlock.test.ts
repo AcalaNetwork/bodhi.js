@@ -72,7 +72,6 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   afterAll(async () => {
-    await sleep(10_000);
     await apiK.disconnect();
     await apiA.disconnect();
   });
