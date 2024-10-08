@@ -1,5 +1,5 @@
 import { EvmRpcProvider } from '../rpc-provider';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runWithTiming, sleep } from '../utils';
 import dotenv from 'dotenv';
 
@@ -98,10 +98,12 @@ describe.skip('all cache', async () => {
 
 describe.concurrent('rpc test', async () => {
   const provider = EvmRpcProvider.from(endpoint);
-  await provider.isReady();
+
+  beforeAll(async () => {
+    await provider.isReady();
+  });
 
   afterAll(async () => {
-    await sleep(5000);
     await provider.disconnect();
   });
 
