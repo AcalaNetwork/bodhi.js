@@ -36,12 +36,14 @@ describe('finalized/safe/pending blocktag', () => {
     const resF = (await eth_getTransactionCount([wallet.address, 'finalized'])).data.result;
     const resS = (await eth_getTransactionCount([wallet.address, 'safe'])).data.result;
 
-    await deployErc20(wallet, false);
+    const token = await deployErc20(wallet, false);
     const resP = (await eth_getTransactionCount([wallet.address, 'pending'])).data.result;
 
     expect(res).to.equal(resF);
     expect(res).to.equal(resS);
     expect(Number(res)).to.equal(Number(resP) - 1);   // pending should have +1 nonce
+
+    await token.deployed();   // wait for deployment in case it affects next tests
   });
 
   it('eth_getBalance', async () => {
