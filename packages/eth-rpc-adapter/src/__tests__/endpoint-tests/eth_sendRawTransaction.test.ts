@@ -2,7 +2,7 @@ import { ACA as ACA_ADDR } from '@acala-network/contracts/utils/AcalaAddress';
 import { AcalaEvmTXPayload, UnsignedAcalaEvmTX, parseTransaction, serializeTransaction, signTransaction } from '@acala-network/eth-transactions';
 import { BigNumber } from 'ethers';
 import { Interface, formatEther, parseEther, parseUnits } from 'ethers/lib/utils';
-import { ONE_HUNDRED_GWEI, nativeToEthDecimal, sleep } from '@acala-network/eth-providers';
+import { ONE_HUNDRED_GWEI, nativeToEthDecimal } from '@acala-network/eth-providers';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import {
@@ -41,7 +41,7 @@ const getTxFeeFromReceipt = async (txHash: string, toNative = false): Promise<bi
 
 const {
   provider,
-  wallets: [wallet, wallet1, wallet2],
+  wallets: [wallet, wallet1],
 } = testSetup;
 
 describe('eth_sendRawTransaction', async () => {
