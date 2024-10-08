@@ -17,7 +17,7 @@ import {
   getNonce,
   testSetup,
 } from '../utils';
-import Erc20Abi from '../abis/IERC20.json';
+import erc20Abi from '../abis/IERC20.json';
 
 const ETH_Digits = 18;
 const ACA_Digits = 12;
@@ -165,7 +165,7 @@ describe('eth_sendRawTransaction', async () => {
   });
 
   describe('call contract (transfer ACA)', () => {
-    const iface = new Interface(Erc20Abi.abi);
+    const iface = new Interface(erc20Abi.abi);
     const transferAmount = parseUnits('12.321', ACA_Digits);
     const partialTransferTX = {
       chainId,
