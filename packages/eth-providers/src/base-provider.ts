@@ -1701,7 +1701,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return sortedReceipts?.[receiptIdx] ? subqlReceiptAdapter(sortedReceipts[receiptIdx]) : null;
   };
 
-  // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find(ex => ex.hash.toHex() === txHash);
