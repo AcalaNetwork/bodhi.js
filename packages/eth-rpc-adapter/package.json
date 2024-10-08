@@ -8,7 +8,7 @@
     "build": "tsc",
     "ncc:pack": "ncc build src/index.ts -t --target es2020",
     "typegen": "typechain --target=ethers-v5 --out-dir=./src/__tests__/types src/__tests__/abis/*.json",
-    "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts -l | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc,dd",
+    "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc,dd",
     "clean": "rm -rf tsconfig.tsbuildinfo .nyc_output coverage/ lib/",
     "health-check": "./scripts/health-check.sh",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",

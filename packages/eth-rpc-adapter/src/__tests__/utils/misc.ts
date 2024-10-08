@@ -1,12 +1,30 @@
-import { Log, Provider } from '@ethersproject/abstract-provider';
+import { BigNumber } from 'ethers';
+import { BlockTagish, sleep } from '@acala-network/eth-providers';
+import { Log, Provider , TransactionRequest } from '@ethersproject/abstract-provider';
 import { expect } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
-import { sleep } from '@acala-network/eth-providers';
 
 import {
   LogHexified,
 } from './consts';
-import { eth_blockNumber, eth_getBlockByNumber, eth_getTransactionCount } from './eth-rpc-apis';
+import { eth_blockNumber, eth_estimateGas, eth_gasPrice, eth_getBlockByNumber, eth_getTransactionCount } from './eth-rpc-apis';
+
+export const estimateGas = async (
+  tx: TransactionRequest,
+  blockTag?: BlockTagish
+) => {
+  const gasPrice = (await eth_gasPrice([])).data.result;
+  const res = await eth_estimateGas([{ ...tx, gasPrice }, blockTag]);
+  if (res.data.error) {
+    throw new Error(res.data.error.message);
+  }
+  const gasLimit = res.data.result;
+
+  return {
+    gasPrice: BigNumber.from(gasPrice),
+    gasLimit: BigNumber.from(gasLimit),
+  };
+};
 
 export const hexilifyLog = (log: Log) => ({
   ...log,

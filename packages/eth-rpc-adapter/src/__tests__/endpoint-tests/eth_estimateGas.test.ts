@@ -1,38 +1,18 @@
-import { AcalaJsonRpcProvider, BlockTagish } from '@acala-network/eth-providers';
-import { BigNumber, Contract, Wallet } from 'ethers';
-import { TransactionRequest } from '@ethersproject/abstract-provider';
+import { Contract, Wallet } from 'ethers';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { parseUnits } from 'ethers/lib/utils';
 
 import {
-  ETH_RPC_URL,
   GAS_MONSTER_GAS_REQUIRED,
   deployErc20,
   deployGasMonster,
+  estimateGas,
   eth_estimateGas,
-  eth_gasPrice,
   evmAccounts,
+  testSetup,
 } from '../utils';
 
-export const estimateGas = async (
-  tx: TransactionRequest,
-  blockTag?: BlockTagish
-) => {
-  const gasPrice = (await eth_gasPrice([])).data.result;
-  const res = await eth_estimateGas([{ ...tx, gasPrice }, blockTag]);
-  if (res.data.error) {
-    throw new Error(res.data.error.message);
-  }
-  const gasLimit = res.data.result;
-
-  return {
-    gasPrice: BigNumber.from(gasPrice),
-    gasLimit: BigNumber.from(gasLimit),
-  };
-};
-
-const provider = new AcalaJsonRpcProvider(ETH_RPC_URL);
-const wallet = new Wallet(evmAccounts[0].privateKey, provider);
+const { wallet } = testSetup;
 
 describe('eth_estimateGas', () => {
   it('can deal with weird gas contract', async () => {
