@@ -1826,7 +1826,8 @@ export abstract class BaseProvider extends AbstractProvider {
       .map(this.blockCache.getLogsAtBlock.bind(this))
       .flat()
       .filter(log => filterLogByBlockNumber(log, filter.fromBlock, filter.toBlock))
-      .filter(log => filterLogByAddress(log, filter.address));
+      .filter(log => filterLogByAddress(log, filter.address))
+      .filter(log => filterLogByTopics(log, filter.topics));
   };
 
   // Bloom-filter Queries
