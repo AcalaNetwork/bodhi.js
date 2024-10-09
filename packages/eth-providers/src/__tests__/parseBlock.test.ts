@@ -198,6 +198,32 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
     });
   });
 
+  describe.concurrent('different evm tx count', () => {
+    it('when there are 0 EVM transactions', async ({ expect }) => {
+      const blockNumber = 1818188;
+      const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
+
+      expect(receipts.length).to.equal(0);
+      expect(receipts).toMatchSnapshot();
+    });
+
+    it('when there are 1 EVM transactions', async ({ expect }) => {
+      const blockNumber = 1818518;
+      const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
+
+      expect(receipts.length).to.equal(1);
+      expect(receipts).toMatchSnapshot();
+    });
+
+    it('when there are 2 EVM transactions', async ({ expect }) => {
+      const blockNumber = 2449983;
+      const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
+
+      expect(receipts.length).to.equal(2);
+      expect(receipts).toMatchSnapshot();
+    });
+  });
+
   describe.concurrent.skip('other types', () => {
     // it('failed EVM extrinsic - 0 gasLimit', async ({ expect }) => {
     //   // TODO: construct a similar one on karura
