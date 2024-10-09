@@ -2070,19 +2070,13 @@ export abstract class BaseProvider extends AbstractProvider {
       toBlock: effectiveTo,
     };
 
-    if (!this.subql) {
-      return logger.throwError(
-        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
-      );
-    }
-
     filterInfo.lastPollBlockNumber = curBlockNumber;
     filterInfo.lastPollTimestamp = Date.now();
 
-    const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
-    const filteredLogs = subqlLogs.filter(log => filterLogByTopics(log, sanitizedFilter.topics));
+    const logs = await this.getLogs(effectiveFilter);
+    const formattedLogs = logs.map(log => this.formatter.filterLog(log));
 
-    return hexlifyRpcResult(filteredLogs.map(log => this.formatter.filterLog(log)));
+    return hexlifyRpcResult(formattedLogs);
   };
 
   _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
@@ -2109,7 +2103,9 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     // TODO: TS bug?? why filterInfo type is not BlockPollFilter | LogPollFilter
-    return filterInfo['logFilter'] ? this._pollLogs(filterInfo as LogPollFilter) : this._pollBlocks(filterInfo);
+    return filterInfo['logFilter']
+      ? this._pollLogs(filterInfo as LogPollFilter)
+      : this._pollBlocks(filterInfo as BlockPollFilter);
   };
 
   removePollFilter = (id: string): boolean => {

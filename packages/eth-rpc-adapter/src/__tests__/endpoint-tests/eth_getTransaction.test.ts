@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { BigNumber, Contract, ContractTransaction } from 'ethers';
 import {
+  TRANSFER_EVENT_TOPIC,
   deployErc20,
   eth_blockNumber,
   eth_getTransactionByHash,
@@ -100,7 +101,7 @@ describe('get tx and receipt', () => {
           transactionHash: pendingTx.hash,
           address: token.address.toLowerCase(),
           topics: [
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+            TRANSFER_EVENT_TOPIC,
             hexZeroPad(wallet.address.toLowerCase(), 32),
             hexZeroPad(wallet1.address.toLowerCase(), 32),
           ],
