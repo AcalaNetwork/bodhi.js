@@ -11,7 +11,7 @@
     "clean": "rm -rf tsconfig.tsbuildinfo .nyc_output coverage/ lib/",
     "health-check": "./scripts/health-check.sh",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "start:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} pm2 start --name eth-rpc 'nyc --report-dir=$COVERAGE_DIR ts-node src/index.ts' && yarn health-check",
+    "start:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} pm2 start --name eth-rpc 'nyc --report-dir=$COVERAGE_DIR ts-node -r tsconfig-paths/register src/index.ts' && yarn health-check",
     "stop:coverage": "pm2 stop eth-rpc && pm2 delete eth-rpc",
     "test": "vitest",
     "test:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn start:coverage && COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn test --run && yarn stop:coverage"
