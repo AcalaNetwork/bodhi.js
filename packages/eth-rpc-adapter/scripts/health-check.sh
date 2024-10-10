@@ -1,7 +1,7 @@
 #!/bin/bash
 
 HEALTH_CHECK_URL="http://localhost:8545"
-MAX_ATTEMPTS=60
+MAX_ATTEMPTS=30
 INTERVAL=1
 
 attempt=0
@@ -25,6 +25,8 @@ while [ $attempt -lt $MAX_ATTEMPTS ]; do
     sleep $INTERVAL
     attempt=$((attempt+1))
 done
+
+pm2 logs eth-rpc
 
 echo "❌ eth rpc failed to start in $MAX_ATTEMPTS seconds"
 exit 1

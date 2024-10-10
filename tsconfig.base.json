@@ -19,6 +19,9 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "composite": true,
+    "sourceMap": true,
+    "inlineSourceMap": false,
+    "inlineSources": true,
     "paths": {
       "@acala-network/bodhi": ["packages/bodhi/src"],
       "@acala-network/bodhi/*": ["packages/bodhi/src/*"],
