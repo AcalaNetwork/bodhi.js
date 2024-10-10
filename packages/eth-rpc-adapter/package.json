@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@acala-network/contracts": "4.3.4",
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/body-parser": "~1.19.1",
     "@types/connect": "~3.4.35",
     "@types/cors": "~2.8.12",
