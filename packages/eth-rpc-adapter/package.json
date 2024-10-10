@@ -12,7 +12,7 @@
     "clean": "rm -rf tsconfig.tsbuildinfo .nyc_output coverage/ lib/",
     "health-check": "./scripts/health-check.sh",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
-    "start:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} pm2 start --name eth-rpc 'nyc --report-dir=$COVERAGE_DIR ts-node -r tsconfig-paths/register src/index.ts' && yarn health-check",
+    "start:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} pm2 start --name eth-rpc 'nyc --report-dir=$COVERAGE_DIR node -r ts-node/register -r tsconfig-paths/register src/index.ts' && yarn health-check",
     "stop:coverage": "pm2 stop eth-rpc && pm2 delete eth-rpc",
     "test": "vitest --no-file-parallelism",
     "test:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn start:coverage && COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn test --run && yarn stop:coverage"
@@ -35,7 +35,6 @@
   },
   "devDependencies": {
     "@acala-network/contracts": "4.3.4",
-    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/body-parser": "~1.19.1",
     "@types/connect": "~3.4.35",
     "@types/cors": "~2.8.12",
