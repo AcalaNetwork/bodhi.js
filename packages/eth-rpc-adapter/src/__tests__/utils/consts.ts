@@ -1,5 +1,4 @@
 export const NODE_URL = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
-export const KARURA_ETH_RPC_URL = process.env.KARURA_ETH_RPC_URL || 'http://127.0.0.1:8546';
 export const ETH_RPC_URL = process.env.ETH_RPC_URL || 'http://127.0.0.1:8545';
 export const ETH_RPC_URL_WS = process.env.ETH_RPC_URL_WS || ETH_RPC_URL.replace('http', 'ws');
 export const SUBQL_URL = process.env.SUBQL_URL || 'http://127.0.0.1:3001';

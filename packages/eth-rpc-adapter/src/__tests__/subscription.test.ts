@@ -6,11 +6,10 @@ import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { expect } from 'chai';
 import { parseUnits } from 'ethers/lib/utils';
 
-import { ETH_RPC_URL, ETH_RPC_URL_WS, SubsManager, evmAccounts, getAddrSelector } from './utils';
+import { ETH_RPC_URL, ETH_RPC_URL_WS, SubsManager, TRANSFER_EVENT_TOPIC, evmAccounts, getAddrSelector } from './utils';
 import { IERC20, IERC20__factory } from './types';
 
 const oneAcaErc20 = parseUnits('1', 12);
-const TRANSFER_SELECTOR = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
 
 describe('eth subscription', () => {
   let deployer: Wallet;
@@ -41,7 +40,7 @@ describe('eth subscription', () => {
     const sub1 = sm.subscribeLogs({});
     const sub2 = sm.subscribeLogs({
       topics: [
-        TRANSFER_SELECTOR,
+        TRANSFER_EVENT_TOPIC,
         null,
         [userAddrSelector],
       ],

@@ -2,7 +2,6 @@ import axios from 'axios';
 
 import {
   ETH_RPC_URL,
-  KARURA_ETH_RPC_URL,
   LogHexified,
 } from './consts';
 import { JsonRpcError } from '../../server';
@@ -19,7 +18,6 @@ export const rpcGet =
         },
       });
 
-/* ---------- local rpc methods ---------- */
 export const eth_call = rpcGet('eth_call');
 export const eth_blockNumber = rpcGet('eth_blockNumber');
 export const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
