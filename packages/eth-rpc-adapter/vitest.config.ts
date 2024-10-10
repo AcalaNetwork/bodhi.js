@@ -5,8 +5,7 @@ export default mergeConfig(
   configShared,
   {
     test: {
-      // include: ['**/*.test.ts'],  // TODO: run all tests
-      include: ['src/__tests__/signer.test.ts'],
+      include: ['**/*.test.ts'],
     },
   }
 );

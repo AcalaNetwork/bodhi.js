@@ -7,13 +7,14 @@
   "scripts": {
     "build": "tsc",
     "ncc:pack": "ncc build src/index.ts -t --target es2020",
-    "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts -l | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc,dd",
+    "typegen": "typechain --target=ethers-v5 --out-dir=./src/__tests__/types src/__tests__/abis/*.json",
+    "dev": "ts-node-dev -T -r tsconfig-paths/register src/index.ts | pino-pretty --singleLine --colorize --ignore time,hostname,jsonrpc,dd",
     "clean": "rm -rf tsconfig.tsbuildinfo .nyc_output coverage/ lib/",
     "health-check": "./scripts/health-check.sh",
     "start": "ts-node -r tsconfig-paths/register src/index.ts",
     "start:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} pm2 start --name eth-rpc 'nyc --report-dir=$COVERAGE_DIR ts-node -r tsconfig-paths/register src/index.ts' && yarn health-check",
     "stop:coverage": "pm2 stop eth-rpc && pm2 delete eth-rpc",
-    "test": "vitest",
+    "test": "vitest --no-file-parallelism",
     "test:coverage": "COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn start:coverage && COVERAGE_DIR=${COVERAGE_DIR:-eth-rpc-adapter/coverage} yarn test --run && yarn stop:coverage"
   },
   "peerDependencies": {
@@ -48,6 +49,7 @@
     "pm2": "^5.4.2",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
+    "typechain": "^8.3.2",
     "vitest": "^2.1.1"
   },
   "files": [

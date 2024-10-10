@@ -1,8 +1,8 @@
-endpoint: wss://acala-rpc.aca-api.network
+endpoint: wss://acala-rpc.dwellir.com
 mock-signature-host: true
 runtime-log-level: 5
 block: 7000000
-wasm-override: ./chopsticks/wasm/acala-2250.wasm
+wasm-override: ./chopsticks/wasm/acala-2260.wasm
 
 import-storage:
   Sudo:

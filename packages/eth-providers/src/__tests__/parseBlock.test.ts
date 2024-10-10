@@ -49,7 +49,7 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   beforeAll(async () => {
     console.log('connecting to node...');
     const KARURA_NODE_URL = 'wss://karura-rpc.aca-api.network';
-    const ACALA_NODE_URL = 'wss://acala-rpc.aca-api.network';
+    const ACALA_NODE_URL = 'wss://acala-rpc.dwellir.com';
 
     apiK = new ApiPromise(
       options({
@@ -72,7 +72,6 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
   });
 
   afterAll(async () => {
-    await sleep(10_000);
     await apiK.disconnect();
     await apiA.disconnect();
   });
@@ -195,6 +194,32 @@ describe.concurrent('getAllReceiptsAtBlock', () => {
       const receipts = await getAllReceiptsAtBlockNumber(apiA, blockNumber);
 
       expect(receipts.length).to.equal(1);
+      expect(receipts).toMatchSnapshot();
+    });
+  });
+
+  describe.concurrent('different evm tx count', () => {
+    it('when there are 0 EVM transactions', async ({ expect }) => {
+      const blockNumber = 1818188;
+      const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
+
+      expect(receipts.length).to.equal(0);
+      expect(receipts).toMatchSnapshot();
+    });
+
+    it('when there are 1 EVM transactions', async ({ expect }) => {
+      const blockNumber = 1818518;
+      const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
+
+      expect(receipts.length).to.equal(1);
+      expect(receipts).toMatchSnapshot();
+    });
+
+    it('when there are 2 EVM transactions', async ({ expect }) => {
+      const blockNumber = 2449983;
+      const receipts = await getAllReceiptsAtBlockNumber(apiK, blockNumber);
+
+      expect(receipts.length).to.equal(2);
       expect(receipts).toMatchSnapshot();
     });
   });
