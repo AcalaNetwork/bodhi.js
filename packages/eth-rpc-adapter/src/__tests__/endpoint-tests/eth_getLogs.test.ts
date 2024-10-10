@@ -33,7 +33,6 @@ describe('eth_getLogs', () => {
     await (await token0.transfer(wallet3.address, 3000)).wait();
 
     allLogs = (await eth_getLogs([ALL_BLOCK_RANGE_FILTER])).data.result;
-    console.log(allLogs);
     expect(allLogs.length).to.equal(3);
   });
 

@@ -27,9 +27,6 @@ describe('get tx and receipt', () => {
     const tx = (await eth_getTransactionByHash([txHash])).data.result;
     const receipt = (await eth_getTransactionReceipt([txHash])).data.result;
 
-    console.log(tx);
-    console.log(receipt);
-
     expect(tx).to.contain({
       hash: txHash,
       blockNumber: tokenDeployedBlock,
@@ -56,9 +53,6 @@ describe('get tx and receipt', () => {
     let tx = (await eth_getTransactionByHash([pendingTx.hash])).data.result;
     let receipt = (await eth_getTransactionReceipt([pendingTx.hash])).data.result;
 
-    console.log(tx);
-    console.log(receipt);
-
     expect(tx).to.contain({
       hash: pendingTx.hash,
       blockNumber: null,    // pending tx
@@ -76,9 +70,6 @@ describe('get tx and receipt', () => {
 
     tx = (await eth_getTransactionByHash([pendingTx.hash])).data.result;
     receipt = (await eth_getTransactionReceipt([pendingTx.hash])).data.result;
-
-    console.log(tx);
-    console.log(receipt);
 
     const blockNumber = (await eth_blockNumber()).data.result;
     expect(tx).to.contain({
