@@ -172,12 +172,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: merge coverage reports
-      #   run: yarn merge-coverage
-
-      - name: upload merged coverage report
+      # does not need to merge, as upload action will auto upload all and merge
+      - name: upload all coverage report and auto merge
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-          files: packages/**/lcov.info
