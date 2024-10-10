@@ -36,7 +36,11 @@ jobs:
         run: yarn install --immutable
 
       - name: start test infra
-        run: docker compose up -d
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          command: docker compose up -d
 
       - name: start rpc adapter for eth-providers
         if: matrix.project == 'eth-providers'
@@ -93,7 +97,11 @@ jobs:
         run: yarn install --immutable
 
       - name: start test infra
-        run: docker compose up -d
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          command: docker compose up -d
 
       - name: start coverage server
         env:
