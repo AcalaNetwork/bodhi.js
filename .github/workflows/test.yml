@@ -53,7 +53,7 @@ jobs:
       - name: run tests
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 30
+          timeout_minutes: 15
           max_attempts: 2
           command: yarn workspace @acala-network/${{ matrix.project }} run test:coverage
 
@@ -114,7 +114,7 @@ jobs:
       - name: run e2e tests
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 30
+          timeout_minutes: 15
           max_attempts: 2
           command: cd e2e-tests/${{ matrix.project }} && yarn test:acalaFork
 
