@@ -1,5 +1,4 @@
 {
-  "extends": "@istanbuljs/nyc-config-typescript",
   "cwd": "..",
   "extension": [".ts"],
   "all": true,
