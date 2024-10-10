@@ -1701,7 +1701,6 @@ export abstract class BaseProvider extends AbstractProvider {
     return sortedReceipts?.[receiptIdx] ? subqlReceiptAdapter(sortedReceipts[receiptIdx]) : null;
   };
 
-  // TODO: test pending
   _getPendingTX = async (txHash: string): Promise<TX | null> => {
     const pendingExtrinsics = await this.api.rpc.author.pendingExtrinsics();
     const targetExtrinsic = pendingExtrinsics.find(ex => ex.hash.toHex() === txHash);
@@ -1827,7 +1826,8 @@ export abstract class BaseProvider extends AbstractProvider {
       .map(this.blockCache.getLogsAtBlock.bind(this))
       .flat()
       .filter(log => filterLogByBlockNumber(log, filter.fromBlock, filter.toBlock))
-      .filter(log => filterLogByAddress(log, filter.address));
+      .filter(log => filterLogByAddress(log, filter.address))
+      .filter(log => filterLogByTopics(log, filter.topics));
   };
 
   // Bloom-filter Queries
@@ -2071,19 +2071,13 @@ export abstract class BaseProvider extends AbstractProvider {
       toBlock: effectiveTo,
     };
 
-    if (!this.subql) {
-      return logger.throwError(
-        'missing subql url to fetch logs, to initialize base provider with subql, please provide a subqlUrl param.'
-      );
-    }
-
     filterInfo.lastPollBlockNumber = curBlockNumber;
     filterInfo.lastPollTimestamp = Date.now();
 
-    const subqlLogs = await this.subql.getFilteredLogs(effectiveFilter); // FIXME: this misses unfinalized logs
-    const filteredLogs = subqlLogs.filter(log => filterLogByTopics(log, sanitizedFilter.topics));
+    const logs = await this.getLogs(effectiveFilter);
+    const formattedLogs = logs.map(log => this.formatter.filterLog(log));
 
-    return hexlifyRpcResult(filteredLogs.map(log => this.formatter.filterLog(log)));
+    return hexlifyRpcResult(formattedLogs);
   };
 
   _pollBlocks = async (filterInfo: BlockPollFilter): Promise<string[]> => {
@@ -2110,7 +2104,9 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     // TODO: TS bug?? why filterInfo type is not BlockPollFilter | LogPollFilter
-    return filterInfo['logFilter'] ? this._pollLogs(filterInfo as LogPollFilter) : this._pollBlocks(filterInfo);
+    return filterInfo['logFilter']
+      ? this._pollLogs(filterInfo as LogPollFilter)
+      : this._pollBlocks(filterInfo as BlockPollFilter);
   };
 
   removePollFilter = (id: string): boolean => {

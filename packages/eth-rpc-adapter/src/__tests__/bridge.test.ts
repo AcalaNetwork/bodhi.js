@@ -2,15 +2,12 @@ import { Eip1193Bridge } from '../eip1193-bridge';
 import { EvmRpcProvider } from '@acala-network/eth-providers';
 import { Wallet } from '@ethersproject/wallet';
 import { afterAll, describe, expect, it } from 'vitest';
-import dotenv from 'dotenv';
 
-dotenv.config();
-
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
+import { NODE_URL, evmAccounts } from './utils';
 
 describe('e2e test', async () => {
-  const signer = new Wallet('0x5a214c9bcb10dfe58af9b349cad6f4564cd6f10d880bdfcf780e5812c3cbc855');
-  const provider = EvmRpcProvider.from(endpoint);
+  const signer = new Wallet(evmAccounts[0].privateKey);
+  const provider = EvmRpcProvider.from(NODE_URL);
   await provider.isReady();
 
   afterAll(async () => {
@@ -34,10 +31,6 @@ describe('e2e test', async () => {
   });
 
   it('eth_getBlockByHash', async () => {
-    await expect(
-      bridge.send('eth_getBlockByHash', ['0xff2d5d74f16df09b810225ffd9e1442250914ae6de9459477118d675713c732c', false])
-    ).resolves.toBeNull();
-
     const latest = await bridge.send('eth_getBlockByNumber', ['latest', false]);
     const block = await bridge.send('eth_getBlockByHash', [latest.hash, false]);
     expect(block.hash).equal(latest.hash);

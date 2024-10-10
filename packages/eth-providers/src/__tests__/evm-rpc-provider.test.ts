@@ -1,11 +1,11 @@
 import { EvmRpcProvider } from '../rpc-provider';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { runWithTiming, sleep } from '../utils';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const ACALA_NODE_URL = 'wss://acala-rpc.aca-api.network';
+const ACALA_NODE_URL = 'wss://acala-rpc.dwellir.com';
 const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
@@ -98,10 +98,12 @@ describe.skip('all cache', async () => {
 
 describe.concurrent('rpc test', async () => {
   const provider = EvmRpcProvider.from(endpoint);
-  await provider.isReady();
+
+  beforeAll(async () => {
+    await provider.isReady();
+  });
 
   afterAll(async () => {
-    await sleep(5000);
     await provider.disconnect();
   });
 

@@ -77,3 +77,6 @@ lib
 
 ## openzeppelin cache
 **/.openzeppelin/
+
+## typechain files
+**/types
