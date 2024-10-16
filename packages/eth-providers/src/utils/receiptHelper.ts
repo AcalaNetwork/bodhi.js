@@ -160,12 +160,18 @@ export const findEvmEvent = (events: EventRecord[]): EventRecord | undefined => 
     .reduce((r, event) => {
       // For the moment the case of multiple evm events in one transaction only support Executed
       if (r.event.method === 'Executed' && r.event.method === event.event.method) {
-        const logs = event.event.data[2] as unknown as EvmLog[];
-        const newLogs = (r.event.data[2] as unknown as EvmLog[]).concat(logs);
+        const curLogs = r.event.data[2] as unknown as EvmLog[];
+        const nextLogs = event.event.data[2] as unknown as EvmLog[];
 
-        r.event.data[2] = newLogs as any;
+        const curGasUsed = r.event.data[3] as unknown as u64;
+        const nextGasUsed = event.event.data[3] as unknown as u64;
+
+        // concat logs and sum gas used
+        r.event.data[2] = curLogs.concat(nextLogs) as any;
+        r.event.data[3] = curGasUsed.add(nextGasUsed) as any;
+
+        return r;
       }
-      return r;
     });
 };
 
