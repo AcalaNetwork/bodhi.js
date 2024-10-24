@@ -1,6 +1,6 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
-// pre-funded accounts for local mandala
+// pre-funded accounts for local acala fork
 const mnemonic = 'fox sight canyon orphan hotel grow hedgehog build bless august weather swarm';
 
 module.exports = {
@@ -8,6 +8,7 @@ module.exports = {
     acalaFork: {
       provider: () => new HDWalletProvider(mnemonic, 'http://localhost:8545'),
       network_id: 787,
+      gas: "202020",
     },
   },
   mocha: {
