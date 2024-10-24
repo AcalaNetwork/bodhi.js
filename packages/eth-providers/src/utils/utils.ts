@@ -334,7 +334,7 @@ export const decodeRevertMsg = (hexMsg: string) => {
 export const checkEvmExecutionError = (data: CallReturnInfo): void => {
   if (!data) return;
 
-  const { exit_reason: exitReason, value: returnData } = data;
+  const { exitReason, value: returnData } = data;
   if (!exitReason.succeed) {
     let msg: string;
     let err: any;

@@ -266,15 +266,15 @@ export interface PollFilters {
 }
 
 export interface CallReturnInfo {
-  exit_reason: {
+  exitReason: {
     succeed?: 'Stopped' | 'Returned' | 'Suicided';
     error?: any;
     revert?: 'Reverted';
     fatal?: any;
   };
   value: string;
-  used_gas: string;
-  used_storage: number;
+  usedGas: string;
+  usedStorage: number;
   logs: Log[];
 }
 
@@ -839,7 +839,10 @@ export abstract class BaseProvider extends AbstractProvider {
     return res.value;
   };
 
-  _ethCall = async (callRequest: SubstrateEvmCallRequest, at?: string) => {
+  _ethCall = async (
+    callRequest: SubstrateEvmCallRequest,
+    at?: string,
+  ): Promise<CallReturnInfo> => {
     const api = at ? await this.api.at(at) : this.api;
 
     // call evm rpc when `state_call` is not supported yet
@@ -847,10 +850,10 @@ export abstract class BaseProvider extends AbstractProvider {
       const data = await this.api.rpc.evm.call(callRequest);
 
       return {
-        exit_reason: { succeed: 'Returned' },
+        exitReason: { succeed: 'Returned' },
         value: data.toHex(),
-        used_gas: '0',
-        used_storage: 0,
+        usedGas: '0',
+        usedStorage: 0,
         logs: [],
       };
     }
@@ -1120,8 +1123,8 @@ export abstract class BaseProvider extends AbstractProvider {
     };
 
     const gasInfo = await this._ethCall(txRequest, blockHash);
-    const usedGas = BigNumber.from(gasInfo.used_gas).toNumber();
-    const usedStorage = gasInfo.used_storage;
+    const usedGas = BigNumber.from(gasInfo.usedGas).toNumber();
+    const usedStorage = gasInfo.usedStorage;
 
     /* ----------
        try using a gasLimit slightly more than actual used gas

@@ -447,14 +447,14 @@ describe('eth call error handling', () => {
 
   describe('checkEvmExecutionError', () => {
     const commonData = {
-      used_gas: '0x0',
-      used_storage: 0,
+      usedGas: '0x0',
+      usedStorage: 0,
       logs: [],
     };
 
     it('when should throw - reverted', () => {
       const data = {
-        exit_reason: { revert: 'Reverted' as const },
+        exitReason: { revert: 'Reverted' as const },
         value: invalidCurrencyIdHex,
         ...commonData,
       };
@@ -464,7 +464,7 @@ describe('eth call error handling', () => {
 
     it('when should throw - outOfFund', () => {
       const data = {
-        exit_reason: {
+        exitReason: {
           error: { outOfFund: null },
         },
         value: invalidCurrencyIdHex,
@@ -476,7 +476,7 @@ describe('eth call error handling', () => {
 
     it('when should throw - ExistentialDeposit', () => {
       const data = {
-        exit_reason: {
+        exitReason: {
           error: { other: 'ExistentialDeposit' },
         },
         value: invalidCurrencyIdHex,
@@ -489,7 +489,7 @@ describe('eth call error handling', () => {
     it('when should not throw', () => {
       {
         const data = {
-          exit_reason: { succeed: 'Returned' as const },
+          exitReason: { succeed: 'Returned' as const },
           value: '0x123456789',
           ...commonData,
         };
@@ -498,7 +498,7 @@ describe('eth call error handling', () => {
 
       {
         const data = {
-          exit_reason: { succeed: 'Stopped' as const },
+          exitReason: { succeed: 'Stopped' as const },
           value: '0x',
           ...commonData,
         };
