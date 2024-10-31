@@ -14,28 +14,22 @@ import {
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { AccessList, accessListify } from 'ethers/lib/utils';
-import { AccountId, H160, Header } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
 import { AsyncScheduler } from 'rxjs/internal/scheduler/AsyncScheduler';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
-import { EvmAccountInfo, EvmContractInfo } from '@acala-network/types/interfaces';
 import { Formatter } from '@ethersproject/providers';
-import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
+import { Header } from '@polkadot/types/interfaces';
 import { ISubmittableResult } from '@polkadot/types/types';
 import { Logger } from '@ethersproject/logger';
+import { ModuleEvmModuleAccountInfo } from '@polkadot/types/lookup';
 import { Network } from '@ethersproject/networks';
 import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
-import { Option, decorateStorage, unwrapStorageType } from '@polkadot/types';
-import { Storage } from '@polkadot/types/metadata/decorate/types';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { VersionedRegistry } from '@polkadot/api/base/types';
-import { createHeaderExtended } from '@polkadot/api-derive';
 import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
-import { isNull, u8aToHex, u8aToU8a } from '@polkadot/util';
 import BN from 'bn.js';
 import LRUCache from 'lru-cache';
 
@@ -44,7 +38,6 @@ import {
   BLOCK_GAS_LIMIT,
   BLOCK_STORAGE_LIMIT,
   CACHE_SIZE_WARNING,
-  DUMMY_ADDRESS,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
   EMPTY_HEX_STRING,
@@ -78,6 +71,7 @@ import {
   filterLogByTopics,
   getAllReceiptsAtBlock,
   getHealthResult,
+  getTimestamp,
   getTransactionRequest,
   hexlifyRpcResult,
   isEvmExtrinsic,
@@ -309,8 +303,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly localMode: boolean;
   readonly verbose: boolean;
   readonly maxBlockCacheSize: number;
-  readonly storages: WeakMap<VersionedRegistry<'promise'>, Storage> = new WeakMap();
-  readonly storageCache: LRUCache<string, Uint8Array | null>;
+  readonly queryCache: LRUCache<string, any>;
   readonly blockCache: BlockCache;
   readonly finalizedBlockHashes: MaxSizeSet;
 
@@ -347,7 +340,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.localMode = localMode;
     this.verbose = verbose;
     this.maxBlockCacheSize = maxBlockCacheSize;
-    this.storageCache = new LRUCache({ max: storageCacheSize });
+    this.queryCache = new LRUCache({ max: storageCacheSize });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
     this.finalizedBlockHashes = new MaxSizeSet(this.maxBlockCacheSize);
 
@@ -523,67 +516,6 @@ export abstract class BaseProvider extends AbstractProvider {
     defineReadOnly(this, '_api', api);
   };
 
-  queryStorage = async <T = any>(
-    module: `${string}.${string}`,
-    args: any[],
-    _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
-  ): Promise<T> => {
-    const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
-    const blockHash = await this._getBlockHash(blockTag);
-
-    const registry = await this.api.getBlockRegistry(u8aToU8a(blockHash));
-
-    if (!this.storages.get(registry)) {
-      const storage = decorateStorage(
-        registry.registry,
-        registry.metadata.asLatest,
-        registry.metadata.version,
-      );
-      this.storages.set(registry, storage);
-    }
-
-    const storage = this.storages.get(registry)!;
-
-    const [section, method] = module.split('.');
-
-    const entry = storage[section][method];
-    const key = entry(...args);
-
-    const outputType = unwrapStorageType(
-      registry.registry,
-      entry.meta.type,
-      entry.meta.modifier.isOptional,
-    );
-
-    const cacheKey = `${module}-${blockHash}-${args.join(',')}`;
-    const cached = this.storageCache.get(cacheKey);
-
-    let input: Uint8Array | null = null;
-
-    if (cached) {
-      input = cached;
-    } else {
-      const value: any = await this.api.rpc.state.getStorage(key, blockHash);
-
-      const isEmpty = isNull(value);
-
-      // we convert to Uint8Array since it maps to the raw encoding, all
-      // data will be correctly encoded (incl. numbers, excl. :code)
-      input = isEmpty
-        ? null
-        : u8aToU8a(entry.meta.modifier.isOptional ? value.toU8a() : value.isSome ? value.unwrap().toU8a() : null);
-
-      this.storageCache.set(cacheKey, input);
-    }
-
-    const result = registry.registry.createTypeUnsafe(outputType, [input], {
-      blockHash,
-      isPedantic: !entry.meta.modifier.isOptional,
-    });
-
-    return result as any as T;
-  };
-
   get api(): ApiPromise {
     return this._api ?? logger.throwError('the api needs to be set', Logger.errors.UNKNOWN_ERROR);
   }
@@ -672,19 +604,15 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
-    const [block, validators, now, receiptsFromSubql] = await Promise.all([
+    const [block, headerExtended, timestamp, receiptsFromSubql] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
-      this.api.query.session ? this.queryStorage('session.validators', [], blockHash) : ([] as any),
-      this.queryStorage('timestamp.now', [], blockHash),
+      this.api.derive.chain.getHeader(blockHash),
+      getTimestamp(this.api, blockHash),
       this.subql?.getAllReceiptsAtBlock(blockHash),
     ]);
 
-    const headerExtended = createHeaderExtended(header.registry, header, validators);
-
     // blockscout need `toLowerCase`
-    const author = headerExtended.author
-      ? (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase()
-      : DUMMY_ADDRESS;
+    const author = (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase();
 
     let receipts: TransactionReceipt[];
     if (receiptsFromSubql?.length) {
@@ -709,7 +637,7 @@ export abstract class BaseProvider extends AbstractProvider {
       number: blockNumber,
       stateRoot: headerExtended.stateRoot.toHex(),
       transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
-      timestamp: Math.floor(now.toNumber() / 1000),
+      timestamp: Math.floor(timestamp / 1000),
       nonce: DUMMY_BLOCK_NONCE,
       mixHash: ZERO_BLOCK_HASH,
       difficulty: ZERO,
@@ -750,11 +678,8 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    const accountInfo = await this.queryStorage<FrameSystemAccountInfo>(
-      'system.account',
-      [substrateAddress],
-      blockHash
-    );
+    const apiAt = await this.api.at(blockHash);
+    const accountInfo = await apiAt.query.system.account(substrateAddress);
 
     return nativeToEthDecimal(accountInfo.data.free.toBigInt());
   };
@@ -779,9 +704,7 @@ export abstract class BaseProvider extends AbstractProvider {
     }
 
     const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
-    const minedNonce = accountInfo.isNone
-      ? 0
-      : accountInfo.unwrap().nonce.toNumber();
+    const minedNonce = accountInfo?.nonce?.toNumber?.() ?? 0;
 
     return minedNonce + pendingNonce;
   };
@@ -791,23 +714,14 @@ export abstract class BaseProvider extends AbstractProvider {
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<string> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
+    const blockHash = await this._getBlockHash(blockTag);
 
-    const [address, blockHash] = await Promise.all([
-      addressOrName,
-      this._getBlockHash(blockTag),
-    ]);
+    const accountInfo = await this.queryAccountInfo(addressOrName, blockHash);
+    const contractInfo = accountInfo?.contractInfo.unwrapOr(null);
+    if (!contractInfo) { return '0x'; }
 
-    const contractInfo = await this.queryContractInfo(address, blockHash);
-
-    if (contractInfo.isNone) {
-      return '0x';
-    }
-
-    const codeHash = contractInfo.unwrap().codeHash;
-
-    const api = blockHash ? await this.api.at(blockHash) : this.api;
-
-    const code = await api.query.evm.codes(codeHash);
+    const apiAt = await this.api.at(blockHash);
+    const code = await apiAt.query.evm.codes(contractInfo.codeHash);
 
     return code.toHex();
   };
@@ -904,7 +818,8 @@ export abstract class BaseProvider extends AbstractProvider {
       Promise.resolve(position).then(hexValue),
     ]);
 
-    const code = await this.queryStorage('evm.accountStorages', [address, hexZeroPad(resolvedPosition, 32)], blockHash);
+    const apiAt = await this.api.at(blockHash);
+    const code = await apiAt.query.evm.accountStorages(address, hexZeroPad(resolvedPosition, 32));
 
     return code.toHex();
   };
@@ -1185,20 +1100,20 @@ export abstract class BaseProvider extends AbstractProvider {
     };
   };
 
-  getSubstrateAddress = async (addressOrName: string, blockTag?: BlockTag): Promise<string> => {
-    const [address, blockHash] = await Promise.all([
-      addressOrName,
-      this._getBlockHash(blockTag),
-    ]);
+  getSubstrateAddress = async (address: string, blockTag?: BlockTag): Promise<string> => {
+    const blockHash = await this._getBlockHash(blockTag);
+    const apiAt = await this.api.at(blockHash);
+    const substrateAccount = await apiAt.query.evmAccounts.accounts(address);
 
-    const substrateAccount = await this.queryStorage<Option<AccountId>>('evmAccounts.accounts', [address], blockHash);
-
-    return substrateAccount.isEmpty ? computeDefaultSubstrateAddress(address) : substrateAccount.toString();
+    return substrateAccount.isEmpty
+      ? computeDefaultSubstrateAddress(address)
+      : substrateAccount.toString();
   };
 
   getEvmAddress = async (substrateAddress: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const evmAddress = await this.queryStorage<Option<H160>>('evmAccounts.evmAddresses', [substrateAddress], blockHash);
+    const apiAt = await this.api.at(blockHash);
+    const evmAddress = await apiAt.query.evmAccounts.evmAddresses(substrateAddress);
 
     return getAddress(evmAddress.isEmpty ? computeDefaultEvmAddress(substrateAddress) : evmAddress.toString());
   };
@@ -1206,7 +1121,7 @@ export abstract class BaseProvider extends AbstractProvider {
   queryAccountInfo = async (
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
-  ): Promise<Option<EvmAccountInfo>> => {
+  ): Promise<ModuleEvmModuleAccountInfo | null> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
 
     const [address, blockHash] = await Promise.all([
@@ -1214,22 +1129,10 @@ export abstract class BaseProvider extends AbstractProvider {
       this._getBlockHash(blockTag),
     ]);
 
-    const accountInfo = await this.queryStorage<Option<EvmAccountInfo>>('evm.accounts', [address], blockHash);
+    const apiAt = await this.api.at(blockHash);
+    const accountInfo = await apiAt.query.evm.accounts(address);
 
-    return accountInfo;
-  };
-
-  queryContractInfo = async (
-    addressOrName: string | Promise<string>,
-    blockTag?: BlockTag | Promise<BlockTag>
-  ): Promise<Option<EvmContractInfo>> => {
-    const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
-
-    if (accountInfo.isNone) {
-      return this.api.createType<Option<EvmContractInfo>>('Option<EvmContractInfo>', null);
-    }
-
-    return accountInfo.unwrap().contractInfo;
+    return accountInfo.unwrapOr(null);
   };
 
   _getSubstrateGasParams = (ethTx: Partial<AcalaEvmTX>): {
@@ -1287,7 +1190,7 @@ export abstract class BaseProvider extends AbstractProvider {
           storageLimit: storageLimit.toBigInt(),
           tip: 0n,
         };
-      } catch (error) {
+      } catch {
         // v2
         v2 = true;
 
@@ -1471,7 +1374,8 @@ export abstract class BaseProvider extends AbstractProvider {
     result.blockNumber = startBlock;
     result.blockHash = startBlockHash;
 
-    result.timestamp = Math.floor((await this.queryStorage('timestamp.now', [], result.blockHash)).toNumber() / 1000);
+    const timestamp = await getTimestamp(this.api, result.blockHash);
+    result.timestamp = Math.floor(timestamp / 1000);
 
     result.wait = async (confirms?: number, timeoutMs?: number) => {
       if (confirms === null || confirms === undefined) {
@@ -1561,26 +1465,23 @@ export abstract class BaseProvider extends AbstractProvider {
           }
 
           const isFinalized = blockNumber.lte(await this.finalizedBlockNumber);
-          const cacheKey = `blockHash-${blockNumber.toString()}`;
+          const cacheKey = `blockHash-${blockNumber.toHexString()}`;
 
           if (isFinalized) {
-            const cached = this.storageCache.get(cacheKey);
+            const cached = this.queryCache.get(cacheKey);
             if (cached) {
-              return u8aToHex(cached);
+              return cached;
             }
           }
 
-          const _blockHash = await this.api.rpc.chain.getBlockHash(blockNumber.toBigInt());
-
-          if (_blockHash.isEmpty) {
-            //@ts-ignore
-            return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockNumber });
-          }
-
-          const blockHash = _blockHash.toHex();
+          // TODO: test header not found should throw
+          const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber.toBigInt())).toHex();
+          // if (_blockHash.isEmpty) {
+          //   return logger.throwError('header not found', Logger.errors.CALL_EXCEPTION, { blockNumber });
+          // }
 
           if (isFinalized) {
-            this.storageCache.set(cacheKey, _blockHash.toU8a());
+            this.queryCache.set(cacheKey, blockHash);
           }
 
           return blockHash;

@@ -1,4 +1,5 @@
 import { AnyFunction } from '@polkadot/types/types';
+import { ApiPromise } from '@polkadot/api';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
@@ -410,4 +411,10 @@ export const toBN = (bigNumberis: BigNumberish = 0): BN => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new BN(bigNumberis as any);
+};
+
+export const getTimestamp = async (api: ApiPromise, blockHash: string): Promise<number> => {
+  const apiAt = await api.at(blockHash);
+  const timestamp = await apiAt.query.timestamp.now();
+  return timestamp.toNumber();
 };
