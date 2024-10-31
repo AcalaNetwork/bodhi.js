@@ -703,8 +703,8 @@ export abstract class BaseProvider extends AbstractProvider {
       ).length;
     }
 
-    const accountInfo = await this.queryAccountInfo(addressOrName, blockTag);
-    const minedNonce = accountInfo?.nonce?.toNumber?.() ?? 0;
+    const evmAccountInfo = await this.queryEvmAccountInfo(addressOrName, blockTag);
+    const minedNonce = evmAccountInfo?.nonce?.toNumber?.() ?? 0;
 
     return minedNonce + pendingNonce;
   };
@@ -716,8 +716,8 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(await parseBlockTag(_blockTag));
     const blockHash = await this._getBlockHash(blockTag);
 
-    const accountInfo = await this.queryAccountInfo(addressOrName, blockHash);
-    const contractInfo = accountInfo?.contractInfo.unwrapOr(null);
+    const evmAccountInfo = await this.queryEvmAccountInfo(addressOrName, blockHash);
+    const contractInfo = evmAccountInfo?.contractInfo.unwrapOr(null);
     if (!contractInfo) { return '0x'; }
 
     const apiAt = await this.api.at(blockHash);
@@ -1118,7 +1118,7 @@ export abstract class BaseProvider extends AbstractProvider {
     return getAddress(evmAddress.isEmpty ? computeDefaultEvmAddress(substrateAddress) : evmAddress.toString());
   };
 
-  queryAccountInfo = async (
+  queryEvmAccountInfo = async (
     addressOrName: string | Promise<string>,
     _blockTag?: BlockTag | Promise<BlockTag> | Eip1898BlockTag
   ): Promise<ModuleEvmModuleAccountInfo | null> => {
