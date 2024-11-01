@@ -21,6 +21,7 @@ export const rpcGet =
 export const eth_call = rpcGet('eth_call');
 export const eth_blockNumber = rpcGet('eth_blockNumber');
 export const eth_getBlockByNumber = rpcGet('eth_getBlockByNumber');
+export const eth_getBlockByHash = rpcGet('eth_getBlockByHash');
 export const eth_getTransactionReceipt = rpcGet('eth_getTransactionReceipt');
 export const eth_getLogs = rpcGet<{ data: { result: LogHexified[]; error?: JsonRpcError } }>('eth_getLogs');
 export const eth_getTransactionByHash = rpcGet('eth_getTransactionByHash');

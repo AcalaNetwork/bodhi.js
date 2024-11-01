@@ -619,66 +619,74 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
+    let blockDataFull: BlockData;
+
     const cacheKey = `block-${blockHash}`;
     const cached = this.queryCache.get<BlockData>(cacheKey);
-    if (cached) return cached;
-
-    const [block, headerExtended, timestamp, receiptsFromSubql] = await Promise.all([
-      this.api.rpc.chain.getBlock(blockHash),
-      this.api.derive.chain.getHeader(blockHash),
-      getTimestamp(this.api, blockHash),
-      this.subql?.getAllReceiptsAtBlock(blockHash),
-    ]);
-
-    // blockscout need `toLowerCase`
-    const author = (await this.getEvmAddress(headerExtended.author.toString(), blockHash)).toLowerCase();
-
-    let receipts: TransactionReceipt[];
-    if (receiptsFromSubql?.length) {
-      receipts = receiptsFromSubql.map(subqlReceiptAdapter);
+    if (cached) {
+      blockDataFull = cached;
     } else {
-      /* ----------
-         if nothing is returned from subql, either no tx exists in this block,
-         or the block not finalized. So we still need to ask block cache.
-                                                                    ---------- */
-      receipts = this.blockCache.getAllReceiptsAtBlock(blockHash);
+      const [block, headerExtended, timestamp, receiptsFromSubql] = await Promise.all([
+        this.api.rpc.chain.getBlock(blockHash),
+        this.api.derive.chain.getHeader(blockHash),
+        getTimestamp(this.api, blockHash),
+        this.subql?.getAllReceiptsAtBlock(blockHash),
+      ]);
+
+      // blockscout need `toLowerCase`
+      const author = (await this.getEvmAddress(headerExtended.author.toString(), blockHash)).toLowerCase();
+
+      let receipts: TransactionReceipt[];
+      if (receiptsFromSubql?.length) {
+        receipts = receiptsFromSubql.map(subqlReceiptAdapter);
+      } else {
+        /* ----------
+          if nothing is returned from subql, either no tx exists in this block,
+          or the block not finalized. So we still need to ask block cache.
+                                                                      ---------- */
+        receipts = this.blockCache.getAllReceiptsAtBlock(blockHash);
+      }
+
+      const transactions = receipts.map(tx => receiptToTransaction(tx, block));
+      const gasUsed = receipts.reduce((totalGas, tx) => totalGas.add(tx.gasUsed), BIGNUMBER_ZERO);
+
+      const blockDataFull: BlockData = {
+        hash: blockHash,
+        parentHash: headerExtended.parentHash.toHex(),
+        number: blockNumber,
+        stateRoot: headerExtended.stateRoot.toHex(),
+        transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
+        timestamp: Math.floor(timestamp / 1000),
+        nonce: DUMMY_BLOCK_NONCE,
+        mixHash: ZERO_BLOCK_HASH,
+        difficulty: ZERO,
+        totalDifficulty: ZERO,
+        gasLimit: BigNumber.from(BLOCK_GAS_LIMIT),
+        gasUsed,
+
+        miner: author,
+        extraData: EMPTY_HEX_STRING,
+        sha3Uncles: EMTPY_UNCLE_HASH,
+        receiptsRoot: headerExtended.extrinsicsRoot.toHex(),
+        logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
+        size: block.encodedLength,
+        uncles: EMTPY_UNCLES,
+
+        transactions,
+      };
+
+      const isFinalized = blockNumber <= await this.finalizedBlockNumber;
+      if (isFinalized) {
+        this.queryCache.set(cacheKey, blockDataFull);
+      }
     }
 
-    const transactions = full
-      ? receipts.map(tx => receiptToTransaction(tx, block))
-      : receipts.map(tx => tx.transactionHash as `0x${string}`);
-
-    const gasUsed = receipts.reduce((totalGas, tx) => totalGas.add(tx.gasUsed), BIGNUMBER_ZERO);
-
-    const blockData: BlockData = {
-      hash: blockHash,
-      parentHash: headerExtended.parentHash.toHex(),
-      number: blockNumber,
-      stateRoot: headerExtended.stateRoot.toHex(),
-      transactionsRoot: headerExtended.extrinsicsRoot.toHex(),
-      timestamp: Math.floor(timestamp / 1000),
-      nonce: DUMMY_BLOCK_NONCE,
-      mixHash: ZERO_BLOCK_HASH,
-      difficulty: ZERO,
-      totalDifficulty: ZERO,
-      gasLimit: BigNumber.from(BLOCK_GAS_LIMIT),
-      gasUsed,
-
-      miner: author,
-      extraData: EMPTY_HEX_STRING,
-      sha3Uncles: EMTPY_UNCLE_HASH,
-      receiptsRoot: headerExtended.extrinsicsRoot.toHex(),
-      logsBloom: DUMMY_LOGS_BLOOM, // TODO: ???
-      size: block.encodedLength,
-      uncles: EMTPY_UNCLES,
-
-      transactions,
-    };
-
-    const isFinalized = blockNumber <= await this.finalizedBlockNumber;
-    if (isFinalized) {
-      this.queryCache.set(cacheKey, blockData);
-    }
+    const blockData = full
+      ? blockDataFull
+      : {
+        ...blockDataFull,
+        transactions: blockDataFull.transactions.map(tx => (tx as TX).hash as `0x${string}`),
+      };
 
     return blockData;
   };
