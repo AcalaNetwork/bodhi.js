@@ -578,7 +578,10 @@ export abstract class BaseProvider extends AbstractProvider {
     if (cached) return cached;
 
     const apiAt = await this.api.at(blockHash);
-    this.apiCache.set(blockHash, apiAt);    // cache key is blockhash, so no need to check for finalization
+
+    // do we need to check for finalization here?
+    // ApiAt is only a decoration and the actuall call is through api, so should be fine?
+    this.apiCache.set(blockHash, apiAt);
 
     return apiAt;
   };
@@ -616,6 +619,10 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = header.hash.toHex();
     const blockNumber = header.number.toNumber();
 
+    const cacheKey = `block-${blockHash}`;
+    const cached = this.queryCache.get<BlockData>(cacheKey);
+    if (cached) return cached;
+
     const [block, headerExtended, timestamp, receiptsFromSubql] = await Promise.all([
       this.api.rpc.chain.getBlock(blockHash),
       this.api.derive.chain.getHeader(blockHash),
@@ -624,7 +631,7 @@ export abstract class BaseProvider extends AbstractProvider {
     ]);
 
     // blockscout need `toLowerCase`
-    const author = (await this.getEvmAddress(headerExtended.author.toString())).toLowerCase();
+    const author = (await this.getEvmAddress(headerExtended.author.toString(), blockHash)).toLowerCase();
 
     let receipts: TransactionReceipt[];
     if (receiptsFromSubql?.length) {
@@ -643,7 +650,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const gasUsed = receipts.reduce((totalGas, tx) => totalGas.add(tx.gasUsed), BIGNUMBER_ZERO);
 
-    return {
+    const blockData: BlockData = {
       hash: blockHash,
       parentHash: headerExtended.parentHash.toHex(),
       number: blockNumber,
@@ -667,6 +674,13 @@ export abstract class BaseProvider extends AbstractProvider {
 
       transactions,
     };
+
+    const isFinalized = blockNumber <= await this.finalizedBlockNumber;
+    if (isFinalized) {
+      this.queryCache.set(cacheKey, blockData);
+    }
+
+    return blockData;
   };
 
   getBlock = async (_blockHashOrBlockTag: BlockTag | string | Promise<BlockTag | string>): Promise<Block> =>
@@ -1476,14 +1490,11 @@ export abstract class BaseProvider extends AbstractProvider {
             return logger.throwArgumentError('block number should be less than u32', 'blockNumber', blockNumber);
           }
 
-          const isFinalized = blockNumber.lte(await this.finalizedBlockNumber);
           const cacheKey = `blockHash-${blockNumber.toHexString()}`;
 
-          if (isFinalized) {
-            const cached = this.queryCache.get(cacheKey);
-            if (cached) {
-              return cached;
-            }
+          const cached = this.queryCache.get(cacheKey);
+          if (cached) {
+            return cached;
           }
 
           const _blockHash = await this.api.rpc.chain.getBlockHash(blockNumber.toBigInt());
@@ -1493,6 +1504,8 @@ export abstract class BaseProvider extends AbstractProvider {
           }
           const blockHash = _blockHash.toHex();
 
+          // no need to check for canonicality here since this hash is just queries from rpc.chain.getBlockHash
+          const isFinalized = blockNumber.lte(await this.finalizedBlockNumber);
           if (isFinalized) {
             this.queryCache.set(cacheKey, blockHash);
           }
@@ -1555,18 +1568,35 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
-    const blockHash = await this._getBlockHash(await blockTag);
+    const [blockHash, blockNumber] = await Promise.all([
+      this._getBlockHash(await blockTag),
+      this._getBlockNumber(await blockTag),
+    ]);
+
+    const cacheKey = `header-${blockNumber}`;
+    const cached = this.queryCache.get<Header>(cacheKey);
+    if (cached) {
+      return cached;
+    }
 
     try {
-      const header = await this.api.rpc.chain.getHeader(blockHash);
+      const [header, isCanonical] = await Promise.all([
+        this.api.rpc.chain.getHeader(blockHash),
+        this._isBlockCanonical(blockHash, blockNumber),
+      ]);
+
+      const isFinalized = (
+        await this.finalizedBlockNumber >= blockNumber &&
+        isCanonical
+      );
+
+      if (isFinalized) {
+        this.queryCache.set(cacheKey, header);
+      }
 
       return header;
     } catch (error) {
-      if (
-        typeof error === 'object' &&
-        typeof (error as any).message === 'string' &&
-        (error as any).message.match(/Unable to retrieve header and parent from supplied hash/gi)
-      ) {
+      if ((error as any)?.message?.match?.(/Unable to retrieve header and parent from supplied hash/gi)) {
         //@ts-ignore
         return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockHash });
       }
