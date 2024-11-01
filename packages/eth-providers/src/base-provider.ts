@@ -342,7 +342,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.verbose = verbose;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.queryCache = new LRUCache({ max: storageCacheSize });
-    this.apiCache = new LRUCache({ max: storageCacheSize });
+    this.apiCache = new LRUCache({ max: 100 });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
     this.finalizedBlockHashes = new MaxSizeSet(this.maxBlockCacheSize);
 
@@ -580,7 +580,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const apiAt = await this.api.at(blockHash);
 
     // do we need to check for finalization here?
-    // ApiAt is only a decoration and the actuall call is through api, so should be fine?
+    // ApiAt is only a decoration and the actuall result is from rpc call, so should be fine?
     this.apiCache.set(blockHash, apiAt);
 
     return apiAt;
@@ -1504,7 +1504,7 @@ export abstract class BaseProvider extends AbstractProvider {
           }
           const blockHash = _blockHash.toHex();
 
-          // no need to check for canonicality here since this hash is just queries from rpc.chain.getBlockHash
+          // no need to check for canonicality here since this blockHash is just queried from rpc
           const isFinalized = blockNumber.lte(await this.finalizedBlockNumber);
           if (isFinalized) {
             this.queryCache.set(cacheKey, blockHash);
@@ -1568,28 +1568,19 @@ export abstract class BaseProvider extends AbstractProvider {
   };
 
   _getBlockHeader = async (blockTag?: BlockTag | Promise<BlockTag>): Promise<Header> => {
-    const [blockHash, blockNumber] = await Promise.all([
-      this._getBlockHash(await blockTag),
-      this._getBlockNumber(await blockTag),
-    ]);
+    const blockHash = await this._getBlockHash(await blockTag);
 
-    const cacheKey = `header-${blockNumber}`;
+    const cacheKey = `header-${blockHash}`;
     const cached = this.queryCache.get<Header>(cacheKey);
     if (cached) {
       return cached;
     }
 
     try {
-      const [header, isCanonical] = await Promise.all([
-        this.api.rpc.chain.getHeader(blockHash),
-        this._isBlockCanonical(blockHash, blockNumber),
-      ]);
+      const header = await this.api.rpc.chain.getHeader(blockHash);
 
-      const isFinalized = (
-        await this.finalizedBlockNumber >= blockNumber &&
-        isCanonical
-      );
-
+      // no need to check for canonicality here since this header is just queried from rpc
+      const isFinalized = header.number.toNumber() <= await this.finalizedBlockNumber;
       if (isFinalized) {
         this.queryCache.set(cacheKey, header);
       }
