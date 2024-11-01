@@ -650,7 +650,7 @@ export abstract class BaseProvider extends AbstractProvider {
       const transactions = receipts.map(tx => receiptToTransaction(tx, block));
       const gasUsed = receipts.reduce((totalGas, tx) => totalGas.add(tx.gasUsed), BIGNUMBER_ZERO);
 
-      const blockDataFull: BlockData = {
+      blockDataFull = {
         hash: blockHash,
         parentHash: headerExtended.parentHash.toHex(),
         number: blockNumber,
