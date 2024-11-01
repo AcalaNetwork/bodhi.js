@@ -14,6 +14,7 @@ import {
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { AccessList, accessListify } from 'ethers/lib/utils';
+import { ApiDecoration, SubmittableExtrinsic } from '@polkadot/api/types';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
 import { AsyncScheduler } from 'rxjs/internal/scheduler/AsyncScheduler';
@@ -26,7 +27,6 @@ import { Logger } from '@ethersproject/logger';
 import { ModuleEvmModuleAccountInfo } from '@polkadot/types/lookup';
 import { Network } from '@ethersproject/networks';
 import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
-import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
@@ -304,6 +304,7 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly verbose: boolean;
   readonly maxBlockCacheSize: number;
   readonly queryCache: LRUCache<string, any>;
+  readonly apiCache: LRUCache<string, ApiDecoration<'promise'>>;
   readonly blockCache: BlockCache;
   readonly finalizedBlockHashes: MaxSizeSet;
 
@@ -341,6 +342,7 @@ export abstract class BaseProvider extends AbstractProvider {
     this.verbose = verbose;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.queryCache = new LRUCache({ max: storageCacheSize });
+    this.apiCache = new LRUCache({ max: storageCacheSize });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
     this.finalizedBlockHashes = new MaxSizeSet(this.maxBlockCacheSize);
 
@@ -571,6 +573,16 @@ export abstract class BaseProvider extends AbstractProvider {
     await this.api.disconnect();
   };
 
+  getApiAt = async (blockHash: string): Promise<ApiDecoration<'promise'>> => {
+    const cached = this.apiCache.get(blockHash);
+    if (cached) return cached;
+
+    const apiAt = await this.getApiAt(blockHash);
+    this.apiCache.set(blockHash, apiAt);    // cache key is blockhash, so no need to check for finalization
+
+    return apiAt;
+  };
+
   getNetwork = async (): Promise<Network> => {
     await this.isReady();
 
@@ -678,7 +690,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    const apiAt = await this.api.at(blockHash);
+    const apiAt = await this.getApiAt(blockHash);
     const accountInfo = await apiAt.query.system.account(substrateAddress);
 
     return nativeToEthDecimal(accountInfo.data.free.toBigInt());
@@ -720,7 +732,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const contractInfo = evmAccountInfo?.contractInfo.unwrapOr(null);
     if (!contractInfo) { return '0x'; }
 
-    const apiAt = await this.api.at(blockHash);
+    const apiAt = await this.getApiAt(blockHash);
     const code = await apiAt.query.evm.codes(contractInfo.codeHash);
 
     return code.toHex();
@@ -818,7 +830,7 @@ export abstract class BaseProvider extends AbstractProvider {
       Promise.resolve(position).then(hexValue),
     ]);
 
-    const apiAt = await this.api.at(blockHash);
+    const apiAt = await this.getApiAt(blockHash);
     const code = await apiAt.query.evm.accountStorages(address, hexZeroPad(resolvedPosition, 32));
 
     return code.toHex();
@@ -1102,7 +1114,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getSubstrateAddress = async (address: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const apiAt = await this.api.at(blockHash);
+    const apiAt = await this.getApiAt(blockHash);
     const substrateAccount = await apiAt.query.evmAccounts.accounts(address);
 
     return substrateAccount.isEmpty
@@ -1112,7 +1124,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getEvmAddress = async (substrateAddress: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const apiAt = await this.api.at(blockHash);
+    const apiAt = await this.getApiAt(blockHash);
     const evmAddress = await apiAt.query.evmAccounts.evmAddresses(substrateAddress);
 
     return getAddress(evmAddress.isEmpty ? computeDefaultEvmAddress(substrateAddress) : evmAddress.toString());
@@ -1129,7 +1141,7 @@ export abstract class BaseProvider extends AbstractProvider {
       this._getBlockHash(blockTag),
     ]);
 
-    const apiAt = await this.api.at(blockHash);
+    const apiAt = await this.getApiAt(blockHash);
     const accountInfo = await apiAt.query.evm.accounts(address);
 
     return accountInfo.unwrapOr(null);
@@ -1474,11 +1486,12 @@ export abstract class BaseProvider extends AbstractProvider {
             }
           }
 
-          // TODO: test header not found should throw
-          const blockHash = (await this.api.rpc.chain.getBlockHash(blockNumber.toBigInt())).toHex();
-          // if (_blockHash.isEmpty) {
-          //   return logger.throwError('header not found', Logger.errors.CALL_EXCEPTION, { blockNumber });
-          // }
+          const _blockHash = await this.api.rpc.chain.getBlockHash(blockNumber.toBigInt());
+          if (_blockHash.isEmpty) {
+            //@ts-ignore
+            return logger.throwError('header not found', PROVIDER_ERRORS.HEADER_NOT_FOUND, { blockNumber });
+          }
+          const blockHash = _blockHash.toHex();
 
           if (isFinalized) {
             this.queryCache.set(cacheKey, blockHash);
@@ -1501,6 +1514,9 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const blockNumber = _blockNumber ?? (await this._getBlockNumber(blockHash));
     const canonicalHash = await this.api.rpc.chain.getBlockHash(blockNumber);
+    if (canonicalHash.isEmpty) {
+      return logger.throwError('header not found', Logger.errors.CALL_EXCEPTION, { blockNumber });
+    }
 
     return canonicalHash.toString() === blockHash;
   };

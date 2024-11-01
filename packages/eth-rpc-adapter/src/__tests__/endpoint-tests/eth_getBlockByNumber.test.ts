@@ -25,4 +25,9 @@ describe('eth_getBlockByNumber', () => {
       value: '0x0',
     });
   });
+
+  it('returns null when block not found', async () => {
+    const res = (await eth_getBlockByNumber([0x12345678, false])).data.result;
+    expect(res).toBeNull();
+  });
 });
