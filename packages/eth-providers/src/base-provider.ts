@@ -577,7 +577,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const cached = this.apiCache.get(blockHash);
     if (cached) return cached;
 
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await this.api.at(blockHash);
     this.apiCache.set(blockHash, apiAt);    // cache key is blockhash, so no need to check for finalization
 
     return apiAt;
