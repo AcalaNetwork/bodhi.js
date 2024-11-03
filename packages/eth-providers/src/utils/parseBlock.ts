@@ -37,7 +37,7 @@ export const getAllReceiptsAtBlock = async (
   blockHash: string,
   targetTxHash?: string
 ): Promise<TransactionReceipt[]> => {
-  const apiAtTargetBlock = await api.at(blockHash);
+  const apiAtTargetBlock = await api.at(blockHash);   // TODO: integrate cache for this
 
   const [block, blockEvents] = await Promise.all([
     api.rpc.chain.getBlock(blockHash),

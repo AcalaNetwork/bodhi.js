@@ -71,7 +71,6 @@ import {
   filterLogByTopics,
   getAllReceiptsAtBlock,
   getHealthResult,
-  getTimestamp,
   getTransactionRequest,
   hexlifyRpcResult,
   isEvmExtrinsic,
@@ -609,6 +608,12 @@ export abstract class BaseProvider extends AbstractProvider {
       : this.bestBlockNumber
   );
 
+  getTimestamp = async (blockHash: string): Promise<number> => {
+    const apiAt = await this.getApiAt(blockHash);
+    const timestamp = await apiAt.query.timestamp.now();
+    return timestamp.toNumber();
+  };
+
   getBlockData = async (_blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const header = await this._getBlockHeader(blockTag);
@@ -629,7 +634,7 @@ export abstract class BaseProvider extends AbstractProvider {
       const [block, headerExtended, timestamp, receiptsFromSubql] = await Promise.all([
         this.api.rpc.chain.getBlock(blockHash),
         this.api.derive.chain.getHeader(blockHash),
-        getTimestamp(this.api, blockHash),
+        this.getTimestamp(blockHash),
         this.subql?.getAllReceiptsAtBlock(blockHash),
       ]);
 
@@ -1408,7 +1413,7 @@ export abstract class BaseProvider extends AbstractProvider {
     result.blockNumber = startBlock;
     result.blockHash = startBlockHash;
 
-    const timestamp = await getTimestamp(this.api, result.blockHash);
+    const timestamp = await this.getTimestamp(result.blockHash);
     result.timestamp = Math.floor(timestamp / 1000);
 
     result.wait = async (confirms?: number, timeoutMs?: number) => {
