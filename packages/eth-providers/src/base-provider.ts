@@ -14,7 +14,6 @@ import {
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { AccessList, accessListify } from 'ethers/lib/utils';
-import { ApiDecoration, SubmittableExtrinsic } from '@polkadot/api/types';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
 import { AsyncScheduler } from 'rxjs/internal/scheduler/AsyncScheduler';
@@ -27,6 +26,7 @@ import { Logger } from '@ethersproject/logger';
 import { ModuleEvmModuleAccountInfo } from '@polkadot/types/lookup';
 import { Network } from '@ethersproject/networks';
 import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
+import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
 import { hexDataLength, hexValue, hexZeroPad, hexlify, isHexString, joinSignature } from '@ethersproject/bytes';
@@ -91,6 +91,7 @@ import { BlockCache, CacheInspect } from './utils/BlockCache';
 import { MaxSizeSet } from './utils/MaxSizeSet';
 import { SubqlProvider } from './utils/subqlProvider';
 import { _Metadata } from './utils/gqlTypes';
+import { apiCache } from './utils/ApiAtCache';
 
 export interface HeadsInfo {
   internalState: {
@@ -303,7 +304,6 @@ export abstract class BaseProvider extends AbstractProvider {
   readonly verbose: boolean;
   readonly maxBlockCacheSize: number;
   readonly queryCache: LRUCache<string, any>;
-  readonly apiCache: LRUCache<string, ApiDecoration<'promise'>>;
   readonly blockCache: BlockCache;
   readonly finalizedBlockHashes: MaxSizeSet;
 
@@ -341,7 +341,6 @@ export abstract class BaseProvider extends AbstractProvider {
     this.verbose = verbose;
     this.maxBlockCacheSize = maxBlockCacheSize;
     this.queryCache = new LRUCache({ max: storageCacheSize });
-    this.apiCache = new LRUCache({ max: 100 });
     this.blockCache = new BlockCache(this.maxBlockCacheSize);
     this.finalizedBlockHashes = new MaxSizeSet(this.maxBlockCacheSize);
 
@@ -572,19 +571,6 @@ export abstract class BaseProvider extends AbstractProvider {
     await this.api.disconnect();
   };
 
-  getApiAt = async (blockHash: string): Promise<ApiDecoration<'promise'>> => {
-    const cached = this.apiCache.get(blockHash);
-    if (cached) return cached;
-
-    const apiAt = await this.api.at(blockHash);
-
-    // do we need to check for finalization here?
-    // ApiAt is only a decoration and the actuall result is from rpc call, so should be fine?
-    this.apiCache.set(blockHash, apiAt);
-
-    return apiAt;
-  };
-
   getNetwork = async (): Promise<Network> => {
     await this.isReady();
 
@@ -609,7 +595,7 @@ export abstract class BaseProvider extends AbstractProvider {
   );
 
   getTimestamp = async (blockHash: string): Promise<number> => {
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
     const timestamp = await apiAt.query.timestamp.now();
     return timestamp.toNumber();
   };
@@ -717,7 +703,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
     const accountInfo = await apiAt.query.system.account(substrateAddress);
 
     return nativeToEthDecimal(accountInfo.data.free.toBigInt());
@@ -759,7 +745,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const contractInfo = evmAccountInfo?.contractInfo.unwrapOr(null);
     if (!contractInfo) { return '0x'; }
 
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
     const code = await apiAt.query.evm.codes(contractInfo.codeHash);
 
     return code.toHex();
@@ -796,7 +782,7 @@ export abstract class BaseProvider extends AbstractProvider {
     callRequest: SubstrateEvmCallRequest,
     at?: string,
   ): Promise<CallReturnInfo> => {
-    const api = at ? await this.api.at(at) : this.api;
+    const api = at ? await apiCache.getApiAt(this.api, at) : this.api;
 
     // call evm rpc when `state_call` is not supported yet
     if (!api.call.evmRuntimeRPCApi) {
@@ -857,7 +843,7 @@ export abstract class BaseProvider extends AbstractProvider {
       Promise.resolve(position).then(hexValue),
     ]);
 
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
     const code = await apiAt.query.evm.accountStorages(address, hexZeroPad(resolvedPosition, 32));
 
     return code.toHex();
@@ -961,7 +947,7 @@ export abstract class BaseProvider extends AbstractProvider {
     extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>,
     at?: string,
   ) => {
-    const apiAt = await this.api.at(at ?? await this.bestBlockHash);
+    const apiAt = await apiCache.getApiAt(this.api, at ?? await this.bestBlockHash);
 
     const u8a = extrinsic.toU8a();
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
@@ -1141,7 +1127,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getSubstrateAddress = async (address: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
     const substrateAccount = await apiAt.query.evmAccounts.accounts(address);
 
     return substrateAccount.isEmpty
@@ -1151,7 +1137,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getEvmAddress = async (substrateAddress: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
     const evmAddress = await apiAt.query.evmAccounts.evmAddresses(substrateAddress);
 
     return getAddress(evmAddress.isEmpty ? computeDefaultEvmAddress(substrateAddress) : evmAddress.toString());
@@ -1168,7 +1154,7 @@ export abstract class BaseProvider extends AbstractProvider {
       this._getBlockHash(blockTag),
     ]);
 
-    const apiAt = await this.getApiAt(blockHash);
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
     const accountInfo = await apiAt.query.evm.accounts(address);
 
     return accountInfo.unwrapOr(null);
