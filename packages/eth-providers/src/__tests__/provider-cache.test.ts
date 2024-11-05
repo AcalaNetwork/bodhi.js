@@ -9,7 +9,7 @@ dotenv.config();
 
 const ACALA_NODE_URL = 'wss://acala-rpc.dwellir.com';
 
-describe.only('provider cache', async () => {
+describe.concurrent('provider cache', async () => {
   let provider: EvmRpcProvider;
   let provider2: EvmRpcProvider;
 
