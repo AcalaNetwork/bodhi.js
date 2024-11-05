@@ -55,47 +55,6 @@ describe('getReceiptAtBlock', async () => {
   });
 });
 
-// TODO: maybe setup a subway to test
-describe.skip('all cache', async () => {
-  const provider = EvmRpcProvider.from(ACALA_NODE_URL);
-  await provider.isReady();
-
-  afterAll(async () => await provider.disconnect());
-
-  it('getBlockHeader at latest block => header cache', async () => {
-    const { time: time1, res: header1 } = await runWithTiming(() => provider._getBlockHeader('latest'), 1);
-    const { time: time2, res: header2 } = await runWithTiming(() => provider._getBlockHeader('latest'), 1);
-
-    // latest header should already be cached at the start
-    console.log('latest header:', { time1, time2 });
-    expect(time1).to.be.lt(10);
-    expect(time2).to.be.lt(10);
-    expect(header1.toJSON()).to.deep.equal(header2.toJSON());
-  });
-
-  it('getBlockHeader at random block => header cache', async () => {
-    const { time: time1, res: header1 } = await runWithTiming(() => provider._getBlockHeader(1234567), 1);
-    const { time: time2, res: header2 } = await runWithTiming(() => provider._getBlockHeader(1234567), 1);
-
-    // second time should be 100x faster with cache, in poor network 800ms => 0.5ms
-    console.log('getBlockHeader:', { time1, time2 });
-    expect(time2).to.be.lt(time1 / 20); // conservative multiplier
-    expect(time2).to.be.lt(10); // no async call
-    expect(header1.toJSON()).to.deep.equal(header2.toJSON());
-  });
-
-  it('getBlockData at random block => header cache + storage cache + receipt cache', async () => {
-    const { time: time1, res: blockData1 } = await runWithTiming(() => provider.getBlockData(1234321), 1);
-    const { time: time2, res: blockData2 } = await runWithTiming(() => provider.getBlockData(1234321), 1);
-
-    // second time should be 100x faster with cache, usually 1500ms => 3ms
-    console.log('getBlockData: ', { time1, time2 });
-    expect(time2).to.be.lt(time1 / 20); // conservative multiplier
-    expect(time2).to.be.lt(30); // no async call
-    expect(blockData1).to.deep.equal(blockData2);
-  });
-});
-
 describe.concurrent('rpc test', async () => {
   const provider = EvmRpcProvider.from(endpoint);
 
