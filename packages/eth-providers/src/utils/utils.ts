@@ -1,4 +1,5 @@
 import { AnyFunction } from '@polkadot/types/types';
+import { ApiPromise } from '@polkadot/api';
 import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
 import { Extrinsic } from '@polkadot/types/interfaces';
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';

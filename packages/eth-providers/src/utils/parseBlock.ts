@@ -15,6 +15,7 @@ import { GenericExtrinsic } from '@polkadot/types';
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
 import { BIGNUMBER_ZERO, ONE_HUNDRED_GWEI } from '../consts';
+import { apiCache } from './ApiAtCache';
 import {
   findEvmEvent,
   formatter,
@@ -37,26 +38,32 @@ export const getAllReceiptsAtBlock = async (
   blockHash: string,
   targetTxHash?: string
 ): Promise<TransactionReceipt[]> => {
-  const apiAtTargetBlock = await api.at(blockHash);
+  const apiAt = await apiCache.getApiAt(api, blockHash);
 
   const [block, blockEvents] = await Promise.all([
     api.rpc.chain.getBlock(blockHash),
-    apiAtTargetBlock.query.system.events(),
+    apiAt.query.system.events(),
   ]);
 
-  return parseReceiptsFromBlockData(api, block, blockEvents, targetTxHash);
+  return await parseReceiptsFromBlockData(api, block, blockEvents, targetTxHash, true);
 };
 
 export const parseReceiptsFromBlockData = async (
   api: ApiPromise,
   block: SignedBlock,
   blockEvents: FrameSystemEventRecord[],
-  targetTxHash?: string
+  targetTxHash?: string,
+  // this method is also used by subql, so disable cacheing by default to avoid potential compatibilty issues
+  useCache: boolean = false,
 ): Promise<TransactionReceipt[]> => {
   const { header } = block.block;
   const blockNumber = header.number.toNumber();
   const blockHash = header.hash.toHex();
-  const _apiAtParentBlock = api.at(header.parentHash); // don't wait here in case not being used
+
+  // don't wait here in case not being used
+  const _apiAtParentBlock = useCache
+    ? apiCache.getApiAt(api, header.parentHash.toHex())
+    : api.at(header.parentHash);
 
   const succeededEvmExtrinsics = block.block.extrinsics
     .map((extrinsic, idx) => {
