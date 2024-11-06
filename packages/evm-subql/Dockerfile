@@ -32,4 +32,4 @@ WORKDIR /app
 
 # has to override entry point for now
 # https://github.com/subquery/subql/pull/2344
-ENTRYPOINT ["/sbin/tini", "--", "/bin/run"],
+ENTRYPOINT ["/sbin/tini", "--", "/bin/run"]
