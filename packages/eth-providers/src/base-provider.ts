@@ -40,6 +40,7 @@ import {
   CACHE_SIZE_WARNING,
   DUMMY_BLOCK_NONCE,
   DUMMY_LOGS_BLOOM,
+  DUMMY_SUBSTRATE_ADDR,
   EMPTY_HEX_STRING,
   EMTPY_UNCLES,
   EMTPY_UNCLE_HASH,
@@ -624,8 +625,8 @@ export abstract class BaseProvider extends AbstractProvider {
         this.subql?.getAllReceiptsAtBlock(blockHash),
       ]);
 
-      // blockscout need `toLowerCase`
-      const author = (await this.getEvmAddress(headerExtended.author.toString(), blockHash)).toLowerCase();
+      const authorSubstrate = headerExtended.author?.toString() ?? DUMMY_SUBSTRATE_ADDR;
+      const author = (await this.getEvmAddress(authorSubstrate, blockHash)).toLowerCase();  // blockscout need `toLowerCase`
 
       let receipts: TransactionReceipt[];
       if (receiptsFromSubql?.length) {

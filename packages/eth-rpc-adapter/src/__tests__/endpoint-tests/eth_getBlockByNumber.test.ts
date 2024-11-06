@@ -5,6 +5,15 @@ import { deployErc20, eth_getBlockByHash, eth_getBlockByNumber, testSetup } from
 const { wallet, provider } = testSetup;
 
 describe('eth_getBlockByNumber and eth_getBlockByHash', () => {
+  it('get genesis block info', async () => {
+    const res = (await eth_getBlockByNumber(['0x0', false])).data.result;
+    expect(res.number).to.eq('0x0');
+
+    const genesisHash = res.hash;
+    const resByHash = (await eth_getBlockByHash([genesisHash, false])).data.result;
+    expect(resByHash).to.deep.equal(res);
+  });
+
   it('get correct block info', async () => {
     const token = await deployErc20(wallet);
     const txHash = token.deployTransaction.hash;
