@@ -1,4 +1,4 @@
-FROM node:16-alpine as builder
+FROM node:18-alpine as builder
 LABEL maintainer="hello@acala.network"
 
 WORKDIR /app
@@ -18,11 +18,14 @@ RUN yarn build
 
 # =============
 
-FROM node:16-alpine
+FROM node:18-alpine
 LABEL maintainer="hello@acala.network"
 
 COPY --from=builder /app/package.json /app/.yarnrc.yml /app/
 COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/packages/eth-rpc-adapter/node_modules /app/packages/eth-rpc-adapter/node_modules
+# COPY --from=builder /app/packages/eth-transactions/node_modules /app/packages/eth-transactions/node_modules  # don't exist
+# COPY --from=builder /app/packages/eth-providers/node_modules /app/packages/eth-providers/node_modules        # don't exist
 
 COPY --from=builder /app/packages/eth-rpc-adapter/package.json /app/packages/eth-rpc-adapter/package.json
 COPY --from=builder /app/packages/eth-transactions/package.json /app/packages/eth-transactions/package.json
@@ -31,10 +34,6 @@ COPY --from=builder /app/packages/eth-providers/package.json /app/packages/eth-p
 COPY --from=builder /app/packages/eth-rpc-adapter/lib /app/packages/eth-rpc-adapter/lib
 COPY --from=builder /app/packages/eth-transactions/lib /app/packages/eth-transactions/lib
 COPY --from=builder /app/packages/eth-providers/lib /app/packages/eth-providers/lib
-
-COPY --from=builder /app/packages/eth-rpc-adapter/node_modules /app/packages/eth-rpc-adapter/node_modules
-COPY --from=builder /app/packages/eth-transactions/node_modules /app/packages/eth-transactions/node_modules
-# COPY --from=builder /app/packages/eth-providers/node_modules /app/packages/eth-providers/node_modules     # don't exist
 
 WORKDIR /app/packages/eth-rpc-adapter
 

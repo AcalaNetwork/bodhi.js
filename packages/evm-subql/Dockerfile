@@ -1,4 +1,4 @@
-FROM node:16-alpine as builder
+FROM node:18-alpine as builder
 LABEL maintainer="hello@acala.network"
 
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN yarn workspace @acala-network/evm-subql pack
 
 # =============
 
-FROM subquerynetwork/subql-node-substrate:v3.10.1
+FROM onfinality/subql-node:v5.2.9
 LABEL maintainer="hello@acala.network"
 
 # subql node changed defualt user to USER 1000
@@ -29,7 +29,3 @@ RUN tar -xvzf /tmp/package.tgz
 RUN mv /package /app
 RUN rm -rf /tmp
 WORKDIR /app
-
-# has to override entry point for now
-# https://github.com/subquery/subql/pull/2344
-ENTRYPOINT ["/sbin/tini", "--", "/bin/run"],
