@@ -13,6 +13,7 @@ import {
 import { FrameSystemEventRecord } from '@polkadot/types/lookup';
 import { GenericExtrinsic } from '@polkadot/types';
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
+import { Vec } from '@polkadot/types-codec';
 
 import { BIGNUMBER_ZERO, ONE_HUNDRED_GWEI } from '../consts';
 import { apiCache } from './ApiAtCache';
@@ -32,17 +33,16 @@ import {
   isTxFeeEvent,
   nativeToEthDecimal,
 } from './utils';
+import { queryStorage } from './queryStoarge';
 
 export const getAllReceiptsAtBlock = async (
   api: ApiPromise,
   blockHash: string,
   targetTxHash?: string
 ): Promise<TransactionReceipt[]> => {
-  const apiAt = await apiCache.getApiAt(api, blockHash);
-
   const [block, blockEvents] = await Promise.all([
     api.rpc.chain.getBlock(blockHash),
-    apiAt.query.system.events(),
+    queryStorage<Vec<FrameSystemEventRecord>>(api, 'system.events', [], blockHash),
   ]);
 
   return await parseReceiptsFromBlockData(api, block, blockEvents, targetTxHash, true);
