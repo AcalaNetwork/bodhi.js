@@ -1138,7 +1138,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = await this._getBlockHash(blockTag);
     const substrateAccount = await queryStorage<Option<AccountId32>>(
       this.api,
-      'evm.accounts',
+      'evmAccounts.accounts',
       [address],
       blockHash
     );
