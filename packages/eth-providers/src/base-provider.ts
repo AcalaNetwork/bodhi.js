@@ -955,7 +955,7 @@ export abstract class BaseProvider extends AbstractProvider {
     extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>,
     at?: string,
   ) => {
-    const blockHash = at ?? await this._getBlockHash('latest');
+    const blockHash = at ?? this.bestBlockHash;
     const apiAt = await apiCache.getApiAt(this.api, blockHash);
 
     const u8a = extrinsic.toU8a();
