@@ -535,6 +535,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
   get isSafeMode(): boolean {
     return this.safeMode;
+
   }
 
   isReady = async (): Promise<void> => {
