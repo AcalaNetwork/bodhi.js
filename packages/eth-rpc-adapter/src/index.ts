@@ -18,6 +18,7 @@ export async function start(): Promise<void> {
     subqlUrl: opts.subqlUrl,
     maxBlockCacheSize: opts.maxBlockCacheSize,
     storageCacheSize: opts.storageCacheSize,
+    rpcCacheCapacity: opts.rpcCacheCapacity,
   });
 
   const bridge = new Eip1193Bridge(provider);
@@ -58,8 +59,9 @@ export async function start(): Promise<void> {
   server host     : ${opts.host}
   server port     : ${opts.port}
   max blockCache  : ${opts.maxBlockCacheSize}
-  max batchSize   : ${opts.maxBatchSize}  
+  max batchSize   : ${opts.maxBatchSize}
   max storageSize : ${opts.storageCacheSize}
+  cache capacity  : ${opts.rpcCacheCapacity}
   safe mode       : ${opts.safeMode}
   local mode      : ${opts.localMode}
   http only       : ${opts.httpOnly}

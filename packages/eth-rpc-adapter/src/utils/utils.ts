@@ -11,6 +11,7 @@ const {
   MAX_CACHE_SIZE,
   MAX_BATCH_SIZE,
   STORAGE_CACHE_SIZE,
+  RPC_CACHE_CAPACITY,
   SAFE_MODE,
   LOCAL_MODE,
   HTTP_ONLY,
@@ -74,6 +75,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       default: Number(STORAGE_CACHE_SIZE ?? 5000),
       describe: 'max storage cache size',
+      type: 'number',
+    },
+    rpcCacheCapacity: {
+      demandOption: false,
+      default: Number(RPC_CACHE_CAPACITY ?? 1000),
+      describe: 'polkadot api rpc cache capacity',
       type: 'number',
     },
     safeMode: {
