@@ -514,7 +514,7 @@ describe('eth call error handling', () => {
   });
 });
 
-describe.only('query storage', () => {
+describe('query storage', () => {
   let api: ApiPromise;
 
 
@@ -526,7 +526,7 @@ describe.only('query storage', () => {
     await api.disconnect();
   });
 
-  it.only('timestamp.now', async () => {
+  it('timestamp.now', async () => {
     const _testQueryStorage = async (blockHash: string) => {
       const timestamp = await queryStorage(
         api,
