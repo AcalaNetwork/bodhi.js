@@ -10,13 +10,11 @@ import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/MandalaAddress';
 
 import { EvmRpcProvider } from '../rpc-provider';
-import { calcEthereumTransactionParams } from '../utils';
-import { computeDefaultSubstrateAddress } from '../utils/address';
-import evmAccounts from './utils/evmAccounts';
+import { calcEthereumTransactionParams, computeDefaultSubstrateAddress } from '../utils';
+import { evmAccounts, nodeUrl } from './utils';
 
 describe('transaction tests', () => {
-  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
-  const provider = EvmRpcProvider.from(endpoint);
+  const provider = EvmRpcProvider.from(nodeUrl);
 
   const account1 = evmAccounts[0];
   const account2 = evmAccounts[1];

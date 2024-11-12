@@ -1,4 +1,4 @@
-export default [
+export const evmAccounts = [
   {
     privateKey: '0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f',
     evmAddress: '0x75E480dB528101a381Ce68544611C169Ad7EB342',

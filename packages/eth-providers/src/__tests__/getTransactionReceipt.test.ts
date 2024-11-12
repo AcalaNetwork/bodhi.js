@@ -1,16 +1,15 @@
 import { Contract } from '@ethersproject/contracts';
 import { Wallet } from '@ethersproject/wallet';
 import { afterAll, describe, expect, it } from 'vitest';
+import { parseUnits } from 'ethers/lib/utils';
 import ACAABI from '@acala-network/contracts/build/contracts/Token.json';
 import ADDRESS from '@acala-network/contracts/utils/AcalaAddress';
 
 import { EvmRpcProvider } from '../rpc-provider';
-import { parseUnits } from 'ethers/lib/utils';
-import evmAccounts from './utils/evmAccounts';
+import { evmAccounts, nodeUrl } from './utils';
 
 describe('TransactionReceipt', async () => {
-  const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
-  const provider = EvmRpcProvider.from(endpoint);
+  const provider = EvmRpcProvider.from(nodeUrl);
   await provider.isReady();
 
   afterAll(async () => {
