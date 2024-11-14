@@ -1,8 +1,7 @@
 # @acala-network/evm-subql
 Subquery services that index and query Acala EVM+ transactions and logs.
 
-## Run
-### Run with Docker
+## Run with Docker
 ```shell
 docker compose down -v      # clean docker volume
 docker compose up
@@ -24,7 +23,7 @@ INFO Enqueueing blocks 1102570...1102590, total 20 blocks
 
 We start indexing from block 1102550 for Acala as defined in the [config file](./project-acala.ts), since the first acala evm tx is at block 1102550.
 
-#### query the data
+### query the data
 We now check if the whole stack works as expected by querying the data via subql query service at `http://localhost:3001`
 
 ```graphql
@@ -78,7 +77,12 @@ query {
 }
 ```
 
-### Run with npm locally
+### Connect with eth rpc
+As the subql query is running, we can now start the eth rpc with `SUBQL_URL=http://localhost:3001` so that it can query the data from subql query service.
+
+For example, when we query `eth_getTransactionByHash` or `eth_getLogs`, the eth rpc will internally query the requested data from subql query. ([more details](https://evmdocs.acala.network/miscellaneous/faqs#when-do-i-need-to-provide-subquery-url-for-eth-rpc-adpater-or-evmrpcprovider))
+
+## Run with npm locally
 For production it's recommended to use [docker setup](#run-with-docker), but if you don't want to use Docker, you can still run each service locally ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
 
 - install deps and build subql types and code locally
@@ -133,7 +137,7 @@ subql-query \
   --indexer http://localhost:3000
 ```
 
-now we should be able to [query the data](#query-the-data) via `http://localhost:3001`
+now we should be able to [query the data](#query-the-data) via `http://localhost:3001`, and [connect with eth rpc](#connect-with-eth-rpc).
 
 ## Latest stable versions:
 - eth rpc: `acala/eth-rpc-adapter:2.9.4`
