@@ -604,7 +604,7 @@ export abstract class BaseProvider extends AbstractProvider {
   getBlockData = async (_blockTag: BlockTag | Promise<BlockTag>, full?: boolean): Promise<BlockData> => {
     const blockTag = await this._ensureSafeModeBlockTagFinalization(_blockTag);
     const header = await this._getBlockHeader(blockTag);
-    return this.getBlockDataForHeader(header, full);
+    return await this.getBlockDataForHeader(header, full);
   };
 
   getBlockDataForHeader = async (header: Header, full?: boolean): Promise<BlockData> => {
