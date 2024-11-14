@@ -66,16 +66,18 @@ const KARURA_BASE = {
 export const PROJECT_PARAMS = {
   acala: {
     ...ACALA_BASE,
-    startBlock: 1,
+    startBlock: 1102550,
   },
+  // keep this for backward compatibility
   acala840000: {
     ...ACALA_BASE,
     startBlock: 840000,
   },
   karura: {
     ...KARURA_BASE,
-    startBlock: 1,
+    startBlock: 1818562,
   },
+  // keep this for backward compatibility
   karura1780000: {
     ...KARURA_BASE,
     startBlock: 1780000,

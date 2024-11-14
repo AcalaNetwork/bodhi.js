@@ -1,116 +1,30 @@
 # @acala-network/evm-subql
-
 Subquery services that index and query Acala EVM+ transactions and logs.
 
-## Run
-
-### Prepare
-
-- install dependencies
-
-```
-yarn
-```
-
-- generate the required types from the GraphQL schema, and build code
-
+## Run with Docker
 ```shell
-yarn build
+docker compose down -v      # clean docker volume
+docker compose up
 ```
 
-### Run all of the services using Docker
+This will run all 3 services together:
+- a postgres database
+- a subql node indexer that indexes data into postgres
+- a subql query service that wraps the data with GraphQl interface, so we can query the data via GraphQl API
 
-This will run all 4 services together:
-1. A Mandala node with `--instant-sealing` in development mode
-2. A Postgres database
-3. A SubQl indexer that indexes data into Postgres
-4. A SubQl query that wraps the data with GraphQl interface
+Note that docker compose is for demo purpose, and in production we usually need to start each of the `{ postgres, indexer, query }` seperately, so it's more flexible and controllable.
 
-```shell
-docker-compose down -v      # clean docker volume (optional)
-
-docker-compose up
+subql node should output something like this
+```
+INFO Node started on port: 3000
+INFO Enqueueing blocks 1102550...1102570, total 20 blocks
+INFO Enqueueing blocks 1102570...1102590, total 20 blocks
 ```
 
-Please note that the indexer won't start until we [feed some transactions to the node](#feed-evm-transactions-to-node) if the node is running with `--instant-sealing` 
+We start indexing from block 1102550 for Acala as defined in the [config file](./project-acala.ts), since the first acala evm tx is at block 1102550.
 
-### Run each service in the CLI seperately
-
-Optionally, if you don't want to use the Docker, you can also run each service separately in the CLI ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)). 
-
-NOTE: using CLI is for **local testing** only, so you can get familiar with each service. [For production](#for-production) please use docker setup instead.
-
-1. Install SubQl globally
-
-```shell
-npm i -g @subql/node@3.10.1 @subql/query@2.10.0
-```
-
-2. Run an [Acala](https://github.com/AcalaNetwork/Acala) node locally and listen to port number `9944` (in the first terminal)
-
-If you already have a node running elsewhere, you can skip this step.
-
-```shell
-docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-16f147e --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
-```
-
-3. Run a Postgres service and listen to port number 5432 (in the second terminal)
-
-```shell
-docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
-```
-
-4. [Feed some transactions to node](#feeding-evm-transactions-to-the-node) if the node is running with `--instant-sealing`
-
-5. Run a subquery indexer (in the third terminal)
-
-```shell
-export DB_USER=postgres
-export DB_PASS=postgres
-export DB_DATABASE=postgres
-export DB_HOST=localhost
-export DB_PORT=5432
-
-yarn index
-```
-
-6. Run the Query service (in the fourth terminal)
-
-```shell
-export DB_USER=postgres
-export DB_PASS=postgres
-export DB_DATABASE=postgres
-export DB_HOST=localhost
-export DB_PORT=5432
-
-yarn query
-```
-
-### Feeding EVM transactions to the node
-
-If the acala node is running with `--instant-sealing`, it won't start producing blocks without transactions coming in, and subquery indexer won't start either without any new blocks. So we need to feed some transactions to it. 
-
-For example we can run any of the [evm examples](https://github.com/AcalaNetwork/bodhi.js/tree/master/examples).
-
-```shell
-cd ../../examples/waffle/dex
-yarn build 
-yarn test
-```
-
-If there are any transactions in the node, we should see the subquery indexer log something similar to this:
-
-```shell
-<BlockDispatcherService> INFO Enqueing blocks 3...12, total 10 blocks
-<BlockDispatcherService> INFO fetch block [3,12], total 10 blocks
-...
-```
-
-## Query Data
-
-Now we can explore the GraphQl data at [`http://localhost:3001/`](http://localhost:3001/) 🎉🎉
-
-For example we can query:
+### query the data
+We now check if the whole stack works as expected by querying the data via subql query service at `http://localhost:3001`
 
 ```graphql
 query {
@@ -163,45 +77,88 @@ query {
 }
 ```
 
-## For Production
+### Connect with eth rpc
+As the subql query is running, we can now start the eth rpc with `SUBQL_URL=http://localhost:3001` so that it can query the data from subql query service.
 
-Previous examples are examples of the **local development setup**, which uses the [example configuration](./project.yaml) that is tailored to local development node. 
+For example, when we query `eth_getTransactionByHash` or `eth_getLogs`, the eth rpc will internally query the requested data from subql query. ([more details](https://evmdocs.acala.network/miscellaneous/faqs#when-do-i-need-to-provide-subquery-url-for-eth-rpc-adpater-or-evmrpcprovider))
 
-For production deployment, there are a couple differences: 
+## Build and Run Locally with npm
+For production it's recommended to use [docker setup](#run-with-docker), but if you don't want to use Docker, you can still run each service locally ([subquery docs](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
 
-#### services
-In local setup we can run all of the services together with one single [docker compose](./docker-compose.yml). However, in prod we  usually need to start each of the `{ node, postgres, indexer, query }` seperately with Docker or k8s.
+install deps and build subql types and code locally
+```
+yarn
+yarn build
+```
 
-#### image
-In the local example, we use `subquerynetwork/subql-node-substrate:v3.10.1` as indexer image, which requires **local mounted project path**. For prod we should use [acala/evm-subql](https://hub.docker.com/r/acala/evm-subql/tags) instead, which already has all the required files encapsulated, so we don't need to mount local files anymore.
+install subql cli globally
+```shell
+npm i -g @subql/node@5.2.9 @subql/query@2.10.0
+```
 
-An example is [here](../docker-compose-example.yml#L27)
+run a postgres db (in the second terminal). For production you can use other postgres providers such as AWS RDS, this is only for demo purpose.
+```shell
+docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
+```
 
-Latest stable versions:
-- `acala/eth-rpc-adapter:2.8.1`
-- `acala/evm-subql:2.8.1`
-- `subquerynetwork/subql-query:v2.10.0`
+run a subql node indexer (in the third terminal)
+```shell
+export TZ=UTC
+export DB_USER=postgres
+export DB_PASS=postgres
+export DB_DATABASE=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
 
-#### config
-One trick is that we don't have to start indexing from block 0, since Acala and Karura didn't enable EVM+ until a certain block. In particular we can use these two configs for production (change the `endpoint` value to your custom one if needed):
+  subql-node \
+    -f ./project-acala.yaml \
+    --network-endpoint wss://acala-rpc.aca-api.network \
+    --db-schema evm-acala \
+    --batch-size 20 \
+    --workers 2 \
+    --store-flush-interval 10 \
+    --log-level info \
+    --disable-historical \
+    --scale-batch-size \
+    --unsafe
+```
 
-- [Acala production](./project-acala-840000.yaml), by setting `-f=/app/project-acala-840000.yaml`
-- [Karura production](./project-karura-1780000.yaml), by setting `-f=/app/project-karura-1780000.yaml`
+run a subql query service (in the fourth terminal)
+```shell
+export DB_USER=postgres
+export DB_PASS=postgres
+export DB_DATABASE=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
 
+subql-query \
+  --name evm-acala \
+  --playground \
+  --indexer http://localhost:3000
+```
 
-It usually takes 1 to 3 days to index all of the data, depending on the node latency and performance.
+now we should be able to [query the data](#query-the-data) via `http://localhost:3001`, and [connect with eth rpc](#connect-with-eth-rpc).
 
-### Upgrade Production Subquery
-To upgrade the production subql, we usually need to do a full re-index. In order not to interrupt the currnetly running subql, we can run another indexer in parallel to the old one, and hot replace the old one once the full re-index is finished. 
+## Latest Stable Versions
+- eth rpc: `acala/eth-rpc-adapter:2.9.4`
+- subql node: `acala/evm-subql:2.9.4` (or `@subql/node@5.2.9`)
+- subql query: `subquerynetwork/subql-query:v2.10.0` (or `@subql/query@2.10.0`)
+
+[release page](https://github.com/AcalaNetwork/bodhi.js/releases)
+
+## Upgrade Subquery
+To upgrade subql, we usually **DO NOT** need to reindex from the beginning, which means we don't need to clear the db. We just need to upgrade the `acala/evm-subql` image version and restart the indexer, it should just continue indexing from the last indexed block. We also usually **DO NOT** need to touch subql query service.
+
+If you are running subql node locally, just pull the latest code and run `yarn build`, then run `yarn index` again to restart the indexer.
+
+In rare cases, we might need to do a full re-index (we will explicitly state in the release note when this is needed). In order not to interrupt the currnetly running subql, we can run another indexer in parallel to the old one, and hot replace the old one once the full re-index is finished.
 
 Below are the detailed steps:
-1) start a new indexer service `acala/evm-subql` that uses a difference `--db-schema`, for example, `--db-schema=evm-acala`. It can share the same DB with the old indexer
+1) start a new indexer service `acala/evm-subql` that uses a difference `--db-schema`, for example, `--db-schema=evm-acala-2`. It can share the same DB with the old indexer
 2) wait until the new indexer finish indexing
-3) update the config of graphql service `subquerynetwork/subql-query` to use the new indexer. In particular, change the `--name` command, such as `--name=evm-acala`, and `--indexer=<new indexer url>`
+3) update the config of graphql service `subquerynetwork/subql-query` to use the new indexer. In particular, change the `--name` command to `--name=evm-acala-2`, and `--indexer=<new subql node url>`
 4) delete the old indexer service, as well as the old db schema
 5) upgrade is finished! No need to modify `eth-rpc-adapter`
-
-Note: for `acala/evm-subql:v2.5.9` please add `--disable-historical` command. ([example](https://github.com/AcalaNetwork/bodhi.js/blob/d763bc588a4a90e4421d65ebfe1d95ba581c6d37/evm-subql/docker-compose.yml#L52))
 
 ## Dump and Restore Database
 Sometimes it's useful to take a snapshot of the database, so that we can restore it when needed. We can also pass it along to others, so that they can quickly setup a copy of the same evm subql project, without needing to index from the beginning.
@@ -209,13 +166,13 @@ Sometimes it's useful to take a snapshot of the database, so that we can restore
 Below are CLI commands to do it, you can also use pgAdmin GUI to achieve the same thing.
 
 ### install postgres CLI
-make sure you have `pg_dump` and `pg_restore` commands available. 
+make sure you have `pg_dump` and `pg_restore` commands available.
 
 - for Mac: `brew install libpq`
 - for other OS: `you are on your own`
 
 ### dump database
-suppose we have an `evm-karura` schema in `postgres` db, and we want to dump it to a tar file `evm-karura.tgz`.
+suppose we have an `evm-acala` schema in `postgres` db, and we want to dump it to a tar file `evm-acala.tgz`.
 ```
 export PGPASSWORD=<password>
 pg_dump                   \
@@ -224,13 +181,13 @@ pg_dump                   \
   --dbname postgres       \
   --username postgres     \
   --format tar            \
-  --file ./evm-karura.tgz \
-  --schema evm-karura     \
+  --file ./evm-acala.tgz \
+  --schema evm-acala     \
   --verbose
 ```
 
 ### restore database
-in previous step we dumped data from `evm-karura` schema in database `postgres`, so when restoring data, we need to first make sure a db called `postgres` exists, and it does **NOT** have `evm-karura` schema. Then we can restore the database with the following command
+in previous step we dumped data from `evm-acala` schema in database `postgres`, so when restoring data, we need to first make sure a db called `postgres` exists, and it does **NOT** have `evm-acala` schema. Then we can restore the database with the following command
 ```
 export PGPASSWORD=<password>
 pg_restore             \
@@ -239,11 +196,11 @@ pg_restore             \
   --dbname postgres    \
   --username postgres  \
   --verbose            \
-  ./evm-karura.tgz
+  ./evm-acala.tgz
 ```
 
-### (optional) rename schema
-Since we dumped `evm-karura` schema, the restore process will create a new schema with the same name. If you want to use a different name, you can simply rename `evm-karura` schema to the desired name after the restore process. 
+### rename schema (optional)
+Since we dumped `evm-acala` schema, the restore process will create a new schema with the same name. If you want to use a different name, you can simply rename `evm-acala` schema to the desired name after the restore process.
 
 This can be done with pgAdmin by:
 - right click the schema name
@@ -251,8 +208,7 @@ This can be done with pgAdmin by:
 - enter a new name and save
 
 ## More References
-
 - [SubQuery official documentation](https://doc.subquery.network/)
 - [About the unsafe flag](https://academy.subquery.network/run_publish/references.html#unsafe-node-service)
-- [Acala EVM+ documentation](https://evmdocs.acala.network/network/network-setup/local-development-network)
+- [Acala EVM+ documentation](https://evmdocs.acala.network/)
 - [Subql Quick Migration Guide](https://hackmd.io/Z3ka28y4Tky6sHPsQVt2lw)
