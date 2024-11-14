@@ -82,10 +82,10 @@ As the subql query is running, we can now start the eth rpc with `SUBQL_URL=http
 
 For example, when we query `eth_getTransactionByHash` or `eth_getLogs`, the eth rpc will internally query the requested data from subql query. ([more details](https://evmdocs.acala.network/miscellaneous/faqs#when-do-i-need-to-provide-subquery-url-for-eth-rpc-adpater-or-evmrpcprovider))
 
-## Run with npm locally
-For production it's recommended to use [docker setup](#run-with-docker), but if you don't want to use Docker, you can still run each service locally ([official documentation](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
+## Build and Run Locally with npm
+For production it's recommended to use [docker setup](#run-with-docker), but if you don't want to use Docker, you can still run each service locally ([subquery docs](https://academy.subquery.network/run_publish/run.html#running-an-indexer-subql-node)).
 
-- install deps and build subql types and code locally
+install deps and build subql types and code locally
 ```
 yarn
 yarn build
@@ -96,12 +96,12 @@ install subql cli globally
 npm i -g @subql/node@5.2.9 @subql/query@2.10.0
 ```
 
-run a Postgres db and listen to port number 5432 (in the second terminal)
+run a postgres db (in the second terminal). For production you can use other postgres providers such as AWS RDS, this is only for demo purpose.
 ```shell
 docker run -it -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:12-alpine
 ```
 
-run a subql node indexer
+run a subql node indexer (in the third terminal)
 ```shell
 export TZ=UTC
 export DB_USER=postgres
@@ -123,7 +123,7 @@ export DB_PORT=5432
     --unsafe
 ```
 
-run a subql query service
+run a subql query service (in the fourth terminal)
 ```shell
 export DB_USER=postgres
 export DB_PASS=postgres
@@ -139,17 +139,17 @@ subql-query \
 
 now we should be able to [query the data](#query-the-data) via `http://localhost:3001`, and [connect with eth rpc](#connect-with-eth-rpc).
 
-## Latest stable versions:
+## Latest Stable Versions
 - eth rpc: `acala/eth-rpc-adapter:2.9.4`
 - subql node: `acala/evm-subql:2.9.4` (or `@subql/node@5.2.9`)
 - subql query: `subquerynetwork/subql-query:v2.10.0` (or `@subql/query@2.10.0`)
 
 [release page](https://github.com/AcalaNetwork/bodhi.js/releases)
 
-## Upgrade subquery version
-To upgrade the production subql, we usually **do not** need to reindex from the beginning. Just upgrade the `acala/evm-subql` image version, and it should just continue indexing from the last indexed block. We also do not need to touch subql query service.
+## Upgrade Subquery
+To upgrade subql, we usually **DO NOT** need to reindex from the beginning, which means we don't need to clear the db. We just need to upgrade the `acala/evm-subql` image version and restart the indexer, it should just continue indexing from the last indexed block. We also usually **DO NOT** need to touch subql query service.
 
-If you are running subql node locally, just pull the latest code and run `yarn build`, then run `yarn index` again.
+If you are running subql node locally, just pull the latest code and run `yarn build`, then run `yarn index` again to restart the indexer.
 
 In rare cases, we might need to do a full re-index (we will explicitly state in the release note when this is needed). In order not to interrupt the currnetly running subql, we can run another indexer in parallel to the old one, and hot replace the old one once the full re-index is finished.
 
