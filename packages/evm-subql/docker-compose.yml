@@ -1,26 +1,6 @@
 version: '3.9'
 
 services:
-  mandala-node:
-    image: ghcr.io/acalanetwork/mandala-node:sha-16f147e
-    ports:
-      - 9944:9944
-    healthcheck:
-      test: "curl --fail -X POST -H \"Content-Type: application/json\" http://localhost:9944 -d \"{\"jsonrpc\": \"2.0\" }\" || exit 1"
-      interval: 2s
-      retries: 100
-      start_period: 3s
-    command:
-      - --dev
-      # - -lruntime=debug
-      # - -levm=debug
-      - --rpc-external
-      - --rpc-cors=all
-      - --rpc-methods=unsafe
-      - --pruning=archive
-      - --instant-sealing
-      - --tmp
-
   postgres:
     image: postgres:12-alpine
     container_name: postgres
@@ -35,11 +15,9 @@ services:
       retries: 5
 
   subquery-node:
-    image: onfinality/subql-node:v5.2.9
+    image: acala/evm-subql:2.9.3    # this is built from onfinality/subql-node:v5.2.9
     depends_on:
-      postgres: 
-        condition: service_healthy
-      mandala-node: 
+      postgres:
         condition: service_healthy
     ports:
       - 3000:3000
@@ -50,17 +28,17 @@ services:
       DB_DATABASE: postgres
       DB_HOST: postgres
       DB_PORT: 5432
-    volumes:
-      - ./:/app
     command:
-      - ${SUB_COMMAND:-} # set SUB_COMMAND env variable to "test" to run tests
-      - -f=/app/project.yaml
-      - --network-endpoint=ws://mandala-node:9944
-      - --db-schema=acala_evm
-      - --log-level=debug
-      - --unsafe
+      - -f=./project-acala.yaml
+      - --network-endpoint=wss://acala-rpc.aca-api.network  # acala node url
+      - --db-schema=evm-acala
+      - --batch-size=20
+      - --workers=2
+      - --store-flush-interval=10
+      - --log-level=info
       - --disable-historical
-      - --batch-size=30
+      - --scale-batch-size
+      - --unsafe
     healthcheck:
       test: ["CMD", "curl", "-f", "http://subquery-node:3000/ready"]
       interval: 3s
@@ -85,7 +63,7 @@ services:
       DB_PORT: 5432
       PORT: 3001
     command:
-      - --name=acala_evm
+      - --name=evm-acala
       - --playground
       - --indexer=http://subquery-node:3000
 
