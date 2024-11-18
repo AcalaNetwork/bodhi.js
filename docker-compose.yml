@@ -41,3 +41,13 @@ services:
       node:
         condition: service_healthy
     command: echo "node ready 🚀"
+
+  eth-rpc:
+    image: acala/eth-rpc-adapter:2.9.4
+    ports:
+      - 8545:8545
+    command:
+      - -e=ws://node:9944
+    depends_on:
+      - node-ready
+
