@@ -1,14 +1,9 @@
 # Bodhi Examples
-Run a Bodhi Stack with docker:
-```
-docker compose -f docker-compose-bodhi-stack.yml up
-```
-
 Develop Contracts With:
--  [Hardhat](./hardhat-tutorials/README.md)
--  [Truffle](./truffle-tutorials/README.md)
+-  [Hardhat](../e2e-tests/e2e-hardhat/)
+-  [Truffle](../e2e-tests/e2e-truffle/)
+-  [Viem](../e2e-tests/e2e-viem/)
 -  [Foundry](./foundry/counter/README.md)
--  [Waffle](./waffle/README.md)
 
 Test with:
 -  [Chopsticks](./chopsticks/README.md)

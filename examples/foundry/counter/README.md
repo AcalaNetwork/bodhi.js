@@ -25,18 +25,14 @@ forge test
 ```
 
 ## Deploy
-### to local mandala
-1) first start a local mandala
+### to local acala fork
+first start a local acala fork and an eth rpc adapter
 ```
-docker run -it --rm -p 9944:9944 ghcr.io/acalanetwork/mandala-node:sha-fe67fd1 --dev --rpc-external --rpc-cors=all --rpc-methods=unsafe -levm=debug --pruning=archive --instant-sealing
-```
-
-2) then start an eth rpc adapter
-```
-npx @acala-network/eth-rpc-adapter@latest --localMode
+cd ../../..     # root of the project
+docker compose up
 ```
 
-3) deploy to local mandala with the pre-funded account
+deploy to local acala fork with the pre-funded account
 ```
 forge create src/Counter.sol:Counter \
   --private-key 0xa872f6cbd25a0e04a08b1e21098017a9e6194d101d75e13111f71410c59cd57f \
@@ -45,7 +41,7 @@ forge create src/Counter.sol:Counter \
 ```
 
 ### to public network
-in order to deploy to public network, we can skip step 1 and 2 in previous section, and switch to public eth rpc endpoint for step 3. For example, to deploy to public mandala, substitute `http://localhost:8545` with `https://eth-rpc-tc9.aca-staging.network`.
+in order to deploy to public network, we can skip step 1 and 2 in previous section, and switch to public eth rpc endpoint for step 3. For example, to deploy to acala mainnet, substitute `http://localhost:8545` with `https://eth-rpc-acala.aca-api.network`.
 
 ### use a deploy script
 For more complex deployments or tests (for example if your tests need to make axios call), you might want to write a JS script. In such case you can easily integrate foundry with hardhat by following the instructions [here](https://hardhat.org/hardhat-runner/docs/advanced/hardhat-and-foundry). You can still write, test, and build contracts with foundry.
