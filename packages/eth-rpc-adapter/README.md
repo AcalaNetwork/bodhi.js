@@ -69,7 +69,7 @@ curl --location --request GET 'http://localhost:8545' \
 {
     "id": 1,
     "jsonrpc": "2.0",
-    "result": "0x253"
+    "result": "0x313"
 }
 ```
 
@@ -125,7 +125,7 @@ These are EVM+ custom RPCs that only exist on Acala/Karura
 As Eth RPCs are now available locally, we can connect metamask to it, and add a custom network:
   - Network Name: Local Acala
   - New RPC URL: http://localhost:8545
-  - Chain ID: 77
+  - Chain ID: 787
   - Currency Symbol: ACA
 
 #### tips
