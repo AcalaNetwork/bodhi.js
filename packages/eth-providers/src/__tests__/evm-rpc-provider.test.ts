@@ -1,7 +1,8 @@
-import { EvmRpcProvider } from '../rpc-provider';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runWithTiming, sleep } from '../utils';
 import dotenv from 'dotenv';
+
+import { EvmRpcProvider } from '../rpc-provider';
+import { sleep } from '../utils';
 
 dotenv.config();
 

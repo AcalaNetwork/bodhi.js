@@ -1,5 +1,10 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider';
 
+export const nodeUrl = process.env.ENDPOINT_URL || 'ws://localhost:9944';
+export const ethRpc = process.env.ETH_RPC || 'http://localhost:8545';
+
+export const ALICE_ADDR = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+
 type MochBlock = {
   blockHash: string;
   blockNumber: number;

@@ -1,6 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { describe, expect, it } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
+
 import { nativeToEthDecimal } from '../utils';
 
 describe('decimals', () => {

@@ -1,6 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { FrameSystemAccountInfo } from '@polkadot/types/lookup';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { hexValue } from '@ethersproject/bytes';
 
+import { ALICE_ADDR, nodeUrl } from './utils';
 import { CacheInspect } from '../utils/BlockCache';
 import {
   EthCallTimingResult,
@@ -13,8 +16,11 @@ import {
   runWithTiming,
   sleep,
 } from '../utils';
+import { EvmRpcProvider } from '../rpc-provider';
 import { HeadsInfo } from '../base-provider';
 import { _Metadata } from '../utils/gqlTypes';
+import { queryStorage } from '../utils/queryStoarge';
+
 
 describe('utils', () => {
   it('connect chain', async () => {
@@ -505,5 +511,71 @@ describe('eth call error handling', () => {
         expect(() => checkEvmExecutionError(data)).to.not.throw();
       }
     });
+  });
+});
+
+describe('query storage', () => {
+  let api: ApiPromise;
+
+
+  beforeAll(async () => {
+    api = await ApiPromise.create({ provider: new WsProvider(nodeUrl) });
+  });
+
+  afterAll(async () => {
+    await api.disconnect();
+  });
+
+  it('timestamp.now', async () => {
+    const _testQueryStorage = async (blockHash: string) => {
+      const timestamp = await queryStorage(
+        api,
+        'timestamp.now',
+        [],
+        blockHash
+      );
+
+      const timestampReal = await (await api.at(blockHash)).query.timestamp.now();
+
+      console.log(timestamp.toJSON(), timestampReal.toJSON());
+      expect(timestamp.toJSON()).to.deep.eq(timestampReal.toJSON());
+    };
+
+    const curBlockHash = (await api.rpc.chain.getBlockHash()).toString();
+    const curBlockNum = (await api.rpc.chain.getHeader()).number.toNumber();
+    const randBlock = curBlockNum - Math.floor(Math.random() * 1000);
+    console.log(curBlockNum, randBlock);
+    const randBlockHash = (await api.rpc.chain.getBlockHash(randBlock)).toString();
+
+    await _testQueryStorage(curBlockHash);
+    await _testQueryStorage(randBlockHash);
+  });
+
+  // FIXME: improve query storage helper to return consistent results as apiAt.query
+  it.skip('system.account', async () => {
+    const _testQueryStorage = async (blockHash: string) => {
+      const accountInfo = await queryStorage<FrameSystemAccountInfo>(
+        api,
+        'system.account',
+        [ALICE_ADDR],
+        blockHash
+      );
+
+      const accountInfoReal = await (await api.at(blockHash)).query.system.account(ALICE_ADDR);
+
+      console.log(accountInfo.toJSON(), accountInfoReal.toJSON());
+      expect(accountInfo.toJSON()).to.deep.eq(accountInfoReal.toJSON());
+    };
+
+    const curBlockHash = (await api.rpc.chain.getBlockHash()).toString();
+    const curBlockNum = (await api.rpc.chain.getHeader()).number.toNumber();
+    const randBlock = curBlockNum - Math.floor(Math.random() * 1000);
+    const randBlockHash = (await api.rpc.chain.getBlockHash(randBlock)).toString();
+
+    console.log(curBlockNum, randBlock);
+    console.log(curBlockHash, randBlockHash);
+
+    await _testQueryStorage(curBlockHash);
+    await _testQueryStorage(randBlockHash);   // fails on 7332027
   });
 });

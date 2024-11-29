@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EvmRpcProvider } from '../rpc-provider';
+import { nodeUrl } from './utils';
 import { sleep } from '../utils';
 
-const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
-const safeProvider = EvmRpcProvider.from(endpoint, { safeMode: true });
-const provider = EvmRpcProvider.from(endpoint, { safeMode: false });
+const safeProvider = EvmRpcProvider.from(nodeUrl, { safeMode: true });
+const provider = EvmRpcProvider.from(nodeUrl, { safeMode: false });
 
 const newBlock = async (finalize: boolean): Promise<void> => {
   await provider.api.rpc.engine.createBlock(true /* create empty */, finalize);

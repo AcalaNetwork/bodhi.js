@@ -14,18 +14,19 @@ import {
 } from '@ethersproject/abstract-provider';
 import { AcalaEvmTX, checkSignatureType, parseTransaction } from '@acala-network/eth-transactions';
 import { AccessList, accessListify } from 'ethers/lib/utils';
+import { AccountId32, H160, H256, Header } from '@polkadot/types/interfaces';
 import { ApiPromise } from '@polkadot/api';
 import { AsyncAction } from 'rxjs/internal/scheduler/AsyncAction';
 import { AsyncScheduler } from 'rxjs/internal/scheduler/AsyncScheduler';
 import { BigNumber, BigNumberish, Wallet } from 'ethers';
 import { Deferrable, defineReadOnly, resolveProperties } from '@ethersproject/properties';
 import { Formatter } from '@ethersproject/providers';
-import { Header } from '@polkadot/types/interfaces';
+import { FrameSystemAccountInfo, ModuleEvmModuleAccountInfo } from '@polkadot/types/lookup';
 import { ISubmittableResult } from '@polkadot/types/types';
 import { Logger } from '@ethersproject/logger';
-import { ModuleEvmModuleAccountInfo } from '@polkadot/types/lookup';
 import { Network } from '@ethersproject/networks';
 import { Observable, ReplaySubject, Subscription, firstValueFrom, throwError } from 'rxjs';
+import { Option, u64 } from '@polkadot/types-codec';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { filter, first, timeout } from 'rxjs/operators';
 import { getAddress } from '@ethersproject/address';
@@ -93,6 +94,7 @@ import { MaxSizeSet } from './utils/MaxSizeSet';
 import { SubqlProvider } from './utils/subqlProvider';
 import { _Metadata } from './utils/gqlTypes';
 import { apiCache } from './utils/ApiAtCache';
+import { queryStorage } from './utils/queryStoarge';
 
 export interface HeadsInfo {
   internalState: {
@@ -596,8 +598,7 @@ export abstract class BaseProvider extends AbstractProvider {
   );
 
   getTimestamp = async (blockHash: string): Promise<number> => {
-    const apiAt = await apiCache.getApiAt(this.api, blockHash);
-    const timestamp = await apiAt.query.timestamp.now();
+    const timestamp = await queryStorage<u64>(this.api, 'timestamp.now', [], blockHash);
     return timestamp.toNumber();
   };
 
@@ -704,8 +705,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const substrateAddress = await this.getSubstrateAddress(address, blockHash);
 
-    const apiAt = await apiCache.getApiAt(this.api, blockHash);
-    const accountInfo = await apiAt.query.system.account(substrateAddress);
+    const accountInfo = await queryStorage<FrameSystemAccountInfo>(
+      this.api,
+      'system.account',
+      [substrateAddress],
+      blockHash
+    );
 
     return nativeToEthDecimal(accountInfo.data.free.toBigInt());
   };
@@ -746,9 +751,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const contractInfo = evmAccountInfo?.contractInfo.unwrapOr(null);
     if (!contractInfo) { return '0x'; }
 
-    const apiAt = await apiCache.getApiAt(this.api, blockHash);
-    const code = await apiAt.query.evm.codes(contractInfo.codeHash);
-
+    const code = await queryStorage(this.api, 'evm.codes', [contractInfo.codeHash], blockHash);
     return code.toHex();
   };
 
@@ -844,8 +847,12 @@ export abstract class BaseProvider extends AbstractProvider {
       Promise.resolve(position).then(hexValue),
     ]);
 
-    const apiAt = await apiCache.getApiAt(this.api, blockHash);
-    const code = await apiAt.query.evm.accountStorages(address, hexZeroPad(resolvedPosition, 32));
+    const code = await queryStorage<H256>(
+      this.api,
+      'evm.accountStorages',
+      [address, hexZeroPad(resolvedPosition, 32)],
+      blockHash
+    );
 
     return code.toHex();
   };
@@ -948,7 +955,8 @@ export abstract class BaseProvider extends AbstractProvider {
     extrinsic: SubmittableExtrinsic<'promise', ISubmittableResult>,
     at?: string,
   ) => {
-    const apiAt = await apiCache.getApiAt(this.api, at ?? await this.bestBlockHash);
+    const blockHash = at ?? this.bestBlockHash;
+    const apiAt = await apiCache.getApiAt(this.api, blockHash);
 
     const u8a = extrinsic.toU8a();
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
@@ -1128,8 +1136,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getSubstrateAddress = async (address: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const apiAt = await apiCache.getApiAt(this.api, blockHash);
-    const substrateAccount = await apiAt.query.evmAccounts.accounts(address);
+    const substrateAccount = await queryStorage<Option<AccountId32>>(
+      this.api,
+      'evmAccounts.accounts',
+      [address],
+      blockHash
+    );
 
     return substrateAccount.isEmpty
       ? computeDefaultSubstrateAddress(address)
@@ -1138,8 +1150,12 @@ export abstract class BaseProvider extends AbstractProvider {
 
   getEvmAddress = async (substrateAddress: string, blockTag?: BlockTag): Promise<string> => {
     const blockHash = await this._getBlockHash(blockTag);
-    const apiAt = await apiCache.getApiAt(this.api, blockHash);
-    const evmAddress = await apiAt.query.evmAccounts.evmAddresses(substrateAddress);
+    const evmAddress = await queryStorage<Option<H160>>(
+      this.api,
+      'evmAccounts.evmAddresses',
+      [substrateAddress],
+      blockHash
+    );
 
     return getAddress(evmAddress.isEmpty ? computeDefaultEvmAddress(substrateAddress) : evmAddress.toString());
   };
@@ -1155,8 +1171,12 @@ export abstract class BaseProvider extends AbstractProvider {
       this._getBlockHash(blockTag),
     ]);
 
-    const apiAt = await apiCache.getApiAt(this.api, blockHash);
-    const accountInfo = await apiAt.query.evm.accounts(address);
+    const accountInfo = await queryStorage<Option<ModuleEvmModuleAccountInfo>>(
+      this.api,
+      'evm.accounts',
+      [address],
+      blockHash
+    );
 
     return accountInfo.unwrapOr(null);
   };

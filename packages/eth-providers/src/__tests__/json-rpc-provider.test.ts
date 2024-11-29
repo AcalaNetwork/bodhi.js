@@ -4,11 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { hexZeroPad, parseEther } from 'ethers/lib/utils';
 
 import { AcalaJsonRpcProvider } from '../json-rpc-provider';
+import { ethRpc, evmAccounts } from './utils';
 import echoJson from './abis/Echo.json';
 import erc20Json from './abis/IERC20.json';
-import evmAccounts from './utils/evmAccounts';
-
-const localEthRpc = process.env.ETH_RPC || 'http://localhost:8545';
 
 describe('JsonRpcProvider', async () => {
   /* --------- karura --------- */
@@ -20,7 +18,7 @@ describe('JsonRpcProvider', async () => {
 
   /* --------- local --------- */
   const testKey = evmAccounts[0].privateKey;   // 0x75E480dB528101a381Ce68544611C169Ad7EB342
-  const providerLocal = new AcalaJsonRpcProvider(localEthRpc);
+  const providerLocal = new AcalaJsonRpcProvider(ethRpc);
   const wallet = new Wallet(testKey, providerLocal);
 
   describe.concurrent('get chain data', () => {
