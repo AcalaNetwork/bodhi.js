@@ -4,7 +4,10 @@ contract Echo{
     string public echo;
     uint echoCount;
 
-    event NewEcho(string message, uint count);
+    event NewEcho(
+        string indexed message,
+        uint256 count
+    );
 
     constructor() {
         echo = "Deployed successfully!";
