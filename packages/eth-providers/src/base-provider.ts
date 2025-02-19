@@ -769,12 +769,10 @@ export abstract class BaseProvider extends AbstractProvider {
     ethReq.gasPrice ??= await this.getGasPrice();
     ethReq.gasLimit ??= BigNumber.from(999999920);
 
-    const substrateGas = this._getSubstrateGasParams(ethReq);
-
     const callRequest: SubstrateEvmCallRequest = {
       ...ethReq,
       value: ethReq.value?.toBigInt(),
-      ...substrateGas,
+      gasLimit: ethReq.gasLimit?.toBigInt(),
     };
 
     const res = await this._ethCall(callRequest, blockHash);
