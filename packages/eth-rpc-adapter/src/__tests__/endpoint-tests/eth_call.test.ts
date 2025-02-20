@@ -29,7 +29,17 @@ describe('eth_call', () => {
     return iface.decodeFunctionResult(method, rawRes);
   };
 
+  const callRequestWithGas = (abi: any) => async (address: string, method: string, params?: any[], blockTag?: any) => {
+    const iface = new Interface(abi);
+
+    const data = iface.encodeFunctionData(method, params);
+    const block = blockTag || (await eth_blockNumber()).data.result;
+    const rawRes = (await eth_call([{ to: address, data, gas: "0x2faf080" }, block])).data.result;
+    return iface.decodeFunctionResult(method, rawRes);
+  };
+
   const callToken = callRequest(erc20Abi.abi);
+  const callTokenWithGas = callRequestWithGas(erc20Abi.abi);
 
   it('get correct procompile token info', async () => {
     const tokenMetaData = [
@@ -70,6 +80,16 @@ describe('eth_call', () => {
     });
 
     await Promise.all(tests);
+  });
+
+  it('supports calling with gas', async () => {
+      const [_name] = await callTokenWithGas(ACA_ADDR, 'name');
+      const [_symbol] = await callTokenWithGas(ACA_ADDR, 'symbol');
+      const [_decimals] = await callTokenWithGas(ACA_ADDR, 'decimals');
+
+      expect(_name).to.equal('Acala');
+      expect(_symbol).to.equal('ACA');
+      expect(_decimals).to.equal(12);
   });
 
   it('supports calling historical blocks', async () => {
