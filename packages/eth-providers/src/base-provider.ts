@@ -772,6 +772,7 @@ export abstract class BaseProvider extends AbstractProvider {
     const callRequest: SubstrateEvmCallRequest = {
       ...ethReq,
       value: ethReq.value?.toBigInt(),
+      gasPrice: ethReq.gasPrice?.toBigInt(),
       gasLimit: ethReq.gasLimit?.toBigInt(),
     };
 
