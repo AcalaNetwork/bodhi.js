@@ -766,14 +766,26 @@ export abstract class BaseProvider extends AbstractProvider {
       this._getBlockHash(blockTag),
     ]);
 
-    ethReq.gasPrice ??= await this.getGasPrice();
-    ethReq.gasLimit ??= BigNumber.from(999999920);
+    let gasLimit;
+    let storageLimit;
+
+    if (!ethReq.gasLimit) {
+      ethReq.gasPrice ??= await this.getGasPrice();
+      ethReq.gasLimit ??= BigNumber.from(999999920);
+
+      const substrateGas = this._getSubstrateGasParams(ethReq);
+      gasLimit = substrateGas.gasLimit;
+      storageLimit = substrateGas.storageLimit;
+    } else {
+      gasLimit = ethReq.gasLimit?.toBigInt();
+      storageLimit = BLOCK_STORAGE_LIMIT;
+    }
 
     const callRequest: SubstrateEvmCallRequest = {
       ...ethReq,
       value: ethReq.value?.toBigInt(),
-      gasPrice: ethReq.gasPrice?.toBigInt(),
-      gasLimit: ethReq.gasLimit?.toBigInt(),
+      gasLimit,
+      storageLimit
     };
 
     const res = await this._ethCall(callRequest, blockHash);
