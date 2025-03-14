@@ -88,6 +88,11 @@ export class EvmRpcProviderWithTrace extends BaseProviderWithTrace {
       rpcCacheCapacity: opts?.rpcCacheCapacity,
     });
 
+    api.on('disconnected', () => {
+      console.error("RPC disconnected! Exiting process");
+      process.exit(1);
+    });
+
     this.setApi(api);
   }
 
