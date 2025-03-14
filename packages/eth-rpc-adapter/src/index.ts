@@ -78,3 +78,8 @@ start().catch(e => {
 process.on('SIGINT', function() {
   process.exit();
 });
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
+});
