@@ -78,3 +78,14 @@ start().catch(e => {
 process.on('SIGINT', function() {
   process.exit();
 });
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("unhandled Promise Rejection:", reason);
+  process.exit(1);
+});
+
