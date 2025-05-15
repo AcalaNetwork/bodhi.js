@@ -18,7 +18,7 @@ RUN yarn workspace @acala-network/evm-subql pack
 
 # =============
 
-FROM onfinality/subql-node:v5.2.9
+FROM onfinality/subql-node:v6.0.4
 LABEL maintainer="hello@acala.network"
 
 # subql node changed defualt user to USER 1000

@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { getContractAddress } from 'viem';
 
 import { ECHO_JSON as EchoJson } from './consts';

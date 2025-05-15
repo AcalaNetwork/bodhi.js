@@ -16,7 +16,6 @@ import {
   runWithTiming,
   sleep,
 } from '../utils';
-import { EvmRpcProvider } from '../rpc-provider';
 import { HeadsInfo } from '../base-provider';
 import { _Metadata } from '../utils/gqlTypes';
 import { queryStorage } from '../utils/queryStoarge';
