@@ -56,7 +56,7 @@ export function handleTxResponse(
                 const mod = dispatchError.asModule;
                 const error = api.registry.findMetaError(new Uint8Array([mod.index.toNumber(), mod.error.toNumber()]));
                 message = `${error.section}.${error.name}: ${error.docs}`;
-              } catch (error) {
+              } catch (_error) {
                 // swallow
               }
             }

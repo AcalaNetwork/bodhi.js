@@ -38,7 +38,7 @@ function _parseEip712Signature(
       throw new Error('bad recid');
     }
     tx.v = recid;
-  } catch (error) {
+  } catch (_error) {
     logger.throwArgumentError('invalid v for transaction type: 1', 'v', fields[0]);
   }
 

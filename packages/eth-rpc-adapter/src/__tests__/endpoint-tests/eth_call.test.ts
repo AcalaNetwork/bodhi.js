@@ -4,10 +4,10 @@ import {
   DOT as DOT_ADDR,
   LDOT as LDOT_ADDR,
 } from '@acala-network/contracts/utils/AcalaAddress';
-import { Interface, parseEther, parseUnits } from 'ethers/lib/utils';
+import { Interface, parseUnits } from 'ethers/lib/utils';
 import { describe, expect, it } from 'vitest';
 
-import { BigNumber, Contract, Wallet } from 'ethers';
+import { Wallet } from 'ethers';
 import {
   deployErc20,
   eth_blockNumber,

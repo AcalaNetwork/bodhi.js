@@ -101,6 +101,7 @@ __metadata:
     ts-node: ^10.9.1
     ts-node-dev: ^2.0.0
     typechain: ^8.3.2
+    typescript: ^5.8.3
     vitest: ^2.1.1
     ws: ~8.2.3
     yargs: 16.2.0
@@ -11110,7 +11111,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.7.3":
+"typescript@npm:^5.7.3, typescript@npm:^5.8.3":
   version: 5.8.3
   resolution: "typescript@npm:5.8.3"
   bin:
@@ -11130,7 +11131,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^5.7.3#~builtin<compat/typescript>":
+"typescript@patch:typescript@^5.7.3#~builtin<compat/typescript>, typescript@patch:typescript@^5.8.3#~builtin<compat/typescript>":
   version: 5.8.3
   resolution: "typescript@patch:typescript@npm%3A5.8.3#~builtin<compat/typescript>::version=5.8.3&hash=f3b441"
   bin:
