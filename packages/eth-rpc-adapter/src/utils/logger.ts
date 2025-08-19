@@ -1,4 +1,4 @@
 import pino from 'pino';
 export const logger = pino({
-  level: 'trace',
+  level: process.env.LOG_LEVEL ?? 'trace',
 });
