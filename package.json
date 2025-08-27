@@ -6,7 +6,7 @@
   "packageManager": "yarn@3.6.3",
   "private": true,
   "engines": {
-    "node": ">=v16"
+    "node": ">=v22"
   },
   "workspaces": [
     "packages/*"
