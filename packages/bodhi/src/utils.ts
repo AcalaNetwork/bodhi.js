@@ -1,6 +1,12 @@
 import { BigNumber } from '@ethersproject/bignumber';
+import { BodhiProvider } from '@acala-network/eth-providers';
 import { BytesLike } from '@ethersproject/bytes';
+import { KeyringPair } from '@polkadot/keyring/types';
+import { WsProvider } from '@polkadot/api';
 import { bufferToU8a, isBuffer, isU8a, u8aToHex } from '@polkadot/util';
+import { createTestPairs } from '@polkadot/keyring';
+
+import { BodhiSigner } from './BodhiSigner';
 
 export const U32MAX = BigNumber.from('0xffffffff');
 export const U64MAX = BigNumber.from('0xffffffffffffffff');
@@ -17,4 +23,39 @@ export const dataToString = (bytes: BytesLike): string => {
   }
 
   return bytes as string;
+};
+
+export const getTestUtils = async (
+  url = 'ws://localhost:9944',
+  claimDefault = true,
+): Promise<{
+  wallets: BodhiSigner[];
+  pairs: KeyringPair[];
+  provider: BodhiProvider;
+}> => {
+  const provider = new BodhiProvider({
+    provider: new WsProvider(url),
+  });
+  await provider.isReady();
+
+  const { alice } = createTestPairs();
+  const pairs = [alice];
+
+  const wallets: BodhiSigner[] = [];
+  for (const pair of pairs) {
+    const wallet = BodhiSigner.fromPair(provider, pair);
+
+    const isClaimed = await wallet.isClaimed();
+    if (!isClaimed && claimDefault) {
+      await wallet.claimDefaultAccount();
+    }
+
+    wallets.push(wallet);
+  }
+
+  return {
+    wallets,
+    pairs,
+    provider,
+  };
 };

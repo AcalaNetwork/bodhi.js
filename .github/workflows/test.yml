@@ -27,7 +27,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: setup yarn
         run: npm install -g yarn
@@ -88,7 +88,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: setup yarn
         run: npm install -g yarn
@@ -145,7 +145,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: setup yarn
         run: npm install -g yarn

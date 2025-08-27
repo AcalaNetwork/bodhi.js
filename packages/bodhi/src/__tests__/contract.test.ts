@@ -2,7 +2,7 @@ import { ContractFactory } from 'ethers';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { BodhiSigner } from '../BodhiSigner';
-import { getTestUtils } from './utils';
+import { getTestUtils } from '../utils';
 import echoJson from './abis/Echo.json';
 
 describe('BodhiSigner contract interaction', () => {
