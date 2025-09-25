@@ -1,6 +1,6 @@
 {
   "name": "@acala-network/eth-rpc-adapter",
-  "version": "2.9.8",
+  "version": "2.9.9",
   "license": "MIT",
   "author": "Acala Developers <hello@acala.network>",
   "bin": "./bin/eth-rpc-adapter.js",
