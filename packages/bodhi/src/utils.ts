@@ -38,8 +38,8 @@ export const getTestUtils = async (
   });
   await provider.isReady();
 
-  const { alice } = createTestPairs();
-  const pairs = [alice];
+  const { alice, alice_stash, bob, bob_stash } = createTestPairs();
+  const pairs = [alice, alice_stash, bob, bob_stash];
 
   const wallets: BodhiSigner[] = [];
   for (const pair of pairs) {
