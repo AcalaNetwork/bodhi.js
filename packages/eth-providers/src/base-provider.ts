@@ -960,7 +960,7 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const u8a = extrinsic.toU8a();
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
-    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
+    const feeDetails = await apiAt.call.transactionPaymentCallApi.queryCallFeeDetails(
       u8a,
       u8a.length + lenIncreaseAfterSignature,
     );
