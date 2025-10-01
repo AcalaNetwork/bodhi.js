@@ -17,7 +17,19 @@ import-storage:
             free: 1000000000000000
       -
         -
+          - 5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY
+        - providers: 1
+          data:
+            free: 1000000000000000
+      -
+        -
           - 246gNkjCexYRsCpdjtVhz35sHjcb21jpqipzT9u4uwKV8iEE
+        - providers: 1
+          data:
+            free: 1000000000000000
+      -
+        -
+          - 5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc
         - providers: 1
           data:
             free: 1000000000000000

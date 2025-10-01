@@ -1,7 +1,7 @@
 services:
   node:
     container_name: node
-    image: oven/bun:1.1.26
+    image: oven/bun:1.2.23
     working_dir: /app
     volumes:
       - ./chopsticks:/app/chopsticks
