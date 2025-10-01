@@ -1,4 +1,4 @@
-endpoint: wss://acala-rpc.aca-api.network
+endpoint: wss://acala-rpc.n.dwellir.com
 mock-signature-host: true
 runtime-log-level: 5
 # block: 7000000
