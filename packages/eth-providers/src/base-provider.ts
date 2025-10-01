@@ -958,12 +958,21 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = at ?? this.bestBlockHash;
     const apiAt = await apiCache.getApiAt(this.api, blockHash);
 
-    const u8a = extrinsic.toU8a();
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
-    const feeDetails = await apiAt.call.transactionPaymentCallApi.queryCallFeeDetails(
-      u8a,
-      u8a.length + lenIncreaseAfterSignature,
-    );
+    let feeDetails = null;
+    if (!apiAt.call.transactionPaymentCallApi) {
+      // for old api
+      feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
+        extrinsic.toU8a(),
+        extrinsic.toU8a().length + lenIncreaseAfterSignature,
+      );
+    } else {
+      // for new api with runtime 2310
+      feeDetails = await apiAt.call.transactionPaymentCallApi.queryCallFeeDetails(
+        extrinsic,
+        extrinsic.toU8a().length + lenIncreaseAfterSignature,
+      );
+    }
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
 
     const nativeTxFee = BigNumber.from(
