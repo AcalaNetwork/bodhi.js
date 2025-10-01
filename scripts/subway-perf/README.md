@@ -6,7 +6,7 @@ Test the performance of eth rpc adapter with subway.
 docker run \
   -p 9955:9955 \
   -e PORT=9955 \
-  -e ENDPOINTS=wss://acala-rpc.dwellir.com:443 \
+  -e ENDPOINTS=wss://acala-rpc.n.dwellir.com:443 \
   acala/subway:sha-7c1610c
 ```
 
