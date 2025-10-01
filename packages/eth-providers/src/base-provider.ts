@@ -960,18 +960,27 @@ export abstract class BaseProvider extends AbstractProvider {
 
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
     let feeDetails = null;
-    if (!apiAt.call.transactionPaymentCallApi) {
-      // for old api
-      feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
-        extrinsic.toU8a(),
-        extrinsic.toU8a().length + lenIncreaseAfterSignature,
-      );
-    } else {
+    if (apiAt.call.transactionPaymentCallApi) {
       // for new api with runtime 2310
       feeDetails = await apiAt.call.transactionPaymentCallApi.queryCallFeeDetails(
         extrinsic,
         extrinsic.toU8a().length + lenIncreaseAfterSignature,
       );
+    } else if (this.api.call.transactionPaymentCallApi && blockHash === this.bestBlockHash) {
+      // for chopsticks test
+      feeDetails = await this.api.call.transactionPaymentCallApi.queryCallFeeDetails(
+        extrinsic,
+        extrinsic.toU8a().length + lenIncreaseAfterSignature,
+      );
+    } else {
+      // for old api
+      feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
+        extrinsic.toU8a(),
+        extrinsic.toU8a().length + lenIncreaseAfterSignature,
+      );
+    }
+    if (feeDetails.isEmpty || feeDetails.inclusionFee.isEmpty) {
+      return logger.throwError('failed to estimate gas', Logger.errors.CALL_EXCEPTION);
     }
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
 
