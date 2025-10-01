@@ -7,7 +7,7 @@ import { runWithTiming } from '../utils';
 
 dotenv.config();
 
-const ACALA_NODE_URL = 'wss://acala-rpc.aca-api.network';
+const ACALA_NODE_URL = 'wss://acala-rpc.n.dwellir.com';
 
 describe.concurrent('provider cache', async () => {
   let provider: EvmRpcProvider;
