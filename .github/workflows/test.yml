@@ -40,7 +40,7 @@ jobs:
         with:
           timeout_minutes: 5
           max_attempts: 3
-          command: docker compose up -d --build -- node-ready
+          command: docker compose up -d -- node-ready
 
       - name: start rpc adapter for eth-providers
         if: matrix.project == 'eth-providers'
@@ -101,7 +101,7 @@ jobs:
         with:
           timeout_minutes: 5
           max_attempts: 3
-          command: docker compose up -d --build -- node-ready
+          command: docker compose up -d -- node-ready
 
       - name: start coverage server
         env:

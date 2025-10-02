@@ -1,7 +1,7 @@
 services:
   node:
     container_name: node
-    image: oven/bun:1.2.23
+    image: oven/bun:1.1.26
     working_dir: /app
     volumes:
       - ./chopsticks:/app/chopsticks
@@ -9,7 +9,7 @@ services:
       # TODO: cache does not seem to work
       # - ~/.bun/install/cache:/root/.bun/install/cache
     command:
-      bunx @acala-network/chopsticks@0.15.0 -c /app/chopsticks/configs/acala.yml -p 9944
+      bunx @acala-network/chopsticks@latest -c /app/chopsticks/configs/acala.yml -p 9944
     ports:
       - 9944:9944
     healthcheck:
