@@ -121,6 +121,14 @@ describe('Token contract', () => {
 
         const initialBalance = await token.balanceOf(userAddress);
 
+        const transfer = await deployer.sendTransaction({
+          to: userAddress,
+          value: ethers.parseEther('1.0'), // 1 ETH
+        });
+        await transfer.wait();
+        const userBalance = await ethers.provider.getBalance(userAddress);
+        console.log(`initialBalance: ${initialBalance}, userBalance: ${userBalance}`);
+
         const tx = await token.connect(user).transferFrom(deployerAddress, userAddress, 50);
         await tx.wait();
 
