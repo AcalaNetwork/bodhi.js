@@ -6,7 +6,7 @@ import { sleep } from '../utils';
 
 dotenv.config();
 
-const ACALA_NODE_URL = 'wss://acala-rpc.dwellir.com';
+const ACALA_NODE_URL = 'wss://acala-rpc.n.dwellir.com';
 const ACALA_SUBQL = 'https://subql-query-acala.aca-api.network';
 const endpoint = process.env.ENDPOINT_URL || 'ws://127.0.0.1:9944';
 
