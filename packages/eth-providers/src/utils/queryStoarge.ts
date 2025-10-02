@@ -33,7 +33,7 @@ export const queryStorage = async <T extends Codec = Codec>(
 
   // we convert to Uint8Array since it maps to the raw encoding, all
   // data will be correctly encoded (incl. numbers, excl. :code)
-  const input = value === null
+  const input = (value === null || value.isEmpty)
     ? null
     : u8aToU8a(
       entry.meta.modifier.isOptional

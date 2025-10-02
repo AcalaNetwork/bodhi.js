@@ -2,7 +2,7 @@ import { runWithTiming, EvmRpcProvider } from '@acala-network/eth-providers';
 
 const endpoints = {
   localSubway: 'ws://localhost:9955',
-  acalaDwellir: 'wss://acala-rpc.dwellir.com',
+  acalaDwellir: 'wss://acala-rpc.n.dwellir.com',
   acala0: 'wss://acala-rpc-0.aca-api.network',
 };
 

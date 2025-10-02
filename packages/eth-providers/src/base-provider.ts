@@ -958,12 +958,30 @@ export abstract class BaseProvider extends AbstractProvider {
     const blockHash = at ?? this.bestBlockHash;
     const apiAt = await apiCache.getApiAt(this.api, blockHash);
 
-    const u8a = extrinsic.toU8a();
     const lenIncreaseAfterSignature = 100;    // approximate length increase after signature
-    const feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
-      u8a,
-      u8a.length + lenIncreaseAfterSignature,
-    );
+    let feeDetails = null;
+    if (apiAt.call.transactionPaymentCallApi) {
+      // for new api with runtime 2310
+      feeDetails = await apiAt.call.transactionPaymentCallApi.queryCallFeeDetails(
+        extrinsic,
+        extrinsic.toU8a().length + lenIncreaseAfterSignature,
+      );
+    } else if (this.api.call.transactionPaymentCallApi && blockHash === this.bestBlockHash) {
+      // for chopsticks test
+      feeDetails = await this.api.call.transactionPaymentCallApi.queryCallFeeDetails(
+        extrinsic,
+        extrinsic.toU8a().length + lenIncreaseAfterSignature,
+      );
+    } else {
+      // for old api
+      feeDetails = await apiAt.call.transactionPaymentApi.queryFeeDetails(
+        extrinsic.toU8a(),
+        extrinsic.toU8a().length + lenIncreaseAfterSignature,
+      );
+    }
+    if (feeDetails.isEmpty || feeDetails.inclusionFee.isEmpty) {
+      return logger.throwError('failed to estimate gas', Logger.errors.CALL_EXCEPTION);
+    }
     const { baseFee, lenFee, adjustedWeightFee } = feeDetails.inclusionFee.unwrap();
 
     const nativeTxFee = BigNumber.from(

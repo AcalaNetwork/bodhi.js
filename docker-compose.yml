@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   node:
     container_name: node
@@ -11,7 +9,7 @@ services:
       # TODO: cache does not seem to work
       # - ~/.bun/install/cache:/root/.bun/install/cache
     command:
-      bunx @acala-network/chopsticks@0.15.0 -c /app/chopsticks/configs/acala.yml -p 9944
+      bunx @acala-network/chopsticks@latest -c /app/chopsticks/configs/acala.yml -p 9944
     ports:
       - 9944:9944
     healthcheck:

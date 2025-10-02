@@ -43,14 +43,19 @@ export const getTestUtils = async (
 
   const wallets: BodhiSigner[] = [];
   for (const pair of pairs) {
-    const wallet = BodhiSigner.fromPair(provider, pair);
+    try {
+      const wallet = BodhiSigner.fromPair(provider, pair);
 
-    const isClaimed = await wallet.isClaimed();
-    if (!isClaimed && claimDefault) {
-      await wallet.claimDefaultAccount();
+      const isClaimed = await wallet.isClaimed();
+      if (!isClaimed && claimDefault) {
+        await wallet.claimDefaultAccount();
+      }
+
+      wallets.push(wallet);
+    } catch (error) {
+      console.error('Error processing pair:', error);
+      throw error;
     }
-
-    wallets.push(wallet);
   }
 
   return {
