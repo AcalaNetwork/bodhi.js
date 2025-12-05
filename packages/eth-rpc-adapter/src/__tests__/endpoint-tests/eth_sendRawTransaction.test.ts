@@ -120,7 +120,7 @@ describe('eth_sendRawTransaction', async () => {
         const prevBalance = await queryEthBalance(wallet.address);
 
         const gasLimit = BigNumber.from('210000');
-        const validUntil = 9999999;
+        const validUntil = 999999999;
         const storageLimit = 100000;
 
         const unsignEip712Tx = {
